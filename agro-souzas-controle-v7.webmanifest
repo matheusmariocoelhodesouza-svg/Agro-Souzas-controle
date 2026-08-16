@@ -1,0 +1,38 @@
+{
+  "id": "/?app=agro-souzas-controle-v7",
+  "name": "Agro Souza's Controle",
+  "short_name": "Agro Souza's",
+  "description": "Gestão de pessoal, frota e equipamentos",
+  "lang": "pt-BR",
+  "start_url": "/?source=app-v7",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": [
+    "standalone",
+    "fullscreen",
+    "minimal-ui"
+  ],
+  "orientation": "portrait-primary",
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
+  "icons": [
+    {
+      "src": "/agro-souzas-controle-192-v6.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/agro-souzas-controle-512-v6.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/agro-souzas-controle-512-v6.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
