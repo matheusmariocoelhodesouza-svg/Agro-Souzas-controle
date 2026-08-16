@@ -1,4 +1,4 @@
-const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];const money=v=>Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));const today=new Date().toISOString().slice(0,10),d=new Date();d.setDate(1);const ms=d.toISOString().slice(0,10);['#attDate','#maintDate','#fuelDate','#kmDate'].forEach(x=>$(x).value=today);$('#repStart').value=ms;$('#repEnd').value=today;$('#earnStart').value=ms;$('#earnEnd').value=today;let sb,user,profile,employees=[],vehicles=[],equipment=[],attendance=[],maintenance=[],parts=[],fuel=[],mileage=[],documents=[],pointEvents=[];
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];const money=v=>Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));const today=new Date().toISOString().slice(0,10),d=new Date();d.setDate(1);const ms=d.toISOString().slice(0,10);['#attDate','#maintDate','#fuelDate','#kmDate','#loadDate','#loadingReportDate'].forEach(x=>$(x).value=today);$('#repStart').value=ms;$('#repEnd').value=today;$('#earnStart').value=ms;$('#earnEnd').value=today;let sb,user,profile,employees=[],vehicles=[],equipment=[],attendance=[],maintenance=[],parts=[],fuel=[],mileage=[],documents=[],pointEvents=[],loadings=[],loadingTrucks=[],loadingSurcharges=[];
 function initClient(){sb=supabase.createClient(window.SUPABASE_URL,window.SUPABASE_PUBLISHABLE_KEY)}
 function isRecoveryUrl(){return location.hash.includes('type=recovery')||new URLSearchParams(location.search).get('type')==='recovery'}
 function showResetView(){ $('#loginView').classList.add('hidden');$('#appView').classList.add('hidden');$('#resetView').classList.remove('hidden');$('#userInfo').textContent='Redefinição de senha' }
@@ -45,7 +45,7 @@ $('#savePasswordBtn').onclick=async()=>{
 $('#cancelResetBtn').onclick=async()=>{await sb.auth.signOut();history.replaceState({},document.title,location.pathname);showLoginView()};
 $('#logoutBtn').onclick=()=>sb.auth.signOut();
 async function enter(){const{data,error}=await sb.from('profiles').select('*').eq('id',user.id).single();if(error){$('#loginMsg').textContent='Usuário sem perfil';return}profile=data;$('#loginView').classList.add('hidden');$('#resetView').classList.add('hidden');$('#appView').classList.remove('hidden');showTab('painel');$('#userInfo').textContent=`${profile.name} • ${profile.role}`;$$('.admin-only').forEach(x=>x.classList.toggle('hidden',profile.role!=='admin'));await refreshAll();subscribe()}
-const APP_TABS=['painel','ponto2','ponto','funcionarios','frota','equipamentos','manutencoes','combustivel','km','relatorios'];
+const APP_TABS=['painel','ponto2','ponto','funcionarios','frota','equipamentos','manutencoes','combustivel','km','carregamentos','relatorios'];
 function showTab(tab){
   APP_TABS.forEach(t=>{
     const el=$('#tab-'+t);
@@ -61,7 +61,34 @@ function showTab(tab){
   }
 }
 $$('nav button[data-tab]').forEach(b=>b.onclick=()=>showTab(b.dataset.tab));
-async function refreshAll(){const q=await Promise.all([sb.from('employees').select('*').order('name'),sb.from('vehicles').select('*').order('name'),sb.from('equipment').select('*').order('name'),sb.from('attendance').select('*').gte('work_date',ms).lte('work_date',today),sb.from('maintenance').select('*').order('date',{ascending:false}),sb.from('maintenance_parts').select('*'),sb.from('fuel_logs').select('*').order('date',{ascending:false}),sb.from('mileage_logs').select('*').order('date',{ascending:false}),profile.role==='admin'?sb.from('employee_documents').select('*').order('created_at',{ascending:false}):Promise.resolve({data:[]}),sb.from('point_event_receipts').select('*').order('occurred_at',{ascending:false}).limit(30)]);[employees,vehicles,equipment,attendance,maintenance,parts,fuel,mileage,documents,pointEvents]=q.map(x=>x.data||[]);fill();renderAll()}
+async function refreshAll(){
+ const q=await Promise.all([
+  sb.from('employees').select('*').order('name'),
+  sb.from('vehicles').select('*').order('name'),
+  sb.from('equipment').select('*').order('name'),
+  sb.from('attendance').select('*').gte('work_date',ms).lte('work_date',today),
+  sb.from('maintenance').select('*').order('date',{ascending:false}),
+  sb.from('maintenance_parts').select('*'),
+  sb.from('fuel_logs').select('*').order('date',{ascending:false}),
+  sb.from('mileage_logs').select('*').order('date',{ascending:false}),
+  profile.role==='admin'?sb.from('employee_documents').select('*').order('created_at',{ascending:false}):Promise.resolve({data:[],error:null}),
+  sb.from('point_event_receipts').select('*').order('occurred_at',{ascending:false}).limit(30),
+  sb.from('loading_summary').select('*').order('loading_date',{ascending:false}).limit(500),
+  sb.from('loading_trucks').select('*').order('truck_number'),
+  sb.from('loading_surcharges').select('*').order('created_at')
+ ]);
+ const empResult=q[0];
+ if($('#empLoadMsg')){
+   if(empResult.error){
+     $('#empLoadMsg').innerHTML='<span class="bad" style="padding:6px 8px;border-radius:7px;display:inline-block">Erro ao carregar funcionários: '+esc(empResult.error.message)+'</span>';
+   }else{
+     $('#empLoadMsg').innerHTML='<span class="status-ok">'+(empResult.data||[]).length+' funcionário(s) carregado(s).</span>';
+   }
+ }
+ [employees,vehicles,equipment,attendance,maintenance,parts,fuel,mileage,documents,pointEvents,loadings,loadingTrucks,loadingSurcharges]=q.map(x=>x.data||[]);
+ fill();
+ renderAll();
+}
 function active(a){return a.filter(x=>x.active!==false)}function fill(){const teams=[...new Set(active(employees).map(e=>e.team).filter(Boolean))].sort();$('#attTeam').innerHTML='<option value="">Todas</option>'+teams.map(t=>`<option>${esc(t)}</option>`).join('');const eo=active(employees).map(e=>`<option value="${e.id}">${esc(e.name)}</option>`).join('');$('#docEmp').innerHTML=eo;$('#faceEmp').innerHTML=eo;$('#kmDriver').innerHTML='<option value="">Não informado</option>'+eo;const vo=active(vehicles).map(v=>`<option value="${v.id}">${esc(v.name)}${v.plate?' — '+esc(v.plate):''}</option>`).join('');$('#fuelVehicle').innerHTML=vo;$('#kmVehicle').innerHTML=vo;$('#repVehicle').innerHTML='<option value="">Todas</option>'+vo;fillMaint()}function fillMaint(){const a=$('#maintAssetType').value==='vehicle'?active(vehicles):active(equipment);$('#maintAsset').innerHTML=a.map(x=>`<option value="${x.id}">${esc(x.name)}</option>`).join('')}$('#maintAssetType').onchange=fillMaint;
 
 let editingEmployeeId=null;
@@ -241,7 +268,163 @@ $('#facialPunchBtn').onclick=async()=>{
  }catch(e){$('#punchStatus').textContent=e.message||String(e)}
 };
 $('#uploadDoc').onclick=async()=>{const f=$('#docFile').files[0],employee_id=$('#docEmp').value;if(!f)return alert('Selecione um arquivo');const path=`${employee_id}/${crypto.randomUUID()}.${(f.name.split('.').pop()||'bin').replace(/[^a-z0-9]/gi,'')}`;const up=await sb.storage.from('employee-documents').upload(path,f);if(up.error)return alert(up.error.message);const ins=await sb.from('employee_documents').insert({employee_id,doc_type:$('#docType').value,storage_path:path,file_name:f.name,uploaded_by:user.id});if(ins.error)alert(ins.error.message);else refreshAll()};window.openDoc=async p=>{const{data,error}=await sb.storage.from('employee-documents').createSignedUrl(p,60);if(error)alert(error.message);else window.open(data.signedUrl,'_blank')};
-function pc(id){return parts.filter(p=>p.maintenance_id===id).reduce((s,p)=>s+Number(p.quantity)*Number(p.unit_value),0)}function an(m){const a=m.asset_type==='vehicle'?vehicles.find(x=>x.id===m.asset_id):equipment.find(x=>x.id===m.asset_id);return a?.name||'-'}function renderAll(){renderEmployees();renderVehicles();renderEquipment();renderAttendance();renderMaint();renderFuel();renderKm();renderDocs();renderDashboard();renderRecentPoints();calcEarnings();calcReport()}function renderEmployees(){$('#empTable').innerHTML=`<div class=tablewrap><table><tr><th>Nome</th><th>Matrícula</th><th>Equipe</th><th>Diária</th><th>Biometria</th><th>Status</th><th>Ações</th></tr>${employees.map(e=>`<tr><td>${esc(e.name)}</td><td>${esc(e.registration)}</td><td>${esc(e.team)}</td><td>${money(e.daily_rate)}</td><td>${e.biometric_enabled?'✅ Cadastrada':'—'}</td><td>${e.active===false?'Inativo':'Ativo'}</td><td>${profile.role==='admin'?`<button class="btn soft" onclick="editEmployee('${e.id}')">Editar</button> <button class="btn bad" onclick="deleteEmployee('${e.id}')">Excluir</button>`:''}</td></tr>`).join('')}</table></div>`}function renderVehicles(){$('#vehicleTable').innerHTML=`<div class=tablewrap><table><tr><th>Condução</th><th>Placa</th><th>Modelo</th><th>KM</th><th>Licenciamento</th></tr>${vehicles.map(v=>`<tr><td>${esc(v.name)}</td><td>${esc(v.plate)}</td><td>${esc(v.model)}</td><td>${Number(v.current_km||0).toLocaleString('pt-BR')}</td><td>${v.license_due||''}</td></tr>`).join('')}</table></div>`}function renderEquipment(){$('#equipmentTable').innerHTML=`<div class=tablewrap><table><tr><th>Equipamento</th><th>Série</th><th>Local</th><th>Medidor</th></tr>${equipment.map(e=>`<tr><td>${esc(e.name)}</td><td>${esc(e.serial_number)}</td><td>${esc(e.team)}</td><td>${e.current_meter||0} ${esc(e.meter_unit)}</td></tr>`).join('')}</table></div>`}function renderAttendance(){const date=$('#attDate').value,team=$('#attTeam').value,es=active(employees).filter(e=>!team||e.team===team);$('#attendanceTable').innerHTML=`<div class=tablewrap><table><tr><th>Funcionário</th><th>Equipe</th><th>Diária</th><th>Status</th></tr>${es.map(e=>{const r=rec(date,e.id)||{};return `<tr><td>${esc(e.name)}</td><td>${esc(e.team)}</td><td>${money(e.daily_rate)}</td><td><button class="btn ${r.status==='present'?'good':'soft'}" onclick="setAttendance('${e.id}','present')">Foi</button> <button class="btn ${r.status==='absent'?'bad':'soft'}" onclick="setAttendance('${e.id}','absent')">Não foi</button></td></tr>`}).join('')}</table></div>`}$('#attDate').onchange=refreshAll;$('#attTeam').onchange=renderAttendance;function renderMaint(){$('#maintTable').innerHTML=`<div class=tablewrap><table><tr><th>Data</th><th>Bem</th><th>Serviço</th><th>Peças</th><th>Mão de obra</th><th>Total</th></tr>${maintenance.map(m=>`<tr><td>${m.date}</td><td>${esc(an(m))}</td><td>${esc(m.type)}</td><td>${money(pc(m.id))}</td><td>${money(m.labor_cost)}</td><td>${money(pc(m.id)+Number(m.labor_cost||0))}</td></tr>`).join('')}</table></div>`}function renderFuel(){$('#fuelTable').innerHTML=`<div class=tablewrap><table><tr><th>Data</th><th>Condução</th><th>KM</th><th>Litros</th><th>Valor</th></tr>${fuel.map(f=>`<tr><td>${f.date}</td><td>${esc(vehicles.find(v=>v.id===f.vehicle_id)?.name)}</td><td>${f.odometer_km}</td><td>${f.liters}</td><td>${money(f.total_value)}</td></tr>`).join('')}</table></div>`}function renderKm(){$('#kmTable').innerHTML=`<div class=tablewrap><table><tr><th>Data</th><th>Condução</th><th>Inicial</th><th>Final</th><th>Rodado</th></tr>${mileage.map(m=>`<tr><td>${m.date}</td><td>${esc(vehicles.find(v=>v.id===m.vehicle_id)?.name)}</td><td>${m.start_km}</td><td>${m.end_km}</td><td>${Number(m.end_km)-Number(m.start_km)} km</td></tr>`).join('')}</table></div>`}function renderDocs(){if(profile.role!=='admin')return;$('#docTable').innerHTML=`<div class=tablewrap><table><tr><th>Funcionário</th><th>Tipo</th><th>Arquivo</th><th></th></tr>${documents.map(d=>`<tr><td>${esc(employees.find(e=>e.id===d.employee_id)?.name)}</td><td>${esc(d.doc_type)}</td><td>${esc(d.file_name)}</td><td><button class="btn soft" onclick="openDoc('${d.storage_path}')">Abrir</button></td></tr>`).join('')}</table></div>`}function renderRecentPoints(){if(!$('#recentPointTable'))return;$('#recentPointTable').innerHTML=`<div class=tablewrap><table><tr><th>Horário</th><th>Funcionário</th><th>Matrícula</th><th>GPS</th><th>Face</th><th>Comprovante</th></tr>${pointEvents.map(r=>`<tr><td>${new Date(r.occurred_at).toLocaleString('pt-BR')}</td><td>${esc(r.employee_name)}</td><td>${esc(r.registration)}</td><td>${Number(r.latitude).toFixed(5)}, ${Number(r.longitude).toFixed(5)}</td><td>${r.face_verified===true?'✅ Validada':r.face_verified===false?'⏳ Pendente':'—'}</td><td>${esc(r.proof_code)}</td></tr>`).join('')}</table></div>`}function renderDashboard(){$('#kpiPresent').textContent=attendance.filter(r=>r.work_date===today&&r.status==='present').length;$('#kpiVehicles').textContent=active(vehicles).length;$('#kpiEquip').textContent=active(equipment).length;const mc=maintenance.filter(m=>m.date>=ms).reduce((s,m)=>s+Number(m.labor_cost||0)+pc(m.id),0),fc=fuel.filter(f=>f.date>=ms).reduce((s,f)=>s+Number(f.total_value||0),0);$('#kpiMonthCost').textContent=money(mc+fc)}
+
+function renderTruckInputs(){
+ const n=Math.max(1,Math.min(50,Number($('#loadTruckCount').value)||1));
+ const old=[...document.querySelectorAll('.truck-card')].map(c=>({
+   plate:c.querySelector('.lt-plate')?.value||'',
+   driver:c.querySelector('.lt-driver')?.value||'',
+   birds:c.querySelector('.lt-birds')?.value||'',
+   notes:c.querySelector('.lt-notes')?.value||''
+ }));
+ $('#loadTruckCount').value=n;
+ $('#loadTrucks').innerHTML=Array.from({length:n},(_,i)=>{
+   const v=old[i]||{};
+   return `<div class="truck-card"><h3>Caminhão ${i+1}</h3><div class="grid">
+   <div><label>Placa</label><input class="lt-plate" value="${esc(v.plate)}" placeholder="ABC1D23"></div>
+   <div><label>Motorista</label><input class="lt-driver" value="${esc(v.driver)}" placeholder="Nome do motorista"></div>
+   <div><label>Quantidade de aves</label><input class="lt-birds" type="number" min="0" value="${esc(v.birds)}" placeholder="0"></div>
+   <div><label>Observação do caminhão</label><input class="lt-notes" value="${esc(v.notes)}" placeholder="Opcional"></div>
+   </div></div>`;
+ }).join('');
+}
+$('#loadTruckCount').onchange=renderTruckInputs;
+$('#loadTruckCount').oninput=()=>{clearTimeout(window.__truckTimer);window.__truckTimer=setTimeout(renderTruckInputs,250)};
+renderTruckInputs();
+
+function addSurchargeCard(values={}){
+ const wrap=document.createElement('div');
+ wrap.className='surcharge-card';
+ wrap.innerHTML=`<div style="display:flex;justify-content:space-between;gap:10px;align-items:center"><h3>Acréscimo</h3><button class="btn bad surcharge-remove" type="button">Remover</button></div>
+ <div class="grid">
+ <div><label>Motivo</label><select class="ls-type">
+   <option value="tempo_parado">Tempo parado</option>
+   <option value="barro">Barro</option>
+   <option value="cata">Cata</option>
+   <option value="outro">Outro</option>
+ </select></div>
+ <div><label>Quantidade</label><input class="ls-qty" type="number" step=".01" placeholder="Ex.: 2"></div>
+ <div><label>Unidade</label><select class="ls-unit"><option value="">Não informado</option><option value="horas">Horas</option><option value="aves">Aves</option><option value="viagens">Viagens</option><option value="percentual">Percentual</option><option value="outro">Outro</option></select></div>
+ <div><label>Valor do acréscimo (R$)</label><input class="ls-amount" type="number" step=".01" min="0" placeholder="0,00"></div>
+ <div><label>Percentual (%)</label><input class="ls-percent" type="number" step=".01" min="0" placeholder="Opcional"></div>
+ </div>
+ <label>Por que houve o acréscimo?</label><textarea class="ls-desc" placeholder="Descreva o motivo com detalhes"></textarea>`;
+ wrap.querySelector('.ls-type').value=values.surcharge_type||'tempo_parado';
+ wrap.querySelector('.ls-qty').value=values.quantity||'';
+ wrap.querySelector('.ls-unit').value=values.unit||'';
+ wrap.querySelector('.ls-amount').value=values.amount||'';
+ wrap.querySelector('.ls-percent').value=values.percentage||'';
+ wrap.querySelector('.ls-desc').value=values.description||'';
+ wrap.querySelector('.surcharge-remove').onclick=()=>wrap.remove();
+ $('#loadSurcharges').appendChild(wrap);
+}
+$('#addSurcharge').onclick=()=>addSurchargeCard();
+
+function clearLoadingForm(){
+ $('#loadDate').value=today;
+ $('#loadIntegrated').value='';
+ $('#loadCity').value='';
+ $('#loadVoltage').value='220V';
+ $('#loadOutlet').selectedIndex=0;
+ $('#loadTruckCount').value=1;
+ $('#loadNotes').value='';
+ $('#loadSurcharges').innerHTML='';
+ renderTruckInputs();
+}
+$('#saveLoading').onclick=async()=>{
+ const integrated=$('#loadIntegrated').value.trim(),city=$('#loadCity').value.trim();
+ if(!integrated)return alert('Informe o nome do integrado');
+ if(!city)return alert('Informe a cidade');
+ const trucks=[...document.querySelectorAll('.truck-card')].map((c,i)=>({
+   truck_number:i+1,
+   plate:c.querySelector('.lt-plate').value.trim(),
+   driver_name:c.querySelector('.lt-driver').value.trim(),
+   bird_count:Number(c.querySelector('.lt-birds').value)||0,
+   notes:c.querySelector('.lt-notes').value.trim()||null
+ }));
+ for(const [i,t] of trucks.entries()){
+   if(!t.plate)return alert(`Informe a placa do caminhão ${i+1}`);
+   if(!t.driver_name)return alert(`Informe o motorista do caminhão ${i+1}`);
+ }
+ const surcharges=[...document.querySelectorAll('.surcharge-card')].map(c=>({
+   surcharge_type:c.querySelector('.ls-type').value,
+   quantity:c.querySelector('.ls-qty').value||null,
+   unit:c.querySelector('.ls-unit').value||null,
+   amount:Number(c.querySelector('.ls-amount').value)||0,
+   percentage:c.querySelector('.ls-percent').value||null,
+   description:c.querySelector('.ls-desc').value.trim()||null
+ }));
+ $('#loadingMsg').textContent='Salvando carregamento...';
+ const{data,error}=await sb.rpc('save_loading',{
+   p_loading_date:$('#loadDate').value,
+   p_integrated_name:integrated,
+   p_city:city,
+   p_voltage:$('#loadVoltage').value,
+   p_outlet_type:$('#loadOutlet').value,
+   p_notes:$('#loadNotes').value.trim()||null,
+   p_trucks:trucks,
+   p_surcharges:surcharges
+ });
+ if(error){$('#loadingMsg').textContent=error.message;return}
+ $('#loadingMsg').innerHTML='<span class="status-ok">Carregamento salvo com sucesso.</span>';
+ clearLoadingForm();
+ await refreshAll();
+};
+
+function loadingDetailRows(l){
+ const ts=loadingTrucks.filter(t=>t.loading_id===l.id);
+ const ss=loadingSurcharges.filter(s=>s.loading_id===l.id);
+ return {ts,ss};
+}
+function surchargeLabel(t){return ({tempo_parado:'Tempo parado',barro:'Barro',cata:'Cata',outro:'Outro'})[t]||t}
+function renderLoadingHistory(){
+ if(!$('#loadingHistory'))return;
+ $('#loadingHistory').innerHTML=`<div class=tablewrap><table><tr><th>Data</th><th>Integrado</th><th>Cidade</th><th>Energia</th><th>Tomada</th><th>Caminhões</th><th>Aves</th><th>Acréscimos</th><th>Observações</th></tr>${loadings.slice(0,100).map(l=>`<tr><td>${l.loading_date}</td><td>${esc(l.integrated_name)}</td><td>${esc(l.city)}</td><td>${esc(l.voltage)}</td><td>${esc(l.outlet_type)}</td><td>${l.registered_trucks}</td><td>${Number(l.total_birds||0).toLocaleString('pt-BR')}</td><td>${money(l.total_surcharge)}</td><td>${esc(l.notes)}</td></tr>`).join('')}</table></div>`;
+}
+function reportRange(type,ref){
+ const d=new Date(ref+'T12:00:00');
+ if(type==='daily')return [ref,ref];
+ if(type==='weekly'){
+   const day=d.getDay()||7;
+   const a=new Date(d);a.setDate(d.getDate()-day+1);
+   const b=new Date(a);b.setDate(a.getDate()+6);
+   return [a.toISOString().slice(0,10),b.toISOString().slice(0,10)];
+ }
+ const a=new Date(d.getFullYear(),d.getMonth(),1);
+ const b=new Date(d.getFullYear(),d.getMonth()+1,0);
+ return [a.toISOString().slice(0,10),b.toISOString().slice(0,10)];
+}
+function getLoadingReportRows(){
+ const type=$('#loadingReportType').value,ref=$('#loadingReportDate').value||today;
+ const [a,b]=reportRange(type,ref);
+ const integ=$('#loadingReportIntegrated').value.trim().toLowerCase();
+ const city=$('#loadingReportCity').value.trim().toLowerCase();
+ return loadings.filter(l=>l.loading_date>=a&&l.loading_date<=b&&(!integ||String(l.integrated_name).toLowerCase().includes(integ))&&(!city||String(l.city).toLowerCase().includes(city)));
+}
+function renderLoadingReport(){
+ if(!$('#loadingReportTable'))return;
+ const rows=getLoadingReportRows();
+ $('#loadRepLoads').textContent=rows.length.toLocaleString('pt-BR');
+ $('#loadRepTrucks').textContent=rows.reduce((a,r)=>a+Number(r.registered_trucks||0),0).toLocaleString('pt-BR');
+ $('#loadRepBirds').textContent=rows.reduce((a,r)=>a+Number(r.total_birds||0),0).toLocaleString('pt-BR');
+ $('#loadRepSurcharge').textContent=money(rows.reduce((a,r)=>a+Number(r.total_surcharge||0),0));
+ $('#loadingReportTable').innerHTML=`<div class=tablewrap><table><tr><th>Data</th><th>Integrado</th><th>Cidade</th><th>Caminhões</th><th>Aves</th><th>Acréscimos</th><th>Motivos</th><th>Observações</th></tr>${rows.map(l=>{const {ss}=loadingDetailRows(l);const motivos=ss.map(s=>`${surchargeLabel(s.surcharge_type)}${s.description?' — '+s.description:''}${Number(s.amount||0)>0?' ('+money(s.amount)+')':''}`).join(' | ');return `<tr><td>${l.loading_date}</td><td>${esc(l.integrated_name)}</td><td>${esc(l.city)}</td><td>${l.registered_trucks}</td><td>${Number(l.total_birds||0).toLocaleString('pt-BR')}</td><td>${money(l.total_surcharge)}</td><td>${esc(motivos)}</td><td>${esc(l.notes)}</td></tr>`}).join('')}</table></div>`;
+ return rows;
+}
+$('#refreshLoadingReport').onclick=renderLoadingReport;
+$('#loadingReportType').onchange=renderLoadingReport;
+$('#loadingReportDate').onchange=renderLoadingReport;
+$('#loadingReportIntegrated').oninput=renderLoadingReport;
+$('#loadingReportCity').oninput=renderLoadingReport;
+$('#exportLoadingReport').onclick=()=>{
+ const rows=getLoadingReportRows();
+ const data=[['Data','Integrado','Cidade','Energia','Tomada','Caminhoes','Aves','Acrescimos','Motivos','Observacoes']];
+ rows.forEach(l=>{const{ss}=loadingDetailRows(l);const motivos=ss.map(s=>`${surchargeLabel(s.surcharge_type)}${s.description?' - '+s.description:''}`).join(' | ');data.push([l.loading_date,l.integrated_name,l.city,l.voltage,l.outlet_type,l.registered_trucks,l.total_birds,l.total_surcharge,motivos,l.notes||''])});
+ const csv=data.map(r=>r.map(v=>`"${String(v??'').replaceAll('"','""')}"`).join(';')).join('\n');
+ const b=new Blob(['\ufeff'+csv],{type:'text/csv'}),u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download=`relatorio_carregamentos_${$('#loadingReportType').value}_${$('#loadingReportDate').value}.csv`;a.click();URL.revokeObjectURL(u);
+};
+
+function pc(id){return parts.filter(p=>p.maintenance_id===id).reduce((s,p)=>s+Number(p.quantity)*Number(p.unit_value),0)}function an(m){const a=m.asset_type==='vehicle'?vehicles.find(x=>x.id===m.asset_id):equipment.find(x=>x.id===m.asset_id);return a?.name||'-'}function renderAll(){renderEmployees();renderVehicles();renderEquipment();renderAttendance();renderMaint();renderFuel();renderKm();renderDocs();renderDashboard();renderRecentPoints();renderLoadingHistory();renderLoadingReport();calcEarnings();calcReport()}function renderEmployees(){$('#empTable').innerHTML=`<div class=tablewrap><table><tr><th>Nome</th><th>Matrícula</th><th>Equipe</th><th>Diária</th><th>Biometria</th><th>Status</th><th>Ações</th></tr>${employees.map(e=>`<tr><td>${esc(e.name)}</td><td>${esc(e.registration)}</td><td>${esc(e.team)}</td><td>${money(e.daily_rate)}</td><td>${e.biometric_enabled?'✅ Cadastrada':'—'}</td><td>${e.active===false?'Inativo':'Ativo'}</td><td>${profile.role==='admin'?`<button class="btn soft" onclick="editEmployee('${e.id}')">Editar</button> <button class="btn bad" onclick="deleteEmployee('${e.id}')">Excluir</button>`:''}</td></tr>`).join('')}</table></div>`}function renderVehicles(){$('#vehicleTable').innerHTML=`<div class=tablewrap><table><tr><th>Condução</th><th>Placa</th><th>Modelo</th><th>KM</th><th>Licenciamento</th></tr>${vehicles.map(v=>`<tr><td>${esc(v.name)}</td><td>${esc(v.plate)}</td><td>${esc(v.model)}</td><td>${Number(v.current_km||0).toLocaleString('pt-BR')}</td><td>${v.license_due||''}</td></tr>`).join('')}</table></div>`}function renderEquipment(){$('#equipmentTable').innerHTML=`<div class=tablewrap><table><tr><th>Equipamento</th><th>Série</th><th>Local</th><th>Medidor</th></tr>${equipment.map(e=>`<tr><td>${esc(e.name)}</td><td>${esc(e.serial_number)}</td><td>${esc(e.team)}</td><td>${e.current_meter||0} ${esc(e.meter_unit)}</td></tr>`).join('')}</table></div>`}function renderAttendance(){const date=$('#attDate').value,team=$('#attTeam').value,es=active(employees).filter(e=>!team||e.team===team);$('#attendanceTable').innerHTML=`<div class=tablewrap><table><tr><th>Funcionário</th><th>Equipe</th><th>Diária</th><th>Status</th></tr>${es.map(e=>{const r=rec(date,e.id)||{};return `<tr><td>${esc(e.name)}</td><td>${esc(e.team)}</td><td>${money(e.daily_rate)}</td><td><button class="btn ${r.status==='present'?'good':'soft'}" onclick="setAttendance('${e.id}','present')">Foi</button> <button class="btn ${r.status==='absent'?'bad':'soft'}" onclick="setAttendance('${e.id}','absent')">Não foi</button></td></tr>`}).join('')}</table></div>`}$('#attDate').onchange=refreshAll;$('#attTeam').onchange=renderAttendance;function renderMaint(){$('#maintTable').innerHTML=`<div class=tablewrap><table><tr><th>Data</th><th>Bem</th><th>Serviço</th><th>Peças</th><th>Mão de obra</th><th>Total</th></tr>${maintenance.map(m=>`<tr><td>${m.date}</td><td>${esc(an(m))}</td><td>${esc(m.type)}</td><td>${money(pc(m.id))}</td><td>${money(m.labor_cost)}</td><td>${money(pc(m.id)+Number(m.labor_cost||0))}</td></tr>`).join('')}</table></div>`}function renderFuel(){$('#fuelTable').innerHTML=`<div class=tablewrap><table><tr><th>Data</th><th>Condução</th><th>KM</th><th>Litros</th><th>Valor</th></tr>${fuel.map(f=>`<tr><td>${f.date}</td><td>${esc(vehicles.find(v=>v.id===f.vehicle_id)?.name)}</td><td>${f.odometer_km}</td><td>${f.liters}</td><td>${money(f.total_value)}</td></tr>`).join('')}</table></div>`}function renderKm(){$('#kmTable').innerHTML=`<div class=tablewrap><table><tr><th>Data</th><th>Condução</th><th>Inicial</th><th>Final</th><th>Rodado</th></tr>${mileage.map(m=>`<tr><td>${m.date}</td><td>${esc(vehicles.find(v=>v.id===m.vehicle_id)?.name)}</td><td>${m.start_km}</td><td>${m.end_km}</td><td>${Number(m.end_km)-Number(m.start_km)} km</td></tr>`).join('')}</table></div>`}function renderDocs(){if(profile.role!=='admin')return;$('#docTable').innerHTML=`<div class=tablewrap><table><tr><th>Funcionário</th><th>Tipo</th><th>Arquivo</th><th></th></tr>${documents.map(d=>`<tr><td>${esc(employees.find(e=>e.id===d.employee_id)?.name)}</td><td>${esc(d.doc_type)}</td><td>${esc(d.file_name)}</td><td><button class="btn soft" onclick="openDoc('${d.storage_path}')">Abrir</button></td></tr>`).join('')}</table></div>`}function renderRecentPoints(){if(!$('#recentPointTable'))return;$('#recentPointTable').innerHTML=`<div class=tablewrap><table><tr><th>Horário</th><th>Funcionário</th><th>Matrícula</th><th>GPS</th><th>Face</th><th>Comprovante</th></tr>${pointEvents.map(r=>`<tr><td>${new Date(r.occurred_at).toLocaleString('pt-BR')}</td><td>${esc(r.employee_name)}</td><td>${esc(r.registration)}</td><td>${Number(r.latitude).toFixed(5)}, ${Number(r.longitude).toFixed(5)}</td><td>${r.face_verified===true?'✅ Validada':r.face_verified===false?'⏳ Pendente':'—'}</td><td>${esc(r.proof_code)}</td></tr>`).join('')}</table></div>`}function renderDashboard(){$('#kpiPresent').textContent=attendance.filter(r=>r.work_date===today&&r.status==='present').length;$('#kpiVehicles').textContent=active(vehicles).length;$('#kpiEquip').textContent=active(equipment).length;const mc=maintenance.filter(m=>m.date>=ms).reduce((s,m)=>s+Number(m.labor_cost||0)+pc(m.id),0),fc=fuel.filter(f=>f.date>=ms).reduce((s,f)=>s+Number(f.total_value||0),0);$('#kpiMonthCost').textContent=money(mc+fc)}
 async function calcEarnings(){
  const s=$('#earnStart').value,e=$('#earnEnd').value;
  const{data,error}=await sb.rpc('employee_earnings',{p_start:s,p_end:e});
@@ -252,4 +435,4 @@ async function calcEarnings(){
  $('#earningsTable').innerHTML=`<div class=tablewrap><table><tr><th>Funcionário</th><th>Equipe</th><th>Diária</th><th>Foi</th><th>Faltou</th><th>Diárias</th><th>Extras/Bônus</th><th>Descontos/Adiant.</th><th>Total ganho</th></tr>${rows.map(r=>`<tr><td>${esc(r.employee_name)}</td><td>${esc(r.team)}</td><td>${money(r.daily_rate)}</td><td>${r.present_days}</td><td>${r.absent_days}</td><td>${money(r.daily_total)}</td><td>${money(Number(r.attendance_extras||0)+Number(r.bonuses||0))}</td><td>${money(Number(r.attendance_discounts||0)+Number(r.advances||0)+Number(r.adjustment_discounts||0))}</td><td class=money>${money(r.total_earned)}</td></tr>`).join('')}</table></div>`;
 }
 $('#calcEarnings').onclick=calcEarnings;$('#earnStart').onchange=calcEarnings;$('#earnEnd').onchange=calcEarnings;
-function calcReport(){const s=$('#repStart').value,e=$('#repEnd').value,vid=$('#repVehicle').value,vs=vehicles.filter(v=>!vid||v.id===vid),rows=[];for(const v of vs){const fl=fuel.filter(x=>x.vehicle_id===v.id&&x.date>=s&&x.date<=e),ml=maintenance.filter(x=>x.asset_type==='vehicle'&&x.asset_id===v.id&&x.date>=s&&x.date<=e),kl=mileage.filter(x=>x.vehicle_id===v.id&&x.date>=s&&x.date<=e);const fuelCost=fl.reduce((a,x)=>a+Number(x.total_value||0),0),maintCost=ml.reduce((a,x)=>a+Number(x.labor_cost||0)+pc(x.id),0),km=kl.reduce((a,x)=>a+Number(x.end_km)-Number(x.start_km),0);rows.push({v,fuelCost,maintCost,km})}$('#repFuelCost').textContent=money(rows.reduce((a,r)=>a+r.fuelCost,0));$('#repMaintCost').textContent=money(rows.reduce((a,r)=>a+r.maintCost,0));$('#repKm').textContent=rows.reduce((a,r)=>a+r.km,0).toLocaleString('pt-BR')+' km';$('#reportTable').innerHTML=`<div class=tablewrap><table><tr><th>Condução</th><th>Combustível</th><th>Manutenção</th><th>KM</th><th>Total</th></tr>${rows.map(r=>`<tr><td>${esc(r.v.name)}</td><td>${money(r.fuelCost)}</td><td>${money(r.maintCost)}</td><td>${r.km}</td><td>${money(r.fuelCost+r.maintCost)}</td></tr>`).join('')}</table></div>`;return rows}$('#calcReport').onclick=calcReport;$('#repVehicle').onchange=calcReport;$('#repStart').onchange=calcReport;$('#repEnd').onchange=calcReport;$('#exportReport').onclick=()=>{const rows=calcReport(),data=[['Condução','Combustível','Manutenção','KM','Total'],...rows.map(r=>[r.v.name,r.fuelCost,r.maintCost,r.km,r.fuelCost+r.maintCost])],csv=data.map(r=>r.map(v=>`"${String(v??'').replaceAll('"','""')}"`).join(';')).join('\n'),b=new Blob(['\ufeff'+csv],{type:'text/csv'}),u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download='relatorio_frota.csv';a.click();URL.revokeObjectURL(u)};let ch;function subscribe(){ch=sb.channel('ponto-live').on('postgres_changes',{event:'*',schema:'public'},()=>refreshAll()).subscribe()}if('serviceWorker'in navigator)navigator.serviceWorker.register('/sw-v8.js?v=8-20260816',{updateViaCache:'none'}).catch(()=>{});init();
+function calcReport(){const s=$('#repStart').value,e=$('#repEnd').value,vid=$('#repVehicle').value,vs=vehicles.filter(v=>!vid||v.id===vid),rows=[];for(const v of vs){const fl=fuel.filter(x=>x.vehicle_id===v.id&&x.date>=s&&x.date<=e),ml=maintenance.filter(x=>x.asset_type==='vehicle'&&x.asset_id===v.id&&x.date>=s&&x.date<=e),kl=mileage.filter(x=>x.vehicle_id===v.id&&x.date>=s&&x.date<=e);const fuelCost=fl.reduce((a,x)=>a+Number(x.total_value||0),0),maintCost=ml.reduce((a,x)=>a+Number(x.labor_cost||0)+pc(x.id),0),km=kl.reduce((a,x)=>a+Number(x.end_km)-Number(x.start_km),0);rows.push({v,fuelCost,maintCost,km})}$('#repFuelCost').textContent=money(rows.reduce((a,r)=>a+r.fuelCost,0));$('#repMaintCost').textContent=money(rows.reduce((a,r)=>a+r.maintCost,0));$('#repKm').textContent=rows.reduce((a,r)=>a+r.km,0).toLocaleString('pt-BR')+' km';$('#reportTable').innerHTML=`<div class=tablewrap><table><tr><th>Condução</th><th>Combustível</th><th>Manutenção</th><th>KM</th><th>Total</th></tr>${rows.map(r=>`<tr><td>${esc(r.v.name)}</td><td>${money(r.fuelCost)}</td><td>${money(r.maintCost)}</td><td>${r.km}</td><td>${money(r.fuelCost+r.maintCost)}</td></tr>`).join('')}</table></div>`;return rows}$('#calcReport').onclick=calcReport;$('#repVehicle').onchange=calcReport;$('#repStart').onchange=calcReport;$('#repEnd').onchange=calcReport;$('#exportReport').onclick=()=>{const rows=calcReport(),data=[['Condução','Combustível','Manutenção','KM','Total'],...rows.map(r=>[r.v.name,r.fuelCost,r.maintCost,r.km,r.fuelCost+r.maintCost])],csv=data.map(r=>r.map(v=>`"${String(v??'').replaceAll('"','""')}"`).join(';')).join('\n'),b=new Blob(['\ufeff'+csv],{type:'text/csv'}),u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download='relatorio_frota.csv';a.click();URL.revokeObjectURL(u)};let ch;function subscribe(){ch=sb.channel('ponto-live').on('postgres_changes',{event:'*',schema:'public'},()=>refreshAll()).subscribe()}if('serviceWorker'in navigator)navigator.serviceWorker.register('/sw-v8-6.js?v=8-6-20260816',{updateViaCache:'none'}).catch(()=>{});init();
