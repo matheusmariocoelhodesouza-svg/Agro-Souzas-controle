@@ -1,7 +1,7 @@
 <!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#0f172a"><meta name="application-name" content="Agro Souza's Controle">
 <meta name="apple-mobile-web-app-title" content="Agro Souza's Controle">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes"><title>Agro Souza's Controle • Ponto 2.0</title><link rel="manifest" href="/agro-souzas-controle-v7.webmanifest?v=7-20260816"><link rel="icon" type="image/png" sizes="192x192" href="/agro-souzas-controle-192-v6.png?v=6-20260816"><link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon-180.png?v=7-20260816"><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><style>
+<meta name="apple-mobile-web-app-capable" content="yes"><title>Agro Souza's Controle • Ponto 2.0</title><link rel="manifest" href="/agro-souzas-controle-v7.webmanifest?v=7-20260816"><link rel="icon" type="image/png" sizes="192x192" href="/agro-souzas-controle-192-v6.png?v=6-20260816"><link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon-180.png?v=7-20260816"><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script defer src="https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js@0.22.2/dist/face-api.min.js"></script><style>
 :root{--bg:#f1f5f9;--card:#fff;--ink:#0f172a;--muted:#64748b;--line:#e2e8f0}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial}header{background:#0f172a;color:#fff;padding:14px 16px;position:sticky;top:0;z-index:50}header h1{font-size:20px;margin:0}header small{opacity:.8}main{max-width:1280px;margin:auto;padding:10px}nav{display:flex;gap:7px;overflow:auto;padding:4px 0 10px}nav button{border:0;border-radius:10px;padding:10px 12px;font-weight:800;white-space:nowrap;background:#e2e8f0}nav button.active{background:#0f172a;color:#fff}.card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px}label{display:block;font-size:12px;font-weight:800;color:#475569;margin:0 0 5px}input,select,textarea{width:100%;border:1px solid #cbd5e1;border-radius:9px;padding:10px;font:inherit;background:#fff}textarea{min-height:70px}.btn{border:0;border-radius:9px;padding:9px 12px;font-weight:800}.primary{background:#0f172a;color:#fff}.soft{background:#e2e8f0;color:#334155}.good{background:#dcfce7;color:#14532d}.bad{background:#fee2e2;color:#7f1d1d}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.hidden{display:none!important}.tablewrap{overflow:auto}table{width:100%;border-collapse:collapse;min-width:860px}th,td{padding:9px;border-bottom:1px solid var(--line);font-size:13px;text-align:left}th{background:#f8fafc}.kpi{font-size:27px;font-weight:900}.kpi-label{font-size:12px;color:var(--muted)}.money{font-weight:900}.login{max-width:430px;margin:60px auto}.note{font-size:12px;color:var(--muted)}.receipt{border:2px solid #cbd5e1;border-radius:12px;padding:14px;background:#f8fafc}.receipt strong{font-size:18px}.status-ok{color:#166534;font-weight:800}.status-warn{color:#92400e;font-weight:800}@media(max-width:650px){main{padding:7px}.card{padding:11px}}
 </style>
 <meta name="application-name" content="Agro Souza's Controle">
@@ -49,19 +49,28 @@
 <section id="tab-painel"><div class="grid"><div class="card"><div class="kpi" id="kpiPresent">0</div><div class="kpi-label">Trabalhando hoje</div></div><div class="card"><div class="kpi" id="kpiVehicles">0</div><div class="kpi-label">Conduções ativas</div></div><div class="card"><div class="kpi" id="kpiEquip">0</div><div class="kpi-label">Equipamentos ativos</div></div><div class="card"><div class="kpi" id="kpiMonthCost">R$ 0,00</div><div class="kpi-label">Custos no mês</div></div></div></section>
 <section id="tab-ponto2" class="hidden">
 <div class="card">
-<h2>Bater Ponto 2.0 <span style="font-size:12px;color:#64748b">V8.2</span></h2>
-<p class="note">Informe a matrícula. O sistema registra horário do servidor e GPS do aparelho. Quando o funcionário tiver biometria facial cadastrada, a foto será obrigatória.</p>
+<h2>Ponto 2.0 <span style="font-size:12px;color:#64748b">V8.3</span></h2>
+<p class="note">Escolha uma das duas formas de marcação. Ambas registram horário do servidor, GPS e comprovante.</p>
 <div class="grid">
-<div><label>Matrícula</label><input id="punchRegistration" inputmode="numeric" autocomplete="off" placeholder="Ex.: 001"></div>
-<div><label>Foto do rosto</label><input id="punchSelfie" type="file" accept="image/jpeg,image/png" capture="user"></div>
+<div class="card" style="margin:0">
+<h3>📷 Por reconhecimento facial</h3>
+<p class="note">Não precisa digitar matrícula. Tire uma foto e o sistema identifica o colaborador.</p>
+<input id="facialPunchPhoto" type="file" accept="image/jpeg,image/png" capture="user">
+<div class="actions"><button id="facialPunchBtn" class="btn primary">Bater por Facial</button></div>
 </div>
-<div class="actions"><button id="punchBtn" class="btn primary">Registrar ponto</button></div>
-<div id="punchStatus" class="note"></div>
+<div class="card" style="margin:0">
+<h3>🔢 Por matrícula</h3>
+<p class="note">Digite a matrícula. Não exige foto.</p>
+<input id="punchRegistration" inputmode="numeric" autocomplete="off" placeholder="Ex.: 001">
+<div class="actions"><button id="matriculaPunchBtn" class="btn primary">Bater por Matrícula</button></div>
+</div>
+</div>
+<div id="punchStatus" class="note" style="margin-top:10px"></div>
 <div id="punchReceipt" class="receipt hidden"></div>
 </div>
 <div class="card admin-only">
 <h2>Cadastrar face do funcionário</h2>
-<p class="note">Esta foto será a referência do cadastro facial. Use boa iluminação, rosto de frente e sem outras pessoas na imagem.</p>
+<p class="note">A foto será convertida em um descritor biométrico para permitir identificação automática. Use boa iluminação e rosto de frente.</p>
 <div class="grid">
 <div><label>Funcionário</label><select id="faceEmp"></select></div>
 <div><label>Foto de referência</label><input id="facePhoto" type="file" accept="image/jpeg,image/png" capture="user"></div>

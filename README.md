@@ -1,13 +1,7 @@
-Agro Souza's Controle V8.1
+Agro Souza's Controle V8.3
 
-Correção:
-- Ponto 2.0 agora força a exibição da seção selecionada.
-- Navegação das abas ficou mais robusta.
-- Novo service worker para eliminar cache da V8 anterior.
+Ponto 2.0 com duas formas independentes:
+- Reconhecimento facial automático, sem matrícula.
+- Matrícula, sem foto.
 
-Ponto 2.0:
-- matrícula
-- GPS
-- foto facial
-- cadastro facial
-- comprovante
+Ambas registram horário do servidor, GPS e comprovante.

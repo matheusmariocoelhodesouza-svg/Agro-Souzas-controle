@@ -67,41 +67,93 @@ $('#saveEmp').onclick=async()=>{const name=$('#empName').value.trim(),daily_rate
 function rec(date,id){return attendance.find(r=>r.work_date===date&&r.employee_id===id)}window.setAttendance=async(id,status)=>{const o=rec($('#attDate').value,id)||{};const{error}=await sb.from('attendance').upsert({employee_id:id,work_date:$('#attDate').value,status,extra:o.extra||0,discount:o.discount||0,note:o.note||'',recorded_by:user.id},{onConflict:'employee_id,work_date'});if(error)alert(error.message);else refreshAll()};
 $('#saveMaint').onclick=async()=>{const{data,error}=await sb.from('maintenance').insert({asset_type:$('#maintAssetType').value,asset_id:$('#maintAsset').value,date:$('#maintDate').value,type:$('#maintType').value,meter:Number($('#maintMeter').value)||null,labor_cost:Number($('#maintLabor').value)||0,next_date:$('#maintNextDate').value||null,next_meter:Number($('#maintNextMeter').value)||null,notes:$('#maintNotes').value||null,created_by:user.id}).select().single();if(error)return alert(error.message);if($('#partName').value||Number($('#partValue').value)){const e=await sb.from('maintenance_parts').insert({maintenance_id:data.id,part_name:$('#partName').value||'Peça',quantity:Number($('#partQty').value)||1,unit_value:Number($('#partValue').value)||0});if(e.error)return alert(e.error.message)}refreshAll()};$('#saveFuel').onclick=async()=>{const{error}=await sb.from('fuel_logs').insert({vehicle_id:$('#fuelVehicle').value,date:$('#fuelDate').value,odometer_km:Number($('#fuelKm').value),liters:Number($('#fuelLiters').value),total_value:Number($('#fuelTotal').value),station:$('#fuelStation').value||null,created_by:user.id});if(error)alert(error.message);else refreshAll()};$('#saveKm').onclick=async()=>{const s=Number($('#kmStart').value),e=Number($('#kmEnd').value);if(e<s)return alert('KM final menor que o inicial');const{error}=await sb.from('mileage_logs').insert({vehicle_id:$('#kmVehicle').value,date:$('#kmDate').value,start_km:s,end_km:e,driver_employee_id:$('#kmDriver').value||null,route_or_purpose:$('#kmPurpose').value||null,created_by:user.id});if(error)alert(error.message);else refreshAll()};
 
-function gpsPosition(){return new Promise((resolve,reject)=>{if(!navigator.geolocation)return reject(new Error('Geolocalização não disponível neste aparelho'));navigator.geolocation.getCurrentPosition(resolve,e=>reject(new Error(e.message||'Não foi possível obter a localização')), {enableHighAccuracy:true,timeout:15000,maximumAge:0})})}
-function fileExt(f){const t=(f.type||'image/jpeg').toLowerCase();return t.includes('png')?'png':'jpg'}
+
+function gpsPosition(){return new Promise((resolve,reject)=>{if(!navigator.geolocation)return reject(new Error('Geolocalização não disponível'));navigator.geolocation.getCurrentPosition(resolve,e=>reject(new Error(e.message||'Não foi possível obter a localização')),{enableHighAccuracy:true,timeout:15000,maximumAge:0})})}
+function fileExt(f){return (f.type||'').includes('png')?'png':'jpg'}
 async function uploadBiometricPhoto(file,path){const{error}=await sb.storage.from('biometric-selfies').upload(path,file,{contentType:file.type||'image/jpeg',upsert:false});if(error)throw error;return path}
+const FACE_MODELS='https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js@0.22.2/weights';
+let faceModelsReady=false;
+async function ensureFaceModels(){
+ if(faceModelsReady)return;
+ if(!window.faceapi)throw new Error('Reconhecimento facial ainda carregando. Aguarde alguns segundos e tente novamente.');
+ $('#punchStatus').textContent='Carregando reconhecimento facial...';
+ await Promise.all([
+   faceapi.nets.tinyFaceDetector.loadFromUri(FACE_MODELS),
+   faceapi.nets.faceLandmark68Net.loadFromUri(FACE_MODELS),
+   faceapi.nets.faceRecognitionNet.loadFromUri(FACE_MODELS)
+ ]);
+ faceModelsReady=true;
+}
+async function imageFromFile(file){return new Promise((resolve,reject)=>{const u=URL.createObjectURL(file),im=new Image();im.onload=()=>{URL.revokeObjectURL(u);resolve(im)};im.onerror=()=>{URL.revokeObjectURL(u);reject(new Error('Não foi possível abrir a foto'))};im.src=u})}
+async function faceDescriptorFromFile(file){
+ await ensureFaceModels();
+ const img=await imageFromFile(file);
+ const r=await faceapi.detectSingleFace(img,new faceapi.TinyFaceDetectorOptions({inputSize:320,scoreThreshold:.55})).withFaceLandmarks().withFaceDescriptor();
+ if(!r)throw new Error('Rosto não identificado. Tire outra foto de frente e com boa iluminação.');
+ return Array.from(r.descriptor);
+}
+function renderPointReceipt(r,method,pos,distance){
+ const when=new Date(r.occurred_at).toLocaleString('pt-BR');
+ $('#punchReceipt').innerHTML=`<strong>✅ Ponto registrado</strong><br><b>${esc(r.employee_name)}</b><br>Método: <b>${method}</b><br>Horário: ${esc(when)}<br>GPS: ${pos.coords.latitude.toFixed(6)}, ${pos.coords.longitude.toFixed(6)}<br>Precisão: ${Math.round(pos.coords.accuracy||0)} m${distance!=null?`<br>Validação facial aprovada (${Number(distance).toFixed(3)})`:''}<br>Código: <b>${esc(r.proof_code)}</b>`;
+ $('#punchReceipt').classList.remove('hidden');
+}
 $('#enrollFaceBtn').onclick=async()=>{
  if(profile.role!=='admin')return alert('Somente administrador pode cadastrar biometria facial');
  const employee_id=$('#faceEmp').value,f=$('#facePhoto').files[0];
- if(!employee_id)return alert('Selecione o funcionário'); if(!f)return alert('Tire ou selecione uma foto do rosto');
- $('#faceMsg').textContent='Enviando foto e cadastrando face...';
+ if(!employee_id)return alert('Selecione o funcionário');
+ if(!f)return alert('Tire uma foto do rosto');
+ $('#faceMsg').textContent='Processando rosto...';
  try{
+   const descriptor=await faceDescriptorFromFile(f);
    const path=`enrollments/${employee_id}/${Date.now()}-${crypto.randomUUID()}.${fileExt(f)}`;
    await uploadBiometricPhoto(f,path);
-   const{error}=await sb.rpc('enroll_employee_face',{p_employee_id:employee_id,p_photo_storage_path:path});
-   if(error)throw error;
-   $('#faceMsg').innerHTML='<span class="status-ok">Face cadastrada com sucesso.</span>';
-   $('#facePhoto').value=''; await refreshAll();
+   let x=await sb.rpc('enroll_employee_face',{p_employee_id:employee_id,p_photo_storage_path:path});if(x.error)throw x.error;
+   x=await sb.rpc('save_employee_face_descriptor',{p_employee_id:employee_id,p_descriptor:descriptor});if(x.error)throw x.error;
+   $('#faceMsg').innerHTML='<span class="status-ok">Face cadastrada para reconhecimento automático.</span>';
+   $('#facePhoto').value='';
+   await refreshAll();
  }catch(e){$('#faceMsg').textContent=e.message||String(e)}
 };
-$('#punchBtn').onclick=async()=>{
- const reg=$('#punchRegistration').value.trim(),f=$('#punchSelfie').files[0];
+$('#matriculaPunchBtn').onclick=async()=>{
+ const reg=$('#punchRegistration').value.trim();
  if(!reg)return alert('Informe a matrícula');
- const emp=employees.find(e=>String(e.registration||'')===reg&&e.active!==false);
- if(!emp)return alert('Matrícula não encontrada');
- if(emp.biometric_enabled&&!f)return alert('Este funcionário possui biometria cadastrada. Tire a foto do rosto para registrar o ponto.');
- $('#punchStatus').textContent='Obtendo GPS...'; $('#punchReceipt').classList.add('hidden');
+ $('#punchStatus').textContent='Obtendo GPS...';
+ $('#punchReceipt').classList.add('hidden');
  try{
    const pos=await gpsPosition();
-   let selfiePath=null;
-   if(f){$('#punchStatus').textContent='Enviando foto...';selfiePath=`punches/${emp.id}/${Date.now()}-${crypto.randomUUID()}.${fileExt(f)}`;await uploadBiometricPhoto(f,selfiePath)}
-   $('#punchStatus').textContent='Registrando ponto...';
-   const{data,error}=await sb.rpc('register_point_event_by_registration',{p_registration:reg,p_latitude:pos.coords.latitude,p_longitude:pos.coords.longitude,p_accuracy_m:Math.round(pos.coords.accuracy||0),p_selfie_storage_path:selfiePath,p_device_id:null});
+   const{data,error}=await sb.rpc('register_point_event_by_registration',{p_registration:reg,p_latitude:pos.coords.latitude,p_longitude:pos.coords.longitude,p_accuracy_m:Math.round(pos.coords.accuracy||0),p_selfie_storage_path:null,p_device_id:null});
    if(error)throw error;
-   const r=(data||[])[0]; if(!r)throw new Error('Não foi possível gerar o comprovante');
-   const when=new Date(r.occurred_at).toLocaleString('pt-BR');
-   $('#punchReceipt').innerHTML=`<strong>✅ Ponto registrado</strong><br><b>${esc(r.employee_name)}</b><br>Matrícula: ${esc(reg)}<br>Horário: ${esc(when)}<br>GPS: ${pos.coords.latitude.toFixed(6)}, ${pos.coords.longitude.toFixed(6)}<br>Precisão: ${Math.round(pos.coords.accuracy||0)} m<br>Código do comprovante: <b>${esc(r.proof_code)}</b>${r.biometric_required?'<br><span class="status-warn">Foto capturada — validação facial automática será aplicada na próxima etapa.</span>':''}`;
-   $('#punchReceipt').classList.remove('hidden'); $('#punchStatus').textContent=''; $('#punchSelfie').value=''; $('#punchRegistration').value='';
+   const r=(data||[])[0];
+   if(!r)throw new Error('Comprovante não gerado');
+   renderPointReceipt(r,'MATRÍCULA',pos,null);
+   $('#punchRegistration').value='';
+   $('#punchStatus').textContent='';
+   await refreshAll();
+ }catch(e){$('#punchStatus').textContent=e.message||String(e)}
+};
+$('#facialPunchBtn').onclick=async()=>{
+ const f=$('#facialPunchPhoto').files[0];
+ if(!f)return alert('Tire uma foto do rosto');
+ $('#punchStatus').textContent='Analisando rosto...';
+ $('#punchReceipt').classList.add('hidden');
+ try{
+   const descriptor=await faceDescriptorFromFile(f);
+   const{data:match,error:me}=await sb.rpc('match_employee_face',{p_descriptor:descriptor,p_threshold:.50});
+   if(me)throw me;
+   const m=(match||[])[0];
+   if(!m)throw new Error('Rosto não reconhecido ou ainda não cadastrado');
+   $('#punchStatus').textContent=`${m.employee_name} reconhecido. Obtendo GPS...`;
+   const pos=await gpsPosition();
+   const path=`punches/${m.employee_id}/${Date.now()}-${crypto.randomUUID()}.${fileExt(f)}`;
+   await uploadBiometricPhoto(f,path);
+   const score=Math.max(0,1-Number(m.distance||0));
+   const{data,error}=await sb.rpc('register_point_event_by_employee',{p_employee_id:m.employee_id,p_latitude:pos.coords.latitude,p_longitude:pos.coords.longitude,p_accuracy_m:Math.round(pos.coords.accuracy||0),p_selfie_storage_path:path,p_face_score:score,p_device_id:null});
+   if(error)throw error;
+   const r=(data||[])[0];
+   if(!r)throw new Error('Comprovante não gerado');
+   renderPointReceipt(r,'FACIAL',pos,m.distance);
+   $('#facialPunchPhoto').value='';
+   $('#punchStatus').textContent='';
    await refreshAll();
  }catch(e){$('#punchStatus').textContent=e.message||String(e)}
 };
