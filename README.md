@@ -1,7 +1,11 @@
-Agro Souza's Controle V8.3
+Agro Souza's Controle V8.4
 
-Ponto 2.0 com duas formas independentes:
-- Reconhecimento facial automático, sem matrícula.
-- Matrícula, sem foto.
+Funcionários:
+- Editar cadastro
+- Excluir cadastro sem histórico
+- Desativar automaticamente quando já houver histórico trabalhista
+- Mensagem amigável para matrícula duplicada
 
-Ambas registram horário do servidor, GPS e comprovante.
+Ponto 2.0:
+- Facial ou matrícula
+- GPS, horário do servidor e comprovante
