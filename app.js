@@ -44,8 +44,23 @@ $('#savePasswordBtn').onclick=async()=>{
 };
 $('#cancelResetBtn').onclick=async()=>{await sb.auth.signOut();history.replaceState({},document.title,location.pathname);showLoginView()};
 $('#logoutBtn').onclick=()=>sb.auth.signOut();
-async function enter(){const{data,error}=await sb.from('profiles').select('*').eq('id',user.id).single();if(error){$('#loginMsg').textContent='Usuário sem perfil';return}profile=data;$('#loginView').classList.add('hidden');$('#resetView').classList.add('hidden');$('#appView').classList.remove('hidden');$('#userInfo').textContent=`${profile.name} • ${profile.role}`;$$('.admin-only').forEach(x=>x.classList.toggle('hidden',profile.role!=='admin'));await refreshAll();subscribe()}
-$$('nav button[data-tab]').forEach(b=>b.onclick=()=>{$$('nav button[data-tab]').forEach(x=>x.classList.remove('active'));b.classList.add('active');['painel','ponto2','ponto','funcionarios','frota','equipamentos','manutencoes','combustivel','km','relatorios'].forEach(t=>$('#tab-'+t).classList.toggle('hidden',t!==b.dataset.tab))});
+async function enter(){const{data,error}=await sb.from('profiles').select('*').eq('id',user.id).single();if(error){$('#loginMsg').textContent='Usuário sem perfil';return}profile=data;$('#loginView').classList.add('hidden');$('#resetView').classList.add('hidden');$('#appView').classList.remove('hidden');showTab('painel');$('#userInfo').textContent=`${profile.name} • ${profile.role}`;$$('.admin-only').forEach(x=>x.classList.toggle('hidden',profile.role!=='admin'));await refreshAll();subscribe()}
+const APP_TABS=['painel','ponto2','ponto','funcionarios','frota','equipamentos','manutencoes','combustivel','km','relatorios'];
+function showTab(tab){
+  APP_TABS.forEach(t=>{
+    const el=$('#tab-'+t);
+    if(!el)return;
+    const active=t===tab;
+    el.classList.toggle('hidden',!active);
+    el.style.display=active?'block':'none';
+  });
+  $$('nav button[data-tab]').forEach(x=>x.classList.toggle('active',x.dataset.tab===tab));
+  if(tab==='ponto2'){
+    const p=$('#tab-ponto2');
+    if(p){p.style.minHeight='200px';}
+  }
+}
+$$('nav button[data-tab]').forEach(b=>b.onclick=()=>showTab(b.dataset.tab));
 async function refreshAll(){const q=await Promise.all([sb.from('employees').select('*').order('name'),sb.from('vehicles').select('*').order('name'),sb.from('equipment').select('*').order('name'),sb.from('attendance').select('*').gte('work_date',ms).lte('work_date',today),sb.from('maintenance').select('*').order('date',{ascending:false}),sb.from('maintenance_parts').select('*'),sb.from('fuel_logs').select('*').order('date',{ascending:false}),sb.from('mileage_logs').select('*').order('date',{ascending:false}),profile.role==='admin'?sb.from('employee_documents').select('*').order('created_at',{ascending:false}):Promise.resolve({data:[]}),sb.from('point_event_receipts').select('*').order('occurred_at',{ascending:false}).limit(30)]);[employees,vehicles,equipment,attendance,maintenance,parts,fuel,mileage,documents,pointEvents]=q.map(x=>x.data||[]);fill();renderAll()}
 function active(a){return a.filter(x=>x.active!==false)}function fill(){const teams=[...new Set(active(employees).map(e=>e.team).filter(Boolean))].sort();$('#attTeam').innerHTML='<option value="">Todas</option>'+teams.map(t=>`<option>${esc(t)}</option>`).join('');const eo=active(employees).map(e=>`<option value="${e.id}">${esc(e.name)}</option>`).join('');$('#docEmp').innerHTML=eo;$('#faceEmp').innerHTML=eo;$('#kmDriver').innerHTML='<option value="">Não informado</option>'+eo;const vo=active(vehicles).map(v=>`<option value="${v.id}">${esc(v.name)}${v.plate?' — '+esc(v.plate):''}</option>`).join('');$('#fuelVehicle').innerHTML=vo;$('#kmVehicle').innerHTML=vo;$('#repVehicle').innerHTML='<option value="">Todas</option>'+vo;fillMaint()}function fillMaint(){const a=$('#maintAssetType').value==='vehicle'?active(vehicles):active(equipment);$('#maintAsset').innerHTML=a.map(x=>`<option value="${x.id}">${esc(x.name)}</option>`).join('')}$('#maintAssetType').onchange=fillMaint;
 $('#saveEmp').onclick=async()=>{const name=$('#empName').value.trim(),daily_rate=Number($('#empRate').value);if(!name)return alert('Informe o nome');const{error}=await sb.from('employees').insert({name,registration:$('#empMat').value||null,team:$('#empTeam').value||null,daily_rate,active:true});if(error)alert(error.message);else refreshAll()};$('#saveVehicle').onclick=async()=>{const{error}=await sb.from('vehicles').insert({name:$('#vehName').value.trim(),plate:$('#vehPlate').value.trim().toUpperCase()||null,model:$('#vehModel').value||null,year:Number($('#vehYear').value)||null,current_km:Number($('#vehKm').value)||0,renavam:$('#vehRenavam').value||null,license_due:$('#vehLicense').value||null,active:true});if(error)alert(error.message);else refreshAll()};$('#saveEquipment').onclick=async()=>{const{error}=await sb.from('equipment').insert({name:$('#eqName').value.trim(),serial_number:$('#eqSerial').value||null,team:$('#eqTeam').value||null,purchase_date:$('#eqPurchase').value||null,meter_unit:$('#eqMeterUnit').value,current_meter:Number($('#eqMeter').value)||0,active:true});if(error)alert(error.message);else refreshAll()};

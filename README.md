@@ -1,12 +1,13 @@
-Agro Souza's Controle V8 - Ponto 2.0
+Agro Souza's Controle V8.1
 
-Novidades:
-- Ponto por matrícula
-- GPS obrigatório
-- Foto facial pelo celular
-- Cadastro de face por funcionário (administrador)
-- Código único de comprovante
-- Registro de presença diário sincronizado
-- Lista dos últimos registros
+Correção:
+- Ponto 2.0 agora força a exibição da seção selecionada.
+- Navegação das abas ficou mais robusta.
+- Novo service worker para eliminar cache da V8 anterior.
 
-IMPORTANTE: a comparação biométrica automática ainda NÃO está ativada nesta versão. A V8 captura e vincula as imagens com segurança para habilitarmos o comparador facial na próxima etapa.
+Ponto 2.0:
+- matrícula
+- GPS
+- foto facial
+- cadastro facial
+- comprovante
