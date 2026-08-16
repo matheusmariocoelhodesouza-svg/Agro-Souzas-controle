@@ -47,20 +47,22 @@ $('#logoutBtn').onclick=()=>sb.auth.signOut();
 async function enter(){const{data,error}=await sb.from('profiles').select('*').eq('id',user.id).single();if(error){$('#loginMsg').textContent='Usuário sem perfil';return}profile=data;$('#loginView').classList.add('hidden');$('#resetView').classList.add('hidden');$('#appView').classList.remove('hidden');showTab('painel');$('#userInfo').textContent=`${profile.name} • ${profile.role}`;$$('.admin-only').forEach(x=>x.classList.toggle('hidden',profile.role!=='admin'));await refreshAll();subscribe()}
 const APP_TABS=['painel','ponto2','ponto','funcionarios','frota','equipamentos','manutencoes','combustivel','km','carregamentos','relatorios'];
 function showTab(tab){
+  if(!APP_TABS.includes(tab)) tab='painel';
   APP_TABS.forEach(t=>{
     const el=$('#tab-'+t);
     if(!el)return;
-    const active=t===tab;
-    el.classList.toggle('hidden',!active);
-    el.style.display=active?'block':'none';
+    const isActive=t===tab;
+    el.classList.toggle('hidden',!isActive);
+    el.style.setProperty('display',isActive?'block':'none','important');
+    el.setAttribute('aria-hidden',isActive?'false':'true');
   });
-  $$('nav button[data-tab]').forEach(x=>x.classList.toggle('active',x.dataset.tab===tab));
-  if(tab==='ponto2'){
-    const p=$('#tab-ponto2');
-    if(p){p.style.minHeight='200px';}
-  }
+  $$('nav button[data-tab]').forEach(x=>{
+    x.classList.toggle('active',x.dataset.tab===tab);
+    x.setAttribute('aria-selected',x.dataset.tab===tab?'true':'false');
+  });
+  window.scrollTo({top:0,behavior:'auto'});
 }
-$$('nav button[data-tab]').forEach(b=>b.onclick=()=>showTab(b.dataset.tab));
+$$('nav button[data-tab]').forEach(b=>b.addEventListener('click',()=>showTab(b.dataset.tab)));
 async function refreshAll(){
  const q=await Promise.all([
   sb.from('employees').select('*').order('name'),

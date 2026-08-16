@@ -157,7 +157,7 @@
 <div class="grid"><div class="card"><div class="kpi" id="earnDays">0</div><div class="kpi-label">Diárias trabalhadas</div></div><div class="card"><div class="kpi" id="earnTotal">R$ 0,00</div><div class="kpi-label">Total a pagar</div></div></div>
 <div class="card"><div id="earningsTable"></div></div>
 <div class="card"><h2>Relatório por condução</h2><div class="grid"><div><label>Início</label><input id="repStart" type="date"></div><div><label>Fim</label><input id="repEnd" type="date"></div><div><label>Condução</label><select id="repVehicle"><option value="">Todas</option></select></div></div><div class="actions"><button id="calcReport" class="btn primary">Atualizar</button><button id="exportReport" class="btn soft">Exportar CSV</button></div></div><div class="grid"><div class="card"><div class="kpi" id="repFuelCost">R$ 0,00</div><div class="kpi-label">Combustível</div></div><div class="card"><div class="kpi" id="repMaintCost">R$ 0,00</div><div class="kpi-label">Manutenção</div></div><div class="card"><div class="kpi" id="repKm">0 km</div><div class="kpi-label">KM rodado</div></div></div><div class="card"><div id="reportTable"></div></div></section>
-</section></main><script src="config.js"></script><script src="app.js"></script>
+</section></main><script src="config.js"></script><script src="app.js?v=8-6-2-20260816"></script>
 <script>
 window.addEventListener('load', function(){
   setTimeout(function(){
@@ -168,48 +168,5 @@ window.addEventListener('load', function(){
 </script>
 
 
-<script>
-(function(){
-  const tabs=['painel','ponto2','ponto','funcionarios','frota','equipamentos','manutencoes','combustivel','km','carregamentos','relatorios'];
-
-  function forceTab(tab){
-    tabs.forEach(function(t){
-      const el=document.getElementById('tab-'+t);
-      if(!el) return;
-      if(t===tab){
-        el.classList.remove('hidden');
-        el.style.setProperty('display','block','important');
-        el.style.setProperty('visibility','visible','important');
-        el.style.setProperty('opacity','1','important');
-      }else{
-        el.classList.add('hidden');
-        el.style.setProperty('display','none','important');
-      }
-    });
-
-    document.querySelectorAll('nav button[data-tab]').forEach(function(b){
-      b.classList.toggle('active', b.dataset.tab===tab);
-    });
-  }
-
-  function installTabFix(){
-    document.querySelectorAll('nav button[data-tab]').forEach(function(btn){
-      btn.addEventListener('click',function(){
-        const tab=this.dataset.tab;
-        setTimeout(function(){ forceTab(tab); },0);
-        setTimeout(function(){ forceTab(tab); },100);
-      });
-    });
-  }
-
-  if(document.readyState==='loading'){
-    document.addEventListener('DOMContentLoaded',installTabFix);
-  }else{
-    installTabFix();
-  }
-
-  window.forceAgroTab=forceTab;
-})();
-</script>
 
 </body></html>
