@@ -1,5 +1,12 @@
-Agro Souza's Controle V7
+Agro Souza's Controle V8 - Ponto 2.0
 
-PWA otimizado para Android e iOS, com tela de abertura, modo standalone, ícone iOS e splash screens.
-Publique este ZIP no mesmo projeto Netlify.
-teste de atualização automática 
+Novidades:
+- Ponto por matrícula
+- GPS obrigatório
+- Foto facial pelo celular
+- Cadastro de face por funcionário (administrador)
+- Código único de comprovante
+- Registro de presença diário sincronizado
+- Lista dos últimos registros
+
+IMPORTANTE: a comparação biométrica automática ainda NÃO está ativada nesta versão. A V8 captura e vincula as imagens com segurança para habilitarmos o comparador facial na próxima etapa.
