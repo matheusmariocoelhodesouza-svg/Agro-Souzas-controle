@@ -1,15 +1,7 @@
-AGRO SOUZA'S CONTROLE - PONTO SIMPLES
+Correção GPS Agro Souza's Controle
 
-Conteúdo:
-- index.html pronto para substituir o atual.
-
-Alteração:
-- Admin continua vendo o sistema completo.
-- Usuário não-admin vê somente Ponto 2.0 e Sair.
-- Cadastro de face e Últimos registros ficam somente para admin.
-
-Uso:
-1. Extraia o ZIP.
-2. No GitHub, substitua o index.html atual por este.
-3. Faça o commit na branch principal.
-4. Aguarde o deploy automático da Cloudflare.
+1. Extraia este ZIP.
+2. Pegue o arquivo app.js.
+3. No GitHub, substitua o app.js atual por este.
+4. Faça o commit na branch principal.
+5. Aguarde o Cloudflare publicar automaticamente.
