@@ -180,22 +180,7 @@ function rec(date,id){return attendance.find(r=>r.work_date===date&&r.employee_i
 $('#saveMaint').onclick=async()=>{const{data,error}=await sb.from('maintenance').insert({asset_type:$('#maintAssetType').value,asset_id:$('#maintAsset').value,date:$('#maintDate').value,type:$('#maintType').value,meter:Number($('#maintMeter').value)||null,labor_cost:Number($('#maintLabor').value)||0,next_date:$('#maintNextDate').value||null,next_meter:Number($('#maintNextMeter').value)||null,notes:$('#maintNotes').value||null,created_by:user.id}).select().single();if(error)return alert(error.message);if($('#partName').value||Number($('#partValue').value)){const e=await sb.from('maintenance_parts').insert({maintenance_id:data.id,part_name:$('#partName').value||'Peça',quantity:Number($('#partQty').value)||1,unit_value:Number($('#partValue').value)||0});if(e.error)return alert(e.error.message)}refreshAll()};$('#saveFuel').onclick=async()=>{const{error}=await sb.from('fuel_logs').insert({vehicle_id:$('#fuelVehicle').value,date:$('#fuelDate').value,odometer_km:Number($('#fuelKm').value),liters:Number($('#fuelLiters').value),total_value:Number($('#fuelTotal').value),station:$('#fuelStation').value||null,created_by:user.id});if(error)alert(error.message);else refreshAll()};$('#saveKm').onclick=async()=>{const s=Number($('#kmStart').value),e=Number($('#kmEnd').value);if(e<s)return alert('KM final menor que o inicial');const{error}=await sb.from('mileage_logs').insert({vehicle_id:$('#kmVehicle').value,date:$('#kmDate').value,start_km:s,end_km:e,driver_employee_id:$('#kmDriver').value||null,route_or_purpose:$('#kmPurpose').value||null,created_by:user.id});if(error)alert(error.message);else refreshAll()};
 
 
-function gpsPosition(){
- return new Promise((resolve,reject)=>{
-  if(!navigator.geolocation)return reject(new Error('Geolocalização não disponível'));
-  navigator.geolocation.getCurrentPosition(
-   resolve,
-   ()=>{
-    navigator.geolocation.getCurrentPosition(
-     resolve,
-     e=>reject(new Error(e.message||'Não foi possível obter a localização')),
-     {enableHighAccuracy:false,timeout:20000,maximumAge:60000}
-    );
-   },
-   {enableHighAccuracy:true,timeout:10000,maximumAge:30000}
-  );
- });
-}
+function gpsPosition(){return new Promise((resolve,reject)=>{if(!navigator.geolocation)return reject(new Error('Geolocalização não disponível'));navigator.geolocation.getCurrentPosition(resolve,e=>reject(new Error(e.message||'Não foi possível obter a localização')),{enableHighAccuracy:true,timeout:15000,maximumAge:0})})}
 function fileExt(f){return (f.type||'').includes('png')?'png':'jpg'}
 async function uploadBiometricPhoto(file,path){const{error}=await sb.storage.from('biometric-selfies').upload(path,file,{contentType:file.type||'image/jpeg',upsert:false});if(error)throw error;return path}
 const FACE_MODELS='https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js@0.22.2/weights';
@@ -258,12 +243,51 @@ $('#matriculaPunchBtn').onclick=async()=>{
    await refreshAll();
  }catch(e){$('#punchStatus').textContent=e.message||String(e)}
 };
+async function captureFacePhoto(){
+ if(!navigator.mediaDevices?.getUserMedia)throw new Error('Câmera não disponível neste dispositivo');
+ const stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user'},audio:false});
+ return await new Promise((resolve,reject)=>{
+  const wrap=document.createElement('div');
+  wrap.style.cssText='position:fixed;inset:0;background:#000d;z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px';
+  const box=document.createElement('div');
+  box.style.cssText='background:#fff;border-radius:18px;padding:14px;width:min(420px,100%);';
+  const video=document.createElement('video');
+  video.autoplay=true;video.playsInline=true;video.srcObject=stream;
+  video.style.cssText='width:100%;border-radius:14px;background:#000';
+  const msg=document.createElement('div');
+  msg.textContent='Posicione o rosto de frente e toque em Capturar';
+  msg.style.cssText='padding:10px 0;font-weight:700';
+  const actions=document.createElement('div');
+  actions.style.cssText='display:flex;gap:10px';
+  const capture=document.createElement('button');
+  capture.className='btn';capture.textContent='Capturar';
+  const cancel=document.createElement('button');
+  cancel.className='btn soft';cancel.textContent='Cancelar';
+  actions.append(capture,cancel);box.append(video,msg,actions);wrap.append(box);document.body.append(wrap);
+
+  const stop=()=>{stream.getTracks().forEach(t=>t.stop());wrap.remove()};
+  cancel.onclick=()=>{stop();reject(new Error('Captura cancelada'))};
+  capture.onclick=()=>{
+   try{
+    const canvas=document.createElement('canvas');
+    canvas.width=video.videoWidth||720;canvas.height=video.videoHeight||960;
+    canvas.getContext('2d').drawImage(video,0,0,canvas.width,canvas.height);
+    canvas.toBlob(blob=>{
+     if(!blob){stop();return reject(new Error('Não foi possível capturar a foto'))}
+     const file=new File([blob],`facial-${Date.now()}.jpg`,{type:'image/jpeg'});
+     stop();resolve(file);
+    },'image/jpeg',0.92);
+   }catch(e){stop();reject(e)}
+  };
+ });
+}
+
 $('#facialPunchBtn').onclick=async()=>{
- const f=$('#facialPunchPhoto').files[0];
- if(!f)return alert('Tire uma foto do rosto');
- $('#punchStatus').textContent='Analisando rosto...';
+ $('#punchStatus').textContent='Abrindo câmera...';
  $('#punchReceipt').classList.add('hidden');
  try{
+   const f=await captureFacePhoto();
+   $('#punchStatus').textContent='Analisando rosto...';
    const descriptor=await faceDescriptorFromFile(f);
    const{data:match,error:me}=await sb.rpc('match_employee_face',{p_descriptor:descriptor,p_threshold:.50});
    if(me)throw me;
@@ -279,10 +303,12 @@ $('#facialPunchBtn').onclick=async()=>{
    const r=(data||[])[0];
    if(!r)throw new Error('Comprovante não gerado');
    renderPointReceipt(r,'FACIAL',pos,m.distance);
-   $('#facialPunchPhoto').value='';
    $('#punchStatus').textContent='';
    await refreshAll();
- }catch(e){$('#punchStatus').textContent=e.message||String(e)}
+ }catch(e){
+   if((e.message||'')!=='Captura cancelada')$('#punchStatus').textContent=e.message||String(e);
+   else $('#punchStatus').textContent='';
+ }
 };
 $('#uploadDoc').onclick=async()=>{const f=$('#docFile').files[0],employee_id=$('#docEmp').value;if(!f)return alert('Selecione um arquivo');const path=`${employee_id}/${crypto.randomUUID()}.${(f.name.split('.').pop()||'bin').replace(/[^a-z0-9]/gi,'')}`;const up=await sb.storage.from('employee-documents').upload(path,f);if(up.error)return alert(up.error.message);const ins=await sb.from('employee_documents').insert({employee_id,doc_type:$('#docType').value,storage_path:path,file_name:f.name,uploaded_by:user.id});if(ins.error)alert(ins.error.message);else refreshAll()};window.openDoc=async p=>{const{data,error}=await sb.storage.from('employee-documents').createSignedUrl(p,60);if(error)alert(error.message);else window.open(data.signedUrl,'_blank')};
 
