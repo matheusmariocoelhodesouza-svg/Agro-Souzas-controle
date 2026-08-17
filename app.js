@@ -1,4 +1,4 @@
-const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];const money=v=>Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));const today=new Date().toISOString().slice(0,10),d=new Date();d.setDate(1);const ms=d.toISOString().slice(0,10);['#attDate','#maintDate','#fuelDate','#kmDate','#loadDate','#loadingReportDate'].forEach(x=>$(x).value=today);$('#repStart').value=ms;$('#repEnd').value=today;$('#earnStart').value=ms;$('#earnEnd').value=today;let sb,user,profile,employees=[],vehicles=[],equipment=[],attendance=[],maintenance=[],parts=[],fuel=[],mileage=[],documents=[],pointEvents=[],loadings=[],loadingTrucks=[],loadingSurcharges=[];
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];const money=v=>Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));const today=new Date().toISOString().slice(0,10),d=new Date();d.setDate(1);const ms=d.toISOString().slice(0,10);['#attDate','#maintDate','#fuelDate','#kmDate','#loadDate','#loadingReportDate'].forEach(x=>$(x).value=today);$('#repStart').value=ms;$('#repEnd').value=today;$('#earnStart').value=ms;$('#earnEnd').value=today;let sb,user,profile,employees=[],vehicles=[],equipment=[],attendance=[],maintenance=[],parts=[],fuel=[],mileage=[],documents=[],pointEvents=[],loadings=[],loadingTrucks=[],loadingSurcharges=[],tracking=[];let trackingTimer=null,trackingBusy=false;
 function initClient(){sb=supabase.createClient(window.SUPABASE_URL,window.SUPABASE_PUBLISHABLE_KEY)}
 function isRecoveryUrl(){return location.hash.includes('type=recovery')||new URLSearchParams(location.search).get('type')==='recovery'}
 function showResetView(){ $('#loginView').classList.add('hidden');$('#appView').classList.add('hidden');$('#resetView').classList.remove('hidden');$('#userInfo').textContent='Redefinição de senha' }
@@ -45,7 +45,7 @@ $('#savePasswordBtn').onclick=async()=>{
 $('#cancelResetBtn').onclick=async()=>{await sb.auth.signOut();history.replaceState({},document.title,location.pathname);showLoginView()};
 $('#logoutBtn').onclick=()=>sb.auth.signOut();
 async function enter(){const{data,error}=await sb.from('profiles').select('*').eq('id',user.id).single();if(error){$('#loginMsg').textContent='Usuário sem perfil';return}profile=data;$('#loginView').classList.add('hidden');$('#resetView').classList.add('hidden');$('#appView').classList.remove('hidden');showTab('painel');$('#userInfo').textContent=`${profile.name} • ${profile.role}`;$$('.admin-only').forEach(x=>x.classList.toggle('hidden',profile.role!=='admin'));await refreshAll();subscribe()}
-const APP_TABS=['painel','ponto2','ponto','funcionarios','frota','equipamentos','manutencoes','combustivel','km','carregamentos','relatorios'];
+const APP_TABS=['painel','ponto2','ponto','funcionarios','frota','rastreamento','equipamentos','manutencoes','combustivel','km','carregamentos','relatorios'];
 function showTab(tab){
   if(!APP_TABS.includes(tab)) tab='painel';
   APP_TABS.forEach(t=>{
@@ -61,6 +61,7 @@ function showTab(tab){
     x.setAttribute('aria-selected',x.dataset.tab===tab?'true':'false');
   });
   window.scrollTo({top:0,behavior:'auto'});
+  if(tab==='rastreamento'){startTrackingPolling();initMovitPanel()}else stopTrackingPolling();
 }
 $$('nav button[data-tab]').forEach(b=>b.addEventListener('click',()=>showTab(b.dataset.tab)));
 async function refreshAll(){
@@ -180,7 +181,22 @@ function rec(date,id){return attendance.find(r=>r.work_date===date&&r.employee_i
 $('#saveMaint').onclick=async()=>{const{data,error}=await sb.from('maintenance').insert({asset_type:$('#maintAssetType').value,asset_id:$('#maintAsset').value,date:$('#maintDate').value,type:$('#maintType').value,meter:Number($('#maintMeter').value)||null,labor_cost:Number($('#maintLabor').value)||0,next_date:$('#maintNextDate').value||null,next_meter:Number($('#maintNextMeter').value)||null,notes:$('#maintNotes').value||null,created_by:user.id}).select().single();if(error)return alert(error.message);if($('#partName').value||Number($('#partValue').value)){const e=await sb.from('maintenance_parts').insert({maintenance_id:data.id,part_name:$('#partName').value||'Peça',quantity:Number($('#partQty').value)||1,unit_value:Number($('#partValue').value)||0});if(e.error)return alert(e.error.message)}refreshAll()};$('#saveFuel').onclick=async()=>{const{error}=await sb.from('fuel_logs').insert({vehicle_id:$('#fuelVehicle').value,date:$('#fuelDate').value,odometer_km:Number($('#fuelKm').value),liters:Number($('#fuelLiters').value),total_value:Number($('#fuelTotal').value),station:$('#fuelStation').value||null,created_by:user.id});if(error)alert(error.message);else refreshAll()};$('#saveKm').onclick=async()=>{const s=Number($('#kmStart').value),e=Number($('#kmEnd').value);if(e<s)return alert('KM final menor que o inicial');const{error}=await sb.from('mileage_logs').insert({vehicle_id:$('#kmVehicle').value,date:$('#kmDate').value,start_km:s,end_km:e,driver_employee_id:$('#kmDriver').value||null,route_or_purpose:$('#kmPurpose').value||null,created_by:user.id});if(error)alert(error.message);else refreshAll()};
 
 
-function gpsPosition(){return new Promise((resolve,reject)=>{if(!navigator.geolocation)return reject(new Error('Geolocalização não disponível'));navigator.geolocation.getCurrentPosition(resolve,e=>reject(new Error(e.message||'Não foi possível obter a localização')),{enableHighAccuracy:true,timeout:15000,maximumAge:0})})}
+function gpsPosition(){
+ return new Promise((resolve,reject)=>{
+  if(!navigator.geolocation)return reject(new Error('Geolocalização não disponível'));
+  navigator.geolocation.getCurrentPosition(
+   resolve,
+   ()=>{
+    navigator.geolocation.getCurrentPosition(
+     resolve,
+     e=>reject(new Error(e.message||'Não foi possível obter a localização')),
+     {enableHighAccuracy:false,timeout:20000,maximumAge:60000}
+    );
+   },
+   {enableHighAccuracy:true,timeout:10000,maximumAge:30000}
+  );
+ });
+}
 function fileExt(f){return (f.type||'').includes('png')?'png':'jpg'}
 async function uploadBiometricPhoto(file,path){const{error}=await sb.storage.from('biometric-selfies').upload(path,file,{contentType:file.type||'image/jpeg',upsert:false});if(error)throw error;return path}
 const FACE_MODELS='https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js@0.22.2/weights';
@@ -206,8 +222,9 @@ async function faceDescriptorFromFile(file){
 }
 function renderPointReceipt(r,method,pos,distance){
  const when=new Date(r.occurred_at).toLocaleString('pt-BR');
- $('#punchReceipt').innerHTML=`<strong>✅ Ponto registrado</strong><br><b>${esc(r.employee_name)}</b><br>Método: <b>${method}</b><br>Horário: ${esc(when)}<br>GPS: ${pos.coords.latitude.toFixed(6)}, ${pos.coords.longitude.toFixed(6)}<br>Precisão: ${Math.round(pos.coords.accuracy||0)} m${distance!=null?`<br>Validação facial aprovada (${Number(distance).toFixed(3)})`:''}<br>Código: <b>${esc(r.proof_code)}</b>`;
+ $('#punchReceipt').innerHTML=`<strong>✅ Ponto registrado</strong><br><b>${esc(r.employee_name)}</b><br>Método: <b>${method}</b><br>Horário: ${esc(when)}<br>GPS: ${pos.coords.latitude.toFixed(6)}, ${pos.coords.longitude.toFixed(6)}<br>Precisão: ${Math.round(pos.coords.accuracy||0)} m${distance!=null?`<br>Validação facial aprovada (${Number(distance).toFixed(3)})`:''}<br>Código: <b>${esc(r.proof_code)}</b><div id="pointVehicleValidation" class="note" style="margin-top:8px">Verificando condução próxima...</div>`;
  $('#punchReceipt').classList.remove('hidden');
+ const eventId=r.point_event_id||r.event_id; if(eventId)validatePointVehicle(eventId);
 }
 $('#enrollFaceBtn').onclick=async()=>{
  if(profile.role!=='admin')return alert('Somente administrador pode cadastrar biometria facial');
@@ -253,14 +270,14 @@ async function captureFacePhoto(){
   box.style.cssText='background:#fff;border-radius:18px;padding:14px;width:min(420px,100%);';
   const video=document.createElement('video');
   video.autoplay=true;video.playsInline=true;video.srcObject=stream;
-  video.style.cssText='width:100%;border-radius:14px;background:#000';
+  video.style.cssText='width:100%;border-radius:14px;background:#000;max-height:70vh;object-fit:cover';
   const msg=document.createElement('div');
   msg.textContent='Posicione o rosto de frente e toque em Capturar';
   msg.style.cssText='padding:10px 0;font-weight:700';
   const actions=document.createElement('div');
   actions.style.cssText='display:flex;gap:10px';
   const capture=document.createElement('button');
-  capture.className='btn';capture.textContent='Capturar';
+  capture.className='btn primary';capture.textContent='Capturar';
   const cancel=document.createElement('button');
   cancel.className='btn soft';cancel.textContent='Cancelar';
   actions.append(capture,cancel);box.append(video,msg,actions);wrap.append(box);document.body.append(wrap);
@@ -306,8 +323,7 @@ $('#facialPunchBtn').onclick=async()=>{
    $('#punchStatus').textContent='';
    await refreshAll();
  }catch(e){
-   if((e.message||'')!=='Captura cancelada')$('#punchStatus').textContent=e.message||String(e);
-   else $('#punchStatus').textContent='';
+   $('#punchStatus').textContent=(e.message||'')==='Captura cancelada'?'':(e.message||String(e));
  }
 };
 $('#uploadDoc').onclick=async()=>{const f=$('#docFile').files[0],employee_id=$('#docEmp').value;if(!f)return alert('Selecione um arquivo');const path=`${employee_id}/${crypto.randomUUID()}.${(f.name.split('.').pop()||'bin').replace(/[^a-z0-9]/gi,'')}`;const up=await sb.storage.from('employee-documents').upload(path,f);if(up.error)return alert(up.error.message);const ins=await sb.from('employee_documents').insert({employee_id,doc_type:$('#docType').value,storage_path:path,file_name:f.name,uploaded_by:user.id});if(ins.error)alert(ins.error.message);else refreshAll()};window.openDoc=async p=>{const{data,error}=await sb.storage.from('employee-documents').createSignedUrl(p,60);if(error)alert(error.message);else window.open(data.signedUrl,'_blank')};
@@ -467,6 +483,115 @@ $('#exportLoadingReport').onclick=()=>{
  const b=new Blob(['\ufeff'+csv],{type:'text/csv'}),u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download=`relatorio_carregamentos_${$('#loadingReportType').value}_${$('#loadingReportDate').value}.csv`;a.click();URL.revokeObjectURL(u);
 };
 
+
+async function movitStatus(){
+ if(profile?.role!=='admin')return null;
+ const data=await callMovitBridge({action:'status'});
+ const el=$('#movitConfigStatus');
+ if(el){
+  if(data?.configured){
+   el.innerHTML=`<span class="status-ok">✓ Backend MOVIT configurado e criptografado</span>${data.clientKey?` • cliente: ${esc(data.clientKey)}`:''}${data.userId?` • userId: ${esc(data.userId)}`:''}`;
+  }else{
+   el.innerHTML='<span class="status-warn">MOVIT ainda não configurado. Preencha os dados abaixo uma única vez.</span>';
+   $('#movitConfigDetails')?.setAttribute('open','');
+  }
+ }
+ return data;
+}
+function parseOptionalJson(id,label){
+ const raw=$(id)?.value?.trim();
+ if(!raw)return null;
+ try{return JSON.parse(raw)}catch(_){throw new Error(`${label}: JSON inválido`)}
+}
+async function saveMovitConfiguration(){
+ const status=$('#movitConfigStatus');
+ const btn=$('#saveMovitConfig');
+ try{
+  const password=$('#movitPassword').value;
+  if(!password)throw new Error('Digite a senha do MOVIT. Ela será enviada somente ao backend seguro.');
+  btn.disabled=true;
+  status.textContent='Testando login e consulta dos rastreadores...';
+  const data=await callMovitBridge({
+   action:'configure',
+   clientKey:$('#movitClientKey').value.trim(),
+   userId:Number($('#movitUserId').value),
+   username:$('#movitUsername').value.trim(),
+   password,
+   locale:'pt',
+   loginUserField:$('#movitLoginUserField').value.trim()||'user',
+   loginPasswordField:$('#movitLoginPasswordField').value.trim()||'password',
+   loginTemplate:parseOptionalJson('#movitLoginTemplate','Payload de login'),
+   gridTemplate:parseOptionalJson('#movitGridTemplate','Payload da grade')
+  });
+  $('#movitPassword').value='';
+  status.innerHTML=`<span class="status-ok">✓ ${esc(data.message||'MOVIT configurado com sucesso.')}</span>`;
+  await refreshTracking(false);
+ }catch(e){
+  status.innerHTML=`<span class="status-warn">${esc(e.message||String(e))}</span>`;
+ }finally{btn.disabled=false}
+}
+async function initMovitPanel(){
+ if(profile?.role!=='admin')return;
+ try{
+  const st=await movitStatus();
+  if(st?.configured)await refreshTracking(true);
+  else {tracking=[];renderTracking();if($('#trackingStatus'))$('#trackingStatus').textContent='Configure o MOVIT abaixo para ativar o rastreamento.'}
+ }catch(e){if($('#movitConfigStatus'))$('#movitConfigStatus').innerHTML=`<span class="status-warn">${esc(e.message||String(e))}</span>`}
+}
+if($('#saveMovitConfig'))$('#saveMovitConfig').onclick=saveMovitConfiguration;
+if($('#checkMovitConfig'))$('#checkMovitConfig').onclick=async()=>{try{await movitStatus();await refreshTracking(false)}catch(e){if($('#movitConfigStatus'))$('#movitConfigStatus').innerHTML=`<span class="status-warn">${esc(e.message||String(e))}</span>`}};
+
+async function callMovitBridge(payload){
+ const{data,error}=await sb.functions.invoke('movit-bridge',{body:payload});
+ if(error){
+  const ctx=error.context; let msg=error.message||'Falha na integração MOVIT';
+  try{const j=ctx&&await ctx.json();if(j?.message)msg=j.message;if(j?.error==='MOVIT_NOT_CONFIGURED')msg='Integração MOVIT ainda não configurada no servidor.'}catch(_){}
+  throw new Error(msg);
+ }
+ if(data?.error)throw new Error(data.message||data.error);
+ return data;
+}
+function trackingAge(v){
+ if(!v?.gps_at)return {text:'Sem horário GPS',stale:true};
+ const ms=Date.now()-new Date(v.gps_at).getTime();
+ if(!Number.isFinite(ms))return {text:'Horário inválido',stale:true};
+ const min=Math.max(0,Math.round(ms/60000));
+ return {text:min<1?'agora':min===1?'há 1 min':`há ${min} min`,stale:min>15};
+}
+function renderTracking(){
+ if(!$('#trackingTable'))return;
+ $('#trackingTotal').textContent=tracking.length;
+ $('#trackingMoving').textContent=tracking.filter(v=>Number(v.speed_kmh||0)>2).length;
+ $('#trackingIgnition').textContent=tracking.filter(v=>v.ignition===true).length;
+ $('#trackingLinked').textContent=tracking.filter(v=>v.vehicle_id).length;
+ if(!tracking.length){$('#trackingTable').innerHTML='<div class="note">Nenhuma condução recebida do MOVIT.</div>';return}
+ $('#trackingTable').innerHTML=`<div class=tablewrap><table><tr><th>Condução</th><th>Placa</th><th>Status</th><th>Velocidade</th><th>Último GPS</th><th>Localização</th><th>Endereço</th></tr>${tracking.map(v=>{const a=trackingAge(v),lat=Number(v.latitude),lon=Number(v.longitude),hasPos=Number.isFinite(lat)&&Number.isFinite(lon),status=a.stale?'<span class="tracking-badge tracking-stale">GPS antigo</span>':v.ignition===true?'<span class="tracking-badge tracking-on">Ligada</span>':'<span class="tracking-badge tracking-off">Desligada</span>',name=v.vehicle_name||vehicles.find(x=>x.id===v.vehicle_id)?.name||'Não vinculada',map=hasPos?`<a class="tracking-link" target="_blank" rel="noopener" href="https://www.google.com/maps?q=${lat},${lon}">Abrir mapa</a><br><span class="tracking-muted">${lat.toFixed(5)}, ${lon.toFixed(5)}</span>`:'—';return `<tr><td>${esc(name)}</td><td><b>${esc(v.license_plate)}</b></td><td>${status}</td><td>${Number(v.speed_kmh||0).toFixed(0)} km/h</td><td>${esc(a.text)}</td><td>${map}</td><td>${esc(v.address||'—')}</td></tr>`}).join('')}</table></div>`;
+}
+async function refreshTracking(silent=false){
+ if(profile?.role!=='admin'||trackingBusy)return;
+ trackingBusy=true;
+ if(!silent&&$('#trackingStatus'))$('#trackingStatus').textContent='Atualizando posições no MOVIT...';
+ try{
+  const data=await callMovitBridge({action:'sync'});
+  tracking=data?.vehicles||[];renderTracking();
+  if($('#trackingStatus'))$('#trackingStatus').innerHTML=`<span class="status-ok">✓ ${tracking.length} rastreador(es) atualizado(s)</span> • ${new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',second:'2-digit'})} • atualização automática a cada 30 s enquanto esta tela estiver aberta.`;
+ }catch(e){if($('#trackingStatus'))$('#trackingStatus').innerHTML=`<span class="status-warn">${esc(e.message||String(e))}</span>`}
+ finally{trackingBusy=false}
+}
+function startTrackingPolling(){if(profile?.role!=='admin')return;if(!trackingTimer)trackingTimer=setInterval(()=>refreshTracking(true),30000)}
+function stopTrackingPolling(){if(trackingTimer){clearInterval(trackingTimer);trackingTimer=null}}
+if($('#refreshTracking'))$('#refreshTracking').onclick=()=>refreshTracking(false);
+async function validatePointVehicle(eventId){
+ const el=$('#pointVehicleValidation');if(!el)return;
+ try{
+  const v=await callMovitBridge({action:'validate_point',event_id:eventId});
+  if(v.status==='matched')el.innerHTML=`<span class="status-ok">✓ Local confirmado pela condução ${esc(v.vehicle?.plate||'')} • ${Number(v.distanceM||0).toLocaleString('pt-BR')} m</span>`;
+  else if(v.status==='too_far')el.innerHTML=`<span class="status-warn">⚠ Ponto registrado, mas a condução mais próxima estava a ${Number(v.distanceM||0).toLocaleString('pt-BR')} m.</span>`;
+  else if(v.status==='stale')el.innerHTML='<span class="status-warn">⚠ Ponto registrado. A posição do rastreador estava desatualizada e não foi usada para confirmar o local.</span>';
+  else el.textContent='Ponto registrado. Não foi possível confirmar a condução neste momento.';
+ }catch(e){el.textContent='Ponto registrado. Validação da condução indisponível no momento.'}
+}
+
 function pc(id){return parts.filter(p=>p.maintenance_id===id).reduce((s,p)=>s+Number(p.quantity)*Number(p.unit_value),0)}function an(m){const a=m.asset_type==='vehicle'?vehicles.find(x=>x.id===m.asset_id):equipment.find(x=>x.id===m.asset_id);return a?.name||'-'}function renderAll(){renderEmployees();renderVehicles();renderEquipment();renderAttendance();renderMaint();renderFuel();renderKm();renderDocs();renderDashboard();renderRecentPoints();renderLoadingHistory();renderLoadingReport();calcEarnings();calcReport()}function renderEmployees(){$('#empTable').innerHTML=`<div class=tablewrap><table><tr><th>Nome</th><th>Matrícula</th><th>Equipe</th><th>Diária</th><th>Biometria</th><th>Status</th><th>Ações</th></tr>${employees.map(e=>`<tr><td>${esc(e.name)}</td><td>${esc(e.registration)}</td><td>${esc(e.team)}</td><td>${money(e.daily_rate)}</td><td>${e.biometric_enabled?'✅ Cadastrada':'—'}</td><td>${e.active===false?'Inativo':'Ativo'}</td><td>${profile.role==='admin'?`<button class="btn soft" onclick="editEmployee('${e.id}')">Editar</button> <button class="btn bad" onclick="deleteEmployee('${e.id}')">Excluir</button>`:''}</td></tr>`).join('')}</table></div>`}function renderVehicles(){$('#vehicleTable').innerHTML=`<div class=tablewrap><table><tr><th>Condução</th><th>Placa</th><th>Modelo</th><th>KM</th><th>Licenciamento</th></tr>${vehicles.map(v=>`<tr><td>${esc(v.name)}</td><td>${esc(v.plate)}</td><td>${esc(v.model)}</td><td>${Number(v.current_km||0).toLocaleString('pt-BR')}</td><td>${v.license_due||''}</td></tr>`).join('')}</table></div>`}function renderEquipment(){$('#equipmentTable').innerHTML=`<div class=tablewrap><table><tr><th>Equipamento</th><th>Série</th><th>Local</th><th>Medidor</th></tr>${equipment.map(e=>`<tr><td>${esc(e.name)}</td><td>${esc(e.serial_number)}</td><td>${esc(e.team)}</td><td>${e.current_meter||0} ${esc(e.meter_unit)}</td></tr>`).join('')}</table></div>`}function renderAttendance(){const date=$('#attDate').value,team=$('#attTeam').value,es=active(employees).filter(e=>!team||e.team===team);$('#attendanceTable').innerHTML=`<div class=tablewrap><table><tr><th>Funcionário</th><th>Equipe</th><th>Diária</th><th>Status</th></tr>${es.map(e=>{const r=rec(date,e.id)||{};return `<tr><td>${esc(e.name)}</td><td>${esc(e.team)}</td><td>${money(e.daily_rate)}</td><td><button class="btn ${r.status==='present'?'good':'soft'}" onclick="setAttendance('${e.id}','present')">Foi</button> <button class="btn ${r.status==='absent'?'bad':'soft'}" onclick="setAttendance('${e.id}','absent')">Não foi</button></td></tr>`}).join('')}</table></div>`}$('#attDate').onchange=refreshAll;$('#attTeam').onchange=renderAttendance;function renderMaint(){$('#maintTable').innerHTML=`<div class=tablewrap><table><tr><th>Data</th><th>Bem</th><th>Serviço</th><th>Peças</th><th>Mão de obra</th><th>Total</th></tr>${maintenance.map(m=>`<tr><td>${m.date}</td><td>${esc(an(m))}</td><td>${esc(m.type)}</td><td>${money(pc(m.id))}</td><td>${money(m.labor_cost)}</td><td>${money(pc(m.id)+Number(m.labor_cost||0))}</td></tr>`).join('')}</table></div>`}function renderFuel(){$('#fuelTable').innerHTML=`<div class=tablewrap><table><tr><th>Data</th><th>Condução</th><th>KM</th><th>Litros</th><th>Valor</th></tr>${fuel.map(f=>`<tr><td>${f.date}</td><td>${esc(vehicles.find(v=>v.id===f.vehicle_id)?.name)}</td><td>${f.odometer_km}</td><td>${f.liters}</td><td>${money(f.total_value)}</td></tr>`).join('')}</table></div>`}function renderKm(){$('#kmTable').innerHTML=`<div class=tablewrap><table><tr><th>Data</th><th>Condução</th><th>Inicial</th><th>Final</th><th>Rodado</th></tr>${mileage.map(m=>`<tr><td>${m.date}</td><td>${esc(vehicles.find(v=>v.id===m.vehicle_id)?.name)}</td><td>${m.start_km}</td><td>${m.end_km}</td><td>${Number(m.end_km)-Number(m.start_km)} km</td></tr>`).join('')}</table></div>`}function renderDocs(){if(profile.role!=='admin')return;$('#docTable').innerHTML=`<div class=tablewrap><table><tr><th>Funcionário</th><th>Tipo</th><th>Arquivo</th><th></th></tr>${documents.map(d=>`<tr><td>${esc(employees.find(e=>e.id===d.employee_id)?.name)}</td><td>${esc(d.doc_type)}</td><td>${esc(d.file_name)}</td><td><button class="btn soft" onclick="openDoc('${d.storage_path}')">Abrir</button></td></tr>`).join('')}</table></div>`}function renderRecentPoints(){if(!$('#recentPointTable'))return;$('#recentPointTable').innerHTML=`<div class=tablewrap><table><tr><th>Horário</th><th>Funcionário</th><th>Matrícula</th><th>GPS</th><th>Face</th><th>Comprovante</th></tr>${pointEvents.map(r=>`<tr><td>${new Date(r.occurred_at).toLocaleString('pt-BR')}</td><td>${esc(r.employee_name)}</td><td>${esc(r.registration)}</td><td>${Number(r.latitude).toFixed(5)}, ${Number(r.longitude).toFixed(5)}</td><td>${r.face_verified===true?'✅ Validada':r.face_verified===false?'⏳ Pendente':'—'}</td><td>${esc(r.proof_code)}</td></tr>`).join('')}</table></div>`}function renderDashboard(){$('#kpiPresent').textContent=attendance.filter(r=>r.work_date===today&&r.status==='present').length;$('#kpiVehicles').textContent=active(vehicles).length;$('#kpiEquip').textContent=active(equipment).length;const mc=maintenance.filter(m=>m.date>=ms).reduce((s,m)=>s+Number(m.labor_cost||0)+pc(m.id),0),fc=fuel.filter(f=>f.date>=ms).reduce((s,f)=>s+Number(f.total_value||0),0);$('#kpiMonthCost').textContent=money(mc+fc)}
 async function calcEarnings(){
  const s=$('#earnStart').value,e=$('#earnEnd').value;
@@ -478,4 +603,4 @@ async function calcEarnings(){
  $('#earningsTable').innerHTML=`<div class=tablewrap><table><tr><th>Funcionário</th><th>Equipe</th><th>Diária</th><th>Foi</th><th>Faltou</th><th>Diárias</th><th>Extras/Bônus</th><th>Descontos/Adiant.</th><th>Total ganho</th></tr>${rows.map(r=>`<tr><td>${esc(r.employee_name)}</td><td>${esc(r.team)}</td><td>${money(r.daily_rate)}</td><td>${r.present_days}</td><td>${r.absent_days}</td><td>${money(r.daily_total)}</td><td>${money(Number(r.attendance_extras||0)+Number(r.bonuses||0))}</td><td>${money(Number(r.attendance_discounts||0)+Number(r.advances||0)+Number(r.adjustment_discounts||0))}</td><td class=money>${money(r.total_earned)}</td></tr>`).join('')}</table></div>`;
 }
 $('#calcEarnings').onclick=calcEarnings;$('#earnStart').onchange=calcEarnings;$('#earnEnd').onchange=calcEarnings;
-function calcReport(){const s=$('#repStart').value,e=$('#repEnd').value,vid=$('#repVehicle').value,vs=vehicles.filter(v=>!vid||v.id===vid),rows=[];for(const v of vs){const fl=fuel.filter(x=>x.vehicle_id===v.id&&x.date>=s&&x.date<=e),ml=maintenance.filter(x=>x.asset_type==='vehicle'&&x.asset_id===v.id&&x.date>=s&&x.date<=e),kl=mileage.filter(x=>x.vehicle_id===v.id&&x.date>=s&&x.date<=e);const fuelCost=fl.reduce((a,x)=>a+Number(x.total_value||0),0),maintCost=ml.reduce((a,x)=>a+Number(x.labor_cost||0)+pc(x.id),0),km=kl.reduce((a,x)=>a+Number(x.end_km)-Number(x.start_km),0);rows.push({v,fuelCost,maintCost,km})}$('#repFuelCost').textContent=money(rows.reduce((a,r)=>a+r.fuelCost,0));$('#repMaintCost').textContent=money(rows.reduce((a,r)=>a+r.maintCost,0));$('#repKm').textContent=rows.reduce((a,r)=>a+r.km,0).toLocaleString('pt-BR')+' km';$('#reportTable').innerHTML=`<div class=tablewrap><table><tr><th>Condução</th><th>Combustível</th><th>Manutenção</th><th>KM</th><th>Total</th></tr>${rows.map(r=>`<tr><td>${esc(r.v.name)}</td><td>${money(r.fuelCost)}</td><td>${money(r.maintCost)}</td><td>${r.km}</td><td>${money(r.fuelCost+r.maintCost)}</td></tr>`).join('')}</table></div>`;return rows}$('#calcReport').onclick=calcReport;$('#repVehicle').onchange=calcReport;$('#repStart').onchange=calcReport;$('#repEnd').onchange=calcReport;$('#exportReport').onclick=()=>{const rows=calcReport(),data=[['Condução','Combustível','Manutenção','KM','Total'],...rows.map(r=>[r.v.name,r.fuelCost,r.maintCost,r.km,r.fuelCost+r.maintCost])],csv=data.map(r=>r.map(v=>`"${String(v??'').replaceAll('"','""')}"`).join(';')).join('\n'),b=new Blob(['\ufeff'+csv],{type:'text/csv'}),u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download='relatorio_frota.csv';a.click();URL.revokeObjectURL(u)};let ch;function subscribe(){ch=sb.channel('ponto-live').on('postgres_changes',{event:'*',schema:'public'},()=>refreshAll()).subscribe()}if('serviceWorker'in navigator)navigator.serviceWorker.register('/sw-v8-6.js?v=8-6-20260816',{updateViaCache:'none'}).catch(()=>{});init();
+function calcReport(){const s=$('#repStart').value,e=$('#repEnd').value,vid=$('#repVehicle').value,vs=vehicles.filter(v=>!vid||v.id===vid),rows=[];for(const v of vs){const fl=fuel.filter(x=>x.vehicle_id===v.id&&x.date>=s&&x.date<=e),ml=maintenance.filter(x=>x.asset_type==='vehicle'&&x.asset_id===v.id&&x.date>=s&&x.date<=e),kl=mileage.filter(x=>x.vehicle_id===v.id&&x.date>=s&&x.date<=e);const fuelCost=fl.reduce((a,x)=>a+Number(x.total_value||0),0),maintCost=ml.reduce((a,x)=>a+Number(x.labor_cost||0)+pc(x.id),0),km=kl.reduce((a,x)=>a+Number(x.end_km)-Number(x.start_km),0);rows.push({v,fuelCost,maintCost,km})}$('#repFuelCost').textContent=money(rows.reduce((a,r)=>a+r.fuelCost,0));$('#repMaintCost').textContent=money(rows.reduce((a,r)=>a+r.maintCost,0));$('#repKm').textContent=rows.reduce((a,r)=>a+r.km,0).toLocaleString('pt-BR')+' km';$('#reportTable').innerHTML=`<div class=tablewrap><table><tr><th>Condução</th><th>Combustível</th><th>Manutenção</th><th>KM</th><th>Total</th></tr>${rows.map(r=>`<tr><td>${esc(r.v.name)}</td><td>${money(r.fuelCost)}</td><td>${money(r.maintCost)}</td><td>${r.km}</td><td>${money(r.fuelCost+r.maintCost)}</td></tr>`).join('')}</table></div>`;return rows}$('#calcReport').onclick=calcReport;$('#repVehicle').onchange=calcReport;$('#repStart').onchange=calcReport;$('#repEnd').onchange=calcReport;$('#exportReport').onclick=()=>{const rows=calcReport(),data=[['Condução','Combustível','Manutenção','KM','Total'],...rows.map(r=>[r.v.name,r.fuelCost,r.maintCost,r.km,r.fuelCost+r.maintCost])],csv=data.map(r=>r.map(v=>`"${String(v??'').replaceAll('"','""')}"`).join(';')).join('\n'),b=new Blob(['\ufeff'+csv],{type:'text/csv'}),u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download='relatorio_frota.csv';a.click();URL.revokeObjectURL(u)};let ch;function subscribe(){ch=sb.channel('ponto-live').on('postgres_changes',{event:'*',schema:'public'},()=>refreshAll()).subscribe()}if('serviceWorker'in navigator)navigator.serviceWorker.register('/sw-v11-0.js?v=11-0-20260817',{updateViaCache:'none'}).catch(()=>{});init();
