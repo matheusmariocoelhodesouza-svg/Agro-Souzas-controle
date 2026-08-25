@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0f172a">
-<title>Controla • Beta 4.3</title>
+<title>Controla • Beta 4.4</title>
 <style>
 :root{--bg:#f3f6fb;--card:#fff;--ink:#0f172a;--muted:#64748b;--line:#e2e8f0;--accent:#0f172a}*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--ink)}header{position:sticky;top:0;z-index:20;background:linear-gradient(135deg,var(--accent),#1e293b);color:#fff;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 8px 24px rgba(15,23,42,.18)}.wrap{max-width:1200px;margin:auto;padding:12px}.card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:12px;box-shadow:0 4px 18px rgba(15,23,42,.045)}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:10px}.kpi{font-size:28px;font-weight:900}.label,.muted{font-size:12px;color:var(--muted)}.nav{display:flex;gap:8px;overflow:auto;padding:12px 0;scrollbar-width:none}.nav::-webkit-scrollbar{display:none}.nav button,.btn{border:0;border-radius:12px;padding:11px 14px;font-weight:800;white-space:nowrap;cursor:pointer}.nav button{background:#fff;border:1px solid var(--line);color:#334155}.nav button.active,.btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}.btn.soft{background:#e2e8f0}.hidden{display:none!important}.login{max-width:430px;margin:55px auto}.login input,.chat input{width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:10px;margin:6px 0 10px;font:inherit}.section{display:none}.section.active{display:block}.list{display:grid;gap:8px}.item{background:#fff;border:1px solid var(--line);border-radius:13px;padding:12px}.item strong{display:block}.pill{display:inline-block;padding:4px 8px;border-radius:999px;font-size:11px;font-weight:800;background:#e2e8f0}.pill.ok{background:#dcfce7;color:#166534}.pill.warn{background:#fef3c7;color:#92400e}.pill.danger{background:#fee2e2;color:#991b1b}.toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.chatbox{min-height:220px;max-height:52vh;overflow:auto;background:#fff;border:1px solid var(--line);border-radius:14px;padding:10px}.msg{padding:10px 12px;border-radius:12px;margin:8px 0;max-width:88%;white-space:pre-wrap}.msg.user{margin-left:auto;background:#e2e8f0}.msg.ai{background:#fff7ed;border:1px solid #fed7aa}.brand{display:flex;gap:10px;align-items:center}.logo{width:38px;height:38px;border-radius:10px;background:white;color:#0f172a;display:grid;place-items:center;font-weight:900}.error{color:#b91c1c;font-size:13px}.okmsg{color:#166534;font-size:13px}.debug{margin-top:8px;font-size:11px;color:#64748b;word-break:break-word}@media(max-width:640px){.wrap{padding:9px}.kpi{font-size:25px}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}header{padding:12px}.nav{position:sticky;top:66px;z-index:15;background:var(--bg);margin:0 -9px;padding:9px}}
 </style>
@@ -37,10 +37,16 @@
 </div>
 <div class="card">
  <h3>Ponto 2.0</h3>
- <div class="muted">Terminal Beta: matrícula + GPS + horário do servidor. O tipo da batida é definido automaticamente pela sequência.</div>
+ <div class="muted">Terminal Beta: matrícula + selfie + GPS + horário do servidor. O tipo da batida é definido automaticamente pela sequência.</div>
  <div style="margin-top:12px">
    <label>Matrícula</label>
    <input id="pointMatricula" inputmode="numeric" placeholder="Ex.: B001" style="width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:10px;margin:6px 0 10px;font:inherit">
+   <label>Selfie obrigatória</label>
+   <input id="pointSelfie" type="file" accept="image/*" capture="user" style="width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:10px;margin:6px 0 8px;background:#fff">
+   <div id="selfiePreviewWrap" class="hidden" style="margin:8px 0 10px">
+     <img id="selfiePreview" alt="Prévia da selfie" style="width:120px;height:120px;object-fit:cover;border-radius:16px;border:1px solid #cbd5e1">
+     <div class="muted">Selfie pronta para o registro.</div>
+   </div>
    <div id="nextPointHint" class="card" style="background:#f8fafc;margin:8px 0 10px;padding:12px">
      <div class="label">Próxima batida</div>
      <div style="font-size:18px;font-weight:900" id="nextPointLabel">Digite a matrícula</div>
@@ -80,6 +86,22 @@ async function authFetch(path,opts={},retry=true){let s=session();if(!s?.access_
 async function login(email,password){const r=await fetch(URL+'/auth/v1/token?grant_type=password',{method:'POST',headers:{apikey:KEY,'Content-Type':'application/json'},body:JSON.stringify({email,password})});const data=await parseResponse(r);saveSession(data);return data}
 async function rest(table,query=''){const r=await authFetch('/rest/v1/'+table+(query?'?'+query:''),{headers:{Accept:'application/json'}});return parseResponse(r)}
 async function restInsert(table,payload){const r=await authFetch('/rest/v1/'+table,{method:'POST',headers:{'Content-Type':'application/json','Prefer':'return=representation'},body:JSON.stringify(payload)});return parseResponse(r)}
+
+async function uploadSelfie(file,employeeId){
+  const s=session(); if(!s?.access_token)throw new Error('Sessão expirada.');
+  const ext=(file.type==='image/png'?'png':file.type==='image/webp'?'webp':'jpg');
+  const now=new Date();
+  const day=now.toISOString().slice(0,10);
+  const name=companyId+'/'+employeeId+'/'+day+'/'+Date.now()+'-'+Math.random().toString(36).slice(2)+'.'+ext;
+  const r=await fetch(URL+'/storage/v1/object/v2-attendance-selfies/'+name,{
+    method:'POST',
+    headers:{apikey:KEY,Authorization:'Bearer '+s.access_token,'Content-Type':file.type||'image/jpeg','x-upsert':'false'},
+    body:file
+  });
+  await parseResponse(r);
+  return name;
+}
+
 
 async function rpc(name,payload){const r=await authFetch('/rest/v1/rpc/'+name,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});return parseResponse(r)}
 async function getUser(){const r=await authFetch('/auth/v1/user');return parseResponse(r)}
@@ -184,10 +206,20 @@ function getGPS(){
 $('#pointMatricula').addEventListener('input',()=>{clearTimeout(window.__pt);window.__pt=setTimeout(previewNextPoint,250)});
 $('#pointMatricula').addEventListener('blur',previewNextPoint);
 
+
+$('#pointSelfie').addEventListener('change',()=>{
+  const f=$('#pointSelfie').files?.[0], wrap=$('#selfiePreviewWrap'), img=$('#selfiePreview');
+  if(!f){wrap.classList.add('hidden');img.removeAttribute('src');return}
+  const u=URL.createObjectURL(f); img.src=u; wrap.classList.remove('hidden');
+});
+
 $('#registerPoint').addEventListener('click',async()=>{
  const btn=$('#registerPoint'), msg=$('#pointMsg');
  const matricula=$('#pointMatricula').value.trim();
+ const selfie=$('#pointSelfie').files?.[0];
  if(!matricula){msg.className='error';msg.textContent='Digite a matrícula.';return}
+ if(!selfie){msg.className='error';msg.textContent='Tire uma selfie para registrar o ponto.';return}
+ if(selfie.size>5*1024*1024){msg.className='error';msg.textContent='A selfie deve ter no máximo 5 MB.';return}
  btn.disabled=true; msg.className='muted'; msg.textContent='Localizando e registrando...';
  try{
    const emp=await rest('v2_employees','select=id,full_name,employee_number&company_id=eq.'+companyId+'&employee_number=eq.'+encodeURIComponent(matricula)+'&status=eq.active&limit=1');
@@ -195,6 +227,8 @@ $('#registerPoint').addEventListener('click',async()=>{
    const nextEvent=await getNextPoint(emp[0].id);
    if(nextEvent==='finished')throw new Error('Jornada já encerrada hoje para este funcionário.');
    const gps=await getGPS();
+   msg.textContent='Enviando selfie e registrando...';
+   const selfiePath=await uploadSelfie(selfie,emp[0].id);
    const user=await getUser();
    const occurredAt=new Date().toISOString();
    const payload={
@@ -208,7 +242,7 @@ $('#registerPoint').addEventListener('click',async()=>{
      method:'employee_number',
      device_id:navigator.userAgent.slice(0,180),
      offline_event_id:'beta-'+Date.now()+'-'+Math.random().toString(36).slice(2),
-     metadata:{beta:true,source:'controla_beta_web'},
+     metadata:{beta:true,source:'controla_beta_web',selfie_path:selfiePath,selfie_required:true},
      created_by:user.id
    };
    const saved=await restInsert('v2_attendance_events',payload);
@@ -217,8 +251,11 @@ $('#registerPoint').addEventListener('click',async()=>{
    msg.className='okmsg';msg.textContent=receiptType+' registrado para '+emp[0].full_name+'.';
    const receipt=$('#pointReceipt');
    receipt.className='card';
-   receipt.innerHTML='<div class="label">COMPROVANTE DE PONTO</div><div style="font-size:18px;font-weight:900;margin:3px 0">'+esc(receiptType)+'</div><strong>'+esc(emp[0].full_name)+'</strong><div class="muted">Matrícula '+esc(emp[0].employee_number)+' • '+esc(when)+'</div><div class="muted">GPS ±'+Math.round(Number(gps.accuracy_m||0))+' m • horário enviado ao servidor</div>';
+   const selfieUrl=URL.createObjectURL(selfie);
+   receipt.innerHTML='<div class="label">COMPROVANTE DE PONTO</div><div style="display:flex;gap:12px;align-items:center;margin-top:6px"><img src="'+selfieUrl+'" style="width:72px;height:72px;object-fit:cover;border-radius:14px;border:1px solid #cbd5e1"><div><div style="font-size:18px;font-weight:900;margin:3px 0">'+esc(receiptType)+'</div><strong>'+esc(emp[0].full_name)+'</strong><div class="muted">Matrícula '+esc(emp[0].employee_number)+' • '+esc(when)+'</div><div class="muted">GPS ±'+Math.round(Number(gps.accuracy_m||0))+' m • horário enviado ao servidor</div></div></div>';
    $('#pointMatricula').value='';
+   $('#pointSelfie').value='';
+   $('#selfiePreviewWrap').classList.add('hidden');
    $('#nextPointLabel').textContent='Digite a matrícula';
    await loadRHPoint();
  }catch(e){msg.className='error';msg.textContent=e.message||String(e)}
