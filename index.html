@@ -18,10 +18,31 @@
 <div class="muted" style="color:#cbd5e1">CENTRAL DE GESTÃO</div>
 <div style="font-size:22px;font-weight:900;margin-top:3px">Visão geral da operação</div>
 <div style="font-size:13px;color:#cbd5e1;margin-top:4px">Equipes, pessoas, frota, alertas e resultados em um só lugar.</div>
-</div><div class="nav" id="nav"><button data-tab="inicio" class="active">Início</button><button data-tab="equipes">Equipes</button><button data-tab="funcionarios">RH & Pessoas</button><button data-tab="operacoes">Operações / Apanha</button><button data-tab="frota">Frota</button><button data-tab="alertas">Alertas</button><button data-tab="ia">Controla IA</button></div>
+</div><div class="nav" id="nav"><button data-tab="inicio" class="active">Início</button><button data-tab="equipes">Equipes</button><button data-tab="funcionarios">RH & Pessoas</button><button data-tab="ponto">Ponto</button><button data-tab="operacoes">Operações / Apanha</button><button data-tab="frota">Frota</button><button data-tab="alertas">Alertas</button><button data-tab="ia">Controla IA</button></div>
 <div id="inicio" class="section active"><div class="grid" id="kpis"></div><div class="card"><div class="toolbar"><strong>Operações de hoje</strong><button id="refreshBtn" class="btn soft">Atualizar</button></div><div id="todayList" class="list"></div></div></div>
 <div id="equipes" class="section"><div class="card"><h3>Equipes</h3><div id="teamsList" class="list"></div></div></div>
-<div id="funcionarios" class="section"><div class="card"><h3>Funcionários Beta</h3><div id="employeesList" class="list"></div></div></div>
+<div id="funcionarios" class="section">
+<div class="grid">
+  <div class="card"><div class="kpi" id="rhActive">0</div><div class="label">Funcionários ativos</div></div>
+  <div class="card"><div class="kpi" id="rhWorking">0</div><div class="label">Com ponto hoje</div></div>
+  <div class="card"><div class="kpi" id="rhVacation">0</div><div class="label">Alertas de férias</div></div>
+</div>
+<div class="card"><div class="toolbar"><h3 style="margin:0">Funcionários</h3><button class="btn soft" id="refreshRH">Atualizar</button></div><div id="employeesList" class="list"></div></div>
+<div class="card"><h3>Férias e vencimentos</h3><div id="vacationList" class="list"></div></div>
+</div>
+<div id="ponto" class="section">
+<div class="grid">
+ <div class="card"><div class="kpi" id="pointToday">0</div><div class="label">Funcionários com registro hoje</div></div>
+ <div class="card"><div class="kpi" id="pointEvents">0</div><div class="label">Batidas hoje</div></div>
+</div>
+<div class="card">
+ <h3>Ponto 2.0</h3>
+ <div class="muted">Consulta em tempo real dos registros. O terminal de batida por matrícula/selfie/GPS será a próxima camada.</div>
+ <div class="toolbar" style="margin-top:10px"><button id="refreshPoint" class="btn primary">Atualizar presença</button></div>
+</div>
+<div class="card"><h3>Presença de hoje</h3><div id="presenceList" class="list"></div></div>
+<div class="card"><h3>Últimas batidas</h3><div id="pointList" class="list"></div></div>
+</div>
 <div id="operacoes" class="section"><div class="card"><h3>Operações / Apanha</h3><div id="operationsList" class="list"></div></div></div>
 <div id="frota" class="section"><div class="card"><h3>Conduções</h3><div id="vehiclesList" class="list"></div></div></div>
 <div id="alertas" class="section"><div class="card"><div class="toolbar"><h3 style="margin:0">Alertas</h3><button id="refreshAlerts" class="btn soft">Gerar/Atualizar</button></div><div id="alertsList" class="list"></div></div></div>
@@ -68,13 +89,50 @@ $('#loginBtn').addEventListener('click',async()=>{
 $('#password').addEventListener('keydown',e=>{if(e.key==='Enter')$('#loginBtn').click()});
 $('#logout').addEventListener('click',()=>{clearSession();location.reload()});
 $('#nav').addEventListener('click',e=>{const b=e.target.closest('button[data-tab]');if(!b)return;document.querySelectorAll('#nav button').forEach(x=>x.classList.toggle('active',x===b));document.querySelectorAll('.section').forEach(x=>x.classList.toggle('active',x.id===b.dataset.tab))});
-async function refreshAll(){if(!companyId)return;await Promise.all([loadDashboard(),loadTeams(),loadEmployees(),loadOperations(),loadVehicles(),loadAlerts()])}
+async function refreshAll(){if(!companyId)return;await Promise.all([loadDashboard(),loadTeams(),loadEmployees(),loadOperations(),loadVehicles(),loadAlerts(),loadRHPoint()])}
 async function loadDashboard(){try{const rows=await rest('v2_dashboard_company_summary','select=*&company_id=eq.'+companyId);const d=rows?.[0]||{};const cards=[['Funcionários',d.active_employees||0],['Conduções',d.active_vehicles||0],['Operações hoje',d.operations_today||0],['Em aberto',d.open_operations||0],['Alertas',d.open_alerts||0],['Críticos',d.critical_alerts||0],['Receitas mês',money(d.month_income)],['Despesas mês',money(d.month_expense)]];$('#kpis').innerHTML=cards.map(x=>`<div class="card"><div class="kpi">${esc(x[1])}</div><div class="label">${esc(x[0])}</div></div>`).join('');const t=await rest('v2_dashboard_team_today','select=*&company_id=eq.'+companyId+'&order=scheduled_start.asc');$('#todayList').innerHTML=t.length?t.map(o=>`<div class="item"><strong>${esc(o.title)}</strong><span class="pill ${o.delayed?'danger':'ok'}">${o.delayed?'Atrasada '+o.delay_minutes+' min':'No horário'}</span><div class="muted">${esc(o.customer_name||'')} • ${esc(o.location_name||'')}</div></div>`).join(''):'<div class="muted">Nenhuma operação programada para hoje.</div>'}catch(e){$('#todayList').innerHTML='<div class="error">'+esc(e.message)+'</div>'}}
 async function loadTeams(){try{const r=await rest('v2_teams','select=name,code,status&company_id=eq.'+companyId+'&order=name.asc');$('#teamsList').innerHTML=r.map(x=>`<div class="item"><strong>${esc(x.name)}</strong><div class="muted">${esc(x.code||'')} • ${esc(x.status)}</div></div>`).join('')||'<div class="muted">Sem equipes.</div>'}catch(e){$('#teamsList').innerHTML='<div class="error">'+esc(e.message)+'</div>'}}
-async function loadEmployees(){try{const r=await rest('v2_employees','select=employee_number,full_name,primary_team,status&company_id=eq.'+companyId+'&order=full_name.asc');$('#employeesList').innerHTML=r.map(x=>`<div class="item"><strong>${esc(x.full_name)}</strong><div class="muted">Matrícula ${esc(x.employee_number)} • ${esc(x.primary_team||'Sem equipe')}</div></div>`).join('')||'<div class="muted">Sem funcionários.</div>'}catch(e){$('#employeesList').innerHTML='<div class="error">'+esc(e.message)+'</div>'}}
+async function loadEmployees(){try{const r=await rest('v2_employees','select=id,employee_number,full_name,primary_team,status&company_id=eq.'+companyId+'&order=full_name.asc');$('#employeesList').innerHTML=r.map(x=>`<div class="item"><strong>${esc(x.full_name)}</strong><div class="muted">Matrícula ${esc(x.employee_number)} • ${esc(x.primary_team||'Sem equipe')}</div></div>`).join('')||'<div class="muted">Sem funcionários.</div>'}catch(e){$('#employeesList').innerHTML='<div class="error">'+esc(e.message)+'</div>'}}
 async function loadOperations(){try{const r=await rest('v2_operations','select=operation_number,title,status,customer_name,location_name,scheduled_start,planned_revenue,actual_revenue&company_id=eq.'+companyId+'&order=scheduled_start.desc&limit=50');$('#operationsList').innerHTML=r.map(x=>`<div class="item"><strong>#${esc(x.operation_number)} • ${esc(x.title)}</strong><span class="pill">${esc(x.status)}</span><div class="muted">${esc(x.customer_name||'')} • ${esc(x.location_name||'')}</div><div class="muted">Previsto: ${money(x.planned_revenue)} • Real: ${money(x.actual_revenue)}</div></div>`).join('')||'<div class="muted">Ainda não há operações na Beta.</div>'}catch(e){$('#operationsList').innerHTML='<div class="error">'+esc(e.message)+'</div>'}}
 async function loadVehicles(){try{const r=await rest('v2_vehicles','select=description,plate,current_odometer_km,status&company_id=eq.'+companyId+'&order=description.asc');$('#vehiclesList').innerHTML=r.map(x=>`<div class="item"><strong>${esc(x.description)}</strong><span class="pill ${x.status==='active'?'ok':'warn'}">${esc(x.status)}</span><div class="muted">${esc(x.plate||'Sem placa')} • ${Number(x.current_odometer_km||0).toLocaleString('pt-BR')} km</div></div>`).join('')||'<div class="muted">Sem conduções.</div>'}catch(e){$('#vehiclesList').innerHTML='<div class="error">'+esc(e.message)+'</div>'}}
 async function loadAlerts(){try{const r=await rest('v2_alerts','select=title,message,severity,status,created_at&company_id=eq.'+companyId+'&status=in.(open,seen)&order=created_at.desc&limit=50');$('#alertsList').innerHTML=r.map(x=>`<div class="item"><strong>${esc(x.title)}</strong><span class="pill ${x.severity==='critical'?'danger':x.severity==='warning'?'warn':'ok'}">${esc(x.severity)}</span><div class="muted">${esc(x.message||'')}</div></div>`).join('')||'<div class="muted">Nenhum alerta aberto.</div>'}catch(e){$('#alertsList').innerHTML='<div class="error">'+esc(e.message)+'</div>'}}
+
+async function loadRHPoint(){
+ if(!companyId)return;
+ try{
+  const employees=await rest('v2_employees','select=id,employee_number,full_name,primary_team,status&company_id=eq.'+companyId+'&status=eq.active&order=full_name.asc');
+  $('#rhActive').textContent=employees.length;
+  const today=new Date().toISOString().slice(0,10);
+  const days=await rest('v2_attendance_days','select=employee_id,status,worked_minutes,late_minutes,absence_minutes,work_date&company_id=eq.'+companyId+'&work_date=eq.'+today);
+  $('#rhWorking').textContent=days.length;
+  $('#pointToday').textContent=days.length;
+  const map=Object.fromEntries(employees.map(e=>[e.id,e]));
+  $('#presenceList').innerHTML=employees.map(e=>{
+    const d=days.find(x=>x.employee_id===e.id);
+    const mins=Number(d?.worked_minutes||0), h=Math.floor(mins/60), m=mins%60;
+    return `<div class="item"><strong>${esc(e.full_name)}</strong><span class="pill ${d?'ok':'warn'}">${d?esc(d.status):'Sem registro hoje'}</span><div class="muted">${esc(e.primary_team||'Sem equipe')}${d?' • '+h+'h '+m+'min':''}</div></div>`
+  }).join('')||'<div class="muted">Sem funcionários ativos.</div>';
+  const events=await rest('v2_attendance_events','select=employee_id,occurred_at,event_type,method,accuracy_m&company_id=eq.'+companyId+'&occurred_at=gte.'+today+'T00:00:00Z&order=occurred_at.desc&limit=100');
+  $('#pointEvents').textContent=events.length;
+  $('#pointList').innerHTML=events.map(x=>{
+    const e=map[x.employee_id]||{};
+    const dt=new Date(x.occurred_at).toLocaleString('pt-BR');
+    return `<div class="item"><strong>${esc(e.full_name||'Funcionário')}</strong><span class="pill">${esc(x.event_type)}</span><div class="muted">${esc(dt)} • ${esc(x.method||'método não informado')}${x.accuracy_m?' • GPS ±'+esc(x.accuracy_m)+' m':''}</div></div>`
+  }).join('')||'<div class="muted">Nenhuma batida registrada hoje.</div>';
+  const vacations=await rest('v2_vacation_alerts','select=employee_id,concession_deadline,status,alert_level,days&company_id=eq.'+companyId+'&order=concession_deadline.asc&limit=50');
+  $('#rhVacation').textContent=vacations.filter(v=>v.alert_level&&v.alert_level!=='ok').length;
+  $('#vacationList').innerHTML=vacations.map(v=>{
+    const e=map[v.employee_id]||{};
+    const cls=v.alert_level==='critical'?'danger':v.alert_level==='warning'?'warn':'ok';
+    return `<div class="item"><strong>${esc(e.full_name||'Funcionário')}</strong><span class="pill ${cls}">${esc(v.alert_level||v.status||'férias')}</span><div class="muted">Prazo: ${esc(v.concession_deadline||'-')} • ${esc(v.days||0)} dias</div></div>`
+  }).join('')||'<div class="muted">Nenhum alerta de férias.</div>';
+ }catch(e){
+  ['presenceList','pointList','vacationList'].forEach(id=>{const el=$('#'+id); if(el)el.innerHTML='<div class="error">'+esc(e.message)+'</div>'});
+ }
+}
+$('#refreshPoint').addEventListener('click',loadRHPoint);
+$('#refreshRH').addEventListener('click',async()=>{await loadEmployees();await loadRHPoint()});
+
 $('#refreshBtn').addEventListener('click',refreshAll);
 $('#refreshAlerts').addEventListener('click',async()=>{try{await rpc('v2_refresh_company_alerts',{p_company_id:companyId});await loadAlerts();await loadDashboard()}catch(e){alert(e.message)}});
 function addChat(t,r){const d=document.createElement('div');d.className='msg '+r;d.textContent=t;$('#chatbox').appendChild(d);$('#chatbox').scrollTop=$('#chatbox').scrollHeight}
