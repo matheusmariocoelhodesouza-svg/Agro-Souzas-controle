@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0f172a">
-<title>Controla • Beta 4.2</title>
+<title>Controla • Beta 4.3</title>
 <style>
 :root{--bg:#f3f6fb;--card:#fff;--ink:#0f172a;--muted:#64748b;--line:#e2e8f0;--accent:#0f172a}*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--ink)}header{position:sticky;top:0;z-index:20;background:linear-gradient(135deg,var(--accent),#1e293b);color:#fff;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 8px 24px rgba(15,23,42,.18)}.wrap{max-width:1200px;margin:auto;padding:12px}.card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:12px;box-shadow:0 4px 18px rgba(15,23,42,.045)}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:10px}.kpi{font-size:28px;font-weight:900}.label,.muted{font-size:12px;color:var(--muted)}.nav{display:flex;gap:8px;overflow:auto;padding:12px 0;scrollbar-width:none}.nav::-webkit-scrollbar{display:none}.nav button,.btn{border:0;border-radius:12px;padding:11px 14px;font-weight:800;white-space:nowrap;cursor:pointer}.nav button{background:#fff;border:1px solid var(--line);color:#334155}.nav button.active,.btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}.btn.soft{background:#e2e8f0}.hidden{display:none!important}.login{max-width:430px;margin:55px auto}.login input,.chat input{width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:10px;margin:6px 0 10px;font:inherit}.section{display:none}.section.active{display:block}.list{display:grid;gap:8px}.item{background:#fff;border:1px solid var(--line);border-radius:13px;padding:12px}.item strong{display:block}.pill{display:inline-block;padding:4px 8px;border-radius:999px;font-size:11px;font-weight:800;background:#e2e8f0}.pill.ok{background:#dcfce7;color:#166534}.pill.warn{background:#fef3c7;color:#92400e}.pill.danger{background:#fee2e2;color:#991b1b}.toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.chatbox{min-height:220px;max-height:52vh;overflow:auto;background:#fff;border:1px solid var(--line);border-radius:14px;padding:10px}.msg{padding:10px 12px;border-radius:12px;margin:8px 0;max-width:88%;white-space:pre-wrap}.msg.user{margin-left:auto;background:#e2e8f0}.msg.ai{background:#fff7ed;border:1px solid #fed7aa}.brand{display:flex;gap:10px;align-items:center}.logo{width:38px;height:38px;border-radius:10px;background:white;color:#0f172a;display:grid;place-items:center;font-weight:900}.error{color:#b91c1c;font-size:13px}.okmsg{color:#166534;font-size:13px}.debug{margin-top:8px;font-size:11px;color:#64748b;word-break:break-word}@media(max-width:640px){.wrap{padding:9px}.kpi{font-size:25px}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}header{padding:12px}.nav{position:sticky;top:66px;z-index:15;background:var(--bg);margin:0 -9px;padding:9px}}
 </style>
@@ -37,22 +37,20 @@
 </div>
 <div class="card">
  <h3>Ponto 2.0</h3>
- <div class="muted">Terminal Beta: matrícula + GPS + horário do servidor. Selfie será ligada na próxima camada.</div>
+ <div class="muted">Terminal Beta: matrícula + GPS + horário do servidor. O tipo da batida é definido automaticamente pela sequência.</div>
  <div style="margin-top:12px">
    <label>Matrícula</label>
    <input id="pointMatricula" inputmode="numeric" placeholder="Ex.: B001" style="width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:10px;margin:6px 0 10px;font:inherit">
-   <label>Tipo de batida</label>
-   <select id="pointType" style="width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:10px;margin:6px 0 10px;font:inherit">
-     <option value="in">Entrada</option>
-     <option value="break_start">Saída intervalo</option>
-     <option value="break_end">Retorno intervalo</option>
-     <option value="out">Saída</option>
-   </select>
+   <div id="nextPointHint" class="card" style="background:#f8fafc;margin:8px 0 10px;padding:12px">
+     <div class="label">Próxima batida</div>
+     <div style="font-size:18px;font-weight:900" id="nextPointLabel">Digite a matrícula</div>
+   </div>
    <div class="toolbar">
-     <button id="registerPoint" class="btn primary">Registrar ponto</button>
+     <button id="registerPoint" class="btn primary" style="font-size:18px;padding:14px 20px">BATER PONTO</button>
      <button id="refreshPoint" class="btn soft">Atualizar presença</button>
    </div>
    <div id="pointMsg" class="muted" style="margin-top:10px"></div>
+   <div id="pointReceipt" class="hidden" style="margin-top:12px"></div>
  </div>
 </div>
 <div class="card"><h3>Presença de hoje</h3><div id="presenceList" class="list"></div></div>
@@ -85,6 +83,28 @@ async function restInsert(table,payload){const r=await authFetch('/rest/v1/'+tab
 
 async function rpc(name,payload){const r=await authFetch('/rest/v1/rpc/'+name,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});return parseResponse(r)}
 async function getUser(){const r=await authFetch('/auth/v1/user');return parseResponse(r)}
+
+const pointLabels={in:'Entrada',break_start:'Saída para intervalo',break_end:'Retorno do intervalo',out:'Saída final',finished:'Jornada encerrada'};
+const statusLabels={working:'Trabalhando',on_break:'Em intervalo',finished:'Jornada encerrada',present:'Presente'};
+const statusClass={working:'ok',on_break:'warn',finished:'',present:'ok'};
+
+async function getNextPoint(employeeId){
+  const r=await rpc('v2_attendance_next_event',{p_company_id:companyId,p_employee_id:employeeId,p_at:new Date().toISOString()});
+  return r;
+}
+
+async function previewNextPoint(){
+  const matricula=$('#pointMatricula').value.trim();
+  const label=$('#nextPointLabel');
+  if(!matricula){label.textContent='Digite a matrícula';return}
+  try{
+    const emp=await rest('v2_employees','select=id,full_name,employee_number&company_id=eq.'+companyId+'&employee_number=eq.'+encodeURIComponent(matricula)+'&status=eq.active&limit=1');
+    if(!emp.length){label.textContent='Matrícula não encontrada';return}
+    const next=await getNextPoint(emp[0].id);
+    label.textContent=pointLabels[next]||String(next);
+  }catch(e){label.textContent='Não foi possível consultar a próxima batida'}
+}
+
 async function enterApp(){
   const user=await getUser();
   debug('Login confirmado. Carregando empresa Beta...');
@@ -127,14 +147,16 @@ async function loadRHPoint(){
   $('#presenceList').innerHTML=employees.map(e=>{
     const d=days.find(x=>x.employee_id===e.id);
     const mins=Number(d?.worked_minutes||0), h=Math.floor(mins/60), m=mins%60;
-    return `<div class="item"><strong>${esc(e.full_name)}</strong><span class="pill ${d?'ok':'warn'}">${d?esc(d.status):'Sem registro hoje'}</span><div class="muted">${esc(e.primary_team||'Sem equipe')}${d?' • '+h+'h '+m+'min':''}</div></div>`
+    const txt=d?(statusLabels[d.status]||d.status):'Sem registro hoje';
+    const cls=d?(statusClass[d.status]||''):'warn';
+    return `<div class="item"><strong>${esc(e.full_name)}</strong><span class="pill ${cls}">${esc(txt)}</span><div class="muted">${esc(e.primary_team||'Sem equipe')}${d?' • '+h+'h '+m+'min':''}</div></div>`
   }).join('')||'<div class="muted">Sem funcionários ativos.</div>';
   const events=await rest('v2_attendance_events','select=employee_id,occurred_at,event_type,method,accuracy_m&company_id=eq.'+companyId+'&occurred_at=gte.'+today+'T00:00:00Z&order=occurred_at.desc&limit=100');
   $('#pointEvents').textContent=events.length;
   $('#pointList').innerHTML=events.map(x=>{
     const e=map[x.employee_id]||{};
     const dt=new Date(x.occurred_at).toLocaleString('pt-BR');
-    return `<div class="item"><strong>${esc(e.full_name||'Funcionário')}</strong><span class="pill">${esc(x.event_type)}</span><div class="muted">${esc(dt)} • ${esc(x.method||'método não informado')}${x.accuracy_m?' • GPS ±'+esc(x.accuracy_m)+' m':''}</div></div>`
+    return `<div class="item"><strong>${esc(e.full_name||'Funcionário')}</strong><span class="pill">${esc(pointLabels[x.event_type]||x.event_type)}</span><div class="muted">${esc(dt)} • ${esc(x.method||'método não informado')}${x.accuracy_m?' • GPS ±'+esc(x.accuracy_m)+' m':''}</div></div>`
   }).join('')||'<div class="muted">Nenhuma batida registrada hoje.</div>';
   const vacations=await rest('v2_vacation_alerts','select=employee_id,concession_deadline,status,alert_level,days&company_id=eq.'+companyId+'&order=concession_deadline.asc&limit=50');
   $('#rhVacation').textContent=vacations.filter(v=>v.alert_level&&v.alert_level!=='ok').length;
@@ -158,6 +180,10 @@ function getGPS(){
   );
  });
 }
+
+$('#pointMatricula').addEventListener('input',()=>{clearTimeout(window.__pt);window.__pt=setTimeout(previewNextPoint,250)});
+$('#pointMatricula').addEventListener('blur',previewNextPoint);
+
 $('#registerPoint').addEventListener('click',async()=>{
  const btn=$('#registerPoint'), msg=$('#pointMsg');
  const matricula=$('#pointMatricula').value.trim();
@@ -166,13 +192,16 @@ $('#registerPoint').addEventListener('click',async()=>{
  try{
    const emp=await rest('v2_employees','select=id,full_name,employee_number&company_id=eq.'+companyId+'&employee_number=eq.'+encodeURIComponent(matricula)+'&status=eq.active&limit=1');
    if(!emp.length)throw new Error('Matrícula não encontrada ou funcionário inativo.');
+   const nextEvent=await getNextPoint(emp[0].id);
+   if(nextEvent==='finished')throw new Error('Jornada já encerrada hoje para este funcionário.');
    const gps=await getGPS();
    const user=await getUser();
+   const occurredAt=new Date().toISOString();
    const payload={
      company_id:companyId,
      employee_id:emp[0].id,
-     occurred_at:new Date().toISOString(),
-     event_type:$('#pointType').value,
+     occurred_at:occurredAt,
+     event_type:nextEvent,
      latitude:gps.latitude,
      longitude:gps.longitude,
      accuracy_m:gps.accuracy_m,
@@ -182,9 +211,15 @@ $('#registerPoint').addEventListener('click',async()=>{
      metadata:{beta:true,source:'controla_beta_web'},
      created_by:user.id
    };
-   await restInsert('v2_attendance_events',payload);
-   msg.className='okmsg';msg.textContent='Ponto registrado para '+emp[0].full_name+' com GPS.';
+   const saved=await restInsert('v2_attendance_events',payload);
+   const receiptType=pointLabels[nextEvent]||nextEvent;
+   const when=new Date(occurredAt).toLocaleString('pt-BR');
+   msg.className='okmsg';msg.textContent=receiptType+' registrado para '+emp[0].full_name+'.';
+   const receipt=$('#pointReceipt');
+   receipt.className='card';
+   receipt.innerHTML='<div class="label">COMPROVANTE DE PONTO</div><div style="font-size:18px;font-weight:900;margin:3px 0">'+esc(receiptType)+'</div><strong>'+esc(emp[0].full_name)+'</strong><div class="muted">Matrícula '+esc(emp[0].employee_number)+' • '+esc(when)+'</div><div class="muted">GPS ±'+Math.round(Number(gps.accuracy_m||0))+' m • horário enviado ao servidor</div>';
    $('#pointMatricula').value='';
+   $('#nextPointLabel').textContent='Digite a matrícula';
    await loadRHPoint();
  }catch(e){msg.className='error';msg.textContent=e.message||String(e)}
  finally{btn.disabled=false}
