@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0f172a">
-<title>Controla • Beta 4.6</title>
+<title>Controla • Beta 4.7</title>
 <style>
 :root{--bg:#f3f6fb;--card:#fff;--ink:#0f172a;--muted:#64748b;--line:#e2e8f0;--accent:#0f172a}*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--ink)}header{position:sticky;top:0;z-index:20;background:linear-gradient(135deg,var(--accent),#1e293b);color:#fff;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 8px 24px rgba(15,23,42,.18)}.wrap{max-width:1200px;margin:auto;padding:12px}.card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:12px;box-shadow:0 4px 18px rgba(15,23,42,.045)}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:10px}.kpi{font-size:28px;font-weight:900}.label,.muted{font-size:12px;color:var(--muted)}.nav{display:flex;gap:8px;overflow:auto;padding:12px 0;scrollbar-width:none}.nav::-webkit-scrollbar{display:none}.nav button,.btn{border:0;border-radius:12px;padding:11px 14px;font-weight:800;white-space:nowrap;cursor:pointer}.nav button{background:#fff;border:1px solid var(--line);color:#334155}.nav button.active,.btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}.btn.soft{background:#e2e8f0}.hidden{display:none!important}.login{max-width:430px;margin:55px auto}.login input,.chat input{width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:10px;margin:6px 0 10px;font:inherit}.section{display:none}.section.active{display:block}.list{display:grid;gap:8px}.item{background:#fff;border:1px solid var(--line);border-radius:13px;padding:12px}.item strong{display:block}.pill{display:inline-block;padding:4px 8px;border-radius:999px;font-size:11px;font-weight:800;background:#e2e8f0}.pill.ok{background:#dcfce7;color:#166534}.pill.warn{background:#fef3c7;color:#92400e}.pill.danger{background:#fee2e2;color:#991b1b}.toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.chatbox{min-height:220px;max-height:52vh;overflow:auto;background:#fff;border:1px solid var(--line);border-radius:14px;padding:10px}.msg{padding:10px 12px;border-radius:12px;margin:8px 0;max-width:88%;white-space:pre-wrap}.msg.user{margin-left:auto;background:#e2e8f0}.msg.ai{background:#fff7ed;border:1px solid #fed7aa}.brand{display:flex;gap:10px;align-items:center}.logo{width:38px;height:38px;border-radius:10px;background:white;color:#0f172a;display:grid;place-items:center;font-weight:900}.error{color:#b91c1c;font-size:13px}.okmsg{color:#166534;font-size:13px}.debug{margin-top:8px;font-size:11px;color:#64748b;word-break:break-word}@media(max-width:640px){.wrap{padding:9px}.kpi{font-size:25px}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}header{padding:12px}.nav{position:sticky;top:66px;z-index:15;background:var(--bg);margin:0 -9px;padding:9px}}
 </style>
@@ -37,10 +37,10 @@
 </div>
 <div class="card">
  <h3>Ponto 2.0</h3>
- <div class="muted">Escolha como o funcionário vai se identificar. Matrícula e reconhecimento facial são métodos independentes.</div>
+ <div class="muted">Identificação por matrícula com opção de selfie de comprovação vinculada à batida.</div>
  <div class="toolbar" style="margin:12px 0">
    <button id="methodMatricula" class="btn primary">MATRÍCULA</button>
-   <button id="methodFace" class="btn soft">RECONHECIMENTO FACIAL</button>
+   <button id="methodFace" class="btn soft">MATRÍCULA + SELFIE</button>
  </div>
  <div id="matriculaMode">
    <label>Matrícula</label>
@@ -51,9 +51,9 @@
    <input id="pointSelfie" type="file" accept="image/*" capture="user" style="width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:10px;margin:6px 0 8px;background:#fff">
    <div id="selfiePreviewWrap" class="hidden" style="margin:8px 0 10px">
      <img id="selfiePreview" alt="Prévia facial" style="width:120px;height:120px;object-fit:cover;border-radius:16px;border:1px solid #cbd5e1">
-     <div class="muted">Foto capturada. A identificação facial será conectada na próxima etapa.</div>
+     <div class="muted">Selfie capturada e pronta para ser vinculada ao comprovante.</div>
    </div>
-   <div class="muted">Nesta Beta, o botão facial está preparado na interface, mas ainda não registra até conectarmos a identificação biométrica.</div>
+   <div class="muted">A selfie funciona como evidência da batida. A matrícula continua sendo a identificação do funcionário.</div>
  </div>
    <div id="nextPointHint" class="card" style="background:#f8fafc;margin:8px 0 10px;padding:12px">
      <div class="label">Próxima batida</div>
@@ -227,7 +227,7 @@ function setPointMethod(method){
  $('#faceMode').classList.toggle('hidden',!isFace);
  $('#methodMatricula').className='btn '+(!isFace?'primary':'soft');
  $('#methodFace').className='btn '+(isFace?'primary':'soft');
- $('#nextPointLabel').textContent=isFace?'Aguardando identificação facial':'Digite a matrícula';
+ $('#nextPointLabel').textContent=isFace?'Digite a matrícula e capture a selfie':'Digite a matrícula';
  $('#pointMsg').textContent='';
 }
 $('#methodMatricula').addEventListener('click',()=>setPointMethod('employee_number'));
@@ -240,46 +240,27 @@ $('#pointSelfie').addEventListener('change',()=>{
 });
 
 $('#registerPoint').addEventListener('click',async()=>{
- const btn=$('#registerPoint'), msg=$('#pointMsg');
- const matricula=$('#pointMatricula').value.trim();
- if(window.pointMethod==='face'){msg.className='error';msg.textContent='Reconhecimento facial ainda será conectado. Use Matrícula nesta versão.';return}
+ const btn=$('#registerPoint'),msg=$('#pointMsg'),withSelfie=window.pointMethod==='face';
+ const matricula=(withSelfie?$('#pointFaceMatricula').value:$('#pointMatricula').value).trim();
+ const selfie=withSelfie?$('#pointSelfie').files?.[0]:null;
  if(!matricula){msg.className='error';msg.textContent='Digite a matrícula.';return}
- btn.disabled=true; msg.className='muted'; msg.textContent='Localizando e registrando...';
+ if(withSelfie&&!selfie){msg.className='error';msg.textContent='Capture a selfie antes de bater o ponto.';return}
+ btn.disabled=true;msg.className='muted';msg.textContent='Localizando funcionário...';
  try{
-   const emp=await rest('v2_employees','select=id,full_name,employee_number&company_id=eq.'+companyId+'&employee_number=eq.'+encodeURIComponent(matricula)+'&status=eq.active&limit=1');
-   if(!emp.length)throw new Error('Matrícula não encontrada ou funcionário inativo.');
-   const nextEvent=await getNextPoint(emp[0].id);
-   if(nextEvent==='finished')throw new Error('Jornada já encerrada hoje para este funcionário.');
-   const gps=await getGPS();
-   msg.textContent='Registrando ponto...';
-   const user=await getUser();
-   const occurredAt=new Date().toISOString();
-   const payload={
-     company_id:companyId,
-     employee_id:emp[0].id,
-     occurred_at:occurredAt,
-     event_type:nextEvent,
-     latitude:gps.latitude,
-     longitude:gps.longitude,
-     accuracy_m:gps.accuracy_m,
-     method:'employee_number',
-     device_id:navigator.userAgent.slice(0,180),
-     offline_event_id:'beta-'+Date.now()+'-'+Math.random().toString(36).slice(2),
-     metadata:{beta:true,source:'controla_beta_web',identification_method:'employee_number'},
-     created_by:user.id
-   };
-   const saved=await restInsert('v2_attendance_events',payload);
-   const receiptType=pointLabels[nextEvent]||nextEvent;
-   const when=new Date(occurredAt).toLocaleString('pt-BR');
-   msg.className='okmsg';msg.textContent=receiptType+' registrado para '+emp[0].full_name+'.';
-   const receipt=$('#pointReceipt');
-   receipt.className='card';
-   receipt.innerHTML='<div class="label">COMPROVANTE DE PONTO</div><div style="font-size:18px;font-weight:900;margin:3px 0">'+esc(receiptType)+'</div><strong>'+esc(emp[0].full_name)+'</strong><div class="muted">Matrícula '+esc(emp[0].employee_number)+' • '+esc(when)+'</div><div class="muted">Identificação por matrícula • GPS ±'+Math.round(Number(gps.accuracy_m||0))+' m • horário enviado ao servidor</div>';
-   $('#pointMatricula').value='';
-   $('#nextPointLabel').textContent='Digite a matrícula';
-   await loadRHPoint();
- }catch(e){msg.className='error';msg.textContent=e.message||String(e)}
- finally{btn.disabled=false}
+  const emp=await rest('v2_employees','select=id,full_name,employee_number&company_id=eq.'+companyId+'&employee_number=eq.'+encodeURIComponent(matricula)+'&status=eq.active&limit=1');
+  if(!emp.length)throw new Error('Matrícula não encontrada ou funcionário inativo.');
+  const nextEvent=await getNextPoint(emp[0].id);
+  if(nextEvent==='finished')throw new Error('Jornada já encerrada hoje para este funcionário.');
+  const gps=await getGPS(),user=await getUser(),occurredAt=new Date().toISOString();
+  let selfiePath=null;if(withSelfie){msg.textContent='Enviando selfie...';selfiePath=await uploadSelfie(selfie,emp[0].id)}
+  const payload={company_id:companyId,employee_id:emp[0].id,occurred_at:occurredAt,event_type:nextEvent,latitude:gps.latitude,longitude:gps.longitude,accuracy_m:gps.accuracy_m,method:withSelfie?'employee_number_selfie':'employee_number',device_id:navigator.userAgent.slice(0,180),offline_event_id:'beta47-'+Date.now()+'-'+Math.random().toString(36).slice(2),metadata:{beta:true,source:'controla_beta_web',identification_method:'employee_number',selfie_evidence:withSelfie,selfie_storage_path:selfiePath},created_by:user.id};
+  const saved=await restInsert('v2_attendance_events',payload),eventId=saved?.[0]?.id||null;
+  if(withSelfie&&eventId){try{await restInsert('point_face_checks',{point_event_id:eventId,verified:false,score:null,algorithm:'selfie_evidence_v1',selfie_storage_path:selfiePath,failure_reason:'pending_manual_review'})}catch(e){console.warn(e)}}
+  const receiptType=pointLabels[nextEvent]||nextEvent,when=new Date(occurredAt).toLocaleString('pt-BR');
+  msg.className='okmsg';msg.textContent=receiptType+' registrado para '+emp[0].full_name+'.';
+  const receipt=$('#pointReceipt');receipt.className='card';receipt.innerHTML='<div class="label">COMPROVANTE DE PONTO</div><div style="font-size:18px;font-weight:900;margin:3px 0">'+esc(receiptType)+'</div><strong>'+esc(emp[0].full_name)+'</strong><div class="muted">Matrícula '+esc(emp[0].employee_number)+' • '+esc(when)+'</div><div class="muted">'+(withSelfie?'Matrícula + selfie de comprovação':'Identificação por matrícula')+' • GPS ±'+Math.round(Number(gps.accuracy_m||0))+' m • horário enviado ao servidor</div>'+(withSelfie?'<div class="pill ok" style="margin-top:8px">Selfie anexada ✓</div>':'');
+  $('#pointMatricula').value='';if($('#pointFaceMatricula'))$('#pointFaceMatricula').value='';if($('#pointSelfie'))$('#pointSelfie').value='';$('#selfiePreviewWrap').classList.add('hidden');$('#selfiePreview').removeAttribute('src');$('#nextPointLabel').textContent=withSelfie?'Digite a matrícula e capture a selfie':'Digite a matrícula';await loadRHPoint();
+ }catch(e){msg.className='error';msg.textContent=e.message||String(e)}finally{btn.disabled=false}
 });
 
 $('#refreshPoint').addEventListener('click',loadRHPoint);
