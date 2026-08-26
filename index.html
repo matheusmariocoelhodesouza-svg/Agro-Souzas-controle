@@ -78,7 +78,7 @@
 </section></main>
 <script>
 'use strict';
-const URL='https://aycbrqziusxtxhsdfqjk.supabase.co';
+const API_URL='https://aycbrqziusxtxhsdfqjk.supabase.co';
 const KEY='sb_publishable_OGJX3NBA__JxoyjB3IZNvQ_0nNwh_Xc';
 let companyId=null, conversationId=null;
 const $=s=>document.querySelector(s);
@@ -90,9 +90,9 @@ const clearSession=()=>localStorage.removeItem('controla_beta_session');
 function setMsg(t,c='muted'){const e=$('#loginMsg');e.className=c;e.textContent=t}
 function debug(t){$('#debug').textContent=t||''}
 async function parseResponse(r){const text=await r.text();let data=null;try{data=text?JSON.parse(text):null}catch{data=text}if(!r.ok){const msg=(data&&data.msg)||(data&&data.message)||(data&&data.error_description)||(data&&data.error)||('HTTP '+r.status);throw new Error(msg)}return data}
-async function refreshToken(){const s=session();if(!s?.refresh_token)throw new Error('Sessão expirada. Entre novamente.');const r=await fetch(URL+'/auth/v1/token?grant_type=refresh_token',{method:'POST',headers:{'apikey':KEY,'Content-Type':'application/json'},body:JSON.stringify({refresh_token:s.refresh_token})});const data=await parseResponse(r);saveSession(data);return data.access_token}
-async function authFetch(path,opts={},retry=true){let s=session();if(!s?.access_token)throw new Error('Você precisa entrar.');const headers={apikey:KEY,Authorization:'Bearer '+s.access_token,...(opts.headers||{})};let r=await fetch(URL+path,{...opts,headers});if(r.status===401&&retry){const token=await refreshToken();headers.Authorization='Bearer '+token;r=await fetch(URL+path,{...opts,headers})}return r}
-async function login(email,password){const r=await fetch(URL+'/auth/v1/token?grant_type=password',{method:'POST',headers:{apikey:KEY,'Content-Type':'application/json'},body:JSON.stringify({email,password})});const data=await parseResponse(r);saveSession(data);return data}
+async function refreshToken(){const s=session();if(!s?.refresh_token)throw new Error('Sessão expirada. Entre novamente.');const r=await fetch(API_URL+'/auth/v1/token?grant_type=refresh_token',{method:'POST',headers:{'apikey':KEY,'Content-Type':'application/json'},body:JSON.stringify({refresh_token:s.refresh_token})});const data=await parseResponse(r);saveSession(data);return data.access_token}
+async function authFetch(path,opts={},retry=true){let s=session();if(!s?.access_token)throw new Error('Você precisa entrar.');const headers={apikey:KEY,Authorization:'Bearer '+s.access_token,...(opts.headers||{})};let r=await fetch(API_URL+path,{...opts,headers});if(r.status===401&&retry){const token=await refreshToken();headers.Authorization='Bearer '+token;r=await fetch(API_URL+path,{...opts,headers})}return r}
+async function login(email,password){const r=await fetch(API_URL+'/auth/v1/token?grant_type=password',{method:'POST',headers:{apikey:KEY,'Content-Type':'application/json'},body:JSON.stringify({email,password})});const data=await parseResponse(r);saveSession(data);return data}
 async function rest(table,query=''){const r=await authFetch('/rest/v1/'+table+(query?'?'+query:''),{headers:{Accept:'application/json'}});return parseResponse(r)}
 async function restInsert(table,payload){const r=await authFetch('/rest/v1/'+table,{method:'POST',headers:{'Content-Type':'application/json','Prefer':'return=representation'},body:JSON.stringify(payload)});return parseResponse(r)}
 
@@ -102,7 +102,7 @@ async function uploadSelfie(file,employeeId){
   const now=new Date();
   const day=now.toISOString().slice(0,10);
   const name=companyId+'/'+employeeId+'/'+day+'/'+Date.now()+'-'+Math.random().toString(36).slice(2)+'.'+ext;
-  const r=await fetch(URL+'/storage/v1/object/v2-attendance-selfies/'+name,{
+  const r=await fetch(API_URL+'/storage/v1/object/v2-attendance-selfies/'+name,{
     method:'POST',
     headers:{apikey:KEY,Authorization:'Bearer '+s.access_token,'Content-Type':file.type||'image/jpeg','x-upsert':'false'},
     body:file
@@ -112,7 +112,7 @@ async function uploadSelfie(file,employeeId){
 }
 
 
-async function uploadFaceReference(file,employeeId){const s=session();const ext=file.type==='image/png'?'png':'jpg';const path=companyId+'/'+employeeId+'/reference-'+Date.now()+'.'+ext;const r=await fetch(URL+'/storage/v1/object/biometric-selfies/'+path,{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+s.access_token,'Content-Type':file.type||'image/jpeg','x-upsert':'false'},body:file});await parseResponse(r);return path}
+async function uploadFaceReference(file,employeeId){const s=session();const ext=file.type==='image/png'?'png':'jpg';const path=companyId+'/'+employeeId+'/reference-'+Date.now()+'.'+ext;const r=await fetch(API_URL+'/storage/v1/object/biometric-selfies/'+path,{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+s.access_token,'Content-Type':file.type||'image/jpeg','x-upsert':'false'},body:file});await parseResponse(r);return path}
 async function restUpsert(table,payload,onConflict){const r=await authFetch('/rest/v1/'+table+'?on_conflict='+encodeURIComponent(onConflict),{method:'POST',headers:{'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=representation'},body:JSON.stringify(payload)});return parseResponse(r)}
 async function rpc(name,payload){const r=await authFetch('/rest/v1/rpc/'+name,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});return parseResponse(r)}
 const FACE_MODELS='https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js@0.22.2/weights';
@@ -289,7 +289,7 @@ $('#refreshRH').addEventListener('click',async()=>{await loadEmployees();await l
 $('#refreshBtn').addEventListener('click',refreshAll);
 $('#refreshAlerts').addEventListener('click',async()=>{try{await rpc('v2_refresh_company_alerts',{p_company_id:companyId});await loadAlerts();await loadDashboard()}catch(e){alert(e.message)}});
 function addChat(t,r){const d=document.createElement('div');d.className='msg '+r;d.textContent=t;$('#chatbox').appendChild(d);$('#chatbox').scrollTop=$('#chatbox').scrollHeight}
-$('#sendAI').addEventListener('click',async()=>{const q=$('#question').value.trim();if(!q)return;addChat(q,'user');$('#question').value='';try{const s=session();const body={company_id:companyId,question:q};if(conversationId)body.conversation_id=conversationId;const r=await fetch(URL+'/functions/v1/controla-ai',{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+s.access_token,'Content-Type':'application/json'},body:JSON.stringify(body)});const data=await parseResponse(r);if(data?.conversation_id)conversationId=data.conversation_id;addChat(data?.answer||data?.message||'Sem resposta.','ai')}catch(e){addChat(e.message||'Falha ao consultar a IA.','ai')}});
+$('#sendAI').addEventListener('click',async()=>{const q=$('#question').value.trim();if(!q)return;addChat(q,'user');$('#question').value='';try{const s=session();const body={company_id:companyId,question:q};if(conversationId)body.conversation_id=conversationId;const r=await fetch(API_URL+'/functions/v1/controla-ai',{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+s.access_token,'Content-Type':'application/json'},body:JSON.stringify(body)});const data=await parseResponse(r);if(data?.conversation_id)conversationId=data.conversation_id;addChat(data?.answer||data?.message||'Sem resposta.','ai')}catch(e){addChat(e.message||'Falha ao consultar a IA.','ai')}});
 $('#question').addEventListener('keydown',e=>{if(e.key==='Enter')$('#sendAI').click()});
 window.addEventListener('error',e=>{if(!$('#app').classList.contains('hidden'))return;setMsg('Erro no navegador: '+e.message,'error');debug('Envie um print desta mensagem.')});
 (async()=>{try{if(session()?.access_token){setMsg('Sessão encontrada. Entrando...');await enterApp()}}catch(e){clearSession();setMsg('Sessão anterior expirada. Entre novamente.','muted')}})();
