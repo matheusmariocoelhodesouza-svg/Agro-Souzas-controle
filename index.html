@@ -131,6 +131,15 @@ async function getUser(){const r=await authFetch('/auth/v1/user');return parseRe
 const pointLabels={in:'Entrada',break_start:'Saída para intervalo',break_end:'Retorno do intervalo',out:'Saída final',finished:'Jornada encerrada'};
 const statusLabels={working:'Trabalhando',on_break:'Em intervalo',finished:'Jornada encerrada',present:'Presente'};
 const statusClass={working:'ok',on_break:'warn',finished:'',present:'ok'};
+function localDateBR(d=new Date()){
+  const parts=new Intl.DateTimeFormat('en-CA',{
+    timeZone:'America/Sao_Paulo',
+    year:'numeric',month:'2-digit',day:'2-digit'
+  }).formatToParts(d);
+  const obj=Object.fromEntries(parts.map(p=>[p.type,p.value]));
+  return `${obj.year}-${obj.month}-${obj.day}`;
+}
+
 
 async function getNextPoint(employeeId){
   const r=await rpc('v2_attendance_next_event',{p_company_id:companyId,p_employee_id:employeeId,p_at:new Date().toISOString()});
@@ -183,7 +192,7 @@ async function loadRHPoint(){
  try{
   const employees=await rest('v2_employees','select=id,employee_number,full_name,primary_team,status&company_id=eq.'+companyId+'&status=eq.active&order=full_name.asc');
   $('#rhActive').textContent=employees.length;
-  const today=new Date().toISOString().slice(0,10);
+  const today=localDateBR();
   const days=await rest('v2_attendance_days','select=employee_id,status,worked_minutes,late_minutes,absence_minutes,work_date&company_id=eq.'+companyId+'&work_date=eq.'+today);
   $('#rhWorking').textContent=days.length;
   $('#pointToday').textContent=days.length;
@@ -275,7 +284,7 @@ $('#registerPoint').addEventListener('click',async()=>{
   const nextEvent=await getNextPoint(employee.id);if(nextEvent==='finished')throw new Error('Jornada já encerrada hoje para este funcionário.');
   const gps=await getGPS(),user=await getUser(),occurredAt=new Date().toISOString();
   let selfiePath=null;if(withSelfie){msg.textContent='Salvando comprovante facial...';selfiePath=await uploadSelfie(selfie,employee.id)}
-  const payload={company_id:companyId,employee_id:employee.id,occurred_at:occurredAt,event_type:nextEvent,latitude:gps.latitude,longitude:gps.longitude,accuracy_m:gps.accuracy_m,method:withSelfie?'face':'employee_number',device_id:navigator.userAgent.slice(0,180),offline_event_id:'beta491-'+Date.now()+'-'+Math.random().toString(36).slice(2),metadata:{beta:true,source:'controla_beta_web',identification_method:withSelfie?'face':'employee_number',selfie_evidence:withSelfie,selfie_storage_path:selfiePath,face_distance:faceDistance},created_by:user.id};
+  const payload={company_id:companyId,employee_id:employee.id,occurred_at:occurredAt,event_type:nextEvent,latitude:gps.latitude,longitude:gps.longitude,accuracy_m:gps.accuracy_m,method:withSelfie?'face':'employee_number',device_id:navigator.userAgent.slice(0,180),offline_event_id:'beta492-'+Date.now()+'-'+Math.random().toString(36).slice(2),metadata:{beta:true,source:'controla_beta_web',identification_method:withSelfie?'face':'employee_number',selfie_evidence:withSelfie,selfie_storage_path:selfiePath,face_distance:faceDistance},created_by:user.id};
   const saved=await restInsert('v2_attendance_events',payload),eventId=saved?.[0]?.id||null;
   if(withSelfie&&eventId){try{await restInsert('point_face_checks',{point_event_id:eventId,verified:true,score:Math.max(0,1-faceDistance),algorithm:'face-api.js_0.22.2',selfie_storage_path:selfiePath,failure_reason:null})}catch(e){console.warn(e)}}
   const receiptType=pointLabels[nextEvent]||nextEvent,when=new Date(occurredAt).toLocaleString('pt-BR');msg.className='okmsg';msg.textContent=receiptType+' registrado para '+employee.full_name+'.';
