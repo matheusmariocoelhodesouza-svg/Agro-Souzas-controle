@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0f172a">
-<title>Controla • Beta 5.5 Jornada Individual</title>
+<title>Controla • Beta 5.6 Jornada no Banco</title>
 <style>
 :root{--bg:#f3f6fb;--card:#fff;--ink:#0f172a;--muted:#64748b;--line:#e2e8f0;--accent:#0f172a}*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--ink)}header{position:sticky;top:0;z-index:20;background:linear-gradient(135deg,var(--accent),#1e293b);color:#fff;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 8px 24px rgba(15,23,42,.18)}.wrap{max-width:1200px;margin:auto;padding:12px}.card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:12px;box-shadow:0 4px 18px rgba(15,23,42,.045)}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:10px}.kpi{font-size:28px;font-weight:900}.label,.muted{font-size:12px;color:var(--muted)}.nav{display:flex;gap:8px;overflow:auto;padding:12px 0;scrollbar-width:none}.nav::-webkit-scrollbar{display:none}.nav button,.btn{border:0;border-radius:12px;padding:11px 14px;font-weight:800;white-space:nowrap;cursor:pointer}.nav button{background:#fff;border:1px solid var(--line);color:#334155}.nav button.active,.btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}.btn.soft{background:#e2e8f0}.hidden{display:none!important}.login{max-width:430px;margin:55px auto}.login input,.chat input{width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:10px;margin:6px 0 10px;font:inherit}.section{display:none}.section.active{display:block}.list{display:grid;gap:8px}.item{background:#fff;border:1px solid var(--line);border-radius:13px;padding:12px}.item strong{display:block}.pill{display:inline-block;padding:4px 8px;border-radius:999px;font-size:11px;font-weight:800;background:#e2e8f0}.pill.ok{background:#dcfce7;color:#166534}.pill.warn{background:#fef3c7;color:#92400e}.pill.danger{background:#fee2e2;color:#991b1b}.toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.chatbox{min-height:220px;max-height:52vh;overflow:auto;background:#fff;border:1px solid var(--line);border-radius:14px;padding:10px}.msg{padding:10px 12px;border-radius:12px;margin:8px 0;max-width:88%;white-space:pre-wrap}.msg.user{margin-left:auto;background:#e2e8f0}.msg.ai{background:#fff7ed;border:1px solid #fed7aa}.brand{display:flex;gap:10px;align-items:center}.logo{width:38px;height:38px;border-radius:10px;background:white;color:#0f172a;display:grid;place-items:center;font-weight:900}.error{color:#b91c1c;font-size:13px}.okmsg{color:#166534;font-size:13px}.debug{margin-top:8px;font-size:11px;color:#64748b;word-break:break-word}@media(max-width:640px){.wrap{padding:9px}.kpi{font-size:25px}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}header{padding:12px}.nav{position:sticky;top:66px;z-index:15;background:var(--bg);margin:0 -9px;padding:9px}}
 </style>
@@ -30,7 +30,7 @@
 </div>
 <div class="card"><div class="toolbar"><h3 style="margin:0">Funcionários</h3><button class="btn soft" id="refreshRH">Atualizar</button></div><div id="employeesList" class="list"></div></div><div class="card">
 <h3>Jornada / Escala</h3>
-<div class="muted">Defina a carga diária e os horários previstos de cada funcionário. Nesta versão, a configuração fica salva neste navegador.</div>
+<div class="muted">Defina a carga diária e os horários previstos de cada funcionário. A configuração fica salva no banco de dados e acompanha o funcionário em qualquer aparelho.</div>
 <label>Funcionário</label><select id="scheduleEmployee" style="width:100%;padding:12px;margin:6px 0 10px;border:1px solid #cbd5e1;border-radius:10px"></select>
 <div class="grid">
 <div><label>Entrada prevista</label><input id="scheduleStart" type="time" value="08:00" style="width:100%;padding:12px;margin-top:6px;border:1px solid #cbd5e1;border-radius:10px"></div>
@@ -123,7 +123,7 @@
 'use strict';
 const API_URL='https://aycbrqziusxtxhsdfqjk.supabase.co';
 const KEY='sb_publishable_OGJX3NBA__JxoyjB3IZNvQ_0nNwh_Xc';
-let companyId=null, conversationId=null;
+let companyId=null, conversationId=null, scheduleCache={};
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 const money=v=>Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
@@ -175,13 +175,29 @@ const pointLabels={in:'Entrada',break_start:'Saída para intervalo',break_end:'R
 const statusLabels={working:'Trabalhando',on_break:'Em intervalo',finished:'Jornada encerrada',present:'Presente'};
 const statusClass={working:'ok',on_break:'warn',finished:'',present:'ok'};
 const EXPECTED_DAILY_MINUTES=8*60;
-function scheduleKey(employeeId){return 'controla_schedule_'+companyId+'_'+employeeId}
-function getEmployeeSchedule(employeeId){
- try{return JSON.parse(localStorage.getItem(scheduleKey(employeeId))||'null')}catch{return null}
-}
+function normalizeTimeValue(v){return v?String(v).slice(0,5):''}
+function getEmployeeSchedule(employeeId){return scheduleCache[employeeId]||null}
 function expectedMinutesFor(employeeId){return Number(getEmployeeSchedule(employeeId)?.daily_minutes||EXPECTED_DAILY_MINUTES)}
-function timeToMinutes(t){if(!t)return null;const [h,m]=t.split(':').map(Number);return h*60+m}
+function timeToMinutes(t){if(!t)return null;const [h,m]=String(t).slice(0,5).split(':').map(Number);return h*60+m}
 function eventLocalMinutes(iso){const p=new Intl.DateTimeFormat('en-GB',{timeZone:'America/Sao_Paulo',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(new Date(iso));return timeToMinutes(p)}
+async function loadSchedules(){
+  if(!companyId){scheduleCache={};return}
+  try{
+    const rows=await rest('v2_employee_schedules','select=employee_id,start_time,break_start_time,break_end_time,end_time,daily_minutes,tolerance_minutes,days_of_week&company_id=eq.'+companyId);
+    scheduleCache=Object.fromEntries((rows||[]).map(r=>[r.employee_id,{
+      start:normalizeTimeValue(r.start_time),
+      break_start:normalizeTimeValue(r.break_start_time),
+      break_end:normalizeTimeValue(r.break_end_time),
+      end:normalizeTimeValue(r.end_time),
+      daily_minutes:Number(r.daily_minutes||480),
+      tolerance:Number(r.tolerance_minutes||0),
+      days_of_week:r.days_of_week||[1,2,3,4,5]
+    }]));
+  }catch(e){
+    console.warn('Falha ao carregar jornadas',e);
+    scheduleCache={};
+  }
+}
 
 function fmtMinutes(mins){
   mins=Math.max(0,Math.round(Number(mins||0)));
@@ -295,7 +311,7 @@ $('#loginBtn').addEventListener('click',async()=>{
 $('#password').addEventListener('keydown',e=>{if(e.key==='Enter')$('#loginBtn').click()});
 $('#logout').addEventListener('click',()=>{clearSession();location.reload()});
 $('#nav').addEventListener('click',e=>{const b=e.target.closest('button[data-tab]');if(!b)return;document.querySelectorAll('#nav button').forEach(x=>x.classList.toggle('active',x===b));document.querySelectorAll('.section').forEach(x=>x.classList.toggle('active',x.id===b.dataset.tab))});
-async function refreshAll(){if(!companyId)return;await Promise.all([loadDashboard(),loadTeams(),loadEmployees(),loadOperations(),loadVehicles(),loadAlerts(),loadRHPoint()])}
+async function refreshAll(){if(!companyId)return;await loadSchedules();await Promise.all([loadDashboard(),loadTeams(),loadEmployees(),loadOperations(),loadVehicles(),loadAlerts(),loadRHPoint()])}
 async function loadDashboard(){try{const rows=await rest('v2_dashboard_company_summary','select=*&company_id=eq.'+companyId);const d=rows?.[0]||{};const cards=[['Funcionários',d.active_employees||0],['Conduções',d.active_vehicles||0],['Operações hoje',d.operations_today||0],['Em aberto',d.open_operations||0],['Alertas',d.open_alerts||0],['Críticos',d.critical_alerts||0],['Receitas mês',money(d.month_income)],['Despesas mês',money(d.month_expense)]];$('#kpis').innerHTML=cards.map(x=>`<div class="card"><div class="kpi">${esc(x[1])}</div><div class="label">${esc(x[0])}</div></div>`).join('');const t=await rest('v2_dashboard_team_today','select=*&company_id=eq.'+companyId+'&order=scheduled_start.asc');$('#todayList').innerHTML=t.length?t.map(o=>`<div class="item"><strong>${esc(o.title)}</strong><span class="pill ${o.delayed?'danger':'ok'}">${o.delayed?'Atrasada '+o.delay_minutes+' min':'No horário'}</span><div class="muted">${esc(o.customer_name||'')} • ${esc(o.location_name||'')}</div></div>`).join(''):'<div class="muted">Nenhuma operação programada para hoje.</div>'}catch(e){$('#todayList').innerHTML='<div class="error">'+esc(e.message)+'</div>'}}
 async function loadTeams(){try{const r=await rest('v2_teams','select=name,code,status&company_id=eq.'+companyId+'&order=name.asc');$('#teamsList').innerHTML=r.map(x=>`<div class="item"><strong>${esc(x.name)}</strong><div class="muted">${esc(x.code||'')} • ${esc(x.status)}</div></div>`).join('')||'<div class="muted">Sem equipes.</div>'}catch(e){$('#teamsList').innerHTML='<div class="error">'+esc(e.message)+'</div>'}}
 async function loadEmployees(){try{const r=await rest('v2_employees','select=id,employee_number,full_name,primary_team,status&company_id=eq.'+companyId+'&order=full_name.asc');let en=[];try{en=await rest('v2_employee_face_enrollments','select=employee_id,status&company_id=eq.'+companyId)}catch{}const set=new Set(en.filter(x=>x.status==='active').map(x=>x.employee_id));$('#employeesList').innerHTML=r.map(x=>`<div class="item"><strong>${esc(x.full_name)}</strong><span class="pill ${set.has(x.id)?'ok':'warn'}">${set.has(x.id)?'Biometria cadastrada':'Sem biometria'}</span><div class="muted">Matrícula ${esc(x.employee_number)} • ${esc(x.primary_team||'Sem equipe')}</div></div>`).join('');$('#faceEmployee').innerHTML='<option value="">Selecione...</option>'+r.filter(x=>x.status==='active').map(x=>`<option value="${x.id}">${esc(x.full_name)} • ${esc(x.employee_number)}</option>`).join('');if($('#scheduleEmployee'))$('#scheduleEmployee').innerHTML='<option value="">Selecione...</option>'+r.filter(x=>x.status==='active').map(x=>`<option value="${x.id}">${esc(x.full_name)} • ${esc(x.employee_number)}</option>`).join('');if($('#monthlyEmployee'))$('#monthlyEmployee').innerHTML='<option value="">Selecione...</option>'+r.filter(x=>x.status==='active').map(x=>`<option value="${x.id}">${esc(x.full_name)} • ${esc(x.employee_number)}</option>`).join('');if($('#monthlyMonth')&&!$('#monthlyMonth').value)$('#monthlyMonth').value=localDateBR().slice(0,7);$('#faceEnrollmentList').innerHTML=r.filter(x=>set.has(x.id)).map(x=>`<div class="item"><strong>${esc(x.full_name)}</strong><span class="pill ok">Biometria cadastrada ✓</span></div>`).join('')||'<div class="muted">Nenhuma biometria cadastrada.</div>'}catch(e){$('#employeesList').innerHTML='<div class="error">'+esc(e.message)+'</div>'}}
@@ -555,7 +571,7 @@ $('#registerPoint').addEventListener('click',async()=>{
   const nextEvent=await getNextPoint(employee.id);if(nextEvent==='finished')throw new Error('Jornada já encerrada hoje para este funcionário.');
   const gps=await getGPS(),user=await getUser(),occurredAt=new Date().toISOString();
   let selfiePath=null;if(withSelfie){msg.textContent='Salvando comprovante facial...';selfiePath=await uploadSelfie(selfie,employee.id)}
-  const payload={company_id:companyId,employee_id:employee.id,occurred_at:occurredAt,event_type:nextEvent,latitude:gps.latitude,longitude:gps.longitude,accuracy_m:gps.accuracy_m,method:withSelfie?'face':'employee_number',device_id:navigator.userAgent.slice(0,180),offline_event_id:'beta55-'+Date.now()+'-'+Math.random().toString(36).slice(2),metadata:{beta:true,source:'controla_beta_web',identification_method:withSelfie?'face':'employee_number',selfie_evidence:withSelfie,selfie_storage_path:selfiePath,face_distance:faceDistance},created_by:user.id};
+  const payload={company_id:companyId,employee_id:employee.id,occurred_at:occurredAt,event_type:nextEvent,latitude:gps.latitude,longitude:gps.longitude,accuracy_m:gps.accuracy_m,method:withSelfie?'face':'employee_number',device_id:navigator.userAgent.slice(0,180),offline_event_id:'beta56-'+Date.now()+'-'+Math.random().toString(36).slice(2),metadata:{beta:true,source:'controla_beta_web',identification_method:withSelfie?'face':'employee_number',selfie_evidence:withSelfie,selfie_storage_path:selfiePath,face_distance:faceDistance},created_by:user.id};
   const saved=await restInsert('v2_attendance_events',payload),eventId=saved?.[0]?.id||null;
   if(withSelfie&&eventId){try{await restInsert('point_face_checks',{point_event_id:eventId,verified:true,score:Math.max(0,1-faceDistance),algorithm:'face-api.js_0.22.2',selfie_storage_path:selfiePath,failure_reason:null})}catch(e){console.warn(e)}}
   const receiptType=pointLabels[nextEvent]||nextEvent,when=new Date(occurredAt).toLocaleString('pt-BR');msg.className='okmsg';msg.textContent=receiptType+' registrado para '+employee.full_name+'.';
@@ -572,19 +588,43 @@ $('#printMonthlyMirror').addEventListener('click',printMonthlyMirror);
 
 $('#scheduleEmployee').addEventListener('change',()=>{
  const id=$('#scheduleEmployee').value,s=id?getEmployeeSchedule(id):null;
- if(!s)return;
- $('#scheduleStart').value=s.start||'08:00';$('#scheduleBreakStart').value=s.break_start||'12:00';
- $('#scheduleBreakEnd').value=s.break_end||'13:00';$('#scheduleEnd').value=s.end||'17:00';
- $('#scheduleMinutes').value=s.daily_minutes||480;$('#scheduleTolerance').value=s.tolerance??10;
+ $('#scheduleStart').value=s?.start||'08:00';
+ $('#scheduleBreakStart').value=s?.break_start||'12:00';
+ $('#scheduleBreakEnd').value=s?.break_end||'13:00';
+ $('#scheduleEnd').value=s?.end||'17:00';
+ $('#scheduleMinutes').value=s?.daily_minutes||480;
+ $('#scheduleTolerance').value=s?.tolerance??10;
+ $('#scheduleMsg').className='muted';
+ $('#scheduleMsg').textContent=s?'Jornada carregada do banco de dados.':'Nenhuma jornada cadastrada ainda para este funcionário.';
 });
+
 $('#saveSchedule').addEventListener('click',async()=>{
- const id=$('#scheduleEmployee').value,msg=$('#scheduleMsg');
+ const id=$('#scheduleEmployee').value,msg=$('#scheduleMsg'),btn=$('#saveSchedule');
  if(!id){msg.className='error';msg.textContent='Selecione o funcionário.';return}
- const s={start:$('#scheduleStart').value,break_start:$('#scheduleBreakStart').value,break_end:$('#scheduleBreakEnd').value,end:$('#scheduleEnd').value,daily_minutes:Number($('#scheduleMinutes').value||480),tolerance:Number($('#scheduleTolerance').value||0)};
- localStorage.setItem(scheduleKey(id),JSON.stringify(s));
- msg.className='okmsg';msg.textContent='Jornada salva para este funcionário.';
- await loadRHPoint(); if($('#monthlyEmployee').value===id)await loadMonthlyMirror();
+ const payload={
+   company_id:companyId,
+   employee_id:id,
+   start_time:$('#scheduleStart').value||'08:00',
+   break_start_time:$('#scheduleBreakStart').value||null,
+   break_end_time:$('#scheduleBreakEnd').value||null,
+   end_time:$('#scheduleEnd').value||null,
+   daily_minutes:Number($('#scheduleMinutes').value||480),
+   tolerance_minutes:Number($('#scheduleTolerance').value||0),
+   days_of_week:[1,2,3,4,5],
+   updated_at:new Date().toISOString()
+ };
+ btn.disabled=true;msg.className='muted';msg.textContent='Salvando jornada no banco...';
+ try{
+   await restUpsert('v2_employee_schedules',payload,'company_id,employee_id');
+   await loadSchedules();
+   msg.className='okmsg';msg.textContent='Jornada salva no banco de dados ✓';
+   await loadRHPoint();
+   if($('#monthlyEmployee').value===id)await loadMonthlyMirror();
+ }catch(e){
+   msg.className='error';msg.textContent=e.message||String(e);
+ }finally{btn.disabled=false}
 });
+
 $('#refreshRH').addEventListener('click',async()=>{await loadEmployees();await loadRHPoint()});
 
 $('#refreshBtn').addEventListener('click',refreshAll);
