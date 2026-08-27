@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0f172a">
-<title>Controla • Beta 4.8 Facial</title>
+<title>Controla • Beta 5.0 Jornada</title>
 <style>
 :root{--bg:#f3f6fb;--card:#fff;--ink:#0f172a;--muted:#64748b;--line:#e2e8f0;--accent:#0f172a}*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--ink)}header{position:sticky;top:0;z-index:20;background:linear-gradient(135deg,var(--accent),#1e293b);color:#fff;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 8px 24px rgba(15,23,42,.18)}.wrap{max-width:1200px;margin:auto;padding:12px}.card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:12px;box-shadow:0 4px 18px rgba(15,23,42,.045)}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:10px}.kpi{font-size:28px;font-weight:900}.label,.muted{font-size:12px;color:var(--muted)}.nav{display:flex;gap:8px;overflow:auto;padding:12px 0;scrollbar-width:none}.nav::-webkit-scrollbar{display:none}.nav button,.btn{border:0;border-radius:12px;padding:11px 14px;font-weight:800;white-space:nowrap;cursor:pointer}.nav button{background:#fff;border:1px solid var(--line);color:#334155}.nav button.active,.btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}.btn.soft{background:#e2e8f0}.hidden{display:none!important}.login{max-width:430px;margin:55px auto}.login input,.chat input{width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:10px;margin:6px 0 10px;font:inherit}.section{display:none}.section.active{display:block}.list{display:grid;gap:8px}.item{background:#fff;border:1px solid var(--line);border-radius:13px;padding:12px}.item strong{display:block}.pill{display:inline-block;padding:4px 8px;border-radius:999px;font-size:11px;font-weight:800;background:#e2e8f0}.pill.ok{background:#dcfce7;color:#166534}.pill.warn{background:#fef3c7;color:#92400e}.pill.danger{background:#fee2e2;color:#991b1b}.toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.chatbox{min-height:220px;max-height:52vh;overflow:auto;background:#fff;border:1px solid var(--line);border-radius:14px;padding:10px}.msg{padding:10px 12px;border-radius:12px;margin:8px 0;max-width:88%;white-space:pre-wrap}.msg.user{margin-left:auto;background:#e2e8f0}.msg.ai{background:#fff7ed;border:1px solid #fed7aa}.brand{display:flex;gap:10px;align-items:center}.logo{width:38px;height:38px;border-radius:10px;background:white;color:#0f172a;display:grid;place-items:center;font-weight:900}.error{color:#b91c1c;font-size:13px}.okmsg{color:#166534;font-size:13px}.debug{margin-top:8px;font-size:11px;color:#64748b;word-break:break-word}@media(max-width:640px){.wrap{padding:9px}.kpi{font-size:25px}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}header{padding:12px}.nav{position:sticky;top:66px;z-index:15;background:var(--bg);margin:0 -9px;padding:9px}}
 </style>
@@ -35,6 +35,8 @@
 <div class="grid">
  <div class="card"><div class="kpi" id="pointToday">0</div><div class="label">Funcionários com registro hoje</div></div>
  <div class="card"><div class="kpi" id="pointEvents">0</div><div class="label">Batidas hoje</div></div>
+ <div class="card"><div class="kpi" id="pointWorked">0h00</div><div class="label">Horas trabalhadas hoje</div></div>
+ <div class="card"><div class="kpi" id="pointOvertime">0h00</div><div class="label">Horas extras hoje</div></div>
 </div>
 <div class="card">
  <h3>Ponto 2.0</h3>
@@ -67,6 +69,11 @@
    <div id="pointMsg" class="muted" style="margin-top:10px"></div>
    <div id="pointReceipt" class="hidden" style="margin-top:12px"></div>
  </div>
+</div>
+<div class="card">
+  <div class="toolbar"><h3 style="margin:0">Espelho de ponto</h3><button id="refreshMirror" class="btn soft">Atualizar</button></div>
+  <div class="muted" style="margin:6px 0 10px">Resumo diário por funcionário: jornada, intervalo e saldo de horas.</div>
+  <div id="timeMirrorList" class="list"></div>
 </div>
 <div class="card"><h3>Presença de hoje</h3><div id="presenceList" class="list"></div></div>
 <div class="card"><h3>Últimas batidas</h3><div id="pointList" class="list"></div></div>
@@ -131,6 +138,35 @@ async function getUser(){const r=await authFetch('/auth/v1/user');return parseRe
 const pointLabels={in:'Entrada',break_start:'Saída para intervalo',break_end:'Retorno do intervalo',out:'Saída final',finished:'Jornada encerrada'};
 const statusLabels={working:'Trabalhando',on_break:'Em intervalo',finished:'Jornada encerrada',present:'Presente'};
 const statusClass={working:'ok',on_break:'warn',finished:'',present:'ok'};
+const EXPECTED_DAILY_MINUTES=8*60;
+function fmtMinutes(mins){
+  mins=Math.max(0,Math.round(Number(mins||0)));
+  const h=Math.floor(mins/60),m=mins%60;
+  return `${h}h${String(m).padStart(2,'0')}`;
+}
+function computeDayMetrics(events){
+  const sorted=[...(events||[])].sort((a,b)=>new Date(a.occurred_at)-new Date(b.occurred_at));
+  let worked=0,breakMinutes=0,openWork=null,openBreak=null;
+  for(const e of sorted){
+    const t=new Date(e.occurred_at);
+    if(e.event_type==='in'){
+      if(!openWork)openWork=t;
+    }else if(e.event_type==='break_start'){
+      if(openWork){worked+=Math.max(0,(t-openWork)/60000);openWork=null}
+      openBreak=t;
+    }else if(e.event_type==='break_end'){
+      if(openBreak){breakMinutes+=Math.max(0,(t-openBreak)/60000);openBreak=null}
+      openWork=t;
+    }else if(e.event_type==='out'){
+      if(openWork){worked+=Math.max(0,(t-openWork)/60000);openWork=null}
+      if(openBreak){breakMinutes+=Math.max(0,(t-openBreak)/60000);openBreak=null}
+    }
+  }
+  const last=sorted[sorted.length-1];
+  const status=last?.event_type==='in'||last?.event_type==='break_end'?'working':last?.event_type==='break_start'?'on_break':last?.event_type==='out'?'finished':'none';
+  return {worked:Math.round(worked),breakMinutes:Math.round(breakMinutes),overtime:Math.max(0,Math.round(worked)-EXPECTED_DAILY_MINUTES),status};
+}
+
 function localDateBR(d=new Date()){
   const parts=new Intl.DateTimeFormat('en-CA',{
     timeZone:'America/Sao_Paulo',
@@ -293,6 +329,7 @@ $('#registerPoint').addEventListener('click',async()=>{
  }catch(e){msg.className='error';msg.textContent=e.message||String(e)}finally{btn.disabled=false}
 });
 $('#refreshPoint').addEventListener('click',loadRHPoint);
+$('#refreshMirror').addEventListener('click',loadRHPoint);
 $('#refreshRH').addEventListener('click',async()=>{await loadEmployees();await loadRHPoint()});
 
 $('#refreshBtn').addEventListener('click',refreshAll);
