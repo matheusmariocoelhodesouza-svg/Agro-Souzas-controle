@@ -4,23 +4,83 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0f172a">
-<title>Controla • Beta 5.13 Compliance Profissional</title>
+<title>Controla V2 • Beta 5.14 Dashboard Apanha</title>
 <style>
 :root{--bg:#f3f6fb;--card:#fff;--ink:#0f172a;--muted:#64748b;--line:#e2e8f0;--accent:#0f172a}*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--ink)}header{position:sticky;top:0;z-index:20;background:linear-gradient(135deg,var(--accent),#1e293b);color:#fff;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 8px 24px rgba(15,23,42,.18)}.wrap{max-width:1200px;margin:auto;padding:12px}.card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:12px;box-shadow:0 4px 18px rgba(15,23,42,.045)}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:10px}.kpi{font-size:28px;font-weight:900}.label,.muted{font-size:12px;color:var(--muted)}.nav{display:flex;gap:8px;overflow:auto;padding:12px 0;scrollbar-width:none}.nav::-webkit-scrollbar{display:none}.nav button,.btn{border:0;border-radius:12px;padding:11px 14px;font-weight:800;white-space:nowrap;cursor:pointer}.nav button{background:#fff;border:1px solid var(--line);color:#334155}.nav button.active,.btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}.btn.soft{background:#e2e8f0}.hidden{display:none!important}.login{max-width:430px;margin:55px auto}.login input,.chat input{width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:10px;margin:6px 0 10px;font:inherit}.section{display:none}.section.active{display:block}.list{display:grid;gap:8px}.item{background:#fff;border:1px solid var(--line);border-radius:13px;padding:12px}.item strong{display:block}.pill{display:inline-block;padding:4px 8px;border-radius:999px;font-size:11px;font-weight:800;background:#e2e8f0}.pill.ok{background:#dcfce7;color:#166534}.pill.warn{background:#fef3c7;color:#92400e}.pill.danger{background:#fee2e2;color:#991b1b}.toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.chatbox{min-height:220px;max-height:52vh;overflow:auto;background:#fff;border:1px solid var(--line);border-radius:14px;padding:10px}.msg{padding:10px 12px;border-radius:12px;margin:8px 0;max-width:88%;white-space:pre-wrap}.msg.user{margin-left:auto;background:#e2e8f0}.msg.ai{background:#fff7ed;border:1px solid #fed7aa}.brand{display:flex;gap:10px;align-items:center}.logo{width:38px;height:38px;border-radius:10px;background:white;color:#0f172a;display:grid;place-items:center;font-weight:900}.error{color:#b91c1c;font-size:13px}.okmsg{color:#166534;font-size:13px}.debug{margin-top:8px;font-size:11px;color:#64748b;word-break:break-word}@media(max-width:640px){.wrap{padding:9px}.kpi{font-size:25px}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}header{padding:12px}.nav{position:sticky;top:66px;z-index:15;background:var(--bg);margin:0 -9px;padding:9px}}
+
+:root{--blue:#1976d2;--navy:#0b1830;--sidebar:#0d1b32;--softblue:#eaf3ff;--green:#16a34a;--purple:#7c3aed;--orange:#ea580c;--teal:#0891b2}
+body{background:#f5f7fb}
+header{margin-left:248px;background:#fff;color:#172033;border-bottom:1px solid #e7ebf2;box-shadow:none;padding:10px 18px}
+header .logo{background:var(--blue);color:#fff;border-radius:12px}
+header .brand b{font-size:16px}
+#app{padding-left:248px}
+.wrap{max-width:none;padding:18px 22px}
+.v2sidebar{position:fixed;left:0;top:0;bottom:0;width:248px;background:var(--sidebar);color:#dbe7f7;z-index:40;padding:18px 12px;overflow:auto}
+.v2logo{display:flex;align-items:center;gap:11px;padding:2px 8px 18px;border-bottom:1px solid rgba(255,255,255,.08);margin-bottom:14px}
+.v2mark{width:40px;height:40px;border-radius:12px;background:#1976d2;display:grid;place-items:center;color:#fff;font-weight:950;font-size:21px}
+.v2logo strong{display:block;color:#fff;font-size:16px;letter-spacing:.4px}.v2logo small{color:#8ea4c2}
+.v2group{font-size:10px;letter-spacing:1.2px;color:#7187a6;font-weight:900;padding:14px 10px 7px}
+.v2navbtn{width:100%;border:0;background:transparent;color:#c8d5e8;padding:10px 11px;border-radius:10px;text-align:left;font-weight:750;cursor:pointer;margin:2px 0}
+.v2navbtn:hover,.v2navbtn.active{background:#1976d2;color:#fff}
+.v2topmeta{display:flex;align-items:center;gap:12px;margin-left:auto}.v2date{font-size:12px;color:#64748b;text-align:right}.v2date b{display:block;color:#1e293b}
+.v2new{background:#1976d2!important;color:#fff!important}
+#nav{display:none}
+.v2hero{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;margin-bottom:16px}
+.v2hero h1{margin:0;font-size:26px}.v2hero p{margin:4px 0 0;color:#64748b;font-size:13px}
+.v2-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:14px}
+.v2kpi{background:#fff;border:1px solid #e7ebf2;border-radius:15px;padding:15px;box-shadow:0 2px 9px rgba(15,23,42,.035);position:relative;min-height:116px}
+.v2kpi .v{font-size:28px;font-weight:950;margin-top:8px}.v2kpi .t{font-size:10px;font-weight:900;color:#64748b;letter-spacing:.5px}.v2kpi .s{font-size:11px;color:#64748b;margin-top:5px}.v2ico{position:absolute;right:13px;top:13px;width:38px;height:38px;border-radius:12px;display:grid;place-items:center;font-size:18px;background:#edf5ff}
+.v2main{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(300px,.75fr);gap:14px}
+.v2panel{background:#fff;border:1px solid #e7ebf2;border-radius:15px;padding:15px;box-shadow:0 2px 9px rgba(15,23,42,.035);margin-bottom:14px}
+.v2panel h3{margin:0 0 4px}.v2panelhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.v2stats{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}.v2mini{background:#f8fafc;border:1px solid #edf0f5;border-radius:12px;padding:11px}.v2mini b{font-size:19px;display:block}
+.v2alert{padding:10px 0;border-bottom:1px solid #eef2f7;font-size:12px}.v2alert:last-child{border:0}
+.v2status{font-size:10px;padding:4px 7px;border-radius:999px;font-weight:850;background:#eaf3ff;color:#1565c0}
+.v2-empty{color:#94a3b8;font-size:12px;padding:18px 4px}
+.darkmode{--bg:#08111f;--card:#101c2e;--ink:#e7eef9;--muted:#8fa4bf;--line:#203047;background:#08111f;color:#e7eef9}
+.darkmode header{background:#0e1a2b;color:#e7eef9;border-color:#203047}.darkmode header .v2date b{color:#e7eef9}
+.darkmode .wrap,.darkmode body{background:#08111f}.darkmode .v2kpi,.darkmode .v2panel,.darkmode .card,.darkmode .item{background:#101c2e;border-color:#203047;color:#e7eef9}.darkmode .v2mini{background:#0b1727;border-color:#203047}.darkmode .v2hero p,.darkmode .v2date,.darkmode .v2kpi .t,.darkmode .v2kpi .s{color:#8fa4bf}
+@media(max-width:900px){.v2sidebar{display:none}header{margin-left:0}#app{padding-left:0}#nav{display:flex}.wrap{padding:10px}.v2-kpis{grid-template-columns:repeat(2,1fr)}.v2main{grid-template-columns:1fr}.v2topmeta .v2date{display:none}}
+
 </style>
 <script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
 </head>
 <body>
-<header><div class="brand"><div class="logo">C</div><div><b>Controla</b><div><small id="companyName">Beta</small></div></div></div><button id="logout" class="btn soft hidden">Sair</button></header>
+<aside class="v2sidebar" id="v2sidebar">
+<div class="v2logo"><div class="v2mark">C</div><div><strong>CONTROLA V2</strong><small>Agro Souza's Controle</small></div></div>
+<div class="v2group">OPERAÇÃO</div>
+<button class="v2navbtn active" data-v2tab="inicio">▦ &nbsp; Dashboard Apanha</button>
+<button class="v2navbtn" data-v2tab="operacoes">▣ &nbsp; Apanhas</button>
+<button class="v2navbtn" data-v2tab="equipes">👥 &nbsp; Equipes</button>
+<div class="v2group">GESTÃO</div>
+<button class="v2navbtn" data-v2tab="funcionarios">♙ &nbsp; RH & Pessoas</button>
+<button class="v2navbtn" data-v2tab="ponto">◷ &nbsp; RH & Ponto</button>
+<button class="v2navbtn" data-v2tab="frota">▰ &nbsp; Frota</button>
+<button class="v2navbtn" data-v2tab="alertas">⚠ &nbsp; Alertas</button>
+<div class="v2group">INTELIGÊNCIA</div>
+<button class="v2navbtn" data-v2tab="ia">✦ &nbsp; Controla IA</button>
+<div class="v2group">EM BREVE</div>
+<button class="v2navbtn" type="button">Estoque</button><button class="v2navbtn" type="button">Manutenções</button><button class="v2navbtn" type="button">Financeiro</button><button class="v2navbtn" type="button">Relatórios & BI</button>
+</aside>
+<header><div class="brand"><div class="logo">C</div><div><b>Controla</b><div><small id="companyName">Beta</small></div></div></div><div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><button id="themeToggle" class="btn soft" type="button">☾</button><button id="logout" class="btn soft hidden">Sair</button></div></header>
 <main class="wrap">
 <section id="login" class="login"><div class="card"><h2>Entrar na Beta</h2><div class="muted">Use o mesmo acesso do app atual.</div><label>E-mail</label><input id="email" type="email" autocomplete="username"><label>Senha</label><input id="password" type="password" autocomplete="current-password"><button id="loginBtn" class="btn primary">Entrar</button><div id="loginMsg" class="muted" style="margin-top:10px">Beta corrigida • autenticação direta</div><div id="debug" class="debug"></div></div></section>
 <section id="app" class="hidden">
-<div class="card" style="background:linear-gradient(135deg,#0f172a,#334155);color:white;border:0;margin-top:4px">
-<div class="muted" style="color:#cbd5e1">CENTRAL DE GESTÃO</div>
-<div style="font-size:22px;font-weight:900;margin-top:3px">Visão geral da operação</div>
-<div style="font-size:13px;color:#cbd5e1;margin-top:4px">Equipes, pessoas, frota, alertas e resultados em um só lugar.</div>
-</div><div class="nav" id="nav"><button data-tab="inicio" class="active">Início</button><button data-tab="equipes">Equipes</button><button data-tab="funcionarios">RH & Pessoas</button><button data-tab="ponto">Ponto</button><button data-tab="operacoes">Operações / Apanha</button><button data-tab="frota">Frota</button><button data-tab="alertas">Alertas</button><button data-tab="ia">Controla IA</button></div>
-<div id="inicio" class="section active"><div class="grid" id="kpis"></div><div class="card"><div class="toolbar"><strong>Operações de hoje</strong><button id="refreshBtn" class="btn soft">Atualizar</button></div><div id="todayList" class="list"></div></div></div>
+<div class="nav" id="nav"><button data-tab="inicio" class="active">Início</button><button data-tab="equipes">Equipes</button><button data-tab="funcionarios">RH & Pessoas</button><button data-tab="ponto">Ponto</button><button data-tab="operacoes">Operações / Apanha</button><button data-tab="frota">Frota</button><button data-tab="alertas">Alertas</button><button data-tab="ia">Controla IA</button></div>
+<div id="inicio" class="section active">
+<div class="v2hero"><div><h1>Dashboard Apanha de Aves</h1><p>Visão geral das operações de hoje • dados reais do Controla</p></div><button id="refreshBtn" class="btn v2new">↻ Atualizar painel</button></div>
+<div class="v2-kpis" id="kpis"></div>
+<div class="v2main">
+ <div>
+  <div class="v2panel"><div class="v2panelhead"><div><h3>Apanhas de hoje</h3><div class="muted">Programação e andamento das equipes</div></div><span class="v2status">TEMPO REAL</span></div><div id="todayList" class="list"></div></div>
+  <div class="v2panel"><div class="v2panelhead"><div><h3>Resumo operacional</h3><div class="muted">Indicadores disponíveis no banco atual</div></div></div><div class="v2stats" id="v2OpsSummary"></div></div>
+ </div>
+ <div>
+  <div class="v2panel"><div class="v2panelhead"><h3>Alertas importantes</h3><button class="btn soft" type="button" data-jump="alertas">Ver todos</button></div><div id="v2Alerts"><div class="v2-empty">Carregando alertas...</div></div></div>
+  <div class="v2panel"><div class="v2panelhead"><h3>Equipe & Ponto</h3><button class="btn soft" type="button" data-jump="ponto">Abrir ponto</button></div><div class="v2stats" id="v2PeopleSummary"></div></div>
+  <div class="v2panel"><h3>Próximos módulos do painel</h3><div class="v2alert">Mapa das equipes <span class="v2status">EM BREVE</span></div><div class="v2alert">Produção mensal <span class="v2status">EM BREVE</span></div><div class="v2alert">Previsto × faturado × recebido <span class="v2status">EM BREVE</span></div><div class="v2alert">Top integrados <span class="v2status">EM BREVE</span></div></div>
+ </div>
+</div></div>
 <div id="equipes" class="section"><div class="card"><h3>Equipes</h3><div id="teamsList" class="list"></div></div></div>
 <div id="funcionarios" class="section">
 <div class="grid">
@@ -344,7 +404,21 @@ $('#password').addEventListener('keydown',e=>{if(e.key==='Enter')$('#loginBtn').
 $('#logout').addEventListener('click',()=>{clearSession();location.reload()});
 $('#nav').addEventListener('click',e=>{const b=e.target.closest('button[data-tab]');if(!b)return;document.querySelectorAll('#nav button').forEach(x=>x.classList.toggle('active',x===b));document.querySelectorAll('.section').forEach(x=>x.classList.toggle('active',x.id===b.dataset.tab))});
 async function refreshAll(){if(!companyId)return;await loadSchedules();await Promise.all([loadDashboard(),loadTeams(),loadEmployees(),loadOperations(),loadVehicles(),loadAlerts(),loadRHPoint()])}
-async function loadDashboard(){try{const rows=await rest('v2_dashboard_company_summary','select=*&company_id=eq.'+companyId);const d=rows?.[0]||{};const cards=[['Funcionários',d.active_employees||0],['Conduções',d.active_vehicles||0],['Operações hoje',d.operations_today||0],['Em aberto',d.open_operations||0],['Alertas',d.open_alerts||0],['Críticos',d.critical_alerts||0],['Receitas mês',money(d.month_income)],['Despesas mês',money(d.month_expense)]];$('#kpis').innerHTML=cards.map(x=>`<div class="card"><div class="kpi">${esc(x[1])}</div><div class="label">${esc(x[0])}</div></div>`).join('');const t=await rest('v2_dashboard_team_today','select=*&company_id=eq.'+companyId+'&order=scheduled_start.asc');$('#todayList').innerHTML=t.length?t.map(o=>`<div class="item"><strong>${esc(o.title)}</strong><span class="pill ${o.delayed?'danger':'ok'}">${o.delayed?'Atrasada '+o.delay_minutes+' min':'No horário'}</span><div class="muted">${esc(o.customer_name||'')} • ${esc(o.location_name||'')}</div></div>`).join(''):'<div class="muted">Nenhuma operação programada para hoje.</div>'}catch(e){$('#todayList').innerHTML='<div class="error">'+esc(e.message)+'</div>'}}
+async function loadDashboard(){try{
+ const rows=await rest('v2_dashboard_company_summary','select=*&company_id=eq.'+companyId),d=rows?.[0]||{};
+ const cards=[
+  ['FUNCIONÁRIOS ATIVOS',d.active_employees||0,'Pessoas','👥'],
+  ['CONDUÇÕES ATIVAS',d.active_vehicles||0,'Frota','🚌'],
+  ['APANHAS / OPERAÇÕES HOJE',d.operations_today||0,(d.open_operations||0)+' em aberto','▣'],
+  ['ALERTAS IMPORTANTES',d.open_alerts||0,(d.critical_alerts||0)+' críticos','⚠']
+ ];
+ $('#kpis').innerHTML=cards.map((x,i)=>`<div class="v2kpi"><div class="t">${esc(x[0])}</div><div class="v">${esc(x[1])}</div><div class="s">${esc(x[2])}</div><div class="v2ico">${x[3]}</div></div>`).join('');
+ const t=await rest('v2_dashboard_team_today','select=*&company_id=eq.'+companyId+'&order=scheduled_start.asc');
+ $('#todayList').innerHTML=t.length?t.map(o=>`<div class="item"><div class="toolbar" style="justify-content:space-between"><strong>${esc(o.title)}</strong><span class="pill ${o.delayed?'danger':'ok'}">${o.delayed?'Atrasada '+o.delay_minutes+' min':'No horário'}</span></div><div class="muted">${esc(o.customer_name||'Cliente não informado')} • ${esc(o.location_name||'Local não informado')}</div></div>`).join(''):'<div class="v2-empty">Nenhuma apanha/operação programada para hoje.</div>';
+ $('#v2OpsSummary').innerHTML=[['Hoje',d.operations_today||0],['Em aberto',d.open_operations||0],['Receitas mês',money(d.month_income)]].map(x=>`<div class="v2mini"><span class="muted">${x[0]}</span><b>${esc(x[1])}</b></div>`).join('');
+ $('#v2PeopleSummary').innerHTML=[['Ativos',d.active_employees||0],['Frota',d.active_vehicles||0],['Despesas mês',money(d.month_expense)]].map(x=>`<div class="v2mini"><span class="muted">${x[0]}</span><b>${esc(x[1])}</b></div>`).join('');
+ try{const a=await rest('v2_alerts','select=title,severity,status,created_at&company_id=eq.'+companyId+'&status=eq.open&order=created_at.desc&limit=5');$('#v2Alerts').innerHTML=a.length?a.map(x=>`<div class="v2alert"><b>${esc(x.title||'Alerta')}</b><div class="muted">${esc(x.severity||'atenção')}</div></div>`).join(''):'<div class="v2-empty">Nenhum alerta aberto.</div>'}catch(_){$('#v2Alerts').innerHTML='<div class="v2-empty">Alertas disponíveis na aba Alertas.</div>'}
+}catch(e){$('#todayList').innerHTML='<div class="error">'+esc(e.message)+'</div>'}}
 async function loadTeams(){try{const r=await rest('v2_teams','select=name,code,status&company_id=eq.'+companyId+'&order=name.asc');$('#teamsList').innerHTML=r.map(x=>`<div class="item"><strong>${esc(x.name)}</strong><div class="muted">${esc(x.code||'')} • ${esc(x.status)}</div></div>`).join('')||'<div class="muted">Sem equipes.</div>'}catch(e){$('#teamsList').innerHTML='<div class="error">'+esc(e.message)+'</div>'}}
 async function loadEmployees(){try{const r=await rest('v2_employees','select=id,employee_number,full_name,primary_team,status&company_id=eq.'+companyId+'&order=full_name.asc');let en=[];try{en=await rest('v2_employee_face_enrollments','select=employee_id,status&company_id=eq.'+companyId)}catch{}const set=new Set(en.filter(x=>x.status==='active').map(x=>x.employee_id));$('#employeesList').innerHTML=r.map(x=>`<div class="item"><strong>${esc(x.full_name)}</strong><span class="pill ${set.has(x.id)?'ok':'warn'}">${set.has(x.id)?'Biometria cadastrada':'Sem biometria'}</span><div class="muted">Matrícula ${esc(x.employee_number)} • ${esc(x.primary_team||'Sem equipe')}</div></div>`).join('');$('#faceEmployee').innerHTML='<option value="">Selecione...</option>'+r.filter(x=>x.status==='active').map(x=>`<option value="${x.id}">${esc(x.full_name)} • ${esc(x.employee_number)}</option>`).join('');if($('#scheduleEmployee'))$('#scheduleEmployee').innerHTML='<option value="">Selecione...</option>'+r.filter(x=>x.status==='active').map(x=>`<option value="${x.id}">${esc(x.full_name)} • ${esc(x.employee_number)}</option>`).join('');if($('#monthlyEmployee'))$('#monthlyEmployee').innerHTML='<option value="">Selecione...</option>'+r.filter(x=>x.status==='active').map(x=>`<option value="${x.id}">${esc(x.full_name)} • ${esc(x.employee_number)}</option>`).join('');if($('#monthlyMonth')&&!$('#monthlyMonth').value)$('#monthlyMonth').value=localDateBR().slice(0,7);$('#faceEnrollmentList').innerHTML=r.filter(x=>set.has(x.id)).map(x=>`<div class="item"><strong>${esc(x.full_name)}</strong><span class="pill ok">Biometria cadastrada ✓</span></div>`).join('')||'<div class="muted">Nenhuma biometria cadastrada.</div>'}catch(e){$('#employeesList').innerHTML='<div class="error">'+esc(e.message)+'</div>'}}
 async function loadOperations(){try{const r=await rest('v2_operations','select=operation_number,title,status,customer_name,location_name,scheduled_start,planned_revenue,actual_revenue&company_id=eq.'+companyId+'&order=scheduled_start.desc&limit=50');$('#operationsList').innerHTML=r.map(x=>`<div class="item"><strong>#${esc(x.operation_number)} • ${esc(x.title)}</strong><span class="pill">${esc(x.status)}</span><div class="muted">${esc(x.customer_name||'')} • ${esc(x.location_name||'')}</div><div class="muted">Previsto: ${money(x.planned_revenue)} • Real: ${money(x.actual_revenue)}</div></div>`).join('')||'<div class="muted">Ainda não há operações na Beta.</div>'}catch(e){$('#operationsList').innerHTML='<div class="error">'+esc(e.message)+'</div>'}}
@@ -674,7 +748,7 @@ $('#registerPoint').addEventListener('click',async()=>{
   const nextEvent=await getNextPoint(employee.id);if(nextEvent==='finished')throw new Error('Jornada já encerrada hoje para este funcionário.');
   const gps=await getGPS(),user=await getUser(),occurredAt=new Date().toISOString();
   let selfiePath=null;if(withSelfie){msg.textContent='Salvando comprovante facial...';selfiePath=await uploadSelfie(selfie,employee.id)}
-  const payload={company_id:companyId,employee_id:employee.id,occurred_at:occurredAt,event_type:nextEvent,latitude:gps.latitude,longitude:gps.longitude,accuracy_m:gps.accuracy_m,method:withSelfie?'face':'employee_number',device_id:navigator.userAgent.slice(0,180),offline_event_id:'beta513-'+Date.now()+'-'+Math.random().toString(36).slice(2),metadata:{beta:true,source:'controla_beta_web',identification_method:withSelfie?'face':'employee_number',selfie_evidence:withSelfie,selfie_storage_path:selfiePath,face_distance:faceDistance},created_by:user.id};
+  const payload={company_id:companyId,employee_id:employee.id,occurred_at:occurredAt,event_type:nextEvent,latitude:gps.latitude,longitude:gps.longitude,accuracy_m:gps.accuracy_m,method:withSelfie?'face':'employee_number',device_id:navigator.userAgent.slice(0,180),offline_event_id:'beta514-'+Date.now()+'-'+Math.random().toString(36).slice(2),metadata:{beta:true,source:'controla_beta_web',identification_method:withSelfie?'face':'employee_number',selfie_evidence:withSelfie,selfie_storage_path:selfiePath,face_distance:faceDistance},created_by:user.id};
   const saved=await restInsert('v2_attendance_events',payload),eventId=saved?.[0]?.id||null;
   if(withSelfie&&eventId){try{await restInsert('point_face_checks',{point_event_id:eventId,verified:true,score:Math.max(0,1-faceDistance),algorithm:'face-api.js_0.22.2',selfie_storage_path:selfiePath,failure_reason:null})}catch(e){console.warn(e)}}
   const receiptType=pointLabels[nextEvent]||nextEvent,when=new Date(occurredAt).toLocaleString('pt-BR');msg.className='okmsg';msg.textContent=receiptType+' registrado para '+employee.full_name+'.';
@@ -733,6 +807,20 @@ $('#openTreatment').addEventListener('click',()=>{$('#treatmentCard').classList.
 $('#saveTreatment').addEventListener('click',async()=>{const employee_id=$('#monthlyEmployee').value,reason=$('#treatmentReason').value.trim(),m=$('#treatmentMsg');if(!employee_id||reason.length<3){m.className='error';m.textContent='Selecione o funcionário e informe o motivo.';return}const d=$('#treatmentDateTime').value,p={company_id:companyId,employee_id,treatment_type:$('#treatmentType').value,event_type:$('#treatmentEventType').value,occurred_at:d?new Date(d).toISOString():null,original_event_id:$('#treatmentOriginalId').value.trim()||null,reason,metadata:{source:'controla_beta_5_13'}};try{await restInsert('v2_attendance_treatments',p);m.className='okmsg';m.textContent='Tratamento registrado sem alterar a marcação original ✓';$('#treatmentReason').value='';await refreshTreatmentHistory()}catch(x){m.className='error';m.textContent=x.message||String(x)}});
 $('#exportAFD').addEventListener('click',async()=>{const e=$('#monthlyEmployee').value,mo=$('#monthlyMonth').value;if(!e||!mo)return alert('Selecione funcionário e mês.');const [y,m]=mo.split('-').map(Number),a=new Date(Date.UTC(y,m-1,1)).toISOString(),z=new Date(Date.UTC(y,m,1)).toISOString(),r=await rest('v2_attendance_events','select=nsr,occurred_at,server_received_at,device_id,integrity_hash&company_id=eq.'+companyId+'&employee_id=eq.'+e+'&occurred_at=gte.'+encodeURIComponent(a)+'&occurred_at=lt.'+encodeURIComponent(z)+'&order=occurred_at.asc');downloadText('AFD_PREVIA_'+mo+'.txt',['AFD - PRÉVIA TÉCNICA','NÃO É AFD FISCAL ASSINADO','Empregador: '+(companyProfile.legal_name||companyProfile.trade_name||''),''].concat(r.map(x=>[x.nsr||'',x.occurred_at,x.server_received_at||'',x.device_id||'',x.integrity_hash||''].join(';'))).join('\n'))});
 $('#exportAEJ').addEventListener('click',()=>{const mo=$('#monthlyMonth').value;downloadText('AEJ_PREVIA_'+mo+'.txt','AEJ - PRÉVIA TÉCNICA\\nNÃO É AEJ FISCAL ASSINADO\\nPeríodo: '+mo+'\\nConsulte o Espelho mensal para as jornadas processadas.');});
+
+function v2Go(tab){
+ document.querySelectorAll('.section').forEach(x=>x.classList.remove('active'));
+ document.getElementById(tab)?.classList.add('active');
+ document.querySelectorAll('#nav button').forEach(x=>x.classList.toggle('active',x.dataset.tab===tab));
+ document.querySelectorAll('.v2navbtn[data-v2tab]').forEach(x=>x.classList.toggle('active',x.dataset.v2tab===tab));
+ window.scrollTo({top:0,behavior:'smooth'});
+}
+document.querySelectorAll('.v2navbtn[data-v2tab]').forEach(b=>b.addEventListener('click',()=>v2Go(b.dataset.v2tab)));
+document.querySelectorAll('[data-jump]').forEach(b=>b.addEventListener('click',()=>v2Go(b.dataset.jump)));
+$('#themeToggle').addEventListener('click',()=>{document.body.classList.toggle('darkmode');localStorage.setItem('controla_theme',document.body.classList.contains('darkmode')?'dark':'light');$('#themeToggle').textContent=document.body.classList.contains('darkmode')?'☀':'☾'});
+if(localStorage.getItem('controla_theme')==='dark'){document.body.classList.add('darkmode');$('#themeToggle').textContent='☀'}
+(()=>{const d=new Date();$('#v2Today').textContent='Hoje, '+d.toLocaleDateString('pt-BR');$('#v2Weekday').textContent=d.toLocaleDateString('pt-BR',{weekday:'long'})})();
+
 $('#refreshRH').addEventListener('click',async()=>{await loadEmployees();await loadRHPoint()});
 
 $('#refreshBtn').addEventListener('click',refreshAll);
