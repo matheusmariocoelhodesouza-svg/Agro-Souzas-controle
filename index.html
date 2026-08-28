@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0f172a">
-<title>Controla V2 • Beta 5.17 Desktop Fix</title>
+<title>Controla V2 • Beta 5.18 Login & Abas Fix</title>
 <style>
 :root{--bg:#f3f6fb;--card:#fff;--ink:#0f172a;--muted:#64748b;--line:#e2e8f0;--accent:#0f172a}*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--ink)}header{position:sticky;top:0;z-index:20;background:linear-gradient(135deg,var(--accent),#1e293b);color:#fff;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 8px 24px rgba(15,23,42,.18)}.wrap{max-width:1200px;margin:auto;padding:12px}.card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:12px;box-shadow:0 4px 18px rgba(15,23,42,.045)}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:10px}.kpi{font-size:28px;font-weight:900}.label,.muted{font-size:12px;color:var(--muted)}.nav{display:flex;gap:8px;overflow:auto;padding:12px 0;scrollbar-width:none}.nav::-webkit-scrollbar{display:none}.nav button,.btn{border:0;border-radius:12px;padding:11px 14px;font-weight:800;white-space:nowrap;cursor:pointer}.nav button{background:#fff;border:1px solid var(--line);color:#334155}.nav button.active,.btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}.btn.soft{background:#e2e8f0}.hidden{display:none!important}.login{max-width:430px;margin:55px auto}.login input,.chat input{width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:10px;margin:6px 0 10px;font:inherit}.section{display:none}.section.active{display:block}.list{display:grid;gap:8px}.item{background:#fff;border:1px solid var(--line);border-radius:13px;padding:12px}.item strong{display:block}.pill{display:inline-block;padding:4px 8px;border-radius:999px;font-size:11px;font-weight:800;background:#e2e8f0}.pill.ok{background:#dcfce7;color:#166534}.pill.warn{background:#fef3c7;color:#92400e}.pill.danger{background:#fee2e2;color:#991b1b}.toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.chatbox{min-height:220px;max-height:52vh;overflow:auto;background:#fff;border:1px solid var(--line);border-radius:14px;padding:10px}.msg{padding:10px 12px;border-radius:12px;margin:8px 0;max-width:88%;white-space:pre-wrap}.msg.user{margin-left:auto;background:#e2e8f0}.msg.ai{background:#fff7ed;border:1px solid #fed7aa}.brand{display:flex;gap:10px;align-items:center}.logo{width:38px;height:38px;border-radius:10px;background:white;color:#0f172a;display:grid;place-items:center;font-weight:900}.error{color:#b91c1c;font-size:13px}.okmsg{color:#166534;font-size:13px}.debug{margin-top:8px;font-size:11px;color:#64748b;word-break:break-word}@media(max-width:640px){.wrap{padding:9px}.kpi{font-size:25px}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}header{padding:12px}.nav{position:sticky;top:66px;z-index:15;background:var(--bg);margin:0 -9px;padding:9px}}
 
@@ -76,6 +76,19 @@ table{max-width:100%}
  header{width:100%}
  #app{width:100%}
 }
+
+
+/* Beta 5.18 — autenticação desktop + isolamento rígido das abas */
+.section{display:none!important}
+.section.active{display:block!important}
+body:not(.app-ready) .v2sidebar{display:none!important}
+body:not(.app-ready) header{margin-left:0!important;width:100%!important}
+body:not(.app-ready) #app{padding-left:0!important}
+body:not(.app-ready) .v2topmeta .v2date,
+body:not(.app-ready) #themeToggle{display:none}
+body.app-ready .v2sidebar{display:block}
+#loginBtn:disabled{opacity:.7;cursor:wait}
+@media(max-width:900px){body.app-ready .v2sidebar{display:none!important}}
 
 </style>
 <script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
@@ -235,26 +248,26 @@ const saveSession=s=>localStorage.setItem('controla_beta_session',JSON.stringify
 const clearSession=()=>localStorage.removeItem('controla_beta_session');
 function setMsg(t,c='muted'){const e=$('#loginMsg');e.className=c;e.textContent=t}
 function debug(t){$('#debug').textContent=t||''}
+async function fetchTimeout(url,opts={},ms=12000){
+ const controller=new AbortController();
+ const timer=setTimeout(()=>controller.abort(),ms);
+ try{return await fetch(url,{...opts,signal:controller.signal})}
+ catch(e){if(e&&e.name==='AbortError')throw new Error('A conexão demorou demais. Tente novamente.');throw e}
+ finally{clearTimeout(timer)}
+}
 async function parseResponse(r){const text=await r.text();let data=null;try{data=text?JSON.parse(text):null}catch{data=text}if(!r.ok){const msg=(data&&data.msg)||(data&&data.message)||(data&&data.error_description)||(data&&data.error)||('HTTP '+r.status);throw new Error(msg)}return data}
 async function refreshToken(){const s=session();if(!s?.refresh_token)throw new Error('Sessão expirada. Entre novamente.');const r=await fetch(API_URL+'/auth/v1/token?grant_type=refresh_token',{method:'POST',headers:{'apikey':KEY,'Content-Type':'application/json'},body:JSON.stringify({refresh_token:s.refresh_token})});const data=await parseResponse(r);saveSession(data);return data.access_token}
-async function authFetch(path,opts={},retry=true){let s=session();if(!s?.access_token)throw new Error('Você precisa entrar.');const headers={apikey:KEY,Authorization:'Bearer '+s.access_token,...(opts.headers||{})};let r=await fetch(API_URL+path,{...opts,headers});if(r.status===401&&retry){const token=await refreshToken();headers.Authorization='Bearer '+token;r=await fetch(API_URL+path,{...opts,headers})}return r}
-async function login(email,password){const r=await fetch(API_URL+'/auth/v1/token?grant_type=password',{method:'POST',headers:{apikey:KEY,'Content-Type':'application/json'},body:JSON.stringify({email,password})});const data=await parseResponse(r);saveSession(data);return data}
-async function rest(table,query=''){const r=await authFetch('/rest/v1/'+table+(query?'?'+query:''),{headers:{Accept:'application/json'}});return parseResponse(r)}
-async function restInsert(table,payload){const r=await authFetch('/rest/v1/'+table,{method:'POST',headers:{'Content-Type':'application/json','Prefer':'return=representation'},body:JSON.stringify(payload)});return parseResponse(r)}
-
-async function uploadSelfie(file,employeeId){
-  const s=session(); if(!s?.access_token)throw new Error('Sessão expirada.');
-  const ext=(file.type==='image/png'?'png':file.type==='image/webp'?'webp':'jpg');
-  const now=new Date();
-  const day=localDateBR(now);
-  const name=companyId+'/'+employeeId+'/'+day+'/'+Date.now()+'-'+Math.random().toString(36).slice(2)+'.'+ext;
-  const r=await fetch(API_URL+'/storage/v1/object/v2-attendance-selfies/'+name,{
-    method:'POST',
-    headers:{apikey:KEY,Authorization:'Bearer '+s.access_token,'Content-Type':file.type||'image/jpeg','x-upsert':'false'},
-    body:file
-  });
-  await parseResponse(r);
-  return name;
+async function authFetch(path,opts={},retry=true){let s=session();if(!s?.access_token)throw new Error('Você precisa entrar.');const headers={apikey:KEY,Authorization:'Bearer '+s.access_token,...(opts.headers||{})};let r=await fetchTimeout(API_URL+path,{...opts,headers},12000);if(r.status===401&&retry){const token=await refreshToken();headers.Authorization='Bearer '+token;r=await fetch(API_URL+path,{...opts,headers})}return r}
+async function login(email,password){
+ if(!email||!password)throw new Error('Informe e-mail e senha.');
+ const r=await fetchTimeout(API_URL+'/auth/v1/token?grant_type=password',{
+   method:'POST',
+   headers:{apikey:KEY,'Content-Type':'application/json'},
+   body:JSON.stringify({email,password})
+ },12000);
+ const data=await parseResponse(r);
+ saveSession(data);
+ return data;
 }
 
 
@@ -415,29 +428,48 @@ async function previewNextPoint(){
   }catch(e){label.textContent='Não foi possível consultar a próxima batida'}
 }
 
-async function enterApp(){
-  const user=await getUser();
-  debug('Login confirmado. Carregando empresa Beta...');
+async function enterApp(authUser){
+  const user=authUser||await getUser();
+  if(!user||!user.id)throw new Error('Não foi possível identificar o usuário.');
+  debug('Login confirmado. Carregando empresa...');
   const members=await rest('v2_company_members','select=company_id&user_id=eq.'+encodeURIComponent(user.id)+'&status=eq.active');
-  const ids=(members||[]).map(x=>x.company_id);
+  const ids=(members||[]).map(function(x){return x.company_id});
   if(!ids.length)throw new Error('Seu usuário ainda não possui empresa V2.');
-  const filter=ids.map(id=>'"'+id+'"').join(',');
-  const companies=await rest('v2_companies','select=id,trade_name&status=eq.active&id=in.('+encodeURIComponent(filter)+')');
-  const beta=(companies||[]).find(x=>(x.trade_name||'').includes('BETA'))||(companies||[])[0];
-  if(!beta)throw new Error('Empresa Beta não encontrada.');
+  const filter=ids.map(function(id){return '"'+id+'"'}).join(',');
+  const companies=await rest('v2_companies','select=id,legal_name,trade_name,tax_id,timezone&status=eq.active&id=in.('+encodeURIComponent(filter)+')');
+  const beta=(companies||[]).find(function(x){return String(x.trade_name||'').toUpperCase().includes('BETA')})||(companies||[])[0];
+  if(!beta)throw new Error('Empresa não encontrada.');
   companyId=beta.id;
-   try{companyProfile=(await rest('v2_companies','select=id,legal_name,trade_name,tax_id,timezone&id=eq.'+companyId+'&limit=1'))?.[0]||beta}catch{companyProfile=beta}
-   $('#companyName').textContent=companyProfile.trade_name||beta.trade_name||'Beta';
-  $('#login').classList.add('hidden'); $('#app').classList.remove('hidden'); $('#logout').classList.remove('hidden'); debug('');
-  await refreshAll();
+  companyProfile=beta;
+  $('#companyName').textContent=companyProfile.trade_name||'Agro Souza\'s';
+  $('#login').classList.add('hidden');
+  $('#app').classList.remove('hidden');
+  $('#logout').classList.remove('hidden');
+  document.body.classList.add('app-ready');
+  v2Go('inicio');
+  debug('');
+  refreshAll().catch(function(e){console.warn('refresh',e)});
 }
 $('#loginBtn').addEventListener('click',async()=>{
-  const btn=$('#loginBtn'); btn.disabled=true; setMsg('Entrando...'); debug('Enviando autenticação ao Supabase...');
-  try{await login($('#email').value.trim(),$('#password').value);setMsg('Login confirmado.','okmsg');await enterApp()}catch(e){setMsg(e.message||String(e),'error');debug('Se esta mensagem aparecer, me mande um print dela.')}finally{btn.disabled=false}
+  const btn=$('#loginBtn');
+  if(btn.disabled)return;
+  btn.disabled=true;
+  setMsg('Entrando...');
+  debug('Autenticando...');
+  try{
+    const data=await login($('#email').value.trim(),$('#password').value);
+    setMsg('Login confirmado. Carregando painel...','okmsg');
+    await enterApp(data&&data.user ? data.user : null);
+  }catch(e){
+    setMsg(e.message||String(e),'error');
+    debug('Se continuar, me envie esta mensagem.');
+  }finally{
+    btn.disabled=false;
+  }
 });
 $('#password').addEventListener('keydown',e=>{if(e.key==='Enter')$('#loginBtn').click()});
 $('#logout').addEventListener('click',()=>{clearSession();location.reload()});
-$('#nav').addEventListener('click',e=>{const b=e.target.closest('button[data-tab]');if(!b)return;document.querySelectorAll('#nav button').forEach(x=>x.classList.toggle('active',x===b));document.querySelectorAll('.section').forEach(x=>x.classList.toggle('active',x.id===b.dataset.tab))});
+$('#nav').addEventListener('click',e=>{const b=e.target.closest('button[data-tab]');if(!b)return;v2Go(b.dataset.tab)});
 async function refreshAll(){
  if(!companyId)return;
  // Dashboard primeiro: evita travar a tela aguardando todos os módulos.
@@ -798,7 +830,7 @@ $('#registerPoint').addEventListener('click',async()=>{
   const nextEvent=await getNextPoint(employee.id);if(nextEvent==='finished')throw new Error('Jornada já encerrada hoje para este funcionário.');
   const gps=await getGPS(),user=await getUser(),occurredAt=new Date().toISOString();
   let selfiePath=null;if(withSelfie){msg.textContent='Salvando comprovante facial...';selfiePath=await uploadSelfie(selfie,employee.id)}
-  const payload={company_id:companyId,employee_id:employee.id,occurred_at:occurredAt,event_type:nextEvent,latitude:gps.latitude,longitude:gps.longitude,accuracy_m:gps.accuracy_m,method:withSelfie?'face':'employee_number',device_id:navigator.userAgent.slice(0,180),offline_event_id:'beta517-'+Date.now()+'-'+Math.random().toString(36).slice(2),metadata:{beta:true,source:'controla_beta_web',identification_method:withSelfie?'face':'employee_number',selfie_evidence:withSelfie,selfie_storage_path:selfiePath,face_distance:faceDistance},created_by:user.id};
+  const payload={company_id:companyId,employee_id:employee.id,occurred_at:occurredAt,event_type:nextEvent,latitude:gps.latitude,longitude:gps.longitude,accuracy_m:gps.accuracy_m,method:withSelfie?'face':'employee_number',device_id:navigator.userAgent.slice(0,180),offline_event_id:'beta518-'+Date.now()+'-'+Math.random().toString(36).slice(2),metadata:{beta:true,source:'controla_beta_web',identification_method:withSelfie?'face':'employee_number',selfie_evidence:withSelfie,selfie_storage_path:selfiePath,face_distance:faceDistance},created_by:user.id};
   const saved=await restInsert('v2_attendance_events',payload),eventId=saved?.[0]?.id||null;
   if(withSelfie&&eventId){try{await restInsert('point_face_checks',{point_event_id:eventId,verified:true,score:Math.max(0,1-faceDistance),algorithm:'face-api.js_0.22.2',selfie_storage_path:selfiePath,failure_reason:null})}catch(e){console.warn(e)}}
   const receiptType=pointLabels[nextEvent]||nextEvent,when=new Date(occurredAt).toLocaleString('pt-BR');msg.className='okmsg';msg.textContent=receiptType+' registrado para '+employee.full_name+'.';
@@ -859,8 +891,8 @@ $('#exportAFD').addEventListener('click',async()=>{const e=$('#monthlyEmployee')
 $('#exportAEJ').addEventListener('click',()=>{const mo=$('#monthlyMonth').value;downloadText('AEJ_PREVIA_'+mo+'.txt','AEJ - PRÉVIA TÉCNICA\\nNÃO É AEJ FISCAL ASSINADO\\nPeríodo: '+mo+'\\nConsulte o Espelho mensal para as jornadas processadas.');});
 
 async function v2Go(tab){
- document.querySelectorAll('.section').forEach(x=>x.classList.remove('active'));
- var targetSection=document.getElementById(tab); if(targetSection) targetSection.classList.add('active');
+ document.querySelectorAll('#app .section').forEach(function(x){x.classList.remove('active');x.style.display='none'});
+ var targetSection=document.getElementById(tab); if(targetSection){targetSection.classList.add('active');targetSection.style.display='block'};
  document.querySelectorAll('#nav button').forEach(x=>x.classList.toggle('active',x.dataset.tab===tab));
  document.querySelectorAll('.v2navbtn[data-v2tab]').forEach(x=>x.classList.toggle('active',x.dataset.v2tab===tab));
  window.scrollTo(0,0);
@@ -888,7 +920,19 @@ function addChat(t,r){const d=document.createElement('div');d.className='msg '+r
 $('#sendAI').addEventListener('click',async()=>{const q=$('#question').value.trim();if(!q)return;addChat(q,'user');$('#question').value='';try{const s=session();const body={company_id:companyId,question:q};if(conversationId)body.conversation_id=conversationId;const r=await fetch(API_URL+'/functions/v1/controla-ai',{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+s.access_token,'Content-Type':'application/json'},body:JSON.stringify(body)});const data=await parseResponse(r);if(data?.conversation_id)conversationId=data.conversation_id;addChat(data?.answer||data?.message||'Sem resposta.','ai')}catch(e){addChat(e.message||'Falha ao consultar a IA.','ai')}});
 $('#question').addEventListener('keydown',e=>{if(e.key==='Enter')$('#sendAI').click()});
 window.addEventListener('error',e=>{if(!$('#app').classList.contains('hidden'))return;setMsg('Erro no navegador: '+e.message,'error');debug('Envie um print desta mensagem.')});
-(async()=>{try{if(session()?.access_token){setMsg('Sessão encontrada. Entrando...');await enterApp()}}catch(e){clearSession();setMsg('Sessão anterior expirada. Entre novamente.','muted')}})();
+(async()=>{try{
+ const ss=session();
+ if(ss&&ss.access_token){
+   setMsg('Sessão encontrada. Entrando...');
+   await enterApp(ss.user||null);
+ }
+}catch(e){
+ clearSession();
+ document.body.classList.remove('app-ready');
+ $('#app').classList.add('hidden');
+ $('#login').classList.remove('hidden');
+ setMsg('Sessão anterior expirada. Entre novamente.','muted');
+}})();
 
 async function loadProfessionalProfile(){
  try{
