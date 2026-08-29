@@ -5,7 +5,7 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width,initial-scale=1,viewport-fit=cover" name="viewport"/>
 <meta content="#0f172a" name="theme-color"/>
-<title>Controla V2 • Beta 5.26 Espelho Isolado</title>
+<title>Controla V2 • Beta 5.27 Ponto Isolado</title>
 <style>
 :root{--bg:#f3f6fb;--card:#fff;--ink:#0f172a;--muted:#64748b;--line:#e2e8f0;--accent:#0f172a}*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--ink)}header{position:sticky;top:0;z-index:20;background:linear-gradient(135deg,var(--accent),#1e293b);color:#fff;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 8px 24px rgba(15,23,42,.18)}.wrap{max-width:1200px;margin:auto;padding:12px}.card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:12px;box-shadow:0 4px 18px rgba(15,23,42,.045)}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:10px}.kpi{font-size:28px;font-weight:900}.label,.muted{font-size:12px;color:var(--muted)}.nav{display:flex;gap:8px;overflow:auto;padding:12px 0;scrollbar-width:none}.nav::-webkit-scrollbar{display:none}.nav button,.btn{border:0;border-radius:12px;padding:11px 14px;font-weight:800;white-space:nowrap;cursor:pointer}.nav button{background:#fff;border:1px solid var(--line);color:#334155}.nav button.active,.btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}.btn.soft{background:#e2e8f0}.hidden{display:none!important}.login{max-width:430px;margin:55px auto}.login input,.chat input{width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:10px;margin:6px 0 10px;font:inherit}.section{display:none}.section.active{display:block}.list{display:grid;gap:8px}.item{background:#fff;border:1px solid var(--line);border-radius:13px;padding:12px}.item strong{display:block}.pill{display:inline-block;padding:4px 8px;border-radius:999px;font-size:11px;font-weight:800;background:#e2e8f0}.pill.ok{background:#dcfce7;color:#166534}.pill.warn{background:#fef3c7;color:#92400e}.pill.danger{background:#fee2e2;color:#991b1b}.toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.chatbox{min-height:220px;max-height:52vh;overflow:auto;background:#fff;border:1px solid var(--line);border-radius:14px;padding:10px}.msg{padding:10px 12px;border-radius:12px;margin:8px 0;max-width:88%;white-space:pre-wrap}.msg.user{margin-left:auto;background:#e2e8f0}.msg.ai{background:#fff7ed;border:1px solid #fed7aa}.brand{display:flex;gap:10px;align-items:center}.logo{width:38px;height:38px;border-radius:10px;background:white;color:#0f172a;display:grid;place-items:center;font-weight:900}.error{color:#b91c1c;font-size:13px}.okmsg{color:#166534;font-size:13px}.debug{margin-top:8px;font-size:11px;color:#64748b;word-break:break-word}@media(max-width:640px){.wrap{padding:9px}.kpi{font-size:25px}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}header{padding:12px}.nav{position:sticky;top:66px;z-index:15;background:var(--bg);margin:0 -9px;padding:9px}}
 
@@ -107,6 +107,9 @@ body.app-ready .v2sidebar{display:block}
 #screenHost{display:block;min-width:0;width:100%}
 #screenHost>[data-screen]{display:block!important;visibility:visible!important;height:auto!important;overflow:visible!important}
 
+
+/* Beta 5.27 — proteção final contra vazamento do espelho de ponto */
+#screenHost [data-screen="ponto"] .card{display:block}
 </style>
 <script defer="" src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
 </head>
@@ -241,13 +244,12 @@ body.app-ready .v2sidebar{display:block}
 </div>
 <div class="card"><h3>Presença de hoje</h3><div class="list" id="presenceList"></div></div>
 <div class="card"><h3>Últimas batidas</h3><div class="list" id="pointList"></div></div>
-
-</div>
 <div class="card">
 <div class="toolbar"><h3 style="margin:0">Espelho de ponto</h3><button class="btn soft" id="refreshMirror">Atualizar</button></div>
 <div class="muted" style="margin:6px 0 10px">Resumo diário por funcionário: jornada, intervalo e saldo de horas.</div>
 <div class="list" id="timeMirrorList"></div>
-</div>
+</div></div>
+
 <div class="section" data-screen="operacoes" hidden="" id="operacoes"><div class="v2hero"><div><h1>Apanhas</h1><p>Planejamento, execução e fechamento das operações.</p></div><button class="btn v2new" id="newPoultryOp">+ Nova Apanha</button></div>
 <div class="card hidden" id="poultryForm"><div class="toolbar"><strong>Nova Apanha</strong><button class="btn soft" id="closePoultryForm">Fechar</button></div>
 <div class="row"><div><label>Cliente / Integrado</label><select id="poCustomer"></select></div><div><label>Granja / Local</label><input id="poLocation"/></div><div><label>Equipe</label><select id="poTeam"></select></div></div>
@@ -870,7 +872,7 @@ $('#registerPoint').addEventListener('click',async()=>{
   const nextEvent=await getNextPoint(employee.id);if(nextEvent==='finished')throw new Error('Jornada já encerrada hoje para este funcionário.');
   const gps=await getGPS(),user=await getUser(),occurredAt=new Date().toISOString();
   let selfiePath=null;if(withSelfie){msg.textContent='Salvando comprovante facial...';selfiePath=await uploadSelfie(selfie,employee.id)}
-  const payload={company_id:companyId,employee_id:employee.id,occurred_at:occurredAt,event_type:nextEvent,latitude:gps.latitude,longitude:gps.longitude,accuracy_m:gps.accuracy_m,method:withSelfie?'face':'employee_number',device_id:navigator.userAgent.slice(0,180),offline_event_id:'beta526-'+Date.now()+'-'+Math.random().toString(36).slice(2),metadata:{beta:true,source:'controla_beta_web',identification_method:withSelfie?'face':'employee_number',selfie_evidence:withSelfie,selfie_storage_path:selfiePath,face_distance:faceDistance},created_by:user.id};
+  const payload={company_id:companyId,employee_id:employee.id,occurred_at:occurredAt,event_type:nextEvent,latitude:gps.latitude,longitude:gps.longitude,accuracy_m:gps.accuracy_m,method:withSelfie?'face':'employee_number',device_id:navigator.userAgent.slice(0,180),offline_event_id:'beta527-'+Date.now()+'-'+Math.random().toString(36).slice(2),metadata:{beta:true,source:'controla_beta_web',identification_method:withSelfie?'face':'employee_number',selfie_evidence:withSelfie,selfie_storage_path:selfiePath,face_distance:faceDistance},created_by:user.id};
   const saved=await restInsert('v2_attendance_events',payload),eventId=saved?.[0]?.id||null;
   if(withSelfie&&eventId){try{await restInsert('point_face_checks',{point_event_id:eventId,verified:true,score:Math.max(0,1-faceDistance),algorithm:'face-api.js_0.22.2',selfie_storage_path:selfiePath,failure_reason:null})}catch(e){console.warn(e)}}
   const receiptType=pointLabels[nextEvent]||nextEvent,when=new Date(occurredAt).toLocaleString('pt-BR');msg.className='okmsg';msg.textContent=receiptType+' registrado para '+employee.full_name+'.';
