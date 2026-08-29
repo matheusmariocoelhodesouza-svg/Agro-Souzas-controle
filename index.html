@@ -5,7 +5,7 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width,initial-scale=1,viewport-fit=cover" name="viewport"/>
 <meta content="#0f172a" name="theme-color"/>
-<title>Controla V2 • Beta 5.27 Ponto Isolado</title>
+<title>Controla V2 • Beta 5.28 Ponto Runtime Fix</title>
 <style>
 :root{--bg:#f3f6fb;--card:#fff;--ink:#0f172a;--muted:#64748b;--line:#e2e8f0;--accent:#0f172a}*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--ink)}header{position:sticky;top:0;z-index:20;background:linear-gradient(135deg,var(--accent),#1e293b);color:#fff;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 8px 24px rgba(15,23,42,.18)}.wrap{max-width:1200px;margin:auto;padding:12px}.card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:12px;box-shadow:0 4px 18px rgba(15,23,42,.045)}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:10px}.kpi{font-size:28px;font-weight:900}.label,.muted{font-size:12px;color:var(--muted)}.nav{display:flex;gap:8px;overflow:auto;padding:12px 0;scrollbar-width:none}.nav::-webkit-scrollbar{display:none}.nav button,.btn{border:0;border-radius:12px;padding:11px 14px;font-weight:800;white-space:nowrap;cursor:pointer}.nav button{background:#fff;border:1px solid var(--line);color:#334155}.nav button.active,.btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}.btn.soft{background:#e2e8f0}.hidden{display:none!important}.login{max-width:430px;margin:55px auto}.login input,.chat input{width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:10px;margin:6px 0 10px;font:inherit}.section{display:none}.section.active{display:block}.list{display:grid;gap:8px}.item{background:#fff;border:1px solid var(--line);border-radius:13px;padding:12px}.item strong{display:block}.pill{display:inline-block;padding:4px 8px;border-radius:999px;font-size:11px;font-weight:800;background:#e2e8f0}.pill.ok{background:#dcfce7;color:#166534}.pill.warn{background:#fef3c7;color:#92400e}.pill.danger{background:#fee2e2;color:#991b1b}.toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.chatbox{min-height:220px;max-height:52vh;overflow:auto;background:#fff;border:1px solid var(--line);border-radius:14px;padding:10px}.msg{padding:10px 12px;border-radius:12px;margin:8px 0;max-width:88%;white-space:pre-wrap}.msg.user{margin-left:auto;background:#e2e8f0}.msg.ai{background:#fff7ed;border:1px solid #fed7aa}.brand{display:flex;gap:10px;align-items:center}.logo{width:38px;height:38px;border-radius:10px;background:white;color:#0f172a;display:grid;place-items:center;font-weight:900}.error{color:#b91c1c;font-size:13px}.okmsg{color:#166534;font-size:13px}.debug{margin-top:8px;font-size:11px;color:#64748b;word-break:break-word}@media(max-width:640px){.wrap{padding:9px}.kpi{font-size:25px}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}header{padding:12px}.nav{position:sticky;top:66px;z-index:15;background:var(--bg);margin:0 -9px;padding:9px}}
 
@@ -719,11 +719,13 @@ function printMonthlyMirror(){
   w.document.close();
 }
 
+function setTextSafe(id,value){const el=document.getElementById(id);if(el)el.textContent=value}
+function setHtmlSafe(id,value){const el=document.getElementById(id);if(el)el.innerHTML=value}
 async function loadRHPoint(){
  if(!companyId)return;
  try{
    const employees=await rest('v2_employees','select=id,employee_number,full_name,primary_team,status&company_id=eq.'+companyId+'&status=eq.active&order=full_name.asc');
-   $('#rhActive').textContent=employees.length;
+   setTextSafe('rhActive',employees.length);
    const today=localDateBR();
    const bounds=saoPauloDayUtcBounds(today);
    const days=await rest('v2_attendance_days','select=employee_id,status,worked_minutes,late_minutes,absence_minutes,work_date&company_id=eq.'+companyId+'&work_date=eq.'+today);
@@ -753,13 +755,13 @@ async function loadRHPoint(){
      totalOvertime+=metrics.overtime;
    }
 
-   $('#rhWorking').textContent=withEvents;
-   $('#pointToday').textContent=withEvents;
-   $('#pointEvents').textContent=events.length;
-   $('#pointWorked').textContent=fmtMinutes(totalWorked);
-   $('#pointOvertime').textContent=fmtMinutes(totalOvertime);
+   setTextSafe('rhWorking',withEvents);
+   setTextSafe('pointToday',withEvents);
+   setTextSafe('pointEvents',events.length);
+   setTextSafe('pointWorked',fmtMinutes(totalWorked));
+   setTextSafe('pointOvertime',fmtMinutes(totalOvertime));
 
-   $('#presenceList').innerHTML=employees.map(e=>{
+   const presenceEl=$('#presenceList'); if(presenceEl) presenceEl.innerHTML=employees.map(e=>{
      const d=days.find(x=>x.employee_id===e.id);
      const mt=metricsByEmployee[e.id];
      const hasEvents=(byEmployee[e.id]||[]).length>0;
@@ -770,7 +772,7 @@ async function loadRHPoint(){
      return `<div class="item"><strong>${esc(e.full_name)}</strong><span class="pill ${cls}">${esc(txt)}</span><div class="muted">${esc(e.primary_team||'Sem equipe')}${hasEvents||d?' • '+fmtMinutes(mins):''}</div></div>`
    }).join('')||'<div class="muted">Sem funcionários ativos.</div>';
 
-   $('#timeMirrorList').innerHTML=employees.map(e=>{
+   const mirrorEl=$('#timeMirrorList'); if(mirrorEl) mirrorEl.innerHTML=employees.map(e=>{
      const evs=byEmployee[e.id]||[];
      if(!evs.length)return '';
      const mt=metricsByEmployee[e.id];
@@ -780,15 +782,15 @@ async function loadRHPoint(){
      return `<div class="item"><strong>${esc(e.full_name)}</strong><span class="pill ${statusClass[mt.status]||''}">${esc(status)}</span><div class="muted">Primeira batida: ${fmt(first.occurred_at)} • Última: ${fmt(last.occurred_at)}</div><div class="muted">Trabalhado: <b>${fmtMinutes(mt.worked)}</b> • Intervalo: ${fmtMinutes(mt.breakMinutes)} • Extra: <b>${fmtMinutes(mt.overtime)}</b>${mt.late?' • Atraso: <b>'+fmtMinutes(mt.late)+'</b>':''}</div></div>`
    }).join('')||'<div class="muted">Nenhum registro de ponto hoje.</div>';
 
-   $('#pointList').innerHTML=[...events].reverse().slice(0,100).map(x=>{
+   const pointListEl=$('#pointList'); if(pointListEl) pointListEl.innerHTML=[...events].reverse().slice(0,100).map(x=>{
      const e=map[x.employee_id]||{};
      const dt=new Date(x.occurred_at).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo'});
      return `<div class="item"><strong>${esc(e.full_name||'Funcionário')}</strong><span class="pill">${esc(pointLabels[x.event_type]||x.event_type)}</span><div class="muted">${esc(dt)} • ${esc(x.method||'método não informado')}${x.accuracy_m?' • GPS ±'+esc(x.accuracy_m)+' m':''}</div></div>`
    }).join('')||'<div class="muted">Nenhuma batida registrada hoje.</div>';
 
    const vacations=await rest('v2_vacation_alerts','select=employee_id,concession_deadline,status,alert_level,days&company_id=eq.'+companyId+'&order=concession_deadline.asc&limit=50');
-   $('#rhVacation').textContent=vacations.filter(v=>v.alert_level&&v.alert_level!=='ok').length;
-   $('#vacationList').innerHTML=vacations.map(v=>{
+   setTextSafe('rhVacation',vacations.filter(v=>v.alert_level&&v.alert_level!=='ok').length);
+   if($('#vacationList')) $('#vacationList').innerHTML=vacations.map(v=>{
      const e=map[v.employee_id]||{};
      const cls=v.alert_level==='critical'?'danger':v.alert_level==='warning'?'warn':'ok';
      return `<div class="item"><strong>${esc(e.full_name||'Funcionário')}</strong><span class="pill ${cls}">${esc(v.alert_level||v.status||'férias')}</span><div class="muted">Prazo: ${esc(v.concession_deadline||'-')} • ${esc(v.days||0)} dias</div></div>`
@@ -872,7 +874,7 @@ $('#registerPoint').addEventListener('click',async()=>{
   const nextEvent=await getNextPoint(employee.id);if(nextEvent==='finished')throw new Error('Jornada já encerrada hoje para este funcionário.');
   const gps=await getGPS(),user=await getUser(),occurredAt=new Date().toISOString();
   let selfiePath=null;if(withSelfie){msg.textContent='Salvando comprovante facial...';selfiePath=await uploadSelfie(selfie,employee.id)}
-  const payload={company_id:companyId,employee_id:employee.id,occurred_at:occurredAt,event_type:nextEvent,latitude:gps.latitude,longitude:gps.longitude,accuracy_m:gps.accuracy_m,method:withSelfie?'face':'employee_number',device_id:navigator.userAgent.slice(0,180),offline_event_id:'beta527-'+Date.now()+'-'+Math.random().toString(36).slice(2),metadata:{beta:true,source:'controla_beta_web',identification_method:withSelfie?'face':'employee_number',selfie_evidence:withSelfie,selfie_storage_path:selfiePath,face_distance:faceDistance},created_by:user.id};
+  const payload={company_id:companyId,employee_id:employee.id,occurred_at:occurredAt,event_type:nextEvent,latitude:gps.latitude,longitude:gps.longitude,accuracy_m:gps.accuracy_m,method:withSelfie?'face':'employee_number',device_id:navigator.userAgent.slice(0,180),offline_event_id:'beta528-'+Date.now()+'-'+Math.random().toString(36).slice(2),metadata:{beta:true,source:'controla_beta_web',identification_method:withSelfie?'face':'employee_number',selfie_evidence:withSelfie,selfie_storage_path:selfiePath,face_distance:faceDistance},created_by:user.id};
   const saved=await restInsert('v2_attendance_events',payload),eventId=saved?.[0]?.id||null;
   if(withSelfie&&eventId){try{await restInsert('point_face_checks',{point_event_id:eventId,verified:true,score:Math.max(0,1-faceDistance),algorithm:'face-api.js_0.22.2',selfie_storage_path:selfiePath,failure_reason:null})}catch(e){console.warn(e)}}
   const receiptType=pointLabels[nextEvent]||nextEvent,when=new Date(occurredAt).toLocaleString('pt-BR');msg.className='okmsg';msg.textContent=receiptType+' registrado para '+employee.full_name+'.';
