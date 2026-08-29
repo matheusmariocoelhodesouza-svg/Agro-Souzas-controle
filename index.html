@@ -1,10 +1,11 @@
-<!doctype html>
+<!DOCTYPE html>
+
 <html lang="pt-BR">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#0f172a">
-<title>Controla V2 • Beta 5.25 Tela Única</title>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1,viewport-fit=cover" name="viewport"/>
+<meta content="#0f172a" name="theme-color"/>
+<title>Controla V2 • Beta 5.26 Espelho Isolado</title>
 <style>
 :root{--bg:#f3f6fb;--card:#fff;--ink:#0f172a;--muted:#64748b;--line:#e2e8f0;--accent:#0f172a}*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--ink)}header{position:sticky;top:0;z-index:20;background:linear-gradient(135deg,var(--accent),#1e293b);color:#fff;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 8px 24px rgba(15,23,42,.18)}.wrap{max-width:1200px;margin:auto;padding:12px}.card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:12px;box-shadow:0 4px 18px rgba(15,23,42,.045)}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:10px}.kpi{font-size:28px;font-weight:900}.label,.muted{font-size:12px;color:var(--muted)}.nav{display:flex;gap:8px;overflow:auto;padding:12px 0;scrollbar-width:none}.nav::-webkit-scrollbar{display:none}.nav button,.btn{border:0;border-radius:12px;padding:11px 14px;font-weight:800;white-space:nowrap;cursor:pointer}.nav button{background:#fff;border:1px solid var(--line);color:#334155}.nav button.active,.btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}.btn.soft{background:#e2e8f0}.hidden{display:none!important}.login{max-width:430px;margin:55px auto}.login input,.chat input{width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:10px;margin:6px 0 10px;font:inherit}.section{display:none}.section.active{display:block}.list{display:grid;gap:8px}.item{background:#fff;border:1px solid var(--line);border-radius:13px;padding:12px}.item strong{display:block}.pill{display:inline-block;padding:4px 8px;border-radius:999px;font-size:11px;font-weight:800;background:#e2e8f0}.pill.ok{background:#dcfce7;color:#166534}.pill.warn{background:#fef3c7;color:#92400e}.pill.danger{background:#fee2e2;color:#991b1b}.toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.chatbox{min-height:220px;max-height:52vh;overflow:auto;background:#fff;border:1px solid var(--line);border-radius:14px;padding:10px}.msg{padding:10px 12px;border-radius:12px;margin:8px 0;max-width:88%;white-space:pre-wrap}.msg.user{margin-left:auto;background:#e2e8f0}.msg.ai{background:#fff7ed;border:1px solid #fed7aa}.brand{display:flex;gap:10px;align-items:center}.logo{width:38px;height:38px;border-radius:10px;background:white;color:#0f172a;display:grid;place-items:center;font-weight:900}.error{color:#b91c1c;font-size:13px}.okmsg{color:#166534;font-size:13px}.debug{margin-top:8px;font-size:11px;color:#64748b;word-break:break-word}@media(max-width:640px){.wrap{padding:9px}.kpi{font-size:25px}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}header{padding:12px}.nav{position:sticky;top:66px;z-index:15;background:var(--bg);margin:0 -9px;padding:9px}}
 
@@ -107,156 +108,156 @@ body.app-ready .v2sidebar{display:block}
 #screenHost>[data-screen]{display:block!important;visibility:visible!important;height:auto!important;overflow:visible!important}
 
 </style>
-<script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+<script defer="" src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
 </head>
 <body>
 <aside class="v2sidebar" id="v2sidebar">
 <div class="v2logo"><div class="v2mark">C</div><div><strong>CONTROLA V2</strong><small>Agro Souza's Controle</small></div></div>
 <div class="v2group">OPERAÇÃO</div>
-<button class="v2navbtn active" data-v2tab="inicio">▦ &nbsp; Dashboard Apanha</button>
-<button class="v2navbtn" data-v2tab="operacoes">▣ &nbsp; Apanhas</button>
-<button class="v2navbtn" data-v2tab="equipes">👥 &nbsp; Equipes</button>
+<button class="v2navbtn active" data-v2tab="inicio">▦   Dashboard Apanha</button>
+<button class="v2navbtn" data-v2tab="operacoes">▣   Apanhas</button>
+<button class="v2navbtn" data-v2tab="equipes">👥   Equipes</button>
 <div class="v2group">GESTÃO</div>
-<button class="v2navbtn" data-v2tab="funcionarios">♙ &nbsp; RH & Pessoas</button>
-<button class="v2navbtn" data-v2tab="ponto">◷ &nbsp; RH & Ponto</button>
-<button class="v2navbtn" data-v2tab="frota">▰ &nbsp; Frota</button>
-<button class="v2navbtn" data-v2tab="alertas">⚠ &nbsp; Alertas</button>
+<button class="v2navbtn" data-v2tab="funcionarios">♙   RH &amp; Pessoas</button>
+<button class="v2navbtn" data-v2tab="ponto">◷   RH &amp; Ponto</button>
+<button class="v2navbtn" data-v2tab="frota">▰   Frota</button>
+<button class="v2navbtn" data-v2tab="alertas">⚠   Alertas</button>
 <div class="v2group">INTELIGÊNCIA</div>
-<button class="v2navbtn" data-v2tab="ia">✦ &nbsp; Controla IA</button>
+<button class="v2navbtn" data-v2tab="ia">✦   Controla IA</button>
 <div class="v2group">EM BREVE</div>
-<button class="v2navbtn" type="button">Estoque</button><button class="v2navbtn" type="button">Manutenções</button><button class="v2navbtn" type="button">Financeiro</button><button class="v2navbtn" type="button">Relatórios & BI</button>
+<button class="v2navbtn" type="button">Estoque</button><button class="v2navbtn" type="button">Manutenções</button><button class="v2navbtn" type="button">Financeiro</button><button class="v2navbtn" type="button">Relatórios &amp; BI</button>
 </aside>
-<header><div class="brand"><div class="logo">C</div><div><b>Controla</b><div><small id="companyName">Beta</small></div></div></div><div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><button id="themeToggle" class="btn soft" type="button">☾</button><button id="logout" class="btn soft hidden">Sair</button></div></header>
+<header><div class="brand"><div class="logo">C</div><div><b>Controla</b><div><small id="companyName">Beta</small></div></div></div><div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><button class="btn soft" id="themeToggle" type="button">☾</button><button class="btn soft hidden" id="logout">Sair</button></div></header>
 <main class="wrap">
-<section id="login" class="login"><div class="card"><h2>Entrar na Beta</h2><div class="muted">Use o mesmo acesso do app atual.</div><label>E-mail</label><input id="email" type="email" autocomplete="username"><label>Senha</label><input id="password" type="password" autocomplete="current-password"><button id="loginBtn" class="btn primary">Entrar</button><div id="loginMsg" class="muted" style="margin-top:10px">Beta 5.21 • navegação corrigida</div><div id="debug" class="debug"></div></div></section>
-<section id="app" class="hidden">
-<div class="nav" id="nav"><button data-tab="inicio" class="active">Início</button><button data-tab="equipes">Equipes</button><button data-tab="funcionarios">RH & Pessoas</button><button data-tab="ponto">Ponto</button><button data-tab="operacoes">Operações / Apanha</button><button data-tab="frota">Frota</button><button data-tab="alertas">Alertas</button><button data-tab="ia">Controla IA</button></div>
+<section class="login" id="login"><div class="card"><h2>Entrar na Beta</h2><div class="muted">Use o mesmo acesso do app atual.</div><label>E-mail</label><input autocomplete="username" id="email" type="email"/><label>Senha</label><input autocomplete="current-password" id="password" type="password"/><button class="btn primary" id="loginBtn">Entrar</button><div class="muted" id="loginMsg" style="margin-top:10px">Beta 5.21 • navegação corrigida</div><div class="debug" id="debug"></div></div></section>
+<section class="hidden" id="app">
+<div class="nav" id="nav"><button class="active" data-tab="inicio">Início</button><button data-tab="equipes">Equipes</button><button data-tab="funcionarios">RH &amp; Pessoas</button><button data-tab="ponto">Ponto</button><button data-tab="operacoes">Operações / Apanha</button><button data-tab="frota">Frota</button><button data-tab="alertas">Alertas</button><button data-tab="ia">Controla IA</button></div>
 <div id="screenHost"></div>
-<div id="inicio" class="section active" data-screen="inicio">
-<div class="v2hero"><div><h1>Dashboard Apanha de Aves</h1><p>Visão geral das operações de hoje • dados reais do Controla</p></div><button id="refreshBtn" class="btn v2new">↻ Atualizar painel</button></div>
+<div class="section active" data-screen="inicio" id="inicio">
+<div class="v2hero"><div><h1>Dashboard Apanha de Aves</h1><p>Visão geral das operações de hoje • dados reais do Controla</p></div><button class="btn v2new" id="refreshBtn">↻ Atualizar painel</button></div>
 <div class="v2-kpis" id="kpis"></div>
 <div class="v2main">
- <div>
-  <div class="v2panel"><div class="v2panelhead"><div><h3>Apanhas de hoje</h3><div class="muted">Programação e andamento das equipes</div></div><span class="v2status">TEMPO REAL</span></div><div id="todayList" class="list"></div></div>
-  <div class="v2panel"><div class="v2panelhead"><div><h3>Resumo operacional</h3><div class="muted">Indicadores disponíveis no banco atual</div></div></div><div class="v2stats" id="v2OpsSummary"></div></div>
- </div>
- <div>
-  <div class="v2panel"><div class="v2panelhead"><h3>Alertas importantes</h3><button class="btn soft" type="button" data-jump="alertas">Ver todos</button></div><div id="v2Alerts"><div class="v2-empty">Carregando alertas...</div></div></div>
-  <div class="v2panel"><div class="v2panelhead"><h3>Equipe & Ponto</h3><button class="btn soft" type="button" data-jump="ponto">Abrir ponto</button></div><div class="v2stats" id="v2PeopleSummary"></div></div>
-  <div class="v2panel"><h3>Próximos módulos do painel</h3><div class="v2alert">Mapa das equipes <span class="v2status">EM BREVE</span></div><div class="v2alert">Produção mensal <span class="v2status">EM BREVE</span></div><div class="v2alert">Previsto × faturado × recebido <span class="v2status">EM BREVE</span></div><div class="v2alert">Top integrados <span class="v2status">EM BREVE</span></div></div>
- </div>
-</div></div>
-<div id="equipes" class="section" data-screen="equipes" hidden><div class="card"><h3>Equipes</h3><div id="teamsList" class="list"></div></div></div>
-<div id="funcionarios" class="section" data-screen="funcionarios" hidden><div class="card"><div class="toolbar"><div><strong>Dados do empregador</strong><div class="muted">Usados nos documentos e comprovantes do ponto.</div></div></div><div class="row"><div><label>Razão social</label><input id="companyLegalName"></div><div><label>Nome fantasia</label><input id="companyTradeName"></div><div><label>CNPJ / CPF</label><input id="companyTaxId" inputmode="numeric" placeholder="00.000.000/0000-00"></div></div><button id="saveCompanyProfile" class="btn primary" style="margin-top:10px">Salvar empregador</button><div id="companyProfileMsg" class="muted"></div></div><div class="card"><strong>Dados profissionais do trabalhador</strong><div class="muted">Cargo/função e data de admissão passam a integrar o cadastro profissional e o espelho de ponto.</div><div class="row" style="margin-top:10px"><div><label>Funcionário</label><select id="profEmployee"></select></div><div><label>Cargo / função</label><input id="profJobTitle" placeholder="Ex.: Apanhador de aves"></div><div><label>Data de admissão</label><input id="profAdmissionDate" type="date"></div></div><button id="saveProfessional" class="btn primary" style="margin-top:10px">Salvar dados profissionais</button><div id="profMsg" class="muted"></div></div>
-<div class="grid">
-  <div class="card"><div class="kpi" id="rhActive">0</div><div class="label">Funcionários ativos</div></div>
-  <div class="card"><div class="kpi" id="rhWorking">0</div><div class="label">Com ponto hoje</div></div>
-  <div class="card"><div class="kpi" id="rhVacation">0</div><div class="label">Alertas de férias</div></div>
+<div>
+<div class="v2panel"><div class="v2panelhead"><div><h3>Apanhas de hoje</h3><div class="muted">Programação e andamento das equipes</div></div><span class="v2status">TEMPO REAL</span></div><div class="list" id="todayList"></div></div>
+<div class="v2panel"><div class="v2panelhead"><div><h3>Resumo operacional</h3><div class="muted">Indicadores disponíveis no banco atual</div></div></div><div class="v2stats" id="v2OpsSummary"></div></div>
 </div>
-<div class="card"><div class="toolbar"><h3 style="margin:0">Funcionários</h3><button class="btn soft" id="refreshRH">Atualizar</button></div><div id="employeesList" class="list"></div></div><div class="card">
+<div>
+<div class="v2panel"><div class="v2panelhead"><h3>Alertas importantes</h3><button class="btn soft" data-jump="alertas" type="button">Ver todos</button></div><div id="v2Alerts"><div class="v2-empty">Carregando alertas...</div></div></div>
+<div class="v2panel"><div class="v2panelhead"><h3>Equipe &amp; Ponto</h3><button class="btn soft" data-jump="ponto" type="button">Abrir ponto</button></div><div class="v2stats" id="v2PeopleSummary"></div></div>
+<div class="v2panel"><h3>Próximos módulos do painel</h3><div class="v2alert">Mapa das equipes <span class="v2status">EM BREVE</span></div><div class="v2alert">Produção mensal <span class="v2status">EM BREVE</span></div><div class="v2alert">Previsto × faturado × recebido <span class="v2status">EM BREVE</span></div><div class="v2alert">Top integrados <span class="v2status">EM BREVE</span></div></div>
+</div>
+</div></div>
+<div class="section" data-screen="equipes" hidden="" id="equipes"><div class="card"><h3>Equipes</h3><div class="list" id="teamsList"></div></div></div>
+<div class="section" data-screen="funcionarios" hidden="" id="funcionarios"><div class="card"><div class="toolbar"><div><strong>Dados do empregador</strong><div class="muted">Usados nos documentos e comprovantes do ponto.</div></div></div><div class="row"><div><label>Razão social</label><input id="companyLegalName"/></div><div><label>Nome fantasia</label><input id="companyTradeName"/></div><div><label>CNPJ / CPF</label><input id="companyTaxId" inputmode="numeric" placeholder="00.000.000/0000-00"/></div></div><button class="btn primary" id="saveCompanyProfile" style="margin-top:10px">Salvar empregador</button><div class="muted" id="companyProfileMsg"></div></div><div class="card"><strong>Dados profissionais do trabalhador</strong><div class="muted">Cargo/função e data de admissão passam a integrar o cadastro profissional e o espelho de ponto.</div><div class="row" style="margin-top:10px"><div><label>Funcionário</label><select id="profEmployee"></select></div><div><label>Cargo / função</label><input id="profJobTitle" placeholder="Ex.: Apanhador de aves"/></div><div><label>Data de admissão</label><input id="profAdmissionDate" type="date"/></div></div><button class="btn primary" id="saveProfessional" style="margin-top:10px">Salvar dados profissionais</button><div class="muted" id="profMsg"></div></div>
+<div class="grid">
+<div class="card"><div class="kpi" id="rhActive">0</div><div class="label">Funcionários ativos</div></div>
+<div class="card"><div class="kpi" id="rhWorking">0</div><div class="label">Com ponto hoje</div></div>
+<div class="card"><div class="kpi" id="rhVacation">0</div><div class="label">Alertas de férias</div></div>
+</div>
+<div class="card"><div class="toolbar"><h3 style="margin:0">Funcionários</h3><button class="btn soft" id="refreshRH">Atualizar</button></div><div class="list" id="employeesList"></div></div><div class="card">
 <h3>Jornada / Escala</h3>
 <div class="muted">Defina a carga diária e os horários previstos de cada funcionário. A configuração fica salva no banco de dados e acompanha o funcionário em qualquer aparelho.</div>
 <label>Funcionário</label><select id="scheduleEmployee" style="width:100%;padding:12px;margin:6px 0 10px;border:1px solid #cbd5e1;border-radius:10px"></select>
 <div class="grid">
-<div><label>Entrada prevista</label><input id="scheduleStart" type="time" value="08:00" style="width:100%;padding:12px;margin-top:6px;border:1px solid #cbd5e1;border-radius:10px"></div>
-<div><label>Início intervalo</label><input id="scheduleBreakStart" type="time" value="12:00" style="width:100%;padding:12px;margin-top:6px;border:1px solid #cbd5e1;border-radius:10px"></div>
-<div><label>Retorno intervalo</label><input id="scheduleBreakEnd" type="time" value="13:00" style="width:100%;padding:12px;margin-top:6px;border:1px solid #cbd5e1;border-radius:10px"></div>
-<div><label>Saída prevista</label><input id="scheduleEnd" type="time" value="17:00" style="width:100%;padding:12px;margin-top:6px;border:1px solid #cbd5e1;border-radius:10px"></div>
-<div><label>Carga diária (horas:minutos)</label><input id="scheduleDuration" type="time" value="08:00" step="60" style="width:100%;padding:12px;margin-top:6px;border:1px solid #cbd5e1;border-radius:10px"><div class="muted" style="margin-top:4px">Ex.: 08:00, 07:20 ou 06:00</div></div>
-<div><label>Tolerância atraso (min)</label><input id="scheduleTolerance" type="number" min="0" value="10" style="width:100%;padding:12px;margin-top:6px;border:1px solid #cbd5e1;border-radius:10px"></div>
+<div><label>Entrada prevista</label><input id="scheduleStart" style="width:100%;padding:12px;margin-top:6px;border:1px solid #cbd5e1;border-radius:10px" type="time" value="08:00"/></div>
+<div><label>Início intervalo</label><input id="scheduleBreakStart" style="width:100%;padding:12px;margin-top:6px;border:1px solid #cbd5e1;border-radius:10px" type="time" value="12:00"/></div>
+<div><label>Retorno intervalo</label><input id="scheduleBreakEnd" style="width:100%;padding:12px;margin-top:6px;border:1px solid #cbd5e1;border-radius:10px" type="time" value="13:00"/></div>
+<div><label>Saída prevista</label><input id="scheduleEnd" style="width:100%;padding:12px;margin-top:6px;border:1px solid #cbd5e1;border-radius:10px" type="time" value="17:00"/></div>
+<div><label>Carga diária (horas:minutos)</label><input id="scheduleDuration" step="60" style="width:100%;padding:12px;margin-top:6px;border:1px solid #cbd5e1;border-radius:10px" type="time" value="08:00"/><div class="muted" style="margin-top:4px">Ex.: 08:00, 07:20 ou 06:00</div></div>
+<div><label>Tolerância atraso (min)</label><input id="scheduleTolerance" min="0" style="width:100%;padding:12px;margin-top:6px;border:1px solid #cbd5e1;border-radius:10px" type="number" value="10"/></div>
 </div>
-<div class="toolbar" style="margin-top:12px"><button id="saveSchedule" class="btn primary">SALVAR JORNADA</button></div>
-<div id="scheduleMsg" class="muted" style="margin-top:8px"></div>
-</div><div class="card"><h3>Cadastro facial</h3><div class="muted">Cadastre a foto frontal de referência do funcionário.</div><label>Funcionário</label><select id="faceEmployee" style="width:100%;padding:12px;margin:6px 0 10px;border:1px solid #cbd5e1;border-radius:10px"></select><label>Foto facial</label><input id="faceReference" type="file" accept="image/*" capture="user" style="width:100%;padding:10px;margin:6px 0 10px"><button id="saveFaceReference" class="btn primary">CADASTRAR BIOMETRIA FACIAL</button><div id="faceEnrollMsg" class="muted" style="margin-top:10px"></div><div id="faceEnrollmentList" class="list" style="margin-top:12px"></div></div>
-<div class="card"><h3>Férias e vencimentos</h3><div id="vacationList" class="list"></div></div>
+<div class="toolbar" style="margin-top:12px"><button class="btn primary" id="saveSchedule">SALVAR JORNADA</button></div>
+<div class="muted" id="scheduleMsg" style="margin-top:8px"></div>
+</div><div class="card"><h3>Cadastro facial</h3><div class="muted">Cadastre a foto frontal de referência do funcionário.</div><label>Funcionário</label><select id="faceEmployee" style="width:100%;padding:12px;margin:6px 0 10px;border:1px solid #cbd5e1;border-radius:10px"></select><label>Foto facial</label><input accept="image/*" capture="user" id="faceReference" style="width:100%;padding:10px;margin:6px 0 10px" type="file"/><button class="btn primary" id="saveFaceReference">CADASTRAR BIOMETRIA FACIAL</button><div class="muted" id="faceEnrollMsg" style="margin-top:10px"></div><div class="list" id="faceEnrollmentList" style="margin-top:12px"></div></div>
+<div class="card"><h3>Férias e vencimentos</h3><div class="list" id="vacationList"></div></div>
 </div>
-<div id="ponto" class="section" data-screen="ponto" hidden>
+<div class="section" data-screen="ponto" hidden="" id="ponto">
 <div class="grid">
- <div class="card"><div class="kpi" id="pointToday">0</div><div class="label">Funcionários com registro hoje</div></div>
- <div class="card"><div class="kpi" id="pointEvents">0</div><div class="label">Batidas hoje</div></div>
- <div class="card"><div class="kpi" id="pointWorked">0h00</div><div class="label">Horas trabalhadas hoje</div></div>
- <div class="card"><div class="kpi" id="pointOvertime">0h00</div><div class="label">Horas extras hoje</div></div>
+<div class="card"><div class="kpi" id="pointToday">0</div><div class="label">Funcionários com registro hoje</div></div>
+<div class="card"><div class="kpi" id="pointEvents">0</div><div class="label">Batidas hoje</div></div>
+<div class="card"><div class="kpi" id="pointWorked">0h00</div><div class="label">Horas trabalhadas hoje</div></div>
+<div class="card"><div class="kpi" id="pointOvertime">0h00</div><div class="label">Horas extras hoje</div></div>
 </div>
 <div class="card">
- <h3>Ponto 2.0</h3>
- <div class="muted">Escolha como o funcionário será identificado: matrícula ou reconhecimento facial.</div>
- <div class="toolbar" style="margin:12px 0">
-   <button id="methodMatricula" class="btn primary">MATRÍCULA</button>
-   <button id="methodFace" class="btn soft">SELFIE</button>
- </div>
- <div id="matriculaMode">
-   <label>Matrícula</label>
-   <input id="pointMatricula" inputmode="text" placeholder="Ex.: B001" style="width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:10px;margin:6px 0 10px;font:inherit">
- </div>
- <div id="faceMode" class="hidden">
-   <label>Reconhecimento facial</label>
-   <div id="cameraChoice" class="hidden" style="margin:8px 0 10px">
-  <div class="muted" style="margin-bottom:8px">Escolha qual câmera deseja usar:</div>
-  <div class="toolbar">
-    <button id="openFrontCamera" type="button" class="btn primary">CÂMERA FRONTAL</button>
-    <button id="openBackCamera" type="button" class="btn soft">CÂMERA TRASEIRA</button>
-  </div>
+<h3>Ponto 2.0</h3>
+<div class="muted">Escolha como o funcionário será identificado: matrícula ou reconhecimento facial.</div>
+<div class="toolbar" style="margin:12px 0">
+<button class="btn primary" id="methodMatricula">MATRÍCULA</button>
+<button class="btn soft" id="methodFace">SELFIE</button>
 </div>
-<input id="pointSelfieFront" type="file" accept="image/*" capture="user" class="hidden">
-<input id="pointSelfieBack" type="file" accept="image/*" capture="environment" class="hidden">
-   <div id="selfiePreviewWrap" class="hidden" style="margin:8px 0 10px">
-     <img id="selfiePreview" alt="Prévia facial" style="width:120px;height:120px;object-fit:cover;border-radius:16px;border:1px solid #cbd5e1">
-     <div class="muted">Selfie capturada e pronta para ser vinculada ao comprovante.</div>
-   </div>
-   <div class="muted">Ao tocar em SELFIE, escolha câmera frontal ou traseira. Depois tire a foto para identificar o funcionário — sem digitar matrícula.</div>
- </div>
-   <div id="nextPointHint" class="card" style="background:#f8fafc;margin:8px 0 10px;padding:12px">
-     <div class="label">Próxima batida</div>
-     <div style="font-size:18px;font-weight:900" id="nextPointLabel">Digite a matrícula</div>
-   </div>
-   <div class="toolbar">
-     <button id="registerPoint" class="btn primary" style="font-size:18px;padding:14px 20px">BATER PONTO</button>
-     <button id="refreshPoint" class="btn soft">Atualizar presença</button>
-   </div>
-   <div id="pointMsg" class="muted" style="margin-top:10px"></div>
-   <div id="pointReceipt" class="hidden" style="margin-top:12px"></div>
- </div>
+<div id="matriculaMode">
+<label>Matrícula</label>
+<input id="pointMatricula" inputmode="text" placeholder="Ex.: B001" style="width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:10px;margin:6px 0 10px;font:inherit"/>
 </div>
-<div class="card">
-  <div class="toolbar"><h3 style="margin:0">Espelho de ponto</h3><button id="refreshMirror" class="btn soft">Atualizar</button></div>
-  <div class="muted" style="margin:6px 0 10px">Resumo diário por funcionário: jornada, intervalo e saldo de horas.</div>
-  <div id="timeMirrorList" class="list"></div>
+<div class="hidden" id="faceMode">
+<label>Reconhecimento facial</label>
+<div class="hidden" id="cameraChoice" style="margin:8px 0 10px">
+<div class="muted" style="margin-bottom:8px">Escolha qual câmera deseja usar:</div>
+<div class="toolbar">
+<button class="btn primary" id="openFrontCamera" type="button">CÂMERA FRONTAL</button>
+<button class="btn soft" id="openBackCamera" type="button">CÂMERA TRASEIRA</button>
+</div>
+</div>
+<input accept="image/*" capture="user" class="hidden" id="pointSelfieFront" type="file"/>
+<input accept="image/*" capture="environment" class="hidden" id="pointSelfieBack" type="file"/>
+<div class="hidden" id="selfiePreviewWrap" style="margin:8px 0 10px">
+<img alt="Prévia facial" id="selfiePreview" style="width:120px;height:120px;object-fit:cover;border-radius:16px;border:1px solid #cbd5e1"/>
+<div class="muted">Selfie capturada e pronta para ser vinculada ao comprovante.</div>
+</div>
+<div class="muted">Ao tocar em SELFIE, escolha câmera frontal ou traseira. Depois tire a foto para identificar o funcionário — sem digitar matrícula.</div>
+</div>
+<div class="card" id="nextPointHint" style="background:#f8fafc;margin:8px 0 10px;padding:12px">
+<div class="label">Próxima batida</div>
+<div id="nextPointLabel" style="font-size:18px;font-weight:900">Digite a matrícula</div>
+</div>
+<div class="toolbar">
+<button class="btn primary" id="registerPoint" style="font-size:18px;padding:14px 20px">BATER PONTO</button>
+<button class="btn soft" id="refreshPoint">Atualizar presença</button>
+</div>
+<div class="muted" id="pointMsg" style="margin-top:10px"></div>
+<div class="hidden" id="pointReceipt" style="margin-top:12px"></div>
 </div>
 <div class="card">
-  <div class="toolbar" style="justify-content:space-between">
-    <h3 style="margin:0">Espelho mensal</h3>
-    <div class="toolbar">
-      <button id="refreshMonthlyMirror" class="btn soft">Atualizar</button>
-      <button id="printMonthlyMirror" class="btn primary">IMPRIMIR / PDF</button>
-    </div>
-  </div>
-  <div class="muted" style="margin:6px 0 10px">Consulte o mês por jornada/turno, inclusive quando o trabalho atravessa a meia-noite.</div>
-  <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr));margin-bottom:10px">
-    <div>
-      <label>Funcionário</label>
-      <select id="monthlyEmployee" style="width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:10px;margin-top:6px"></select>
-    </div>
-    <div>
-      <label>Mês</label>
-      <input id="monthlyMonth" type="month" style="width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:10px;margin-top:6px">
-    </div>
-  </div>
-  <div id="monthlySummary" class="grid" style="margin-bottom:10px"></div>
-  <div id="monthlyMirrorList" class="list"></div>
+<div class="toolbar" style="justify-content:space-between">
+<h3 style="margin:0">Espelho mensal</h3>
+<div class="toolbar">
+<button class="btn soft" id="refreshMonthlyMirror">Atualizar</button>
+<button class="btn primary" id="printMonthlyMirror">IMPRIMIR / PDF</button>
 </div>
-<div class="card"><h3>Presença de hoje</h3><div id="presenceList" class="list"></div></div>
-<div class="card"><h3>Últimas batidas</h3><div id="pointList" class="list"></div></div>
 </div>
-<div id="operacoes" class="section" data-screen="operacoes" hidden><div class="v2hero"><div><h1>Apanhas</h1><p>Planejamento, execução e fechamento das operações.</p></div><button id="newPoultryOp" class="btn v2new">+ Nova Apanha</button></div>
-<div id="poultryForm" class="card hidden"><div class="toolbar"><strong>Nova Apanha</strong><button id="closePoultryForm" class="btn soft">Fechar</button></div>
-<div class="row"><div><label>Cliente / Integrado</label><select id="poCustomer"></select></div><div><label>Granja / Local</label><input id="poLocation"></div><div><label>Equipe</label><select id="poTeam"></select></div></div>
-<div class="row"><div><label>Início previsto</label><input id="poStart" type="datetime-local"></div><div><label>Fim previsto</label><input id="poEnd" type="datetime-local"></div><div><label>Status</label><select id="poStatus"><option value="planned">Programada</option><option value="in_progress">Em andamento</option><option value="completed">Concluída</option></select></div></div>
-<div class="row"><div><label>Aves previstas</label><input id="poPlannedBirds" type="number"></div><div><label>Aves realizadas</label><input id="poActualBirds" type="number"></div><div><label>Barracões</label><input id="poSheds" type="number"></div><div><label>Valor por 1.000 aves</label><input id="poPrice" type="number" step="0.01"></div></div>
-<label>Observações</label><textarea id="poNotes" rows="3"></textarea><div class="toolbar"><button id="savePoultryOp" class="btn primary">Salvar Apanha</button><span id="poMsg" class="muted"></span></div></div>
-<div class="v2-kpis" id="poultryKpis"></div><div class="v2panel"><div class="v2panelhead"><h3>Apanhas cadastradas</h3><button id="refreshPoultry" class="btn soft">Atualizar</button></div><div id="poultryList" class="list"></div></div><div class="card"><h3>Operações / Apanha</h3><div id="operationsList" class="list"></div></div></div>
-<div id="frota" class="section" data-screen="frota" hidden><div class="card"><h3>Conduções</h3><div id="vehiclesList" class="list"></div></div></div>
-<div id="alertas" class="section" data-screen="alertas" hidden><div class="card"><div class="toolbar"><h3 style="margin:0">Alertas</h3><button id="refreshAlerts" class="btn soft">Gerar/Atualizar</button></div><div id="alertsList" class="list"></div></div></div>
-<div id="ia" class="section" data-screen="ia" hidden><div class="card chat"><h3>Controla IA</h3><div class="muted">A IA avisará se a chave da OpenAI ainda não estiver configurada.</div><div id="chatbox" class="chatbox"></div><div class="toolbar" style="margin-top:10px"><input id="question" placeholder="Ex.: quais equipes estão atrasadas hoje?" style="flex:1;margin:0"><button id="sendAI" class="btn primary">Enviar</button></div></div></div>
+<div class="muted" style="margin:6px 0 10px">Consulte o mês por jornada/turno, inclusive quando o trabalho atravessa a meia-noite.</div>
+<div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr));margin-bottom:10px">
+<div>
+<label>Funcionário</label>
+<select id="monthlyEmployee" style="width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:10px;margin-top:6px"></select>
+</div>
+<div>
+<label>Mês</label>
+<input id="monthlyMonth" style="width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:10px;margin-top:6px" type="month"/>
+</div>
+</div>
+<div class="grid" id="monthlySummary" style="margin-bottom:10px"></div>
+<div class="list" id="monthlyMirrorList"></div>
+</div>
+<div class="card"><h3>Presença de hoje</h3><div class="list" id="presenceList"></div></div>
+<div class="card"><h3>Últimas batidas</h3><div class="list" id="pointList"></div></div>
+
+</div>
+<div class="card">
+<div class="toolbar"><h3 style="margin:0">Espelho de ponto</h3><button class="btn soft" id="refreshMirror">Atualizar</button></div>
+<div class="muted" style="margin:6px 0 10px">Resumo diário por funcionário: jornada, intervalo e saldo de horas.</div>
+<div class="list" id="timeMirrorList"></div>
+</div>
+<div class="section" data-screen="operacoes" hidden="" id="operacoes"><div class="v2hero"><div><h1>Apanhas</h1><p>Planejamento, execução e fechamento das operações.</p></div><button class="btn v2new" id="newPoultryOp">+ Nova Apanha</button></div>
+<div class="card hidden" id="poultryForm"><div class="toolbar"><strong>Nova Apanha</strong><button class="btn soft" id="closePoultryForm">Fechar</button></div>
+<div class="row"><div><label>Cliente / Integrado</label><select id="poCustomer"></select></div><div><label>Granja / Local</label><input id="poLocation"/></div><div><label>Equipe</label><select id="poTeam"></select></div></div>
+<div class="row"><div><label>Início previsto</label><input id="poStart" type="datetime-local"/></div><div><label>Fim previsto</label><input id="poEnd" type="datetime-local"/></div><div><label>Status</label><select id="poStatus"><option value="planned">Programada</option><option value="in_progress">Em andamento</option><option value="completed">Concluída</option></select></div></div>
+<div class="row"><div><label>Aves previstas</label><input id="poPlannedBirds" type="number"/></div><div><label>Aves realizadas</label><input id="poActualBirds" type="number"/></div><div><label>Barracões</label><input id="poSheds" type="number"/></div><div><label>Valor por 1.000 aves</label><input id="poPrice" step="0.01" type="number"/></div></div>
+<label>Observações</label><textarea id="poNotes" rows="3"></textarea><div class="toolbar"><button class="btn primary" id="savePoultryOp">Salvar Apanha</button><span class="muted" id="poMsg"></span></div></div>
+<div class="v2-kpis" id="poultryKpis"></div><div class="v2panel"><div class="v2panelhead"><h3>Apanhas cadastradas</h3><button class="btn soft" id="refreshPoultry">Atualizar</button></div><div class="list" id="poultryList"></div></div><div class="card"><h3>Operações / Apanha</h3><div class="list" id="operationsList"></div></div></div>
+<div class="section" data-screen="frota" hidden="" id="frota"><div class="card"><h3>Conduções</h3><div class="list" id="vehiclesList"></div></div></div>
+<div class="section" data-screen="alertas" hidden="" id="alertas"><div class="card"><div class="toolbar"><h3 style="margin:0">Alertas</h3><button class="btn soft" id="refreshAlerts">Gerar/Atualizar</button></div><div class="list" id="alertsList"></div></div></div>
+<div class="section" data-screen="ia" hidden="" id="ia"><div class="card chat"><h3>Controla IA</h3><div class="muted">A IA avisará se a chave da OpenAI ainda não estiver configurada.</div><div class="chatbox" id="chatbox"></div><div class="toolbar" style="margin-top:10px"><input id="question" placeholder="Ex.: quais equipes estão atrasadas hoje?" style="flex:1;margin:0"/><button class="btn primary" id="sendAI">Enviar</button></div></div></div>
 </section></main>
 <script>
 'use strict';
@@ -869,7 +870,7 @@ $('#registerPoint').addEventListener('click',async()=>{
   const nextEvent=await getNextPoint(employee.id);if(nextEvent==='finished')throw new Error('Jornada já encerrada hoje para este funcionário.');
   const gps=await getGPS(),user=await getUser(),occurredAt=new Date().toISOString();
   let selfiePath=null;if(withSelfie){msg.textContent='Salvando comprovante facial...';selfiePath=await uploadSelfie(selfie,employee.id)}
-  const payload={company_id:companyId,employee_id:employee.id,occurred_at:occurredAt,event_type:nextEvent,latitude:gps.latitude,longitude:gps.longitude,accuracy_m:gps.accuracy_m,method:withSelfie?'face':'employee_number',device_id:navigator.userAgent.slice(0,180),offline_event_id:'beta525-'+Date.now()+'-'+Math.random().toString(36).slice(2),metadata:{beta:true,source:'controla_beta_web',identification_method:withSelfie?'face':'employee_number',selfie_evidence:withSelfie,selfie_storage_path:selfiePath,face_distance:faceDistance},created_by:user.id};
+  const payload={company_id:companyId,employee_id:employee.id,occurred_at:occurredAt,event_type:nextEvent,latitude:gps.latitude,longitude:gps.longitude,accuracy_m:gps.accuracy_m,method:withSelfie?'face':'employee_number',device_id:navigator.userAgent.slice(0,180),offline_event_id:'beta526-'+Date.now()+'-'+Math.random().toString(36).slice(2),metadata:{beta:true,source:'controla_beta_web',identification_method:withSelfie?'face':'employee_number',selfie_evidence:withSelfie,selfie_storage_path:selfiePath,face_distance:faceDistance},created_by:user.id};
   const saved=await restInsert('v2_attendance_events',payload),eventId=saved?.[0]?.id||null;
   if(withSelfie&&eventId){try{await restInsert('point_face_checks',{point_event_id:eventId,verified:true,score:Math.max(0,1-faceDistance),algorithm:'face-api.js_0.22.2',selfie_storage_path:selfiePath,failure_reason:null})}catch(e){console.warn(e)}}
   const receiptType=pointLabels[nextEvent]||nextEvent,when=new Date(occurredAt).toLocaleString('pt-BR');msg.className='okmsg';msg.textContent=receiptType+' registrado para '+employee.full_name+'.';
@@ -1035,5 +1036,7 @@ if(document.getElementById('saveCompanyProfile'))document.getElementById('saveCo
  try{await rest('v2_companies','id=eq.'+companyId,'PATCH',{legal_name:$('#companyLegalName').value.trim(),trade_name:$('#companyTradeName').value.trim()||null,tax_id:$('#companyTaxId').value.replace(/\D/g,'')||null});$('#companyProfileMsg').textContent='Dados do empregador salvos.';await loadDashboard()}catch(e){$('#companyProfileMsg').textContent=e.message}
 });
 // Perfil profissional é carregado somente ao abrir RH & Pessoas para manter o dashboard leve.
+
+function isPointScreenMounted(){return !!document.querySelector('#screenHost [data-screen="ponto"]')}
 </script>
 </body></html>
