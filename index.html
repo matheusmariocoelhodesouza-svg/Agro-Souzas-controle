@@ -5,7 +5,7 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width,initial-scale=1,viewport-fit=cover" name="viewport"/>
 <meta content="#0f172a" name="theme-color"/>
-<title>Controla V2 • Beta 5.32 Performance Apanha</title>
+<title>Controla V2 • Beta 5.34 Campo & Caminhões</title>
 <style>
 :root{--bg:#f3f6fb;--card:#fff;--ink:#0f172a;--muted:#64748b;--line:#e2e8f0;--accent:#0f172a}*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--ink)}header{position:sticky;top:0;z-index:20;background:linear-gradient(135deg,var(--accent),#1e293b);color:#fff;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 8px 24px rgba(15,23,42,.18)}.wrap{max-width:1200px;margin:auto;padding:12px}.card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:12px;box-shadow:0 4px 18px rgba(15,23,42,.045)}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:10px}.kpi{font-size:28px;font-weight:900}.label,.muted{font-size:12px;color:var(--muted)}.nav{display:flex;gap:8px;overflow:auto;padding:12px 0;scrollbar-width:none}.nav::-webkit-scrollbar{display:none}.nav button,.btn{border:0;border-radius:12px;padding:11px 14px;font-weight:800;white-space:nowrap;cursor:pointer}.nav button{background:#fff;border:1px solid var(--line);color:#334155}.nav button.active,.btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}.btn.soft{background:#e2e8f0}.hidden{display:none!important}.login{max-width:430px;margin:55px auto}.login input,.chat input{width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:10px;margin:6px 0 10px;font:inherit}.section{display:none}.section.active{display:block}.list{display:grid;gap:8px}.item{background:#fff;border:1px solid var(--line);border-radius:13px;padding:12px}.item strong{display:block}.pill{display:inline-block;padding:4px 8px;border-radius:999px;font-size:11px;font-weight:800;background:#e2e8f0}.pill.ok{background:#dcfce7;color:#166534}.pill.warn{background:#fef3c7;color:#92400e}.pill.danger{background:#fee2e2;color:#991b1b}.toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.chatbox{min-height:220px;max-height:52vh;overflow:auto;background:#fff;border:1px solid var(--line);border-radius:14px;padding:10px}.msg{padding:10px 12px;border-radius:12px;margin:8px 0;max-width:88%;white-space:pre-wrap}.msg.user{margin-left:auto;background:#e2e8f0}.msg.ai{background:#fff7ed;border:1px solid #fed7aa}.brand{display:flex;gap:10px;align-items:center}.logo{width:38px;height:38px;border-radius:10px;background:white;color:#0f172a;display:grid;place-items:center;font-weight:900}.error{color:#b91c1c;font-size:13px}.okmsg{color:#166534;font-size:13px}.debug{margin-top:8px;font-size:11px;color:#64748b;word-break:break-word}@media(max-width:640px){.wrap{padding:9px}.kpi{font-size:25px}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}header{padding:12px}.nav{position:sticky;top:66px;z-index:15;background:var(--bg);margin:0 -9px;padding:9px}}
 
@@ -114,6 +114,16 @@ body.app-ready .v2sidebar{display:block}
 .po-detail{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:10px}
 .po-detail>div{background:#f8fafc;border:1px solid #edf0f5;border-radius:10px;padding:9px;font-size:11px}
 @media(max-width:700px){.po-detail{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+.card-lite{border:1px solid #e8edf4;background:#fbfcfe;border-radius:14px;padding:13px;margin:12px 0}
+.checkline{display:flex;align-items:center;gap:8px;margin:10px 0;font-weight:700}
+.checkline input{width:auto;margin:0}
+.site-memory{margin-top:9px;padding:9px 11px;background:#f5f8fc;border-radius:10px;font-size:12px}
+.truck-list{margin-top:10px;border-top:1px solid #edf1f5}
+.truck-row{padding:9px 2px;border-bottom:1px solid #edf1f5;font-size:12px}
+.po-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.pill.warn{background:#fff3cd;color:#7c5700}
+
 </style>
 <script defer="" src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
 </head>
@@ -140,7 +150,7 @@ body.app-ready .v2sidebar{display:block}
 <section class="hidden" id="app">
 <div class="nav" id="nav"><button class="active" data-tab="inicio">Início</button><button data-tab="equipes">Equipes</button><button data-tab="funcionarios">RH &amp; Pessoas</button><button data-tab="ponto">Ponto</button><button data-tab="operacoes">Operações / Apanha</button><button data-tab="frota">Frota</button><button data-tab="alertas">Alertas</button><button data-tab="ia">Controla IA</button></div>
 <div id="screenHost"></div>
-<div class="section active" data-screen="inicio" id="inicio">
+<div class="section active" data-screen="inicio" id="inicio"><div class="v2panel" id="poultryDashboardPanel"><div class="v2panelhead"><div><h3>Operação de Apanha — Hoje</h3><div class="muted">Produção real das equipes no dia.</div></div></div><div class="v2-kpis" id="poultryDashKpis"></div><div id="poultryDashTeams" class="list"><div class="v2-empty">Carregando produção...</div></div></div>
 <div class="v2hero"><div><h1>Dashboard Apanha de Aves</h1><p>Visão geral das operações de hoje • dados reais do Controla</p></div><button class="btn v2new" id="refreshBtn">↻ Atualizar painel</button></div>
 <div class="v2-kpis" id="kpis"></div>
 <div class="v2main">
@@ -254,15 +264,81 @@ body.app-ready .v2sidebar{display:block}
 <div class="list" id="timeMirrorList"></div>
 </div></div>
 
-<div class="section" data-screen="operacoes" hidden="" id="operacoes"><div class="v2hero"><div><h1>Apanhas</h1><p>Planejamento, execução e fechamento das operações.</p></div><button class="btn v2new" id="newPoultryOp">+ Nova Apanha</button></div>
-<div class="card hidden" id="poultryForm"><div class="toolbar"><strong>Nova Apanha</strong><button class="btn soft" id="closePoultryForm">Fechar</button></div>
-<div class="row"><div><label>Cliente / Integrado</label><div class="toolbar"><select id="poCustomer" style="flex:1"></select><button id="quickCustomerBtn" class="btn soft" type="button">+ Integrado</button></div></div><div><label>Granja / Local</label><input id="poLocation"/></div><div><label>Equipe</label><div class="toolbar"><select id="poTeam" style="flex:1"></select><button id="quickTeamBtn" class="btn soft" type="button">+ Equipe</button></div></div></div>
-<div class="row"><div><label>Início previsto</label><input id="poStart" type="datetime-local"/></div><div><label>Fim previsto</label><input id="poEnd" type="datetime-local"/></div><div><label>Status</label><select id="poStatus"><option value="planned">Programada</option><option value="in_progress">Em andamento</option><option value="completed">Concluída</option></select></div></div>
-<div class="row"><div><label>Aves previstas</label><input id="poPlannedBirds" type="number"/></div><div><label>Aves realizadas</label><input id="poActualBirds" type="number"/></div><div><label>Barracões</label><input id="poSheds" type="number"/></div><div><label>Valor por 1.000 aves</label><input id="poPrice" step="0.01" type="number"/></div></div>
-<label>Observações</label><textarea id="poNotes" rows="3"></textarea><div class="toolbar"><button class="btn primary" id="savePoultryOp">Salvar Apanha</button><span class="muted" id="poMsg"></span></div></div>
-<div id="quickCustomerCard" class="card hidden"><div class="toolbar"><strong>Novo Cliente / Integrado</strong><button id="quickCustomerClose" class="btn soft" type="button">Fechar</button></div><div class="row"><div><label>Nome do integrado / cliente</label><input id="quickCustomerName" placeholder="Ex.: João da Silva"></div><div><label>Razão social (opcional)</label><input id="quickCustomerLegal" placeholder="Se houver"></div></div><button id="quickCustomerSave" class="btn primary" type="button">Salvar Integrado</button><span id="quickCustomerMsg" class="muted"></span></div>
-<div id="quickTeamCard" class="card hidden"><div class="toolbar"><strong>Nova Equipe</strong><button id="quickTeamClose" class="btn soft" type="button">Fechar</button></div><div class="row"><div><label>Nome da equipe</label><input id="quickTeamName" placeholder="Ex.: Equipe Nágila"></div><div><label>Código (opcional)</label><input id="quickTeamCode" placeholder="Ex.: EQ01"></div></div><button id="quickTeamSave" class="btn primary" type="button">Salvar Equipe</button><span id="quickTeamMsg" class="muted"></span></div>
-<div class="v2-kpis" id="poultryKpis"></div><div id="poFinishCard" class="card hidden"><div class="toolbar"><strong>Concluir Apanha</strong><button id="poFinishClose" class="btn soft">Fechar</button></div><input id="poFinishId" type="hidden"><div class="row"><div><label>Aves realizadas</label><input id="poFinishBirds" type="number" min="1"></div><div><label>Horário de conclusão</label><input id="poFinishTime" type="datetime-local"></div></div><button id="poFinishSave" class="btn primary">Confirmar conclusão</button><span id="poFinishMsg" class="muted"></span></div><div class="v2panel"><div class="v2panelhead"><h3>Apanhas cadastradas</h3><button class="btn soft" id="refreshPoultry">Atualizar</button></div><div class="list" id="poultryList"></div></div><div class="card"><h3>Operações / Apanha</h3><div class="list" id="operationsList"></div></div></div>
+<div class="section" data-screen="operacoes" hidden="" id="operacoes">
+<div class="v2hero"><div><h1>Apanhas</h1><p>Cadastro do aviário e carregamento caminhão por caminhão.</p></div><button class="btn v2new" id="newPoultryOp">+ Nova Apanha</button></div>
+
+<div class="card hidden" id="poultryForm">
+ <div class="toolbar"><div><strong>Nova Apanha</strong><div class="muted">Os dados do aviário ficam salvos para a próxima visita.</div></div><button class="btn soft" id="closePoultryForm">Fechar</button></div>
+ <div class="row">
+   <div><label>Equipe</label><div class="toolbar"><select id="poTeam" style="flex:1"></select><button id="quickTeamBtn" class="btn soft" type="button">+ Equipe</button></div></div>
+   <div><label>Início previsto</label><input id="poStart" type="datetime-local"></div>
+   <div><label>Fim previsto (opcional)</label><input id="poEnd" type="datetime-local"></div>
+ </div>
+
+ <div class="card-lite">
+   <div class="toolbar"><div><strong>Local / Aviário</strong><div class="muted">Selecione um já salvo ou cadastre os dados uma única vez.</div></div></div>
+   <label>Aviário já cadastrado</label>
+   <select id="poSavedAviary"><option value="">Novo / selecione...</option></select>
+   <div class="row" style="margin-top:10px">
+     <div><label>Nome do integrado / produtor</label><input id="poIntegratedName" placeholder="Ex.: João da Silva"></div>
+     <div><label>Cidade</label><input id="poCity" placeholder="Ex.: Tatuí"></div>
+     <div><label>Granja / propriedade (opcional)</label><input id="poFarmName" placeholder="Ex.: Granja Boa Vista"></div>
+   </div>
+   <div class="row">
+     <div><label>Aviário</label><input id="poAviaryName" placeholder="Ex.: Aviário 01"></div>
+     <div><label>Tomada</label><input id="poOutletType" placeholder="Ex.: 6 polos + terra"></div>
+     <div><label>Tipo de energia</label><input id="poEnergyType" placeholder="Ex.: Trifásico 380 V"></div>
+   </div>
+   <div class="toolbar"><button id="saveAviaryProfile" class="btn soft" type="button">Salvar dados do aviário</button><span id="aviaryMsg" class="muted"></span></div>
+ </div>
+
+ <div class="card-lite admin-only" id="poAdminPlanning">
+   <strong>Planejamento do Administrador Geral</strong>
+   <div class="muted">Estes campos não aparecem para o colaborador de campo.</div>
+   <div class="row" style="margin-top:8px">
+     <div><label>Aves previstas</label><input id="poPlannedBirds" type="number" min="0" placeholder="Ex.: 25000"></div>
+     <div><label>Valor por 1.000 aves</label><input id="poPrice" type="number" min="0" step="0.01" placeholder="Ex.: 85,00"></div>
+   </div>
+ </div>
+
+ <label>Observações</label><textarea id="poNotes" rows="3"></textarea>
+ <div class="toolbar"><button class="btn primary" id="savePoultryOp">Salvar Apanha</button><span class="muted" id="poMsg"></span></div>
+</div>
+
+<div id="quickTeamCard" class="card hidden">
+ <div class="toolbar"><strong>Nova Equipe</strong><button id="quickTeamClose" class="btn soft" type="button">Fechar</button></div>
+ <div class="row"><div><label>Nome da equipe</label><input id="quickTeamName" placeholder="Ex.: Equipe Nágila"></div><div><label>Código (opcional)</label><input id="quickTeamCode"></div></div>
+ <button id="quickTeamSave" class="btn primary" type="button">Salvar Equipe</button><span id="quickTeamMsg" class="muted"></span>
+</div>
+
+<div id="poTruckCard" class="card hidden">
+ <div class="toolbar"><div><strong>Novo caminhão carregado</strong><div id="poTruckOpName" class="muted"></div></div><button id="poTruckClose" class="btn soft" type="button">Fechar</button></div>
+ <input id="poTruckOperationId" type="hidden"><input id="poTruckLoadingId" type="hidden">
+ <div class="row">
+   <div><label>Motorista</label><input id="poTruckDriver" placeholder="Nome do motorista"></div>
+   <div><label>Placa</label><input id="poTruckPlate" placeholder="ABC1D23"></div>
+   <div><label>Quantidade de aves</label><input id="poTruckBirds" type="number" min="0" placeholder="Ex.: 6800"></div>
+ </div>
+ <div class="row">
+   <div><label>Aviário</label><select id="poTruckBarn"></select></div>
+   <div><label>Hora de início do caminhão</label><input id="poTruckStart" type="datetime-local"></div>
+   <div><label>Hora de término do caminhão</label><input id="poTruckEnd" type="datetime-local"></div>
+ </div>
+ <label class="checkline"><input id="poTruckCata" type="checkbox"> Este caminhão foi <strong>CATA</strong></label>
+ <label>Observações</label><textarea id="poTruckNotes" rows="2"></textarea>
+ <div class="toolbar"><button id="poTruckSave" class="btn primary" type="button">Salvar caminhão</button><span id="poTruckMsg" class="muted"></span></div>
+</div>
+
+<div id="poFinanceCard" class="card hidden admin-only">
+ <div class="toolbar"><div><strong>Valor da Apanha — Administrador Geral</strong><div id="poFinanceName" class="muted"></div></div><button id="poFinanceClose" class="btn soft">Fechar</button></div>
+ <input id="poFinanceOperationId" type="hidden">
+ <div class="row"><div><label>Valor por 1.000 aves</label><input id="poFinancePrice" type="number" step="0.01" min="0"></div></div>
+ <div class="toolbar"><button id="poFinanceSave" class="btn primary">Salvar valor</button><span id="poFinanceMsg" class="muted"></span></div>
+</div>
+
+<div class="v2-kpis" id="poultryKpis"></div>
+<div class="v2panel"><div class="v2panelhead"><div><h3>Apanhas cadastradas</h3><div class="muted">Registre cada caminhão conforme for sendo carregado.</div></div><button class="btn soft" id="refreshPoultry">Atualizar</button></div><div class="list" id="poultryList"></div></div>
+</div>
 <div class="section" data-screen="frota" hidden="" id="frota"><div class="card"><h3>Conduções</h3><div class="list" id="vehiclesList"></div></div></div>
 <div class="section" data-screen="alertas" hidden="" id="alertas"><div class="card"><div class="toolbar"><h3 style="margin:0">Alertas</h3><button class="btn soft" id="refreshAlerts">Gerar/Atualizar</button></div><div class="list" id="alertsList"></div></div></div>
 <div class="section" data-screen="ia" hidden="" id="ia"><div class="card chat"><h3>Controla IA</h3><div class="muted">A IA avisará se a chave da OpenAI ainda não estiver configurada.</div><div class="chatbox" id="chatbox"></div><div class="toolbar" style="margin-top:10px"><input id="question" placeholder="Ex.: quais equipes estão atrasadas hoje?" style="flex:1;margin:0"/><button class="btn primary" id="sendAI">Enviar</button></div></div></div>
@@ -271,7 +347,7 @@ body.app-ready .v2sidebar{display:block}
 'use strict';
 const API_URL='https://aycbrqziusxtxhsdfqjk.supabase.co';
 const KEY='sb_publishable_OGJX3NBA__JxoyjB3IZNvQ_0nNwh_Xc';
-let companyId=null, conversationId=null, scheduleCache={}, companyProfile={};
+let companyId=null, conversationId=null, scheduleCache={}, companyProfile={}, currentRoleCode=null, isAdminGeneral=false;
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 const money=v=>Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
@@ -484,7 +560,7 @@ async function enterApp(authUser){
   const user=authUser||await getUser();
   if(!user||!user.id)throw new Error('Não foi possível identificar o usuário.');
   debug('Login confirmado. Carregando empresa...');
-  const members=await v2Rest('v2_company_members','select=company_id&user_id=eq.'+encodeURIComponent(user.id)+'&status=eq.active');
+  const members=await v2Rest('v2_company_members','select=company_id,role_id&user_id=eq.'+encodeURIComponent(user.id)+'&status=eq.active');
   const ids=(members||[]).map(function(x){return x.company_id});
   if(!ids.length)throw new Error('Seu usuário ainda não possui empresa V2.');
   const filter=ids.map(function(id){return '"'+id+'"'}).join(',');
@@ -493,6 +569,14 @@ async function enterApp(authUser){
   if(!beta)throw new Error('Empresa não encontrada.');
   companyId=beta.id;
   companyProfile=beta;
+  const activeMember=(members||[]).find(function(x){return x.company_id===companyId});
+  if(activeMember&&activeMember.role_id){
+    try{
+      const roles=await v2Rest('v2_roles','select=code,name&id=eq.'+activeMember.role_id);
+      currentRoleCode=roles?.[0]?.code||null;
+    }catch(_){currentRoleCode=null}
+  }
+  isAdminGeneral=['owner','admin','general_admin'].includes(String(currentRoleCode||'').toLowerCase());
   $('#companyName').textContent=companyProfile.trade_name||'Agro Souza\'s';
   $('#login').classList.add('hidden');
   $('#app').classList.remove('hidden');
@@ -532,6 +616,29 @@ async function dashRest(table,query,timeoutMs=7000){
    rest(table,query),
    new Promise((_,reject)=>setTimeout(()=>reject(new Error('Tempo de resposta excedido')),timeoutMs))
  ]);
+}
+async function loadPoultryDashboard(){
+ const k=$('#poultryDashKpis'),list=$('#poultryDashTeams'); if(!k||!list)return;
+ try{
+  const ops=await rest('v2_operations','select=id,team_id,scheduled_start,actual_start,actual_end,status,planned_birds,actual_birds,price_per_thousand,actual_revenue&company_id=eq.'+companyId+'&operation_type=eq.poultry_catching&order=scheduled_start.desc');
+  const today=ops.filter(o=>o.scheduled_start&&new Date(o.scheduled_start).toDateString()===new Date().toDateString());
+  let mins=0,doneBirds=0,revenue=0;
+  today.filter(o=>o.status==='completed').forEach(o=>{
+   if(o.actual_start&&o.actual_end)mins+=Math.max(0,(new Date(o.actual_end)-new Date(o.actual_start))/60000);
+   doneBirds+=poN(o.actual_birds);
+   revenue+=poN(o.actual_revenue)||(poN(o.actual_birds)/1000)*poN(o.price_per_thousand);
+  });
+  const birds=today.reduce((a,o)=>a+poN(o.actual_birds||o.planned_birds),0);
+  const avg=mins>0?Math.round(doneBirds/(mins/60)):0;
+  k.innerHTML=[['APANHAS',today.length],['AVES',birds.toLocaleString('pt-BR')],['MÉDIA AVES/H',avg?avg.toLocaleString('pt-BR'):'—'],['VALOR REALIZADO',money(revenue)]].map(x=>`<div class="v2kpi"><div class="t">${x[0]}</div><div class="v">${x[1]}</div></div>`).join('');
+  const bt={};
+  today.forEach(o=>{
+   const n=poultryTeams.find(x=>x.id===o.team_id)?.name||'Equipe não informada';
+   if(!bt[n])bt[n]={ops:0,birds:0,done:0};
+   bt[n].ops++; bt[n].birds+=poN(o.actual_birds||o.planned_birds); if(o.status==='completed')bt[n].done++;
+  });
+  list.innerHTML=Object.keys(bt).length?Object.entries(bt).map(([n,v])=>`<div class="item"><div class="toolbar" style="justify-content:space-between"><strong>${esc(n)}</strong><span class="pill">${v.done}/${v.ops} concluídas</span></div><div class="muted">${v.birds.toLocaleString('pt-BR')} aves no dia</div></div>`).join(''):'<div class="v2-empty">Nenhuma apanha programada para hoje.</div>';
+ }catch(e){list.innerHTML='<div class="error">'+esc(e.message)+'</div>'}
 }
 async function loadDashboard(){try{
  const dashboardMounted=!!document.querySelector('#screenHost [data-screen="inicio"]');
@@ -889,7 +996,7 @@ $('#registerPoint').addEventListener('click',async()=>{
   const nextEvent=await getNextPoint(employee.id);if(nextEvent==='finished')throw new Error('Jornada já encerrada hoje para este funcionário.');
   const gps=await getGPS(),user=await getUser(),occurredAt=new Date().toISOString();
   let selfiePath=null;if(withSelfie){msg.textContent='Salvando comprovante facial...';selfiePath=await uploadSelfie(selfie,employee.id)}
-  const payload={company_id:companyId,employee_id:employee.id,occurred_at:occurredAt,event_type:nextEvent,latitude:gps.latitude,longitude:gps.longitude,accuracy_m:gps.accuracy_m,method:withSelfie?'face':'employee_number',device_id:navigator.userAgent.slice(0,180),offline_event_id:'beta532-'+Date.now()+'-'+Math.random().toString(36).slice(2),metadata:{beta:true,source:'controla_beta_web',identification_method:withSelfie?'face':'employee_number',selfie_evidence:withSelfie,selfie_storage_path:selfiePath,face_distance:faceDistance},created_by:user.id};
+  const payload={company_id:companyId,employee_id:employee.id,occurred_at:occurredAt,event_type:nextEvent,latitude:gps.latitude,longitude:gps.longitude,accuracy_m:gps.accuracy_m,method:withSelfie?'face':'employee_number',device_id:navigator.userAgent.slice(0,180),offline_event_id:'beta534-'+Date.now()+'-'+Math.random().toString(36).slice(2),metadata:{beta:true,source:'controla_beta_web',identification_method:withSelfie?'face':'employee_number',selfie_evidence:withSelfie,selfie_storage_path:selfiePath,face_distance:faceDistance},created_by:user.id};
   const saved=await restInsert('v2_attendance_events',payload),eventId=saved?.[0]?.id||null;
   if(withSelfie&&eventId){try{await restInsert('point_face_checks',{point_event_id:eventId,verified:true,score:Math.max(0,1-faceDistance),algorithm:'face-api.js_0.22.2',selfie_storage_path:selfiePath,failure_reason:null})}catch(e){console.warn(e)}}
   const receiptType=pointLabels[nextEvent]||nextEvent,when=new Date(occurredAt).toLocaleString('pt-BR');msg.className='okmsg';msg.textContent=receiptType+' registrado para '+employee.full_name+'.';
@@ -950,105 +1057,205 @@ if($('#exportAFD')) $('#exportAFD').addEventListener('click',async()=>{const e=$
 if($('#exportAEJ')) $('#exportAEJ').addEventListener('click',()=>{const mo=$('#monthlyMonth').value;downloadText('AEJ_PREVIA_'+mo+'.txt','AEJ - PRÉVIA TÉCNICA\\nNÃO É AEJ FISCAL ASSINADO\\nPeríodo: '+mo+'\\nConsulte o Espelho mensal para as jornadas processadas.');});
 
 
-let poultryCustomers=[],poultryTeams=[];
-function poN(v){return Number(v)||0} function poSL(v){return ({planned:'Programada',in_progress:'Em andamento',completed:'Concluída',cancelled:'Cancelada'})[v]||v}
-async function loadPoultrySelectors(){[poultryCustomers,poultryTeams]=await Promise.all([rest('v2_customers','select=id,legal_name,trade_name&company_id=eq.'+companyId+'&status=eq.active&order=trade_name.asc'),rest('v2_teams','select=id,name&company_id=eq.'+companyId+'&status=eq.active&order=name.asc')]);$('#poCustomer').innerHTML='<option value="">Selecione...</option>'+poultryCustomers.map(x=>`<option value="${x.id}">${esc(x.trade_name||x.legal_name)}</option>`).join('');$('#poTeam').innerHTML='<option value="">Selecione...</option>'+poultryTeams.map(x=>`<option value="${x.id}">${esc(x.name)}</option>`).join('')}
-async function loadPoultryOps(){try{const ops=await rest('v2_operations','select=id,title,customer_name,location_name,team_id,scheduled_start,scheduled_end,actual_start,actual_end,status,planned_birds,actual_birds,sheds_count,price_per_thousand,planned_revenue,actual_revenue&company_id=eq.'+companyId+'&operation_type=eq.poultry_catching&order=scheduled_start.desc&limit=100');const td=ops.filter(o=>o.scheduled_start&&new Date(o.scheduled_start).toDateString()===new Date().toDateString());$('#poultryKpis').innerHTML=[['APANHAS HOJE',td.length],['AVES HOJE',td.reduce((a,o)=>a+poN(o.actual_birds||o.planned_birds),0).toLocaleString('pt-BR')],['EM ANDAMENTO',ops.filter(o=>o.status==='in_progress').length],['CONCLUÍDAS HOJE',td.filter(o=>o.status==='completed').length]].map(x=>`<div class="v2kpi"><div class="t">${x[0]}</div><div class="v">${x[1]}</div></div>`).join('');$('#poultryList').innerHTML=ops.length?ops.map(o=>{
- const team=poultryTeams.find(t=>t.id===o.team_id);
- const planned=poN(o.planned_birds),actual=poN(o.actual_birds);
- const diff=actual-planned;
- const startAt=o.actual_start||o.scheduled_start;
- const endAt=o.actual_end||o.scheduled_end;
- let durationMin=0;
- if(startAt&&endAt)durationMin=Math.max(0,Math.round((new Date(endAt)-new Date(startAt))/60000));
- const hours=durationMin/60;
- const birdsPerHour=actual&&hours>0?Math.round(actual/hours):0;
- const totalValue=poN(o.actual_revenue)||(actual&&poN(o.price_per_thousand)?(actual/1000)*poN(o.price_per_thousand):0);
- return `<div class="item">
-   <div class="toolbar" style="justify-content:space-between">
-     <div><strong>${esc(o.customer_name||o.title)}</strong><div class="muted">${esc(o.location_name||'Local não informado')} • ${o.scheduled_start?new Date(o.scheduled_start).toLocaleString('pt-BR'):'—'}</div></div>
-     <span class="pill ${o.status==='completed'?'ok':''}">${poSL(o.status)}</span>
-   </div>
-   <div class="po-detail">
-     <div><span class="muted">Equipe</span><br><b>${esc(team?.name||'Não informada')}</b></div>
-     <div><span class="muted">Previstas</span><br><b>${planned.toLocaleString('pt-BR')}</b></div>
-     <div><span class="muted">Realizadas</span><br><b>${actual.toLocaleString('pt-BR')}</b></div>
-     <div><span class="muted">Diferença</span><br><b>${diff>0?'+':''}${diff.toLocaleString('pt-BR')}</b></div>
-     <div><span class="muted">Duração</span><br><b>${durationMin?Math.floor(durationMin/60)+'h '+(durationMin%60)+'min':'—'}</b></div>
-     <div><span class="muted">Aves/hora</span><br><b>${birdsPerHour?birdsPerHour.toLocaleString('pt-BR'):'—'}</b></div>
-     <div><span class="muted">Barracões</span><br><b>${poN(o.sheds_count)}</b></div>
-     <div><span class="muted">Valor total</span><br><b>${money(totalValue)}</b></div>
-   </div>
-   <div class="toolbar">
-     ${o.status!=='completed'?`<button class="btn soft poStatus" data-id="${o.id}" data-status="in_progress">▶ Iniciar</button><button class="btn primary poFinish" data-id="${o.id}" data-planned="${planned}" data-actual="${actual}">✓ Concluir</button>`:''}
-   </div>
- </div>`
-}).join(''):'<div class="v2-empty">Nenhuma apanha cadastrada.</div>'}catch(e){$('#poultryList').innerHTML='<div class="error">'+esc(e.message)+'</div>'}}
-async function savePoultryOperation(){const c=poultryCustomers.find(x=>x.id===$('#poCustomer').value),t=poultryTeams.find(x=>x.id===$('#poTeam').value);if(!c||!t||!$('#poLocation').value.trim()||!$('#poStart').value)return $('#poMsg').textContent='Preencha cliente, granja, equipe e início.';const p=poN($('#poPlannedBirds').value),a=poN($('#poActualBirds').value),pr=poN($('#poPrice').value);try{await rest('v2_operations','','POST',{company_id:companyId,operation_type:'poultry_catching',title:'Apanha - '+(c.trade_name||c.legal_name),customer_id:c.id,customer_name:c.trade_name||c.legal_name,location_name:$('#poLocation').value.trim(),team_id:t.id,scheduled_start:new Date($('#poStart').value).toISOString(),scheduled_end:$('#poEnd').value?new Date($('#poEnd').value).toISOString():null,status:$('#poStatus').value,planned_birds:p||null,actual_birds:a||null,sheds_count:poN($('#poSheds').value)||null,price_per_thousand:pr||null,planned_revenue:p&&pr?p/1000*pr:null,actual_revenue:a&&pr?a/1000*pr:null,notes:$('#poNotes').value.trim()||null,metadata:{team_name:t.name}});$('#poMsg').textContent='Apanha salva.';$('#poultryForm').classList.add('hidden');await loadPoultryOps()}catch(e){$('#poMsg').textContent=e.message}}
-$('#newPoultryOp').addEventListener('click',async()=>{$('#poultryForm').classList.remove('hidden');await loadPoultrySelectors()});$('#closePoultryForm').addEventListener('click',()=>$('#poultryForm').classList.add('hidden'));$('#savePoultryOp').addEventListener('click',savePoultryOperation);$('#refreshPoultry').addEventListener('click',loadPoultryOps);
-document.addEventListener('click',async e=>{
- const b=e.target.closest('.poStatus');
- if(b){try{await rest('v2_operations','id=eq.'+b.dataset.id,'PATCH',{status:'in_progress',actual_start:new Date().toISOString()});await loadPoultryOps()}catch(x){alert(x.message)}return}
- const f=e.target.closest('.poFinish');
- if(f){$('#poFinishId').value=f.dataset.id;$('#poFinishBirds').value=f.dataset.actual||f.dataset.planned||'';const d=new Date();d.setMinutes(d.getMinutes()-d.getTimezoneOffset());$('#poFinishTime').value=d.toISOString().slice(0,16);$('#poFinishCard').classList.remove('hidden')}
-});
 
-if($('#poFinishClose'))$('#poFinishClose').addEventListener('click',()=>$('#poFinishCard').classList.add('hidden'));
-if($('#poFinishSave'))$('#poFinishSave').addEventListener('click',async()=>{
- const id=$('#poFinishId').value,birds=Number($('#poFinishBirds').value)||0;
- if(!id||birds<=0)return $('#poFinishMsg').textContent='Informe as aves realizadas.';
+let poultryTeams=[],poultryFarms=[],poultryBarns=[],poultryLoadings=[],poultryTruckLoads=[];
+function poN(v){return Number(v)||0}
+function poSL(v){return ({planned:'Programada',in_progress:'Em andamento',completed:'Concluída',cancelled:'Cancelada'})[v]||v||'—'}
+function poLocalInputDate(d=new Date()){const x=new Date(d);x.setMinutes(x.getMinutes()-x.getTimezoneOffset());return x.toISOString().slice(0,16)}
+function applyPoultryRoleUI(){
+ document.querySelectorAll('.admin-only').forEach(el=>el.classList.toggle('hidden',!isAdminGeneral));
+}
+async function loadPoultrySelectors(){
+ [poultryTeams,poultryFarms,poultryBarns]=await Promise.all([
+  rest('v2_teams','select=id,name&company_id=eq.'+companyId+'&status=eq.active&order=name.asc'),
+  rest('v2_poultry_farms','select=id,producer_name,farm_name,city,address,status&company_id=eq.'+companyId+'&status=eq.active&order=producer_name.asc'),
+  rest('v2_poultry_barns','select=id,farm_id,barn_number,outlet_type,energy_type,status&company_id=eq.'+companyId+'&status=eq.active&order=barn_number.asc')
+ ]);
+ if($('#poTeam'))$('#poTeam').innerHTML='<option value="">Selecione...</option>'+poultryTeams.map(x=>`<option value="${x.id}">${esc(x.name)}</option>`).join('');
+ const saved=$('#poSavedAviary');
+ if(saved){
+  saved.innerHTML='<option value="">Novo / selecione...</option>'+poultryBarns.map(b=>{const f=poultryFarms.find(x=>x.id===b.farm_id);return `<option value="${b.id}">${esc(f?.producer_name||'Integrado')} • ${esc(f?.city||f?.address?.city||'Cidade')} • ${esc(b.barn_number)}</option>`}).join('');
+ }
+ applyPoultryRoleUI();
+}
+function fillAviaryProfile(barnId){
+ const b=poultryBarns.find(x=>x.id===barnId),f=b&&poultryFarms.find(x=>x.id===b.farm_id);
+ if(!b||!f)return;
+ $('#poIntegratedName').value=f.producer_name||'';
+ $('#poCity').value=f.city||f.address?.city||'';
+ $('#poFarmName').value=f.farm_name||'';
+ $('#poAviaryName').value=b.barn_number||'';
+ $('#poOutletType').value=b.outlet_type||'';
+ $('#poEnergyType').value=b.energy_type||'';
+}
+async function ensureAviaryProfile(){
+ const integrated=$('#poIntegratedName').value.trim(),city=$('#poCity').value.trim(),farmName=$('#poFarmName').value.trim(),aviary=$('#poAviaryName').value.trim();
+ if(!integrated||!city||!aviary)throw new Error('Preencha nome do integrado, cidade e aviário.');
+ let farm=poultryFarms.find(f=>String(f.producer_name||'').toLowerCase()===integrated.toLowerCase()&&String(f.city||f.address?.city||'').toLowerCase()===city.toLowerCase()&&String(f.farm_name||'').toLowerCase()===farmName.toLowerCase());
+ if(!farm){
+  const rows=await rest('v2_poultry_farms','','POST',{company_id:companyId,producer_name:integrated,farm_name:farmName||integrated,city,address:{city},status:'active'});
+  farm=rows?.[0];
+ }else{
+  await rest('v2_poultry_farms','id=eq.'+farm.id,'PATCH',{producer_name:integrated,farm_name:farmName||farm.farm_name,city,address:{...(farm.address||{}),city}});
+ }
+ let barn=poultryBarns.find(b=>b.farm_id===farm.id&&String(b.barn_number||'').toLowerCase()===aviary.toLowerCase());
+ const barnBody={outlet_type:$('#poOutletType').value.trim()||null,energy_type:$('#poEnergyType').value.trim()||null,status:'active'};
+ if(!barn){
+  const rows=await rest('v2_poultry_barns','','POST',{company_id:companyId,farm_id:farm.id,barn_number:aviary,...barnBody});
+  barn=rows?.[0];
+ }else{
+  await rest('v2_poultry_barns','id=eq.'+barn.id,'PATCH',barnBody);
+ }
+ await loadPoultrySelectors();
+ if(barn?.id)$('#poSavedAviary').value=barn.id;
+ return {farm,barn};
+}
+async function saveAviaryProfile(){
+ try{$('#aviaryMsg').textContent='Salvando...';await ensureAviaryProfile();$('#aviaryMsg').textContent='Dados do aviário salvos ✓'}catch(e){$('#aviaryMsg').textContent=e.message}
+}
+async function savePoultryOperation(){
+ const t=poultryTeams.find(x=>x.id===$('#poTeam').value);
+ if(!t||!$('#poStart').value)return $('#poMsg').textContent='Selecione a equipe e informe o início.';
  try{
-  const row=await rest('v2_operations','select=price_per_thousand&id=eq.'+id),price=Number(row?.[0]?.price_per_thousand)||0;
-  await rest('v2_operations','id=eq.'+id,'PATCH',{status:'completed',actual_birds:birds,actual_end:$('#poFinishTime').value?new Date($('#poFinishTime').value).toISOString():new Date().toISOString(),actual_revenue:price?(birds/1000)*price:null});
-  $('#poFinishCard').classList.add('hidden');await loadPoultryOps();
- }catch(e){$('#poFinishMsg').textContent=e.message}
-});
+  $('#poMsg').textContent='Salvando...';
+  const {farm,barn}=await ensureAviaryProfile();
+  const planned=isAdminGeneral?poN($('#poPlannedBirds')?.value):0;
+  const price=isAdminGeneral?poN($('#poPrice')?.value):0;
+  const location=`${farm.city||farm.address?.city||''} • ${farm.producer_name} • ${barn.barn_number}`;
+  const opRows=await rest('v2_operations','','POST',{
+    company_id:companyId,operation_type:'poultry_catching',title:'Apanha - '+farm.producer_name,
+    customer_name:farm.producer_name,location_name:location,team_id:t.id,
+    scheduled_start:new Date($('#poStart').value).toISOString(),
+    scheduled_end:$('#poEnd').value?new Date($('#poEnd').value).toISOString():null,
+    status:'planned',planned_birds:planned||null,price_per_thousand:price||null,
+    planned_revenue:planned&&price?(planned/1000)*price:null,notes:$('#poNotes').value.trim()||null,
+    metadata:{team_name:t.name,farm_id:farm.id,barn_id:barn.id,city:farm.city,integrated_name:farm.producer_name,outlet_type:barn.outlet_type,energy_type:barn.energy_type}
+  });
+  const op=opRows?.[0];
+  if(!op)throw new Error('Apanha não foi criada.');
+  await rest('v2_poultry_loadings','','POST',{
+    company_id:companyId,operation_id:op.id,farm_id:farm.id,loading_date:$('#poStart').value.slice(0,10),
+    catching_method:'back',planned_birds:planned||null,reported_birds:0,planned_trucks:null,reported_trucks:0,status:'planned',team_id:t.id,
+    metadata:{default_barn_id:barn.id}
+  });
+  $('#poMsg').textContent='Apanha salva ✓';
+  $('#poultryForm').classList.add('hidden');
+  await loadPoultryOps();
+ }catch(e){$('#poMsg').textContent=e.message}
+}
+async function loadPoultryOps(){
+ try{
+  const [ops,loadings,trucks]=await Promise.all([
+   rest('v2_operations','select=id,title,customer_name,location_name,team_id,scheduled_start,scheduled_end,actual_start,actual_end,status,planned_birds,actual_birds,price_per_thousand,actual_revenue,metadata&company_id=eq.'+companyId+'&operation_type=eq.poultry_catching&order=scheduled_start.desc&limit=100'),
+   rest('v2_poultry_loadings','select=id,operation_id,farm_id,status,reported_birds,reported_trucks,metadata&company_id=eq.'+companyId+'&order=created_at.desc'),
+   rest('v2_poultry_truck_loads','select=id,loading_id,truck_sequence,truck_plate,driver_name,birds,started_at,completed_at,is_cata,metadata&company_id=eq.'+companyId+'&order=created_at.asc')
+  ]);
+  poultryLoadings=loadings;poultryTruckLoads=trucks;
+  const today=ops.filter(o=>o.scheduled_start&&new Date(o.scheduled_start).toDateString()===new Date().toDateString());
+  const todayTrucks=trucks.filter(tr=>today.some(o=>loadings.find(l=>l.operation_id===o.id)?.id===tr.loading_id));
+  const birdsToday=todayTrucks.reduce((a,t)=>a+poN(t.birds),0);
+  $('#poultryKpis').innerHTML=[
+    ['APANHAS HOJE',today.length],['CAMINHÕES HOJE',todayTrucks.length],['AVES CARREGADAS',birdsToday.toLocaleString('pt-BR')],['CATAS',todayTrucks.filter(t=>t.is_cata).length]
+  ].map(x=>`<div class="v2kpi"><div class="t">${x[0]}</div><div class="v">${x[1]}</div></div>`).join('');
 
+  $('#poultryList').innerHTML=ops.length?ops.map(o=>{
+    const loading=loadings.find(l=>l.operation_id===o.id),opTrucks=loading?trucks.filter(t=>t.loading_id===loading.id):[];
+    const totalBirds=opTrucks.reduce((a,t)=>a+poN(t.birds),0);
+    const team=poultryTeams.find(t=>t.id===o.team_id);
+    const farm=poultryFarms.find(f=>f.id===(loading?.farm_id||o.metadata?.farm_id));
+    const barn=poultryBarns.find(b=>b.id===(o.metadata?.barn_id||loading?.metadata?.default_barn_id));
+    const truckHtml=opTrucks.length?opTrucks.map(t=>`<div class="truck-row"><div><b>#${t.truck_sequence||''} ${esc(t.truck_plate)}</b> • ${esc(t.driver_name)} ${t.is_cata?'<span class="pill warn">CATA</span>':''}</div><div class="muted">${poN(t.birds).toLocaleString('pt-BR')} aves • ${t.started_at?new Date(t.started_at).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'—'} → ${t.completed_at?new Date(t.completed_at).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'—'} • ${esc(barn?.barn_number||'Aviário')}</div></div>`).join(''):'<div class="muted">Nenhum caminhão registrado ainda.</div>';
+    return `<div class="item">
+      <div class="toolbar" style="justify-content:space-between"><div><strong>${esc(farm?.producer_name||o.customer_name||o.title)}</strong><div class="muted">${esc(farm?.city||'')} • ${esc(barn?.barn_number||'Aviário não informado')} • ${esc(team?.name||'Equipe')}</div></div><span class="pill ${o.status==='completed'?'ok':''}">${poSL(o.status)}</span></div>
+      <div class="site-memory"><b>Tomada:</b> ${esc(barn?.outlet_type||'Não informada')} &nbsp; • &nbsp; <b>Energia:</b> ${esc(barn?.energy_type||'Não informada')}</div>
+      <div class="po-detail"><div><span class="muted">Caminhões</span><br><b>${opTrucks.length}</b></div><div><span class="muted">Aves carregadas</span><br><b>${totalBirds.toLocaleString('pt-BR')}</b></div><div><span class="muted">Catas</span><br><b>${opTrucks.filter(t=>t.is_cata).length}</b></div><div><span class="muted">Início previsto</span><br><b>${o.scheduled_start?new Date(o.scheduled_start).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'—'}</b></div></div>
+      <div class="truck-list">${truckHtml}</div>
+      <div class="po-actions">
+        ${loading?`<button class="btn primary poAddTruck" data-op="${o.id}" data-loading="${loading.id}" data-farm="${loading.farm_id||''}" data-name="${esc(farm?.producer_name||o.title)}">+ Caminhão</button>`:''}
+        ${o.status!=='completed'?`<button class="btn soft poCompleteOp" data-op="${o.id}" data-loading="${loading?.id||''}">✓ Concluir Apanha</button>`:''}
+        ${isAdminGeneral?`<button class="btn soft poFinance" data-op="${o.id}" data-name="${esc(farm?.producer_name||o.title)}" data-price="${poN(o.price_per_thousand)}">R$ Valor</button>`:''}
+      </div>
+    </div>`
+  }).join(''):'<div class="v2-empty">Nenhuma apanha cadastrada.</div>';
+ }catch(e){$('#poultryList').innerHTML='<div class="error">'+esc(e.message)+'</div>'}
+}
+async function refreshOperationBirdTotals(operationId,loadingId){
+ const trucks=await rest('v2_poultry_truck_loads','select=birds,started_at,completed_at&loading_id=eq.'+loadingId);
+ const total=trucks.reduce((a,t)=>a+poN(t.birds),0);
+ const starts=trucks.map(t=>t.started_at).filter(Boolean).sort(),ends=trucks.map(t=>t.completed_at).filter(Boolean).sort();
+ await rest('v2_poultry_loadings','id=eq.'+loadingId,'PATCH',{reported_birds:total,reported_trucks:trucks.length,status:'in_progress'});
+ await rest('v2_operations','id=eq.'+operationId,'PATCH',{actual_birds:total,status:'in_progress',actual_start:starts[0]||new Date().toISOString(),actual_end:null});
+}
+function loadTruckBarnOptions(farmId,selectedBarnId){
+ const barns=poultryBarns.filter(b=>b.farm_id===farmId);
+ $('#poTruckBarn').innerHTML=barns.map(b=>`<option value="${b.id}" ${b.id===selectedBarnId?'selected':''}>${esc(b.barn_number)}</option>`).join('');
+}
+async function saveTruckLoad(){
+ const operationId=$('#poTruckOperationId').value,loadingId=$('#poTruckLoadingId').value,driver=$('#poTruckDriver').value.trim(),plate=$('#poTruckPlate').value.trim().toUpperCase(),birds=poN($('#poTruckBirds').value),barnId=$('#poTruckBarn').value,start=$('#poTruckStart').value,end=$('#poTruckEnd').value;
+ if(!operationId||!loadingId||!driver||!plate||!birds||!barnId||!start||!end)return $('#poTruckMsg').textContent='Preencha motorista, placa, aves, aviário, início e término.';
+ try{
+  $('#poTruckMsg').textContent='Salvando...';
+  const existing=poultryTruckLoads.filter(t=>t.loading_id===loadingId);
+  const rows=await rest('v2_poultry_truck_loads','','POST',{
+   company_id:companyId,loading_id:loadingId,truck_sequence:existing.length+1,truck_plate:plate,driver_name:driver,birds,
+   started_at:new Date(start).toISOString(),completed_at:new Date(end).toISOString(),is_cata:$('#poTruckCata').checked,
+   metadata:{barn_id:barnId,notes:$('#poTruckNotes').value.trim()||null}
+  });
+  const truck=rows?.[0];if(!truck)throw new Error('Caminhão não foi salvo.');
+  await rest('v2_poultry_truck_barns','','POST',{company_id:companyId,truck_load_id:truck.id,barn_id:barnId,sequence_no:1,birds,started_at:new Date(start).toISOString(),completed_at:new Date(end).toISOString(),notes:$('#poTruckNotes').value.trim()||null});
+  await refreshOperationBirdTotals(operationId,loadingId);
+  $('#poTruckCard').classList.add('hidden');
+  await loadPoultryOps();
+ }catch(e){$('#poTruckMsg').textContent=e.message}
+}
+async function completePoultryOperation(operationId,loadingId){
+ try{
+  const trucks=await rest('v2_poultry_truck_loads','select=birds,started_at,completed_at&loading_id=eq.'+loadingId);
+  if(!trucks.length)return alert('Registre pelo menos um caminhão antes de concluir a apanha.');
+  const total=trucks.reduce((a,t)=>a+poN(t.birds),0),starts=trucks.map(t=>t.started_at).filter(Boolean).sort(),ends=trucks.map(t=>t.completed_at).filter(Boolean).sort();
+  await rest('v2_poultry_loadings','id=eq.'+loadingId,'PATCH',{reported_birds:total,reported_trucks:trucks.length,status:'completed'});
+  await rest('v2_operations','id=eq.'+operationId,'PATCH',{actual_birds:total,status:'completed',actual_start:starts[0]||null,actual_end:ends[ends.length-1]||new Date().toISOString()});
+  await loadPoultryOps();
+ }catch(e){alert(e.message)}
+}
+async function saveOperationFinance(){
+ if(!isAdminGeneral)return;
+ const id=$('#poFinanceOperationId').value,price=poN($('#poFinancePrice').value);
+ try{
+  const ops=await rest('v2_operations','select=actual_birds,planned_birds&id=eq.'+id),o=ops?.[0]||{};
+  await rest('v2_operations','id=eq.'+id,'PATCH',{price_per_thousand:price||null,planned_revenue:o.planned_birds&&price?(poN(o.planned_birds)/1000)*price:null,actual_revenue:o.actual_birds&&price?(poN(o.actual_birds)/1000)*price:null});
+  $('#poFinanceCard').classList.add('hidden');await loadPoultryOps();
+ }catch(e){$('#poFinanceMsg').textContent=e.message}
+}
 
-if($('#quickCustomerBtn'))$('#quickCustomerBtn').addEventListener('click',()=>{$('#quickCustomerCard').classList.remove('hidden');$('#quickCustomerName').focus()});
-if($('#quickCustomerClose'))$('#quickCustomerClose').addEventListener('click',()=>$('#quickCustomerCard').classList.add('hidden'));
+if($('#newPoultryOp'))$('#newPoultryOp').addEventListener('click',async()=>{$('#poultryForm').classList.remove('hidden');$('#poStart').value=poLocalInputDate();await loadPoultrySelectors();applyPoultryRoleUI()});
+if($('#closePoultryForm'))$('#closePoultryForm').addEventListener('click',()=>$('#poultryForm').classList.add('hidden'));
+if($('#savePoultryOp'))$('#savePoultryOp').addEventListener('click',savePoultryOperation);
+if($('#refreshPoultry'))$('#refreshPoultry').addEventListener('click',loadPoultryOps);
+if($('#saveAviaryProfile'))$('#saveAviaryProfile').addEventListener('click',saveAviaryProfile);
+if($('#poSavedAviary'))$('#poSavedAviary').addEventListener('change',e=>fillAviaryProfile(e.target.value));
+if($('#poTruckClose'))$('#poTruckClose').addEventListener('click',()=>$('#poTruckCard').classList.add('hidden'));
+if($('#poTruckSave'))$('#poTruckSave').addEventListener('click',saveTruckLoad);
+if($('#poFinanceClose'))$('#poFinanceClose').addEventListener('click',()=>$('#poFinanceCard').classList.add('hidden'));
+if($('#poFinanceSave'))$('#poFinanceSave').addEventListener('click',saveOperationFinance);
 if($('#quickTeamBtn'))$('#quickTeamBtn').addEventListener('click',()=>{$('#quickTeamCard').classList.remove('hidden');$('#quickTeamName').focus()});
 if($('#quickTeamClose'))$('#quickTeamClose').addEventListener('click',()=>$('#quickTeamCard').classList.add('hidden'));
-
-if($('#quickCustomerSave'))$('#quickCustomerSave').addEventListener('click',async()=>{
- const name=$('#quickCustomerName').value.trim();
- if(!name)return $('#quickCustomerMsg').textContent='Informe o nome do integrado/cliente.';
- try{
-  $('#quickCustomerMsg').textContent='Salvando...';
-  const created=await rest('v2_customers','','POST',{
-    company_id:companyId,
-    trade_name:name,
-    legal_name:$('#quickCustomerLegal').value.trim()||name,
-    customer_type:'poultry_integrated',
-    status:'active'
-  });
-  await loadPoultrySelectors();
-  const id=created?.[0]?.id;if(id)$('#poCustomer').value=id;
-  $('#quickCustomerCard').classList.add('hidden');
-  $('#quickCustomerName').value='';$('#quickCustomerLegal').value='';
-  $('#quickCustomerMsg').textContent='';
- }catch(e){$('#quickCustomerMsg').textContent=e.message}
-});
-
 if($('#quickTeamSave'))$('#quickTeamSave').addEventListener('click',async()=>{
- const name=$('#quickTeamName').value.trim();
- if(!name)return $('#quickTeamMsg').textContent='Informe o nome da equipe.';
- try{
-  $('#quickTeamMsg').textContent='Salvando...';
-  const created=await rest('v2_teams','','POST',{
-    company_id:companyId,
-    name:name,
-    code:$('#quickTeamCode').value.trim()||null,
-    status:'active'
-  });
-  await loadPoultrySelectors();
-  const id=created?.[0]?.id;if(id)$('#poTeam').value=id;
-  $('#quickTeamCard').classList.add('hidden');
-  $('#quickTeamName').value='';$('#quickTeamCode').value='';
-  $('#quickTeamMsg').textContent='';
- }catch(e){$('#quickTeamMsg').textContent=e.message}
+ const name=$('#quickTeamName').value.trim();if(!name)return $('#quickTeamMsg').textContent='Informe o nome da equipe.';
+ try{const created=await rest('v2_teams','','POST',{company_id:companyId,name,code:$('#quickTeamCode').value.trim()||null,status:'active'});await loadPoultrySelectors();const id=created?.[0]?.id;if(id)$('#poTeam').value=id;$('#quickTeamCard').classList.add('hidden')}catch(e){$('#quickTeamMsg').textContent=e.message}
 });
-
+document.addEventListener('click',async e=>{
+ const a=e.target.closest('.poAddTruck');
+ if(a){
+   $('#poTruckOperationId').value=a.dataset.op;$('#poTruckLoadingId').value=a.dataset.loading;$('#poTruckOpName').textContent=a.dataset.name||'';
+   const loading=poultryLoadings.find(l=>l.id===a.dataset.loading),defaultBarn=loading?.metadata?.default_barn_id||'';
+   loadTruckBarnOptions(a.dataset.farm,defaultBarn);
+   $('#poTruckDriver').value='';$('#poTruckPlate').value='';$('#poTruckBirds').value='';$('#poTruckCata').checked=false;$('#poTruckNotes').value='';
+   $('#poTruckStart').value=poLocalInputDate();$('#poTruckEnd').value='';$('#poTruckMsg').textContent='';$('#poTruckCard').classList.remove('hidden');return;
+ }
+ const c=e.target.closest('.poCompleteOp');if(c){await completePoultryOperation(c.dataset.op,c.dataset.loading);return}
+ const f=e.target.closest('.poFinance');if(f&&isAdminGeneral){$('#poFinanceOperationId').value=f.dataset.op;$('#poFinanceName').textContent=f.dataset.name||'';$('#poFinancePrice').value=f.dataset.price||'';$('#poFinanceMsg').textContent='';$('#poFinanceCard').classList.remove('hidden')}
+});
 // Navegação resiliente: um único listener delegado atende desktop e mobile.
 document.addEventListener('click',function(e){
   const side=e.target.closest('.v2navbtn[data-v2tab]');
@@ -1092,7 +1299,7 @@ async function v2Go(tab){
  window.scrollTo(0,0);
 
  try{
-   if(tab==='inicio') await loadDashboard();
+   if(tab==='inicio'){await loadPoultrySelectors();await loadDashboard();await loadPoultryDashboard();}
    else if(tab==='equipes') await loadTeams();
    else if(tab==='funcionarios'){await loadEmployees();await loadProfessionalProfile();}
    else if(tab==='operacoes'){await loadPoultrySelectors();await loadPoultryOps();}
