@@ -8,7 +8,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
-<title>Controla V2 • Beta 5.48 Documentos da Frota</title>
+<title>Controla V2 • Beta 5.49 CRLV Inteligente</title>
 <style>
 :root{--bg:#f3f6fb;--card:#fff;--ink:#0f172a;--muted:#64748b;--line:#e2e8f0;--accent:#0f172a}*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--ink)}header{position:sticky;top:0;z-index:20;background:linear-gradient(135deg,var(--accent),#1e293b);color:#fff;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 8px 24px rgba(15,23,42,.18)}.wrap{max-width:1200px;margin:auto;padding:12px}.card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:12px;box-shadow:0 4px 18px rgba(15,23,42,.045)}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:10px}.kpi{font-size:28px;font-weight:900}.label,.muted{font-size:12px;color:var(--muted)}.nav{display:flex;gap:8px;overflow:auto;padding:12px 0;scrollbar-width:none}.nav::-webkit-scrollbar{display:none}.nav button,.btn{border:0;border-radius:12px;padding:11px 14px;font-weight:800;white-space:nowrap;cursor:pointer}.nav button{background:#fff;border:1px solid var(--line);color:#334155}.nav button.active,.btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}.btn.soft{background:#e2e8f0}.btn.danger{background:#b91c1c;color:#fff}.btn.danger:hover{background:#991b1b}.hidden{display:none!important}.login{max-width:430px;margin:55px auto}.login input,.chat input{width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:10px;margin:6px 0 10px;font:inherit}.section{display:none}.section.active{display:block}.list{display:grid;gap:8px}.item{background:#fff;border:1px solid var(--line);border-radius:13px;padding:12px}.item strong{display:block}.pill{display:inline-block;padding:4px 8px;border-radius:999px;font-size:11px;font-weight:800;background:#e2e8f0}.pill.ok{background:#dcfce7;color:#166534}.pill.warn{background:#fef3c7;color:#92400e}.pill.danger{background:#fee2e2;color:#991b1b}.toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.chatbox{min-height:220px;max-height:52vh;overflow:auto;background:#fff;border:1px solid var(--line);border-radius:14px;padding:10px}.msg{padding:10px 12px;border-radius:12px;margin:8px 0;max-width:88%;white-space:pre-wrap}.msg.user{margin-left:auto;background:#e2e8f0}.msg.ai{background:#fff7ed;border:1px solid #fed7aa}.brand{display:flex;gap:10px;align-items:center}.logo{width:38px;height:38px;border-radius:10px;background:white;color:#0f172a;display:grid;place-items:center;font-weight:900}.error{color:#b91c1c;font-size:13px}.okmsg{color:#166534;font-size:13px}.debug{margin-top:8px;font-size:11px;color:#64748b;word-break:break-word}@media(max-width:640px){.wrap{padding:9px}.kpi{font-size:25px}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}header{padding:12px}.nav{position:sticky;top:66px;z-index:15;background:var(--bg);margin:0 -9px;padding:9px}}
 
@@ -129,9 +129,10 @@ body.app-ready .v2sidebar{display:block}
 
 </style>
 <script defer="" src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
 <script>
 (function(){
-  const BUILD='5.48';
+  const BUILD='5.49';
   try{
     const marker='controla_cache_cleanup_'+BUILD;
     if(!localStorage.getItem(marker)){
@@ -169,9 +170,9 @@ body.app-ready .v2sidebar{display:block}
 <div class="v2group">EM BREVE</div>
 <button class="v2navbtn" type="button">Estoque</button><button class="v2navbtn" type="button">Financeiro</button><button class="v2navbtn" type="button">Relatórios &amp; BI</button>
 </aside>
-<header><div class="brand"><div class="logo">C</div><div><b>Controla</b><div><small id="companyName">Beta</small></div></div></div><div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill" id="buildBadge" title="Versão publicada">v5.48</span><button class="btn soft" id="themeToggle" type="button">☾</button><button class="btn soft hidden" id="logout">Sair</button></div></header>
+<header><div class="brand"><div class="logo">C</div><div><b>Controla</b><div><small id="companyName">Beta</small></div></div></div><div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill" id="buildBadge" title="Versão publicada">v5.49</span><button class="btn soft" id="themeToggle" type="button">☾</button><button class="btn soft hidden" id="logout">Sair</button></div></header>
 <main class="wrap">
-<section class="login" id="login"><div class="card"><h2>Entrar na Beta</h2><div class="muted">Use o mesmo acesso do app atual.</div><label>E-mail</label><input autocomplete="username" id="email" type="email"/><label>Senha</label><input autocomplete="current-password" id="password" type="password"/><button class="btn primary" id="loginBtn">Entrar</button><div class="muted" id="loginMsg" style="margin-top:10px">Beta 5.48 • documentos e vencimentos</div><div class="debug" id="debug"></div></div></section>
+<section class="login" id="login"><div class="card"><h2>Entrar na Beta</h2><div class="muted">Use o mesmo acesso do app atual.</div><label>E-mail</label><input autocomplete="username" id="email" type="email"/><label>Senha</label><input autocomplete="current-password" id="password" type="password"/><button class="btn primary" id="loginBtn">Entrar</button><div class="muted" id="loginMsg" style="margin-top:10px">Beta 5.49 • CRLV inteligente</div><div class="debug" id="debug"></div></div></section>
 <section class="hidden" id="app">
 <div class="nav" id="nav"><button class="active" data-tab="inicio">Início</button><button data-tab="equipes">Equipes</button><button data-tab="funcionarios">RH &amp; Pessoas</button><button data-tab="ponto">Ponto</button><button data-tab="operacoes">Operações / Apanha</button><button data-tab="frota">Frota</button><button data-tab="manutencoes">Manutenções</button><button data-tab="combustivel">Combustível & KM</button><button data-tab="documentosfrota">Documentos</button><button data-tab="alertas">Alertas</button><button data-tab="ia">Controla IA</button></div>
 <div id="screenHost"></div>
@@ -401,11 +402,23 @@ body.app-ready .v2sidebar{display:block}
 <div class="card"><div class="toolbar" style="justify-content:space-between"><div><h3 style="margin:0">Histórico de abastecimentos</h3><div class="muted">Consumo é calculado entre abastecimentos consecutivos do mesmo veículo.</div></div><button class="btn soft" id="refreshFuelBtn" type="button">Atualizar</button></div><div class="list" id="fuelList" style="margin-top:12px"></div></div>
 </div>
 <div class="section" data-screen="documentosfrota" hidden="" id="documentosfrota">
-<div class="card"><div class="toolbar" style="justify-content:space-between"><div><h3 style="margin:0">📄 Documentos da Frota</h3><div class="muted">Licenciamento, seguro, inspeções e vencimentos.</div></div><button class="btn primary" id="newVehicleDocBtn" type="button">+ NOVO DOCUMENTO</button></div><div class="v2-kpis" id="vehicleDocKpis" style="margin-top:14px"></div></div>
-<div class="card" id="vehicleDocEditCard" style="display:none"><div class="toolbar" style="justify-content:space-between"><div><h3 id="vehicleDocTitle" style="margin:0">Novo documento</h3><div class="muted">Cadastre a validade para receber o alerta no sistema.</div></div><button class="btn soft" id="cancelVehicleDoc" type="button">Cancelar</button></div><input id="vehicleDocId" type="hidden"/>
+<div class="card"><div class="toolbar" style="justify-content:space-between"><div><h3 style="margin:0">📄 Documentos da Frota</h3><div class="muted">Guarde o PDF do veículo e use o CRLV para preencher a condução automaticamente.</div></div><div class="toolbar"><button class="btn primary" id="importCrlvBtn" type="button">✨ LER CRLV / CADASTRAR CONDUÇÃO</button><button class="btn soft" id="newVehicleDocBtn" type="button">+ DOCUMENTO MANUAL</button></div></div><input id="crlvImportFile" type="file" accept="application/pdf,image/jpeg,image/png,image/webp" hidden/><div class="v2-kpis" id="vehicleDocKpis" style="margin-top:14px"></div></div>
+
+<div class="card" id="crlvPreviewCard" style="display:none;border:2px solid #1976d2">
+<div class="toolbar" style="justify-content:space-between"><div><h3 style="margin:0">✨ Dados encontrados no CRLV</h3><div class="muted">Confira antes de cadastrar ou atualizar a condução.</div></div><button class="btn soft" id="cancelCrlvImport" type="button">Cancelar</button></div>
+<div class="row" style="margin-top:12px"><div><label>Placa</label><input id="crlvPlate"/></div><div><label>RENAVAM</label><input id="crlvRenavam"/></div><div><label>Marca / Modelo</label><input id="crlvMakeModel"/></div></div>
+<div class="row"><div><label>Ano fabricação</label><input id="crlvYearFab" type="number"/></div><div><label>Ano modelo</label><input id="crlvYearModel" type="number"/></div><div><label>Chassi</label><input id="crlvChassis"/></div></div>
+<div class="row"><div><label>Proprietário</label><input id="crlvOwner"/></div><div><label>Cor</label><input id="crlvColor"/></div><div><label>Combustível</label><input id="crlvFuel"/></div></div>
+<div class="toolbar"><button class="btn primary" id="confirmCrlvImport" type="button">CONFIRMAR E SALVAR</button><span class="muted" id="crlvImportMsg"></span></div>
+<div class="muted" style="margin-top:8px">O Controla nunca grava os dados lidos sem esta confirmação. PDFs digitalizados como imagem podem precisar de preenchimento manual.</div>
+</div>
+
+<div class="card" id="vehicleDocEditCard" style="display:none"><div class="toolbar" style="justify-content:space-between"><div><h3 id="vehicleDocTitle" style="margin:0">Novo documento</h3><div class="muted">O arquivo fica guardado junto ao veículo para visualizar ou baixar quando precisar.</div></div><button class="btn soft" id="cancelVehicleDoc" type="button">Cancelar</button></div><input id="vehicleDocId" type="hidden"/>
 <div class="row" style="margin-top:12px"><div><label>Veículo</label><select id="vehicleDocVehicle"></select></div><div><label>Tipo</label><select id="vehicleDocType"><option>Licenciamento / CRLV</option><option>Seguro</option><option>Inspeção veicular</option><option>ANTT</option><option>Tacógrafo</option><option>Extintor / inspeção</option><option>Outro</option></select></div><div><label>Vencimento</label><input id="vehicleDocExpires" type="date"/></div></div>
+<div><label>PDF / Foto do documento</label><input id="vehicleDocFile" type="file" accept="application/pdf,image/jpeg,image/png,image/webp" style="width:100%;padding:10px;margin-top:6px;border:1px solid #cbd5e1;border-radius:10px"/><div class="muted" id="vehicleDocFileCurrent" style="margin-top:5px">Nenhum arquivo selecionado.</div></div>
 <div class="toolbar" style="margin-top:12px"><button class="btn primary" id="saveVehicleDoc" type="button">SALVAR DOCUMENTO</button><button class="btn danger" id="deleteVehicleDoc" type="button" style="display:none">EXCLUIR</button></div><div class="muted" id="vehicleDocMsg" style="margin-top:8px"></div></div>
-<div class="card"><div class="toolbar" style="justify-content:space-between"><div><h3 style="margin:0">Vencimentos</h3><div class="muted">Vermelho = vencido • amarelo = vence em até 30 dias.</div></div><button class="btn soft" id="refreshVehicleDocs" type="button">Atualizar</button></div><div class="list" id="vehicleDocsList" style="margin-top:12px"></div></div></div>
+
+<div class="card"><div class="toolbar" style="justify-content:space-between"><div><h3 style="margin:0">Documentos salvos</h3><div class="muted">Vermelho = vencido • amarelo = vence em até 30 dias.</div></div><button class="btn soft" id="refreshVehicleDocs" type="button">Atualizar</button></div><div class="list" id="vehicleDocsList" style="margin-top:12px"></div></div></div>
 <div class="section" data-screen="alertas" hidden="" id="alertas"><div class="card"><div class="toolbar"><h3 style="margin:0">Alertas</h3><button class="btn soft" id="refreshAlerts">Gerar/Atualizar</button></div><div class="list" id="alertsList"></div></div></div>
 <div class="section" data-screen="ia" hidden="" id="ia"><div class="card chat"><h3>Controla IA</h3><div class="muted">A IA avisará se a chave da OpenAI ainda não estiver configurada.</div><div class="chatbox" id="chatbox"></div><div class="toolbar" style="margin-top:10px"><input id="question" placeholder="Ex.: quais equipes estão atrasadas hoje?" style="flex:1;margin:0"/><button class="btn primary" id="sendAI">Enviar</button></div></div></div>
 </section></main>
@@ -1504,18 +1517,127 @@ async function deletePoultryOperation(operationId,loadingId){
 }
 
 
-let vehicleDocsCache=[],vehicleDocsVehicles=[];
-function vehicleDocStatus(expires){if(!expires)return{label:'Sem vencimento',cls:''};const a=new Date();a.setHours(0,0,0,0);const d=new Date(expires+'T00:00:00'),n=Math.ceil((d-a)/86400000);if(n<0)return{label:`Vencido há ${Math.abs(n)} dia(s)`,cls:'danger'};if(n<=30)return{label:`Vence em ${n} dia(s)`,cls:'warn'};return{label:'Em dia',cls:'ok'}}
-async function loadVehicleDocs(){
- const [docs,vs]=await Promise.all([rest('v2_vehicle_documents','select=*&company_id=eq.'+companyId+'&order=expires_at.asc.nullslast,created_at.desc'),rest('v2_vehicles','select=id,description,plate,model,status&company_id=eq.'+companyId+'&order=description.asc')]);vehicleDocsCache=docs||[];vehicleDocsVehicles=vs||[];
- const s=document.getElementById('vehicleDocVehicle');if(s)s.innerHTML='<option value="">Selecione...</option>'+vs.map(v=>`<option value="${v.id}">${esc(v.description||v.model||v.plate)} • ${esc(v.plate||'sem placa')}</option>`).join('');
- let x=0,p=0,o=0;docs.forEach(d=>{const z=vehicleDocStatus(d.expires_at);if(z.cls==='danger')x++;else if(z.cls==='warn')p++;else if(z.cls==='ok')o++});
- const k=document.getElementById('vehicleDocKpis');if(k)k.innerHTML=`<div class="v2kpi"><span>Documentos</span><strong>${docs.length}</strong></div><div class="v2kpi"><span>Em dia</span><strong>${o}</strong></div><div class="v2kpi"><span>Próximos</span><strong>${p}</strong></div><div class="v2kpi"><span>Vencidos</span><strong>${x}</strong></div>`;
- const l=document.getElementById('vehicleDocsList');if(l)l.innerHTML=docs.map(d=>{const v=vs.find(q=>q.id===d.vehicle_id),z=vehicleDocStatus(d.expires_at);return `<div class="item"><div class="toolbar" style="justify-content:space-between"><div><strong>${esc(d.document_type)} • ${esc(v?.description||v?.model||'Veículo')}</strong><div class="muted">${esc(v?.plate||'sem placa')} • ${d.expires_at?new Date(d.expires_at+'T00:00:00').toLocaleDateString('pt-BR'):'sem vencimento'}</div><span class="pill ${z.cls}">${z.label}</span></div><button class="btn soft editVehicleDocBtn" data-id="${d.id}">Editar</button></div></div>`}).join('')||'<div class="muted">Nenhum documento cadastrado.</div>';
+
+let vehicleDocsCache=[],vehicleDocsVehicles=[],vehicleDocFiles={},pendingCrlvFile=null,pendingCrlvData=null;
+const VEHICLE_DOC_BUCKET='vehicle-documents';
+
+function vehicleDocStatus(expires){
+ if(!expires)return{label:'Sem vencimento',cls:''};
+ const a=new Date();a.setHours(0,0,0,0);const d=new Date(expires+'T00:00:00'),n=Math.ceil((d-a)/86400000);
+ if(n<0)return{label:`Vencido há ${Math.abs(n)} dia(s)`,cls:'danger'};
+ if(n<=30)return{label:`Vence em ${n} dia(s)`,cls:'warn'};
+ return{label:'Em dia',cls:'ok'};
 }
-function openVehicleDoc(id=''){const d=vehicleDocsCache.find(x=>x.id===id);document.getElementById('vehicleDocId').value=d?.id||'';document.getElementById('vehicleDocTitle').textContent=d?'Editar documento':'Novo documento';document.getElementById('vehicleDocVehicle').value=d?.vehicle_id||'';document.getElementById('vehicleDocType').value=d?.document_type||'Licenciamento / CRLV';document.getElementById('vehicleDocExpires').value=d?.expires_at||'';document.getElementById('deleteVehicleDoc').style.display=d?'inline-flex':'none';document.getElementById('vehicleDocEditCard').style.display='block'}
-async function saveVehicleDocument(){const m=document.getElementById('vehicleDocMsg'),id=document.getElementById('vehicleDocId').value,b={company_id:companyId,vehicle_id:document.getElementById('vehicleDocVehicle').value,document_type:document.getElementById('vehicleDocType').value,expires_at:document.getElementById('vehicleDocExpires').value||null,status:'active'};if(!b.vehicle_id){m.textContent='Selecione o veículo.';return}try{if(id)await rest('v2_vehicle_documents','id=eq.'+id,'PATCH',b);else await rest('v2_vehicle_documents','','POST',b);document.getElementById('vehicleDocEditCard').style.display='none';await loadVehicleDocs()}catch(e){m.textContent=e.message}}
-async function deleteVehicleDocument(){const id=document.getElementById('vehicleDocId').value;if(!id||!confirm('Excluir este documento definitivamente?'))return;try{await rest('v2_vehicle_documents','id=eq.'+id,'DELETE');document.getElementById('vehicleDocEditCard').style.display='none';await loadVehicleDocs()}catch(e){alert(e.message)}}
+function safeFileName(name){return String(name||'documento.pdf').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9._-]+/g,'-').replace(/-+/g,'-').slice(-100)}
+async function uploadVehicleDocumentFile(file,vehicleId){
+ if(!file)return null;
+ if(file.size>15*1024*1024)throw new Error('Arquivo maior que 15 MB.');
+ const s=session();if(!s?.access_token)throw new Error('Sessão expirada.');
+ const path=`${companyId}/${vehicleId}/${Date.now()}-${safeFileName(file.name)}`;
+ const r=await fetch(`${API_URL}/storage/v1/object/${VEHICLE_DOC_BUCKET}/${path}`,{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+s.access_token,'Content-Type':file.type||'application/octet-stream','x-upsert':'false'},body:file});
+ await parseResponse(r);
+ const u=await getUser();
+ const rows=await rest('v2_files','','POST',{company_id:companyId,storage_bucket:VEHICLE_DOC_BUCKET,storage_path:path,original_name:file.name,mime_type:file.type||null,size_bytes:file.size,category:'vehicle_document',entity_type:'vehicle',entity_id:vehicleId,metadata:{source:'controla_beta_549'},uploaded_by:u?.id||null});
+ return rows?.[0]||null;
+}
+async function downloadVehicleDoc(fileId,download=false){
+ const f=vehicleDocFiles[fileId];if(!f)return alert('Arquivo não encontrado.');
+ try{
+  const s=session();const r=await fetch(`${API_URL}/storage/v1/object/authenticated/${encodeURIComponent(f.storage_bucket)}/${f.storage_path.split('/').map(encodeURIComponent).join('/')}`,{headers:{apikey:KEY,Authorization:'Bearer '+s.access_token}});
+  if(!r.ok)throw new Error('Não foi possível abrir o arquivo.');
+  const blob=await r.blob(),url=URL.createObjectURL(blob);
+  if(download){const a=document.createElement('a');a.href=url;a.download=f.original_name||'documento';document.body.appendChild(a);a.click();a.remove()}
+  else window.open(url,'_blank');
+  setTimeout(()=>URL.revokeObjectURL(url),60000);
+ }catch(e){alert(e.message)}
+}
+async function loadVehicleDocs(){
+ const [docs,vs,files]=await Promise.all([
+  rest('v2_vehicle_documents','select=*&company_id=eq.'+companyId+'&order=expires_at.asc.nullslast,created_at.desc'),
+  rest('v2_vehicles','select=id,description,plate,model,make,model_year,renavam,status,metadata&company_id=eq.'+companyId+'&order=description.asc'),
+  rest('v2_files','select=id,storage_bucket,storage_path,original_name,mime_type,size_bytes&company_id=eq.'+companyId+'&category=eq.vehicle_document&archived_at=is.null&order=created_at.desc')
+ ]);
+ vehicleDocsCache=docs||[];vehicleDocsVehicles=vs||[];vehicleDocFiles=Object.fromEntries((files||[]).map(f=>[f.id,f]));
+ const s=document.getElementById('vehicleDocVehicle');if(s)s.innerHTML='<option value="">Selecione...</option>'+vehicleDocsVehicles.map(v=>`<option value="${v.id}">${esc(v.description||v.model||v.plate)} • ${esc(v.plate||'sem placa')}</option>`).join('');
+ let x=0,p=0,o=0;vehicleDocsCache.forEach(d=>{const z=vehicleDocStatus(d.expires_at);if(z.cls==='danger')x++;else if(z.cls==='warn')p++;else if(z.cls==='ok')o++});
+ const k=document.getElementById('vehicleDocKpis');if(k)k.innerHTML=`<div class="v2kpi"><span>Documentos</span><strong>${vehicleDocsCache.length}</strong></div><div class="v2kpi"><span>Em dia</span><strong>${o}</strong></div><div class="v2kpi"><span>Próximos</span><strong>${p}</strong></div><div class="v2kpi"><span>Vencidos</span><strong>${x}</strong></div>`;
+ const l=document.getElementById('vehicleDocsList');if(l)l.innerHTML=vehicleDocsCache.map(d=>{const v=vehicleDocsVehicles.find(q=>q.id===d.vehicle_id),z=vehicleDocStatus(d.expires_at),f=vehicleDocFiles[d.file_id];return `<div class="item"><div class="toolbar" style="justify-content:space-between;align-items:flex-start"><div><strong>${esc(d.document_type)} • ${esc(v?.description||v?.model||'Veículo')}</strong><div class="muted">${esc(v?.plate||'sem placa')} • RENAVAM ${esc(v?.renavam||'não informado')} • ${d.expires_at?new Date(d.expires_at+'T00:00:00').toLocaleDateString('pt-BR'):'sem vencimento'}</div><div style="margin-top:6px"><span class="pill ${z.cls}">${z.label}</span>${f?` <span class="pill ok">📎 ${esc(f.original_name||'arquivo')}</span>`:' <span class="pill">Sem arquivo</span>'}</div></div><div class="toolbar">${f?`<button class="btn soft vehicleDocView" data-file="${f.id}" type="button">👁️ Abrir</button><button class="btn soft vehicleDocDownload" data-file="${f.id}" type="button">⬇️ Baixar</button>`:''}<button class="btn soft editVehicleDocBtn" data-id="${d.id}" type="button">Editar</button></div></div></div>`}).join('')||'<div class="muted">Nenhum documento cadastrado.</div>';
+}
+function openVehicleDoc(id=''){
+ const d=vehicleDocsCache.find(x=>x.id===id),f=d?.file_id?vehicleDocFiles[d.file_id]:null;
+ document.getElementById('vehicleDocId').value=d?.id||'';document.getElementById('vehicleDocTitle').textContent=d?'Editar documento':'Novo documento';document.getElementById('vehicleDocVehicle').value=d?.vehicle_id||'';document.getElementById('vehicleDocType').value=d?.document_type||'Licenciamento / CRLV';document.getElementById('vehicleDocExpires').value=d?.expires_at||'';document.getElementById('vehicleDocFile').value='';document.getElementById('vehicleDocFileCurrent').textContent=f?'Arquivo atual: '+f.original_name:'Nenhum arquivo salvo.';document.getElementById('deleteVehicleDoc').style.display=d?'inline-flex':'none';document.getElementById('vehicleDocMsg').textContent='';document.getElementById('vehicleDocEditCard').style.display='block';
+}
+async function saveVehicleDocument(){
+ const m=document.getElementById('vehicleDocMsg'),id=document.getElementById('vehicleDocId').value,vehicle_id=document.getElementById('vehicleDocVehicle').value,file=document.getElementById('vehicleDocFile').files?.[0];
+ if(!vehicle_id){m.textContent='Selecione o veículo.';return}
+ try{
+  m.textContent=file?'Enviando arquivo...':'Salvando...';
+  const old=vehicleDocsCache.find(x=>x.id===id);let file_id=old?.file_id||null;
+  if(file){const fr=await uploadVehicleDocumentFile(file,vehicle_id);file_id=fr?.id||file_id}
+  const b={company_id:companyId,vehicle_id,document_type:document.getElementById('vehicleDocType').value,expires_at:document.getElementById('vehicleDocExpires').value||null,status:'active',file_id};
+  if(id)await rest('v2_vehicle_documents','id=eq.'+id,'PATCH',b);else await rest('v2_vehicle_documents','','POST',b);
+  document.getElementById('vehicleDocEditCard').style.display='none';await loadVehicleDocs();
+ }catch(e){m.textContent=e.message||String(e)}
+}
+async function deleteVehicleDocument(){
+ const id=document.getElementById('vehicleDocId').value;if(!id||!confirm('Excluir este documento definitivamente?'))return;
+ try{const d=vehicleDocsCache.find(x=>x.id===id);await rest('v2_vehicle_documents','id=eq.'+id,'DELETE');if(d?.file_id)try{await rest('v2_files','id=eq.'+d.file_id,'PATCH',{archived_at:new Date().toISOString()})}catch{}document.getElementById('vehicleDocEditCard').style.display='none';await loadVehicleDocs()}catch(e){alert(e.message)}
+}
+async function extractPdfText(file){
+ if(!window.pdfjsLib)throw new Error('Leitor de PDF ainda carregando. Aguarde alguns segundos.');
+ pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+ const pdf=await pdfjsLib.getDocument({data:await file.arrayBuffer()}).promise;let all='';
+ for(let i=1;i<=pdf.numPages;i++){const p=await pdf.getPage(i),c=await p.getTextContent();all+=c.items.map(x=>x.str).join(' ')+' \n'}
+ return all.replace(/\s+/g,' ').trim();
+}
+function crlvMatch(text,patterns){
+ for(const p of patterns){const m=text.match(p);if(m?.[1])return m[1].trim()}return '';
+}
+function parseCrlvText(raw){
+ const text=String(raw||'').toUpperCase().replace(/\s+/g,' ');
+ const plate=crlvMatch(text,[/\bPLACA\s*[:\-]?\s*([A-Z]{3}\s*[0-9][A-Z0-9][0-9]{2})\b/,/\b([A-Z]{3}[0-9][A-Z0-9][0-9]{2})\b/]).replace(/\s/g,'');
+ const renavam=crlvMatch(text,[/\bRENAVAM\s*[:\-]?\s*(\d{9,11})\b/,/\bC[ÓO]DIGO\s+RENAVAM\s*[:\-]?\s*(\d{9,11})\b/]);
+ const chassis=crlvMatch(text,[/\bCHASSI\s*[:\-]?\s*([A-HJ-NPR-Z0-9]{17})\b/]);
+ const yearFab=crlvMatch(text,[/\bANO\s+FABRICA[CÇ][AÃ]O\s*[:\-]?\s*(\d{4})\b/,/\bFABRICA[CÇ][AÃ]O\s*[:\-]?\s*(\d{4})\b/]);
+ const yearModel=crlvMatch(text,[/\bANO\s+MODELO\s*[:\-]?\s*(\d{4})\b/,/\bMODELO\s*[:\-]?\s*(\d{4})\b/]);
+ let makeModel=crlvMatch(text,[/\bMARCA\s*\/?\s*MODELO\s*[:\-]?\s*([A-Z0-9 .\/-]{3,45}?)(?=\s+(?:ANO|CAPACIDADE|POT[EÊ]NCIA|CATEGORIA|COR|COMBUST[IÍ]VEL|CHASSI)\b)/]);
+ const owner=crlvMatch(text,[/\bNOME\s*[:\-]?\s*([A-ZÀ-Ú ]{5,60}?)(?=\s+(?:CPF|CNPJ|LOCAL|DATA|C[ÓO]DIGO|PLACA)\b)/]);
+ const color=crlvMatch(text,[/\bCOR\s*[:\-]?\s*([A-ZÀ-Ú ]{3,20}?)(?=\s+(?:COMBUST[IÍ]VEL|CATEGORIA|ESP[EÉ]CIE|CHASSI|PLACA)\b)/]);
+ const fuel=crlvMatch(text,[/\bCOMBUST[IÍ]VEL\s*[:\-]?\s*([A-ZÀ-Ú\/ ]{3,30}?)(?=\s+(?:COR|CATEGORIA|ESP[EÉ]CIE|CHASSI|PLACA|POT[EÊ]NCIA)\b)/]);
+ return {plate,renavam,chassis,yearFab,yearModel,makeModel,owner,color,fuel,rawText:raw};
+}
+async function beginCrlvImport(file){
+ const msg=document.getElementById('crlvImportMsg');pendingCrlvFile=file;pendingCrlvData={};
+ document.getElementById('crlvPreviewCard').style.display='block';
+ try{
+  msg.textContent='Lendo documento...';
+  let d={};
+  if(file.type==='application/pdf'||file.name.toLowerCase().endsWith('.pdf')){const txt=await extractPdfText(file);d=parseCrlvText(txt);if(!txt||txt.length<40)msg.textContent='PDF parece ser imagem. Preencha/conferira os campos manualmente.'}
+  else msg.textContent='Imagem anexada. Nesta versão, confirme os dados manualmente.';
+  pendingCrlvData=d;
+  document.getElementById('crlvPlate').value=d.plate||'';document.getElementById('crlvRenavam').value=d.renavam||'';document.getElementById('crlvMakeModel').value=d.makeModel||'';document.getElementById('crlvYearFab').value=d.yearFab||'';document.getElementById('crlvYearModel').value=d.yearModel||'';document.getElementById('crlvChassis').value=d.chassis||'';document.getElementById('crlvOwner').value=d.owner||'';document.getElementById('crlvColor').value=d.color||'';document.getElementById('crlvFuel').value=d.fuel||'';
+  if(d.plate||d.renavam)msg.textContent='Dados encontrados. Confira e toque em CONFIRMAR E SALVAR.';
+  else if(file.type==='application/pdf')msg.textContent='Não consegui identificar placa/RENAVAM automaticamente. Confira e preencha antes de salvar.';
+ }catch(e){msg.textContent='Leitura automática não concluída: '+e.message+' Você ainda pode preencher os campos e salvar o arquivo.'}
+}
+async function confirmCrlvImport(){
+ const msg=document.getElementById('crlvImportMsg'),plate=document.getElementById('crlvPlate').value.toUpperCase().replace(/[^A-Z0-9]/g,''),renavam=document.getElementById('crlvRenavam').value.replace(/\D/g,''),mm=document.getElementById('crlvMakeModel').value.trim();
+ if(!plate&&!renavam){msg.textContent='Informe pelo menos a placa ou o RENAVAM.';return}
+ try{
+  msg.textContent='Verificando a frota...';await loadVehicleDocs();
+  let v=vehicleDocsVehicles.find(x=>(plate&&String(x.plate||'').replace(/[^A-Z0-9]/gi,'').toUpperCase()===plate)||(renavam&&String(x.renavam||'').replace(/\D/g,'')===renavam));
+  const parts=mm.split('/'),make=parts.length>1?parts[0].trim():'',model=parts.length>1?parts.slice(1).join('/').trim():mm;
+  const meta={...(v?.metadata||{}),crlv:{owner:document.getElementById('crlvOwner').value.trim()||null,chassis:document.getElementById('crlvChassis').value.trim()||null,color:document.getElementById('crlvColor').value.trim()||null,fuel:document.getElementById('crlvFuel').value.trim()||null,year_fabrication:Number(document.getElementById('crlvYearFab').value)||null,imported_at:new Date().toISOString()}};
+  const body={company_id:companyId,plate:plate||v?.plate||null,renavam:renavam||v?.renavam||null,make:make||v?.make||null,model:model||v?.model||null,model_year:Number(document.getElementById('crlvYearModel').value)||Number(document.getElementById('crlvYearFab').value)||v?.model_year||null,description:v?.description||(model||mm||plate||'Condução'),status:v?.status||'active',metadata:meta};
+  if(v){if(!confirm(`A condução ${v.description||v.plate} já existe. Atualizar com os dados conferidos do CRLV?`))return;const rows=await rest('v2_vehicles','id=eq.'+v.id,'PATCH',body);v=rows?.[0]||{...v,...body}}
+  else {if(!confirm(`Cadastrar nova condução ${plate||renavam} com os dados conferidos?`))return;const rows=await rest('v2_vehicles','','POST',body);v=rows?.[0]}
+  if(!v?.id)throw new Error('Não foi possível obter o veículo cadastrado.');
+  msg.textContent='Salvando o documento...';const fr=pendingCrlvFile?await uploadVehicleDocumentFile(pendingCrlvFile,v.id):null;
+  await rest('v2_vehicle_documents','','POST',{company_id:companyId,vehicle_id:v.id,document_type:'Licenciamento / CRLV',expires_at:null,status:'active',file_id:fr?.id||null});
+  document.getElementById('crlvPreviewCard').style.display='none';pendingCrlvFile=null;pendingCrlvData=null;await loadVehicleDocs();try{await loadVehicles()}catch{}
+  alert('CRLV salvo e condução cadastrada/atualizada com sucesso.');
+ }catch(e){msg.textContent=e.message||String(e)}
+}
 
 async function v2Go(tab){
  const host=document.getElementById('screenHost');
@@ -1557,11 +1679,16 @@ document.addEventListener('click',async function(e){
   if(e.target.closest('#cancelKmEdit')){e.preventDefault();document.getElementById('kmEditCard').style.display='none';return}
   if(e.target.closest('#saveKmBtn')){e.preventDefault();await saveKm();return}
   if(e.target.closest('#refreshFuelBtn')){e.preventDefault();await loadFuel();return}
+  if(e.target.closest('#importCrlvBtn')){e.preventDefault();document.getElementById('crlvImportFile').click();return}
+  if(e.target.closest('#cancelCrlvImport')){e.preventDefault();document.getElementById('crlvPreviewCard').style.display='none';pendingCrlvFile=null;return}
+  if(e.target.closest('#confirmCrlvImport')){e.preventDefault();await confirmCrlvImport();return}
   if(e.target.closest('#newVehicleDocBtn')){e.preventDefault();openVehicleDoc();return}
   if(e.target.closest('#cancelVehicleDoc')){e.preventDefault();document.getElementById('vehicleDocEditCard').style.display='none';return}
   if(e.target.closest('#saveVehicleDoc')){e.preventDefault();await saveVehicleDocument();return}
   if(e.target.closest('#deleteVehicleDoc')){e.preventDefault();await deleteVehicleDocument();return}
   if(e.target.closest('#refreshVehicleDocs')){e.preventDefault();await loadVehicleDocs();return}
+  const vdocView=e.target.closest('.vehicleDocView');if(vdocView){e.preventDefault();await downloadVehicleDoc(vdocView.dataset.file,false);return}
+  const vdocDown=e.target.closest('.vehicleDocDownload');if(vdocDown){e.preventDefault();await downloadVehicleDoc(vdocDown.dataset.file,true);return}
   const edoc=e.target.closest('.editVehicleDocBtn');if(edoc){e.preventDefault();openVehicleDoc(edoc.dataset.id);return}
   const delFuel=e.target.closest('.deleteFuelBtn');if(delFuel){e.preventDefault();await deleteFuelLog(delFuel.dataset.id);return}
   const delOp=e.target.closest('.poDeleteOp');if(delOp){e.preventDefault();await deletePoultryOperation(delOp.dataset.op,delOp.dataset.loading);return}
@@ -1589,6 +1716,12 @@ document.addEventListener('click',async function(e){
       const msg=document.getElementById('maintenanceEditMsg');if(msg)msg.textContent=err.message;
     }
   }
+});
+document.addEventListener('change',async function(e){
+ if(e.target?.id==='crlvImportFile'){
+  const f=e.target.files?.[0];e.target.value='';
+  if(f)await beginCrlvImport(f);
+ }
 });
 document.addEventListener('input',function(e){
   if(e.target && (e.target.id==='maintenancePartsCost'||e.target.id==='maintenanceLaborCost')) calcMaintenanceTotal();
