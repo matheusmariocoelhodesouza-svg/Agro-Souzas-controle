@@ -8,7 +8,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
-<title>Controla V2 • Beta 6.0 Feature Complete</title>
+<title>Controla V2 • Beta 6.01 Caminhões por Apanha</title>
 <style>
 :root{--bg:#f3f6fb;--card:#fff;--ink:#0f172a;--muted:#64748b;--line:#e2e8f0;--accent:#0f172a}*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--ink)}header{position:sticky;top:0;z-index:20;background:linear-gradient(135deg,var(--accent),#1e293b);color:#fff;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 8px 24px rgba(15,23,42,.18)}.wrap{max-width:1200px;margin:auto;padding:12px}.card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:12px;box-shadow:0 4px 18px rgba(15,23,42,.045)}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:10px}.kpi{font-size:28px;font-weight:900}.label,.muted{font-size:12px;color:var(--muted)}.nav{display:flex;gap:8px;overflow:auto;padding:12px 0;scrollbar-width:none}.nav::-webkit-scrollbar{display:none}.nav button,.btn{border:0;border-radius:12px;padding:11px 14px;font-weight:800;white-space:nowrap;cursor:pointer}.nav button{background:#fff;border:1px solid var(--line);color:#334155}.nav button.active,.btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}.btn.soft{background:#e2e8f0}.btn.danger{background:#b91c1c;color:#fff}.btn.danger:hover{background:#991b1b}.hidden{display:none!important}.login{max-width:430px;margin:55px auto}.login input,.chat input{width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:10px;margin:6px 0 10px;font:inherit}.section{display:none}.section.active{display:block}.list{display:grid;gap:8px}.item{background:#fff;border:1px solid var(--line);border-radius:13px;padding:12px}.item strong{display:block}.pill{display:inline-block;padding:4px 8px;border-radius:999px;font-size:11px;font-weight:800;background:#e2e8f0}.pill.ok{background:#dcfce7;color:#166534}.pill.warn{background:#fef3c7;color:#92400e}.pill.danger{background:#fee2e2;color:#991b1b}.toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.chatbox{min-height:220px;max-height:52vh;overflow:auto;background:#fff;border:1px solid var(--line);border-radius:14px;padding:10px}.msg{padding:10px 12px;border-radius:12px;margin:8px 0;max-width:88%;white-space:pre-wrap}.msg.user{margin-left:auto;background:#e2e8f0}.msg.ai{background:#fff7ed;border:1px solid #fed7aa}.brand{display:flex;gap:10px;align-items:center}.logo{width:38px;height:38px;border-radius:10px;background:white;color:#0f172a;display:grid;place-items:center;font-weight:900}.error{color:#b91c1c;font-size:13px}.okmsg{color:#166534;font-size:13px}.debug{margin-top:8px;font-size:11px;color:#64748b;word-break:break-word}@media(max-width:640px){.wrap{padding:9px}.kpi{font-size:25px}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}header{padding:12px}.nav{position:sticky;top:66px;z-index:15;background:var(--bg);margin:0 -9px;padding:9px}}
 
@@ -132,7 +132,7 @@ body.app-ready .v2sidebar{display:block}
 <script defer src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
 <script>
 (function(){
-  const BUILD='6.0';
+  const BUILD='6.01';
   try{
     const marker='controla_cache_cleanup_'+BUILD;
     if(!localStorage.getItem(marker)){
@@ -173,9 +173,9 @@ body.app-ready .v2sidebar{display:block}
 <div class="v2group">EM BREVE</div>
 <button class="v2navbtn" type="button">Estoque</button>
 </aside>
-<header><div class="brand"><div class="logo">C</div><div><b>Controla</b><div><small id="companyName">Beta</small></div></div></div><div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill" id="buildBadge" title="Versão publicada">v6.0</span><button class="btn soft" id="themeToggle" type="button">☾</button><button class="btn soft hidden" id="logout">Sair</button></div></header>
+<header><div class="brand"><div class="logo">C</div><div><b>Controla</b><div><small id="companyName">Beta</small></div></div></div><div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill" id="buildBadge" title="Versão publicada">v6.01</span><button class="btn soft" id="themeToggle" type="button">☾</button><button class="btn soft hidden" id="logout">Sair</button></div></header>
 <main class="wrap">
-<section class="login" id="login"><div class="card"><h2>Entrar na Beta</h2><div class="muted">Use o mesmo acesso do app atual.</div><label>E-mail</label><input autocomplete="username" id="email" type="email"/><label>Senha</label><input autocomplete="current-password" id="password" type="password"/><button class="btn primary" id="loginBtn">Entrar</button><div class="muted" id="loginMsg" style="margin-top:10px">Beta 6.0 • feature complete</div><div class="debug" id="debug"></div></div></section>
+<section class="login" id="login"><div class="card"><h2>Entrar na Beta</h2><div class="muted">Use o mesmo acesso do app atual.</div><label>E-mail</label><input autocomplete="username" id="email" type="email"/><label>Senha</label><input autocomplete="current-password" id="password" type="password"/><button class="btn primary" id="loginBtn">Entrar</button><div class="muted" id="loginMsg" style="margin-top:10px">Beta 6.01 • caminhões por apanha</div><div class="debug" id="debug"></div></div></section>
 <section class="hidden" id="app">
 <div class="nav" id="nav"><button class="active" data-tab="inicio">Início</button><button data-tab="equipes">Equipes</button><button data-tab="funcionarios">RH &amp; Pessoas</button><button data-tab="documentosrh">Docs RH</button><button data-tab="ponto">Ponto</button><button data-tab="operacoes">Operações / Apanha</button><button data-tab="frota">Frota</button><button data-tab="manutencoes">Manutenções</button><button data-tab="combustivel">Combustível & KM</button><button data-tab="documentosfrota">Documentos</button><button data-tab="financeiro">Financeiro</button><button data-tab="relatorios">Relatórios</button><button data-tab="alertas">Alertas</button><button data-tab="ia">Controla IA</button></div>
 <div id="screenHost"></div>
@@ -344,9 +344,9 @@ body.app-ready .v2sidebar{display:block}
  <button id="quickTeamSave" class="btn primary" type="button">Salvar Equipe</button><span id="quickTeamMsg" class="muted"></span>
 </div>
 
-<div id="poTruckCard" class="card hidden">
- <div class="toolbar"><div><strong>Novo caminhão carregado</strong><div id="poTruckOpName" class="muted"></div></div><button id="poTruckClose" class="btn soft" type="button">Fechar</button></div>
- <input id="poTruckOperationId" type="hidden"><input id="poTruckLoadingId" type="hidden">
+<div id="poTruckCard" class="card hidden" style="border:2px solid #111827">
+ <div class="toolbar" style="justify-content:space-between;align-items:flex-start"><div><strong id="poTruckTitle" style="font-size:18px">🚚 Caminhão 1</strong><div id="poTruckOpName" class="muted"></div><div class="muted" style="margin-top:4px">Preencha este caminhão. Ao salvar, o próximo será aberto automaticamente.</div></div><button id="poTruckClose" class="btn soft" type="button">Fechar</button></div>
+ <input id="poTruckOperationId" type="hidden"><input id="poTruckLoadingId" type="hidden"><input id="poTruckSequence" type="hidden">
  <div class="row">
    <div><label>Motorista</label><input id="poTruckDriver" placeholder="Nome do motorista"></div>
    <div><label>Placa</label><input id="poTruckPlate" placeholder="ABC1D23"></div>
@@ -359,7 +359,7 @@ body.app-ready .v2sidebar{display:block}
  </div>
  <label class="checkline"><input id="poTruckCata" type="checkbox"> Este caminhão foi <strong>CATA</strong></label>
  <label>Observações</label><textarea id="poTruckNotes" rows="2"></textarea>
- <div class="toolbar"><button id="poTruckSave" class="btn primary" type="button">Salvar caminhão</button><span id="poTruckMsg" class="muted"></span></div>
+ <div class="toolbar"><button id="poTruckSave" class="btn primary" type="button">SALVAR E IR PARA O PRÓXIMO CAMINHÃO →</button><button id="poTruckSaveClose" class="btn soft" type="button">Salvar e fechar</button><span id="poTruckMsg" class="muted"></span></div>
 </div>
 
 <div id="poFinanceCard" class="card hidden">
@@ -1306,14 +1306,18 @@ async function loadPoultryOps(){
     const team=poultryTeams.find(t=>t.id===o.team_id);
     const farm=poultryFarms.find(f=>f.id===(loading?.farm_id||o.metadata?.farm_id));
     const barn=poultryBarns.find(b=>b.id===(o.metadata?.barn_id||loading?.metadata?.default_barn_id));
-    const truckHtml=opTrucks.length?opTrucks.map(t=>`<div class="truck-row"><div><b>#${t.truck_sequence||''} ${esc(t.truck_plate)}</b> • ${esc(t.driver_name)} ${t.is_cata?'<span class="pill warn">CATA</span>':''}</div><div class="muted">${poN(t.birds).toLocaleString('pt-BR')} aves • ${t.started_at?new Date(t.started_at).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'—'} → ${t.completed_at?new Date(t.completed_at).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'—'} • ${esc(barn?.barn_number||'Aviário')}</div></div>`).join(''):'<div class="muted">Nenhum caminhão registrado ainda.</div>';
+    const truckHtml=opTrucks.length?opTrucks.map(t=>`<div class="truck-row" style="padding:12px;border:1px solid #e5e7eb;border-radius:12px;margin:8px 0;background:#fff"><div class="toolbar" style="justify-content:space-between;align-items:flex-start"><div><b style="font-size:15px">🚚 Caminhão ${t.truck_sequence||''}</b><div class="muted" style="margin-top:3px">${esc(t.truck_plate)} • ${esc(t.driver_name)}</div></div>${t.is_cata?'<span class="pill warn">CATA</span>':''}</div><div style="margin-top:8px"><b>${poN(t.birds).toLocaleString('pt-BR')} aves</b> • ${t.started_at?new Date(t.started_at).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'—'} → ${t.completed_at?new Date(t.completed_at).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'—'} • ${esc(poultryBarns.find(b=>b.id===t.metadata?.barn_id)?.barn_number||barn?.barn_number||'Aviário')}</div></div>`).join(''):'<div class="muted" style="padding:10px 0">Nenhum caminhão registrado ainda. Comece pelo Caminhão 1.</div>';
     return `<div class="item">
       <div class="toolbar" style="justify-content:space-between"><div><strong>${esc(farm?.producer_name||o.customer_name||o.title)}</strong><div class="muted">${esc(farm?.city||'')} • ${esc(barn?.barn_number||'Aviário não informado')} • ${esc(team?.name||'Equipe')}</div></div><span class="pill ${o.status==='completed'?'ok':''}">${poSL(o.status)}</span></div>
       <div class="site-memory"><b>Tomada:</b> ${esc(barn?.outlet_type||'Não informada')} &nbsp; • &nbsp; <b>Energia:</b> ${esc(barn?.energy_type||'Não informada')}</div>
       <div class="po-detail"><div><span class="muted">Caminhões</span><br><b>${opTrucks.length}</b></div><div><span class="muted">Aves carregadas</span><br><b>${totalBirds.toLocaleString('pt-BR')}</b></div><div><span class="muted">Catas</span><br><b>${opTrucks.filter(t=>t.is_cata).length}</b></div><div><span class="muted">Início previsto</span><br><b>${o.scheduled_start?new Date(o.scheduled_start).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'—'}</b></div></div>
-      <div class="truck-list">${truckHtml}</div>
-      <div class="po-actions">
-        ${loading?`<button class="btn v2new poAddTruck" data-op="${o.id}" data-loading="${loading.id}" data-farm="${loading.farm_id||''}" data-name="${esc(farm?.producer_name||o.title)}">+ Caminhão</button>`:''}
+      <div style="margin-top:14px;padding-top:12px;border-top:1px solid #e5e7eb">
+        <div class="toolbar" style="justify-content:space-between;align-items:flex-end"><div><strong>🚚 Carregamento caminhão por caminhão</strong><div class="muted">Cada caminhão fica registrado separadamente nesta apanha.</div></div><div class="muted">${opTrucks.length} registrado(s)</div></div>
+        <div class="truck-list">${truckHtml}</div>
+      </div>
+      <div class="po-actions" style="margin-top:12px">
+        ${loading&&o.status!=='completed'?`<button class="btn primary poAddTruck" style="font-size:15px;padding:12px 18px" data-op="${o.id}" data-loading="${loading.id}" data-farm="${loading.farm_id||''}" data-name="${esc(farm?.producer_name||o.title)}" data-seq="${opTrucks.length+1}">+ ADICIONAR CAMINHÃO ${opTrucks.length+1}</button>`:''}
+        ${o.status==='completed'?`<span class="pill ok">APANHA CONCLUÍDA • ${opTrucks.length} CAMINHÃO(ÕES)</span>`:''}
         ${o.status!=='completed'?`<button class="btn soft poCompleteOp" data-op="${o.id}" data-loading="${loading?.id||''}">✓ Concluir Apanha</button>`:''}
         ${isAdminGeneral?`<button class="btn soft poFinance" data-op="${o.id}" data-name="${esc(farm?.producer_name||o.title)}" data-price="${poN(o.price_per_bird)}">R$ Valor</button>`:''}
         ${isAdminGeneral?`<button class="btn danger poDeleteOp" data-op="${o.id}" data-loading="${loading?.id||''}" type="button">Excluir Apanha</button>`:''}
@@ -1333,24 +1337,50 @@ function loadTruckBarnOptions(farmId,selectedBarnId){
  const barns=poultryBarns.filter(b=>b.farm_id===farmId);
  $('#poTruckBarn').innerHTML=barns.map(b=>`<option value="${b.id}" ${b.id===selectedBarnId?'selected':''}>${esc(b.barn_number)}</option>`).join('');
 }
-async function saveTruckLoad(){
+
+function openNextTruckForm({operationId,loadingId,farmId,name,sequence}){
+ $('#poTruckOperationId').value=operationId||'';
+ $('#poTruckLoadingId').value=loadingId||'';
+ $('#poTruckSequence').value=sequence||1;
+ $('#poTruckTitle').textContent='🚚 Caminhão '+(sequence||1);
+ $('#poTruckOpName').textContent=name||'';
+ const loading=poultryLoadings.find(l=>l.id===loadingId),defaultBarn=loading?.metadata?.default_barn_id||'';
+ loadTruckBarnOptions(farmId,defaultBarn);
+ $('#poTruckDriver').value='';$('#poTruckPlate').value='';$('#poTruckBirds').value='';
+ $('#poTruckCata').checked=false;$('#poTruckNotes').value='';
+ $('#poTruckStart').value=poLocalInputDate();$('#poTruckEnd').value='';
+ $('#poTruckMsg').textContent='';
+ $('#poTruckCard').classList.remove('hidden');
+ setTimeout(()=>$('#poTruckDriver')?.focus(),50);
+}
+
+async function saveTruckLoad(closeAfter=false){
  const operationId=$('#poTruckOperationId').value,loadingId=$('#poTruckLoadingId').value,driver=$('#poTruckDriver').value.trim(),plate=$('#poTruckPlate').value.trim().toUpperCase(),birds=poN($('#poTruckBirds').value),barnId=$('#poTruckBarn').value,start=$('#poTruckStart').value,end=$('#poTruckEnd').value;
  if(!operationId||!loadingId||!driver||!plate||!birds||!barnId||!start||!end)return $('#poTruckMsg').textContent='Preencha motorista, placa, aves, aviário, início e término.';
  try{
-  $('#poTruckMsg').textContent='Salvando...';
+  $('#poTruckMsg').textContent='Salvando caminhão...';
   const existing=poultryTruckLoads.filter(t=>t.loading_id===loadingId);
+  const sequence=Number($('#poTruckSequence').value||existing.length+1);
   const rows=await rest('v2_poultry_truck_loads','','POST',{
-   company_id:companyId,loading_id:loadingId,truck_sequence:existing.length+1,truck_plate:plate,driver_name:driver,birds,
+   company_id:companyId,loading_id:loadingId,truck_sequence:sequence,truck_plate:plate,driver_name:driver,birds,
    started_at:new Date(start).toISOString(),completed_at:new Date(end).toISOString(),is_cata:$('#poTruckCata').checked,
    metadata:{barn_id:barnId,notes:$('#poTruckNotes').value.trim()||null}
   });
   const truck=rows?.[0];if(!truck)throw new Error('Caminhão não foi salvo.');
   await rest('v2_poultry_truck_barns','','POST',{company_id:companyId,truck_load_id:truck.id,barn_id:barnId,sequence_no:1,birds,started_at:new Date(start).toISOString(),completed_at:new Date(end).toISOString(),notes:$('#poTruckNotes').value.trim()||null});
   await refreshOperationBirdTotals(operationId,loadingId);
-  $('#poTruckCard').classList.add('hidden');
+  const farmId=poultryLoadings.find(l=>l.id===loadingId)?.farm_id||'';
+  const opName=$('#poTruckOpName').textContent||'';
   await loadPoultryOps();
+  if(closeAfter){
+    $('#poTruckCard').classList.add('hidden');
+    return;
+  }
+  openNextTruckForm({operationId,loadingId,farmId,name:opName,sequence:sequence+1});
+  $('#poTruckMsg').textContent='Caminhão '+sequence+' salvo ✓ Agora registre o Caminhão '+(sequence+1)+'.';
  }catch(e){$('#poTruckMsg').textContent=e.message}
 }
+
 async function completePoultryOperation(operationId,loadingId){
  try{
   const trucks=await rest('v2_poultry_truck_loads','select=birds,started_at,completed_at&loading_id=eq.'+loadingId);
@@ -1378,7 +1408,8 @@ if($('#refreshPoultry'))$('#refreshPoultry').addEventListener('click',loadPoultr
 if($('#saveAviaryProfile'))$('#saveAviaryProfile').addEventListener('click',saveAviaryProfile);
 if($('#poSavedAviary'))$('#poSavedAviary').addEventListener('change',e=>fillAviaryProfile(e.target.value));
 if($('#poTruckClose'))$('#poTruckClose').addEventListener('click',()=>$('#poTruckCard').classList.add('hidden'));
-if($('#poTruckSave'))$('#poTruckSave').addEventListener('click',saveTruckLoad);
+if($('#poTruckSave'))$('#poTruckSave').addEventListener('click',()=>saveTruckLoad(false));
+if($('#poTruckSaveClose'))$('#poTruckSaveClose').addEventListener('click',()=>saveTruckLoad(true));
 if($('#poFinanceClose'))$('#poFinanceClose').addEventListener('click',()=>$('#poFinanceCard').classList.add('hidden'));
 if($('#poFinanceSave'))$('#poFinanceSave').addEventListener('click',saveOperationFinance);
 if($('#quickTeamBtn'))$('#quickTeamBtn').addEventListener('click',()=>{$('#quickTeamCard').classList.remove('hidden');$('#quickTeamName').focus()});
@@ -1390,11 +1421,8 @@ if($('#quickTeamSave'))$('#quickTeamSave').addEventListener('click',async()=>{
 document.addEventListener('click',async e=>{
  const a=e.target.closest('.poAddTruck');
  if(a){
-   $('#poTruckOperationId').value=a.dataset.op;$('#poTruckLoadingId').value=a.dataset.loading;$('#poTruckOpName').textContent=a.dataset.name||'';
-   const loading=poultryLoadings.find(l=>l.id===a.dataset.loading),defaultBarn=loading?.metadata?.default_barn_id||'';
-   loadTruckBarnOptions(a.dataset.farm,defaultBarn);
-   $('#poTruckDriver').value='';$('#poTruckPlate').value='';$('#poTruckBirds').value='';$('#poTruckCata').checked=false;$('#poTruckNotes').value='';
-   $('#poTruckStart').value=poLocalInputDate();$('#poTruckEnd').value='';$('#poTruckMsg').textContent='';$('#poTruckCard').classList.remove('hidden');return;
+   openNextTruckForm({operationId:a.dataset.op,loadingId:a.dataset.loading,farmId:a.dataset.farm,name:a.dataset.name||'',sequence:Number(a.dataset.seq||1)});
+   return;
  }
  const c=e.target.closest('.poCompleteOp');if(c){await completePoultryOperation(c.dataset.op,c.dataset.loading);return}
  const f=e.target.closest('.poFinance');if(f&&isAdminGeneral){$('#poFinanceOperationId').value=f.dataset.op;$('#poFinanceName').textContent=f.dataset.name||'';$('#poFinancePricePerBird').value=f.dataset.price||'';$('#poFinanceMsg').textContent='';$('#poFinanceCard').classList.remove('hidden')}
