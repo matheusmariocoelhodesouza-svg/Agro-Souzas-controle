@@ -8,7 +8,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
-<title>Controla V2 • Beta 6.07 Caminhão Após Cadastro</title>
+<title>Controla V2 • Beta 6.08 Caminhão Após Cadastro</title>
 <style>
 :root{--bg:#f3f6fb;--card:#fff;--ink:#0f172a;--muted:#64748b;--line:#e2e8f0;--accent:#0f172a}*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--ink)}header{position:sticky;top:0;z-index:20;background:linear-gradient(135deg,var(--accent),#1e293b);color:#fff;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 8px 24px rgba(15,23,42,.18)}.wrap{max-width:1200px;margin:auto;padding:12px}.card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:12px;box-shadow:0 4px 18px rgba(15,23,42,.045)}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:10px}.kpi{font-size:28px;font-weight:900}.label,.muted{font-size:12px;color:var(--muted)}.nav{display:flex;gap:8px;overflow:auto;padding:12px 0;scrollbar-width:none}.nav::-webkit-scrollbar{display:none}.nav button,.btn{border:0;border-radius:12px;padding:11px 14px;font-weight:800;white-space:nowrap;cursor:pointer}.nav button{background:#fff;border:1px solid var(--line);color:#334155}.nav button.active,.btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}.btn.soft{background:#e2e8f0}.btn.danger{background:#b91c1c;color:#fff}.btn.danger:hover{background:#991b1b}.hidden{display:none!important}.login{max-width:430px;margin:55px auto}.login input,.chat input{width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:10px;margin:6px 0 10px;font:inherit}.section{display:none}.section.active{display:block}.list{display:grid;gap:8px}.item{background:#fff;border:1px solid var(--line);border-radius:13px;padding:12px}.item strong{display:block}.pill{display:inline-block;padding:4px 8px;border-radius:999px;font-size:11px;font-weight:800;background:#e2e8f0}.pill.ok{background:#dcfce7;color:#166534}.pill.warn{background:#fef3c7;color:#92400e}.pill.danger{background:#fee2e2;color:#991b1b}.toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.chatbox{min-height:220px;max-height:52vh;overflow:auto;background:#fff;border:1px solid var(--line);border-radius:14px;padding:10px}.msg{padding:10px 12px;border-radius:12px;margin:8px 0;max-width:88%;white-space:pre-wrap}.msg.user{margin-left:auto;background:#e2e8f0}.msg.ai{background:#fff7ed;border:1px solid #fed7aa}.brand{display:flex;gap:10px;align-items:center}.logo{width:38px;height:38px;border-radius:10px;background:white;color:#0f172a;display:grid;place-items:center;font-weight:900}.error{color:#b91c1c;font-size:13px}.okmsg{color:#166534;font-size:13px}.debug{margin-top:8px;font-size:11px;color:#64748b;word-break:break-word}@media(max-width:640px){.wrap{padding:9px}.kpi{font-size:25px}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}header{padding:12px}.nav{position:sticky;top:66px;z-index:15;background:var(--bg);margin:0 -9px;padding:9px}}
 
@@ -127,12 +127,52 @@ body.app-ready .v2sidebar{display:block}
 .po-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
 .pill.warn{background:#fff3cd;color:#7c5700}
 
+/* Beta 6.08 — Modo Equipe */
+.team-entry{max-width:520px;margin:42px auto}
+.team-entry .card{padding:20px}
+.team-entry-title{text-align:center;margin-bottom:18px}
+.team-entry-title h2{margin:0 0 6px;font-size:24px}
+.team-code-input{width:100%;font-size:22px;font-weight:900;letter-spacing:3px;text-transform:uppercase;text-align:center;padding:15px;border:2px solid #cbd5e1;border-radius:14px;margin:10px 0}
+.team-home{max-width:760px;margin:0 auto;padding-top:10px}
+.team-home-head{background:linear-gradient(135deg,#0f172a,#1e3a8a);color:#fff;border-radius:20px;padding:20px;margin-bottom:14px;box-shadow:0 8px 24px rgba(15,23,42,.15)}
+.team-home-head h1{margin:3px 0;font-size:27px}
+.team-home-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
+.team-tile{border:1px solid #dbe3ef;background:#fff;border-radius:20px;padding:22px 16px;min-height:150px;text-align:left;cursor:pointer;box-shadow:0 5px 18px rgba(15,23,42,.06);color:#0f172a}
+.team-tile .ico{font-size:35px;display:block;margin-bottom:12px}
+.team-tile strong{font-size:20px;display:block}
+.team-tile small{display:block;color:#64748b;margin-top:5px;line-height:1.35}
+.team-mode-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:9px 12px;margin-bottom:12px}
+.team-report-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.team-report-kpi{background:#fff;border:1px solid #e2e8f0;border-radius:15px;padding:14px}
+.team-report-kpi b{display:block;font-size:24px;margin-top:5px}
+body.device-mode .v2sidebar,body.device-mode #nav{display:none!important}
+body.device-mode header{margin-left:0!important;width:100%!important}
+body.device-mode #app{padding-left:0!important;width:100%!important}
+body.device-mode .wrap{max-width:980px;margin:0 auto}
+body.device-mode #newPoultryOp,
+body.device-mode #quickTeamCard,
+body.device-mode #poAdminPlanning,
+body.device-mode #poFinanceCard,
+body.device-mode #newKmBtn,
+body.device-mode #methodFace{display:none!important}
+body.device-mode #poultryForm{display:none!important}
+body.device-mode .deleteFuelBtn{display:none!important}
+body.device-mode .admin-only{display:none!important}
+@media(max-width:640px){
+ .team-home-grid{grid-template-columns:1fr 1fr}
+ .team-tile{min-height:132px;padding:17px 13px}
+ .team-tile .ico{font-size:30px;margin-bottom:8px}
+ .team-tile strong{font-size:17px}
+ .team-report-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:420px){.team-home-grid{grid-template-columns:1fr}.team-tile{min-height:112px}}
+
 </style>
 <script defer="" src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
 <script>
 (function(){
-  const BUILD='6.07';
+  const BUILD='6.08';
   try{
     const marker='controla_cache_cleanup_'+BUILD;
     if(!localStorage.getItem(marker)){
@@ -173,12 +213,46 @@ body.app-ready .v2sidebar{display:block}
 <div class="v2group">EM BREVE</div>
 <button class="v2navbtn" type="button">Estoque</button>
 </aside>
-<header><div class="brand"><div class="logo">C</div><div><b>Controla</b><div><small id="companyName">Beta</small></div></div></div><div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill" id="buildBadge" title="Versão publicada">v6.07</span><button class="btn soft" id="themeToggle" type="button">☾</button><button class="btn soft hidden" id="logout">Sair</button></div></header>
+<header><div class="brand"><div class="logo">C</div><div><b>Controla</b><div><small id="companyName">Beta</small></div></div></div><div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill" id="buildBadge" title="Versão publicada">v6.08</span><button class="btn soft" id="themeToggle" type="button">☾</button><button class="btn soft hidden" id="logout">Sair</button></div></header>
 <main class="wrap">
-<section class="login" id="login"><div class="card"><h2>Entrar na Beta</h2><div class="muted">Use o mesmo acesso do app atual.</div><label>E-mail</label><input autocomplete="username" id="email" type="email"/><label>Senha</label><input autocomplete="current-password" id="password" type="password"/><button class="btn primary" id="loginBtn">Entrar</button><div class="muted" id="loginMsg" style="margin-top:10px">Beta 6.07 • caminhão após cadastro</div><div class="debug" id="debug"></div></div></section>
+<section class="login team-entry" id="login">
+<div class="card" id="deviceSetupCard">
+ <div class="team-entry-title"><div style="font-size:38px">📱</div><h2>Configurar celular da equipe</h2><div class="muted">Digite uma única vez o código gerado pelo administrador. Depois este aparelho abre direto, sem login e senha.</div></div>
+ <label>Código de ativação</label>
+ <input class="team-code-input" id="deviceCode" inputmode="text" maxlength="12" placeholder="AB12CD34"/>
+ <button class="btn primary" id="deviceActivateBtn" style="width:100%;padding:14px">ATIVAR CELULAR</button>
+ <div class="muted" id="deviceMsg" style="margin-top:10px;text-align:center"></div>
+ <button class="btn soft" id="showAdminLogin" type="button" style="width:100%;margin-top:14px">Acesso do administrador</button>
+</div>
+<div class="card hidden" id="adminLoginCard">
+ <h2>Administrador</h2><div class="muted">Acesso completo ao Controla.</div>
+ <label>E-mail</label><input autocomplete="username" id="email" type="email"/>
+ <label>Senha</label><input autocomplete="current-password" id="password" type="password"/>
+ <button class="btn primary" id="loginBtn">Entrar</button>
+ <button class="btn soft" id="backDeviceSetup" type="button" style="margin-left:6px">Voltar</button>
+ <div class="muted" id="loginMsg" style="margin-top:10px">Beta 6.08 • Modo Equipe</div><div class="debug" id="debug"></div>
+</div>
+</section>
 <section class="hidden" id="app">
 <div class="nav" id="nav"><button class="active" data-tab="inicio">Início</button><button data-tab="equipes">Equipes</button><button data-tab="funcionarios">RH &amp; Pessoas</button><button data-tab="documentosrh">Docs RH</button><button data-tab="ponto">Ponto</button><button data-tab="operacoes">Operações / Apanha</button><button data-tab="frota">Frota</button><button data-tab="manutencoes">Manutenções</button><button data-tab="combustivel">Combustível & KM</button><button data-tab="documentosfrota">Documentos</button><button data-tab="financeiro">Financeiro</button><button data-tab="relatorios">Relatórios</button><button data-tab="alertas">Alertas</button><button data-tab="ia">Controla IA</button></div>
+<div class="team-mode-bar hidden" id="deviceModeBar"><div><strong id="deviceModeTeam">Equipe</strong><div class="muted">Acesso restrito a este aparelho</div></div><button class="btn soft" type="button" data-teamtab="equipehome">⌂ Início</button></div>
 <div id="screenHost"></div>
+<div class="section" data-screen="equipehome" hidden="" id="equipehome">
+ <div class="team-home">
+  <div class="team-home-head"><div style="font-size:12px;opacity:.8;font-weight:800">AGRO SOUZA'S CONTROLE</div><h1 id="teamHomeName">Equipe</h1><div id="teamHomeVehicle">Celular de campo</div></div>
+  <div class="team-home-grid">
+   <button class="team-tile" type="button" data-teamtab="operacoes"><span class="ico">🐔</span><strong>Apanha</strong><small>Apanhas da sua equipe e carregamento caminhão por caminhão.</small></button>
+   <button class="team-tile" type="button" data-teamtab="ponto"><span class="ico">⏱️</span><strong>Ponto</strong><small>Bater ponto e conferir presença dos funcionários da equipe.</small></button>
+   <button class="team-tile" type="button" data-teamtab="combustivel"><span class="ico">⛽</span><strong>Abastecimento</strong><small>Registrar combustível da condução vinculada à equipe.</small></button>
+   <button class="team-tile" type="button" data-teamtab="equipereport"><span class="ico">📊</span><strong>Relatório</strong><small>Resumo de apanha, ponto e abastecimento da própria equipe.</small></button>
+  </div>
+ </div>
+</div>
+<div class="section" data-screen="equipereport" hidden="" id="equipereport">
+ <div class="v2hero"><div><h1>Relatório da Equipe</h1><p id="teamReportSubtitle">Resumo operacional</p></div><button class="btn soft" id="refreshTeamReport" type="button">↻ Atualizar</button></div>
+ <div class="team-report-grid" id="teamReportKpis"></div>
+ <div class="card"><h3>Resumo de hoje</h3><div class="list" id="teamReportToday"></div></div>
+</div>
 <div class="section active" data-screen="inicio" id="inicio"><div class="v2panel" id="poultryDashboardPanel"><div class="v2panelhead"><div><h3>Operação de Apanha — Hoje</h3><div class="muted">Produção real das equipes no dia.</div></div></div><div class="v2-kpis" id="poultryDashKpis"></div><div id="poultryDashTeams" class="list"><div class="v2-empty">Carregando produção...</div></div></div>
 <div class="v2hero"><div><h1>Dashboard Apanha de Aves</h1><p>Visão geral das operações de hoje • dados reais do Controla</p></div><button class="btn v2new" id="refreshBtn">↻ Atualizar painel</button></div>
 <div class="v2-kpis" id="kpis"></div>
@@ -195,6 +269,11 @@ body.app-ready .v2sidebar{display:block}
 </div></div>
 <div class="section" data-screen="equipes" hidden="" id="equipes">
 <div class="card"><div class="toolbar" style="justify-content:space-between"><div><h3 style="margin:0">Equipes</h3><div class="muted">Organize equipes, contratantes e conduções.</div></div><div class="toolbar"><button class="btn primary" id="newTeamBtn" type="button">+ NOVA EQUIPE</button><button class="btn soft" id="refreshTeams" type="button">Atualizar</button></div></div><div class="list" id="teamsList" style="margin-top:12px"></div></div>
+<div class="card" id="teamDeviceCodeCard" style="display:none;border:2px solid #1976d2">
+<div class="toolbar" style="justify-content:space-between"><div><h3 style="margin:0">📱 Código do celular</h3><div class="muted" id="teamDeviceCodeName">Equipe</div></div><button class="btn soft" id="closeTeamDeviceCode" type="button">Fechar</button></div>
+<div id="teamDeviceCode" style="font-size:36px;font-weight:950;letter-spacing:5px;text-align:center;padding:18px 8px">--------</div>
+<div class="muted" style="text-align:center">Digite este código uma única vez no celular da equipe. O código expira e só pode ser usado uma vez.</div>
+</div>
 <div class="card" id="teamEditCard" style="display:none"><div class="toolbar" style="justify-content:space-between"><div><h3 id="teamEditTitle" style="margin:0">Editar equipe</h3><div class="muted">Cadastre onde a equipe presta serviço, a condução e os funcionários vinculados.</div></div><button class="btn soft" id="cancelTeamEdit" type="button">Cancelar</button></div><input id="editTeamId" type="hidden"/><div class="row" style="margin-top:12px"><div><label>Nome da equipe</label><input id="editTeamName"/></div><div><label>Empresa contratante / terceirização</label><input id="editTeamContractor" list="teamContractors" placeholder="Ex.: Zanchetta ou Roseira"/><datalist id="teamContractors"></datalist></div><div><label>Código</label><input id="editTeamCode"/></div></div><div class="row"><div><label>Status</label><select id="editTeamStatus"><option value="active">Ativa</option><option value="inactive">Inativa</option></select></div><div><label>Veículo principal</label><select id="editTeamVehicle"><option value="">Sem veículo vinculado</option></select><div class="muted" style="margin-top:5px">Escolhido a partir da Frota cadastrada.</div></div><div><label>Responsável / encarregado</label><select id="editTeamSupervisor"><option value="">Não informado</option></select></div></div><div style="margin-top:16px"><div class="toolbar" style="justify-content:space-between"><div><label style="font-size:15px">Funcionários da equipe</label><div class="muted">Marque para adicionar. Desmarque para retirar. Se o funcionário estiver em outra equipe, ele será transferido.</div></div><span class="pill" id="teamMembersCount">0 selecionado(s)</span></div><div id="teamMembersList" class="list" style="margin-top:10px;max-height:360px;overflow:auto"></div></div><div class="toolbar" style="margin-top:12px"><button class="btn primary" id="saveTeamEdit" type="button">SALVAR EQUIPE</button><button class="btn soft" id="archiveTeamBtn" type="button">ARQUIVAR EQUIPE</button><button class="btn danger" id="deleteTeamBtn" type="button">EXCLUIR EQUIPE</button></div><div class="muted" id="teamEditMsg" style="margin-top:8px"></div></div>
 </div>
 <div class="section" data-screen="funcionarios" hidden="" id="funcionarios"><div class="card"><div class="toolbar"><div><strong>Dados do empregador</strong><div class="muted">Usados nos documentos e comprovantes do ponto.</div></div></div><div class="row"><div><label>Razão social</label><input id="companyLegalName"/></div><div><label>Nome fantasia</label><input id="companyTradeName"/></div><div><label>CNPJ / CPF</label><input id="companyTaxId" inputmode="numeric" placeholder="00.000.000/0000-00"/></div></div><button class="btn primary" id="saveCompanyProfile" style="margin-top:10px">Salvar empregador</button><div class="muted" id="companyProfileMsg"></div></div><div class="card"><strong>Dados profissionais do trabalhador</strong><div class="muted">Cargo/função e data de admissão passam a integrar o cadastro profissional e o espelho de ponto.</div><div class="row" style="margin-top:10px"><div><label>Funcionário</label><select id="profEmployee"></select></div><div><label>Cargo / função</label><input id="profJobTitle" placeholder="Ex.: Apanhador de aves"/></div><div><label>Data de admissão</label><input id="profAdmissionDate" type="date"/></div></div><button class="btn primary" id="saveProfessional" style="margin-top:10px">Salvar dados profissionais</button><div class="muted" id="profMsg"></div></div>
@@ -453,7 +532,7 @@ body.app-ready .v2sidebar{display:block}
 'use strict';
 const API_URL='https://aycbrqziusxtxhsdfqjk.supabase.co';
 const KEY='sb_publishable_OGJX3NBA__JxoyjB3IZNvQ_0nNwh_Xc';
-let companyId=null, conversationId=null, scheduleCache={}, companyProfile={}, currentRoleCode=null, isAdminGeneral=false;
+let companyId=null, conversationId=null, scheduleCache={}, companyProfile={}, currentRoleCode=null, isAdminGeneral=false, deviceMode=false, deviceAccess=null, deviceTeam=null;
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 const money=v=>Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
@@ -482,6 +561,65 @@ async function login(email,password){
  const data=await parseResponse(r);
  saveSession(data);
  return data;
+}
+function isAnonymousUser(user){
+ return !!(user&&(user.is_anonymous===true||(!user.email&&Array.isArray(user.identities)&&user.identities.length===0)));
+}
+async function anonymousLogin(){
+ const r=await fetchTimeout(API_URL+'/auth/v1/signup',{
+   method:'POST',
+   headers:{apikey:KEY,'Content-Type':'application/json'},
+   body:JSON.stringify({data:{controla_device:true}})
+ },12000);
+ const data=await parseResponse(r);saveSession(data);return data;
+}
+async function loadDeviceAccess(userId){
+ const rows=await v2Rest('v2_device_access','select=company_id,team_id,device_name,permissions,active,paired_at&user_id=eq.'+encodeURIComponent(userId)+'&active=eq.true&limit=1');
+ return rows&&rows[0]?rows[0]:null;
+}
+function applyDeviceUi(){
+ document.body.classList.add('device-mode');
+ const logout=document.getElementById('logout');if(logout){logout.textContent='Trocar equipe';logout.classList.remove('hidden')}
+ const face=document.getElementById('methodFace');if(face)face.classList.add('hidden');
+ if(typeof setPointMethod==='function')setPointMethod('employee_number');
+ const monthly=document.getElementById('monthlyEmployee');if(monthly&&monthly.closest('.card'))monthly.closest('.card').style.display='none';
+ const newP=document.getElementById('newPoultryOp');if(newP)newP.style.display='none';
+ const km=document.getElementById('newKmBtn');if(km)km.style.display='none';
+}
+async function enterDeviceApp(authUser){
+ const user=authUser||await getUser();
+ if(!user||!user.id)throw new Error('Sessão do aparelho não encontrada.');
+ const access=await loadDeviceAccess(user.id);
+ if(!access){const er=new Error('Este celular ainda não foi ativado. Digite o código da equipe.');er.code='DEVICE_UNPAIRED';throw er}
+ deviceMode=true;deviceAccess=access;companyId=access.company_id;currentRoleCode='device';isAdminGeneral=false;
+ const companies=await v2Rest('v2_companies','select=id,legal_name,trade_name,tax_id,timezone&id=eq.'+encodeURIComponent(companyId)+'&limit=1');
+ companyProfile=companies&&companies[0]?companies[0]:{id:companyId,trade_name:"Agro Souza's"};
+ const teams=await v2Rest('v2_teams','select=id,name,code,metadata,status&id=eq.'+encodeURIComponent(access.team_id)+'&limit=1');
+ deviceTeam=teams&&teams[0]?teams[0]:{id:access.team_id,name:'Equipe'};
+ const companyLabel=document.getElementById('companyName');if(companyLabel)companyLabel.textContent=deviceTeam.name||"Agro Souza's";
+ const teamName=document.getElementById('teamHomeName');if(teamName)teamName.textContent=deviceTeam.name||'Equipe';
+ const barName=document.getElementById('deviceModeTeam');if(barName)barName.textContent=deviceTeam.name||'Equipe';
+ const vehicleText=document.getElementById('teamHomeVehicle');
+ if(vehicleText){
+   let txt='Celular de campo';
+   try{
+     const vehicleId=deviceTeam.metadata&&deviceTeam.metadata.primary_vehicle_id?deviceTeam.metadata.primary_vehicle_id:'00000000-0000-0000-0000-000000000000';
+     const vs=await v2Rest('v2_vehicles','select=id,description,plate,model&id=eq.'+encodeURIComponent(vehicleId)+'&limit=1');
+     if(vs&&vs[0])txt=(vs[0].description||vs[0].model||'Condução')+(vs[0].plate?' • '+vs[0].plate:'');
+   }catch(_){}
+   vehicleText.textContent=txt;
+ }
+ document.getElementById('login').classList.add('hidden');
+ document.getElementById('app').classList.remove('hidden');
+ document.body.classList.add('app-ready');
+ applyDeviceUi();initScreenRouter();await v2Go('equipehome');
+}
+async function activateDevice(code){
+ if(!code||code.trim().length<4)throw new Error('Digite o código de ativação.');
+ let ss=session();
+ if(!ss||!ss.access_token||!isAnonymousUser(ss.user)){clearSession();ss=await anonymousLogin()}
+ await rpc('v2_pair_device',{p_code:code.trim().toUpperCase(),p_device_name:'Celular '+(navigator.platform||'equipe')});
+ await enterDeviceApp((session()||{}).user||null);
 }
 
 
@@ -626,6 +764,12 @@ function buildWorkSessions(events){
 
 
 async function getNextPoint(employeeId){
+  if(deviceMode){
+    const bounds=saoPauloDayUtcBounds(localDateBR());
+    const evs=await rest('v2_attendance_events','select=event_type,occurred_at&company_id=eq.'+companyId+'&employee_id=eq.'+encodeURIComponent(employeeId)+'&occurred_at=gte.'+encodeURIComponent(bounds.start)+'&occurred_at=lt.'+encodeURIComponent(bounds.end)+'&order=occurred_at.asc');
+    const last=evs&&evs.length?evs[evs.length-1].event_type:null;
+    if(!last)return 'in';if(last==='in')return 'break_start';if(last==='break_start')return 'break_end';if(last==='break_end')return 'out';return 'finished';
+  }
   const r=await rpc('v2_attendance_next_event',{p_company_id:companyId,p_employee_id:employeeId,p_at:new Date().toISOString()});
   return r;
 }
@@ -665,6 +809,8 @@ async function rest(table,query='',method='GET',body=null){
 async function enterApp(authUser){
   const user=authUser||await getUser();
   if(!user||!user.id)throw new Error('Não foi possível identificar o usuário.');
+  if(isAnonymousUser(user))return await enterDeviceApp(user);
+  deviceMode=false;deviceAccess=null;deviceTeam=null;document.body.classList.remove('device-mode');
   debug('Login confirmado. Carregando empresa...');
   const members=await v2Rest('v2_company_members','select=company_id,role_id&user_id=eq.'+encodeURIComponent(user.id)+'&status=eq.active');
   const ids=(members||[]).map(function(x){return x.company_id});
@@ -693,6 +839,15 @@ async function enterApp(authUser){
   debug('');
   refreshAll().catch(function(e){console.warn('refresh',e)});
 }
+$('#showAdminLogin').addEventListener('click',()=>{$('#deviceSetupCard').classList.add('hidden');$('#adminLoginCard').classList.remove('hidden')});
+$('#backDeviceSetup').addEventListener('click',()=>{$('#adminLoginCard').classList.add('hidden');$('#deviceSetupCard').classList.remove('hidden')});
+$('#deviceActivateBtn').addEventListener('click',async()=>{
+ const b=$('#deviceActivateBtn'),m=$('#deviceMsg');if(b.disabled)return;b.disabled=true;m.className='muted';m.textContent='Ativando este celular...';
+ try{await activateDevice($('#deviceCode').value);m.className='okmsg';m.textContent='Celular ativado.'}
+ catch(e){m.className='error';m.textContent=(e.message||String(e))+((e.message||'').toLowerCase().includes('anonymous')?' • No Supabase, ative Authentication > Providers > Anonymous Sign-Ins.':'')}
+ finally{b.disabled=false}
+});
+$('#deviceCode').addEventListener('keydown',e=>{if(e.key==='Enter')$('#deviceActivateBtn').click()});
 $('#loginBtn').addEventListener('click',async()=>{
   const btn=$('#loginBtn');
   if(btn.disabled)return;
@@ -711,7 +866,10 @@ $('#loginBtn').addEventListener('click',async()=>{
   }
 });
 $('#password').addEventListener('keydown',e=>{if(e.key==='Enter')$('#loginBtn').click()});
-$('#logout').addEventListener('click',()=>{clearSession();location.reload()});
+$('#logout').addEventListener('click',()=>{
+ if(deviceMode&&!confirm('Trocar o acesso deste celular? Depois será necessário gerar um novo código para vinculá-lo novamente.'))return;
+ clearSession();location.reload();
+});
 async function refreshAll(){
  if(!companyId)return;
  await loadDashboard();
@@ -771,7 +929,18 @@ async function loadDashboard(){try{
  $('#v2PeopleSummary').innerHTML=[['Ativos',d.active_employees||0],['Frota',d.active_vehicles||0],['Despesas mês',money(d.month_expense)]].map(x=>`<div class="v2mini"><span class="muted">${x[0]}</span><b>${esc(x[1])}</b></div>`).join('');
  try{const a=await dashRest('v2_alerts','select=title,severity,status,created_at&company_id=eq.'+companyId+'&status=eq.open&order=created_at.desc&limit=5');$('#v2Alerts').innerHTML=a.length?a.map(x=>`<div class="v2alert"><b>${esc(x.title||'Alerta')}</b><div class="muted">${esc(x.severity||'atenção')}</div></div>`).join(''):'<div class="v2-empty">Nenhum alerta aberto.</div>'}catch(_){$('#v2Alerts').innerHTML='<div class="v2-empty">Alertas disponíveis na aba Alertas.</div>'}
 }catch(e){$('#todayList').innerHTML='<div class="error">'+esc(e.message)+'</div>'}}
-async function loadTeams(){try{const [r,v,e]=await Promise.all([rest('v2_teams','select=id,name,code,status,supervisor_employee_id,metadata&company_id=eq.'+companyId+'&order=name.asc'),rest('v2_vehicles','select=id,description,plate,status&company_id=eq.'+companyId+'&order=description.asc'),rest('v2_employees','select=id,full_name,employee_number,primary_team,status&company_id=eq.'+companyId+'&status=eq.active&order=full_name.asc')]);window.__teams=r;window.__teamVehicles=v;window.__teamEmployees=e;const contractors=[...new Set(r.map(x=>(x.metadata?.contractor_name||'').trim()).filter(Boolean))].sort();const dl=$('#teamContractors');if(dl)dl.innerHTML=contractors.map(n=>`<option value="${esc(n)}"></option>`).join('');const list=$('#teamsList');if(!list)return;list.innerHTML=r.map(x=>{const vid=x.metadata?.primary_vehicle_id||'';const veh=v.find(z=>z.id===vid);const sup=e.find(z=>z.id===x.supervisor_employee_id);const members=e.filter(z=>(z.primary_team||'').trim().toLowerCase()===(x.name||'').trim().toLowerCase());const contractor=x.metadata?.contractor_name||'Contratante não informada';return `<div class="item"><div class="toolbar" style="justify-content:space-between;gap:10px"><div><strong>${esc(x.name)}</strong> <span class="pill ${x.status==='active'?'ok':'warn'}">${x.status==='active'?'Ativa':'Inativa'}</span><div style="margin-top:5px"><span class="pill">🏭 ${esc(contractor)}</span></div><div class="muted" style="margin-top:5px">${esc(x.code||'Sem código')} • ${members.length} funcionário(s)</div><div style="margin-top:7px"><b>🚌 ${esc(veh?(veh.description+(veh.plate?' • '+veh.plate:'')):'Sem veículo vinculado')}</b>${sup?`<div class="muted">Responsável: ${esc(sup.full_name)}</div>`:''}</div></div><button class="btn soft" type="button" onclick="openTeamEdit('${x.id}')">Editar</button></div></div>`}).join('')||'<div class="muted">Sem equipes. Toque em + Nova equipe para cadastrar.</div>'}catch(e){const list=$('#teamsList');if(list)list.innerHTML='<div class="error">'+esc(e.message)+'</div>'}}
+async function loadTeams(){try{const [r,v,e]=await Promise.all([rest('v2_teams','select=id,name,code,status,supervisor_employee_id,metadata&company_id=eq.'+companyId+'&order=name.asc'),rest('v2_vehicles','select=id,description,plate,status&company_id=eq.'+companyId+'&order=description.asc'),rest('v2_employees','select=id,full_name,employee_number,primary_team,status&company_id=eq.'+companyId+'&status=eq.active&order=full_name.asc')]);window.__teams=r;window.__teamVehicles=v;window.__teamEmployees=e;const contractors=[...new Set(r.map(x=>(x.metadata?.contractor_name||'').trim()).filter(Boolean))].sort();const dl=$('#teamContractors');if(dl)dl.innerHTML=contractors.map(n=>`<option value="${esc(n)}"></option>`).join('');const list=$('#teamsList');if(!list)return;list.innerHTML=r.map(x=>{const vid=x.metadata?.primary_vehicle_id||'';const veh=v.find(z=>z.id===vid);const sup=e.find(z=>z.id===x.supervisor_employee_id);const members=e.filter(z=>(z.primary_team||'').trim().toLowerCase()===(x.name||'').trim().toLowerCase());const contractor=x.metadata?.contractor_name||'Contratante não informada';return `<div class="item"><div class="toolbar" style="justify-content:space-between;gap:10px"><div><strong>${esc(x.name)}</strong> <span class="pill ${x.status==='active'?'ok':'warn'}">${x.status==='active'?'Ativa':'Inativa'}</span><div style="margin-top:5px"><span class="pill">🏭 ${esc(contractor)}</span></div><div class="muted" style="margin-top:5px">${esc(x.code||'Sem código')} • ${members.length} funcionário(s)</div><div style="margin-top:7px"><b>🚌 ${esc(veh?(veh.description+(veh.plate?' • '+veh.plate:'')):'Sem veículo vinculado')}</b>${sup?`<div class="muted">Responsável: ${esc(sup.full_name)}</div>`:''}</div></div><div class="toolbar"><button class="btn primary createDeviceCode" type="button" data-team="${x.id}" data-name="${esc(x.name)}">📱 Celular</button><button class="btn soft" type="button" onclick="openTeamEdit('${x.id}')">Editar</button></div></div></div>`}).join('')||'<div class="muted">Sem equipes. Toque em + Nova equipe para cadastrar.</div>'}catch(e){const list=$('#teamsList');if(list)list.innerHTML='<div class="error">'+esc(e.message)+'</div>'}}
+async function createDevicePairingCode(teamId,teamName){
+ const card=$('#teamDeviceCodeCard'),codeEl=$('#teamDeviceCode'),nameEl=$('#teamDeviceCodeName');
+ if(card)card.style.display='block';if(codeEl)codeEl.textContent='GERANDO...';if(nameEl)nameEl.textContent=teamName||'Equipe';
+ try{
+  const r=await rpc('v2_create_device_pairing_code',{p_company_id:companyId,p_team_id:teamId,p_device_name:'Celular '+(teamName||'Equipe'),p_valid_minutes:60});
+  const row=Array.isArray(r)?r[0]:r;if(!row||!row.pairing_code)throw new Error('Código não retornado.');
+  if(codeEl)codeEl.textContent=row.pairing_code;
+  if(nameEl)nameEl.textContent=(row.team_name||teamName||'Equipe')+' • válido por até 60 minutos';
+  if(card)card.scrollIntoView({behavior:'smooth',block:'center'});
+ }catch(e){if(codeEl)codeEl.textContent='ERRO';if(nameEl)nameEl.textContent=e.message||String(e)}
+}
 function renderTeamMembers(t={}){const list=$('#teamMembersList');if(!list)return;const emps=window.__teamEmployees||[];const teamName=(t.name||'').trim().toLowerCase();list.innerHTML=emps.map(e=>{const current=(e.primary_team||'').trim();const checked=teamName&&current.toLowerCase()===teamName;const other=current&&(!checked);return `<label class="item" style="display:flex;align-items:center;gap:10px;cursor:pointer"><input class="team-member-check" type="checkbox" value="${e.id}" ${checked?'checked':''} style="width:20px;height:20px"/><div style="flex:1"><strong>${esc(e.full_name)}</strong><div class="muted">Matrícula ${esc(e.employee_number||'')} • ${other?'Equipe atual: '+esc(current):checked?'Nesta equipe':'Sem equipe'}</div></div></label>`}).join('')||'<div class="muted">Nenhum funcionário ativo cadastrado.</div>';updateTeamMembersCount()}
 function updateTeamMembersCount(){const n=document.querySelectorAll('#teamMembersList .team-member-check:checked').length;const el=$('#teamMembersCount');if(el)el.textContent=n+' selecionado(s)'}
 function fillTeamEditSelectors(t={}){const vehicles=(window.__teamVehicles||[]).filter(v=>v.status==='active'||v.id===t.metadata?.primary_vehicle_id);$('#editTeamVehicle').innerHTML='<option value="">Sem veículo vinculado</option>'+vehicles.map(v=>`<option value="${v.id}">${esc(v.description)}${v.plate?' • '+esc(v.plate):''}</option>`).join('');$('#editTeamVehicle').value=t.metadata?.primary_vehicle_id||'';const emps=window.__teamEmployees||[];$('#editTeamSupervisor').innerHTML='<option value="">Não informado</option>'+emps.map(e=>`<option value="${e.id}">${esc(e.full_name)} • ${esc(e.employee_number||'')}</option>`).join('');$('#editTeamSupervisor').value=t.supervisor_employee_id||'';renderTeamMembers(t)}
@@ -981,6 +1150,22 @@ function printMonthlyMirror(){
 
 function setTextSafe(id,value){const el=document.getElementById(id);if(el)el.textContent=value}
 function setHtmlSafe(id,value){const el=document.getElementById(id);if(el)el.innerHTML=value}
+async function loadTeamPoint(){
+ if(!companyId)return;
+ try{
+   const employees=await rest('v2_employees','select=id,employee_number,full_name,primary_team,status&company_id=eq.'+companyId+'&status=eq.active&order=full_name.asc');
+   const bounds=saoPauloDayUtcBounds(localDateBR());
+   const events=await rest('v2_attendance_events','select=id,employee_id,occurred_at,event_type,method,accuracy_m&company_id=eq.'+companyId+'&occurred_at=gte.'+encodeURIComponent(bounds.start)+'&occurred_at=lt.'+encodeURIComponent(bounds.end)+'&order=occurred_at.asc&limit=500');
+   const map=Object.fromEntries(employees.map(e=>[e.id,e])),by={};
+   for(const ev of events)(by[ev.employee_id]??=[]).push(ev);
+   let total=0,extra=0,withEvents=0;const metrics={};
+   for(const e of employees){const mt=computeDayMetrics(by[e.id]||[],{live:true,expectedMinutes:expectedMinutesFor(e.id)});metrics[e.id]=mt;if((by[e.id]||[]).length)withEvents++;total+=mt.worked;extra+=mt.overtime}
+   setTextSafe('pointToday',withEvents);setTextSafe('pointEvents',events.length);setTextSafe('pointWorked',fmtMinutes(total));setTextSafe('pointOvertime',fmtMinutes(extra));
+   const presence=$('#presenceList');if(presence)presence.innerHTML=employees.map(e=>{const mt=metrics[e.id],has=(by[e.id]||[]).length>0,st=has?mt.status:'none';return '<div class="item"><strong>'+esc(e.full_name)+'</strong><span class="pill '+(st==='none'?'warn':(statusClass[st]||''))+'">'+esc(st==='none'?'Sem registro hoje':(statusLabels[st]||st))+'</span><div class="muted">'+esc(e.primary_team||'Equipe')+(has?' • '+fmtMinutes(mt.worked):'')+'</div></div>'}).join('')||'<div class="muted">Sem funcionários ativos.</div>';
+   const list=$('#pointList');if(list)list.innerHTML=[...events].reverse().slice(0,80).map(x=>{const e=map[x.employee_id]||{};return '<div class="item"><strong>'+esc(e.full_name||'Funcionário')+'</strong><span class="pill">'+esc(pointLabels[x.event_type]||x.event_type)+'</span><div class="muted">'+esc(new Date(x.occurred_at).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo'}))+' • '+esc(x.method||'matrícula')+'</div></div>'}).join('')||'<div class="muted">Nenhuma batida registrada hoje.</div>';
+   const mirror=$('#timeMirrorList');if(mirror)mirror.innerHTML=employees.map(e=>{const evs=by[e.id]||[];if(!evs.length)return '';const mt=metrics[e.id];return '<div class="item"><strong>'+esc(e.full_name)+'</strong><div class="muted">Trabalhado: <b>'+fmtMinutes(mt.worked)+'</b> • Intervalo: '+fmtMinutes(mt.breakMinutes)+' • Extra: <b>'+fmtMinutes(mt.overtime)+'</b></div></div>'}).join('')||'<div class="muted">Nenhum registro hoje.</div>';
+ }catch(e){['presenceList','pointList','timeMirrorList'].forEach(id=>{const el=$('#'+id);if(el)el.innerHTML='<div class="error">'+esc(e.message)+'</div>'})}
+}
 async function loadRHPoint(){
  if(!companyId)return;
  try{
@@ -1139,7 +1324,7 @@ $('#registerPoint').addEventListener('click',async()=>{
   if(withSelfie&&eventId){try{await restInsert('point_face_checks',{point_event_id:eventId,verified:true,score:Math.max(0,1-faceDistance),algorithm:'face-api.js_0.22.2',selfie_storage_path:selfiePath,failure_reason:null})}catch(e){console.warn(e)}}
   const receiptType=pointLabels[nextEvent]||nextEvent,when=new Date(occurredAt).toLocaleString('pt-BR');msg.className='okmsg';msg.textContent=receiptType+' registrado para '+employee.full_name+'.';
   const receipt=$('#pointReceipt');receipt.className='card';receipt.innerHTML='<div class="label">COMPROVANTE DE PONTO</div><div style="font-size:18px;font-weight:900;margin:3px 0">'+esc(receiptType)+'</div><strong>'+esc(employee.full_name)+'</strong><div class="muted">Matrícula '+esc(employee.employee_number)+' • '+esc(when)+'</div><div class="muted">'+(withSelfie?'Reconhecimento facial aprovado':'Identificação por matrícula')+' • GPS ±'+Math.round(Number(gps.accuracy_m||0))+' m • horário enviado ao servidor</div>'+(withSelfie?'<div class="pill ok" style="margin-top:8px">Face reconhecida ✓</div>':'');
-  $('#pointMatricula').value='';if($('#pointSelfieFront'))$('#pointSelfieFront').value='';if($('#pointSelfieBack'))$('#pointSelfieBack').value='';window.__pointSelfieFile=null;$('#selfiePreviewWrap').classList.add('hidden');$('#selfiePreview').removeAttribute('src');$('#nextPointLabel').textContent=withSelfie?'Capture a selfie para identificar o funcionário':'Digite a matrícula';await loadRHPoint();
+  $('#pointMatricula').value='';if($('#pointSelfieFront'))$('#pointSelfieFront').value='';if($('#pointSelfieBack'))$('#pointSelfieBack').value='';window.__pointSelfieFile=null;$('#selfiePreviewWrap').classList.add('hidden');$('#selfiePreview').removeAttribute('src');$('#nextPointLabel').textContent=withSelfie?'Capture a selfie para identificar o funcionário':'Digite a matrícula';if(deviceMode)await loadTeamPoint();else await loadRHPoint();
  }catch(e){msg.className='error';msg.textContent=e.message||String(e)}finally{btn.disabled=false}
 });
 $('#refreshPoint').addEventListener('click',loadRHPoint);
@@ -1206,6 +1391,19 @@ function applyPoultryRoleUI(){
  document.querySelectorAll('.poFinance').forEach(el=>el.classList.toggle('hidden',!isAdminGeneral));
  const finance=document.getElementById('poFinanceCard');
  if(finance)finance.classList.add('hidden');
+}
+async function loadDevicePoultryContext(){
+ try{
+  poultryTeams=await rest('v2_teams','select=id,name,status,metadata&company_id=eq.'+companyId+'&id=eq.'+encodeURIComponent(deviceAccess.team_id))||[];
+  const loadings=await rest('v2_poultry_loadings','select=id,farm_id,operation_id&company_id=eq.'+companyId+'&team_id=eq.'+encodeURIComponent(deviceAccess.team_id)+'&order=created_at.desc&limit=200')||[];
+  const farmIds=[...new Set(loadings.map(x=>x.farm_id).filter(Boolean))];
+  poultryFarms=[];poultryBarns=[];
+  if(farmIds.length){
+    const q=farmIds.join(',');
+    poultryFarms=await rest('v2_poultry_farms','select=id,integrator_id,producer_name,farm_name,city,address,status,metadata&company_id=eq.'+companyId+'&id=in.('+q+')')||[];
+    poultryBarns=await rest('v2_poultry_barns','select=id,farm_id,barn_number,outlet_type,energy_type,status&company_id=eq.'+companyId+'&farm_id=in.('+q+')')||[];
+  }
+ }catch(e){console.warn('Contexto da equipe',e);poultryTeams=deviceTeam?[deviceTeam]:[];poultryFarms=[];poultryBarns=[]}
 }
 async function loadPoultrySelectors(){
  const team=$('#poTeam');
@@ -1501,8 +1699,36 @@ document.addEventListener('click',async e=>{
  const c=e.target.closest('.poCompleteOp');if(c){await completePoultryOperation(c.dataset.op,c.dataset.loading);return}
  const f=e.target.closest('.poFinance');if(f&&isAdminGeneral){$('#poFinanceOperationId').value=f.dataset.op;$('#poFinanceName').textContent=f.dataset.name||'';$('#poFinancePricePerBird').value=f.dataset.price||'';$('#poFinanceMsg').textContent='';$('#poFinanceCard').classList.remove('hidden')}
 });
+async function loadTeamHome(){if(!deviceMode)return}
+async function loadTeamReport(){
+ if(!deviceMode)return;
+ const k=$('#teamReportKpis'),list=$('#teamReportToday'),sub=$('#teamReportSubtitle');
+ if(sub)sub.textContent=(deviceTeam?.name||'Equipe')+' • '+new Date().toLocaleDateString('pt-BR');
+ try{
+  const bounds=saoPauloDayUtcBounds(localDateBR());
+  const [ops,loadings,trucks,events,fuel,emps]=await Promise.all([
+   rest('v2_operations','select=id,status,scheduled_start,actual_birds&company_id=eq.'+companyId+'&operation_type=eq.poultry_catching&scheduled_start=gte.'+encodeURIComponent(bounds.start)+'&scheduled_start=lt.'+encodeURIComponent(bounds.end)),
+   rest('v2_poultry_loadings','select=id,operation_id,reported_birds&company_id=eq.'+companyId+'&team_id=eq.'+encodeURIComponent(deviceAccess.team_id)),
+   rest('v2_poultry_truck_loads','select=id,loading_id,birds,is_cata&company_id=eq.'+companyId),
+   rest('v2_attendance_events','select=employee_id,event_type,occurred_at&company_id=eq.'+companyId+'&occurred_at=gte.'+encodeURIComponent(bounds.start)+'&occurred_at=lt.'+encodeURIComponent(bounds.end)),
+   rest('v2_fuel_logs','select=liters,total_amount,fueled_at&company_id=eq.'+companyId+'&order=fueled_at.desc&limit=100'),
+   rest('v2_employees','select=id,full_name,status&company_id=eq.'+companyId+'&status=eq.active')
+  ]);
+  const loadingIds=new Set((loadings||[]).filter(x=>ops.some(o=>o.id===x.operation_id)).map(x=>x.id));
+  const todayTrucks=(trucks||[]).filter(x=>loadingIds.has(x.loading_id));
+  const birds=todayTrucks.reduce((a,x)=>a+Number(x.birds||0),0);
+  const present=new Set((events||[]).map(x=>x.employee_id)).size;
+  const month=new Date().toISOString().slice(0,7),mf=(fuel||[]).filter(x=>String(x.fueled_at||'').slice(0,7)===month);
+  const liters=mf.reduce((a,x)=>a+Number(x.liters||0),0),fuelCost=mf.reduce((a,x)=>a+Number(x.total_amount||0),0);
+  if(k)k.innerHTML=[['Apanhas hoje',ops.length],['Caminhões',todayTrucks.length],['Aves hoje',birds.toLocaleString('pt-BR')],['Com ponto',present+'/'+emps.length],['Litros no mês',liters.toLocaleString('pt-BR',{maximumFractionDigits:1})+' L'],['Combustível no mês',money(fuelCost)]].map(x=>'<div class="team-report-kpi"><span class="muted">'+x[0]+'</span><b>'+x[1]+'</b></div>').join('');
+  if(list)list.innerHTML='<div class="item"><strong>Apanha</strong><div class="muted">'+ops.length+' operação(ões) hoje • '+todayTrucks.length+' caminhão(ões) • '+birds.toLocaleString('pt-BR')+' aves</div></div><div class="item"><strong>Ponto</strong><div class="muted">'+present+' de '+emps.length+' funcionário(s) com registro hoje</div></div><div class="item"><strong>Abastecimento</strong><div class="muted">'+liters.toLocaleString('pt-BR',{maximumFractionDigits:1})+' litros no mês • '+money(fuelCost)+'</div></div>';
+ }catch(e){if(list)list.innerHTML='<div class="error">'+esc(e.message)+'</div>'}
+}
+function renderDeviceModeBar(tab){const bar=$('#deviceModeBar');if(bar)bar.classList.toggle('hidden',!deviceMode||tab==='equipehome')}
 // Navegação resiliente: um único listener delegado atende desktop e mobile.
 document.addEventListener('click',function(e){
+  const team=e.target.closest('[data-teamtab]');if(team){e.preventDefault();v2Go(team.dataset.teamtab);return}
+  const code=e.target.closest('.createDeviceCode');if(code){e.preventDefault();createDevicePairingCode(code.dataset.team,code.dataset.name||'Equipe');return}
   const side=e.target.closest('.v2navbtn[data-v2tab]');
   if(side){ e.preventDefault(); v2Go(side.dataset.v2tab); return; }
   const mobile=e.target.closest('#nav button[data-tab]');
@@ -1564,7 +1790,7 @@ async function saveFuel(){
  if(!vehicle_id){m.textContent='Selecione o veículo.';return}if(liters<=0){m.textContent='Informe a quantidade de litros.';return}
  try{
   await rest('v2_fuel_logs','', 'POST',{company_id:companyId,vehicle_id,fueled_at:new Date(document.getElementById('fuelDate').value||Date.now()).toISOString(),odometer_km:km||null,liters,total_amount:total,station_name:document.getElementById('fuelStation').value.trim()||null,metadata:{notes:document.getElementById('fuelNotes').value.trim()}});
-  const v=fuelVehicles.find(x=>x.id===vehicle_id);if(km>Number(v?.current_odometer_km||0))await rest('v2_vehicles','id=eq.'+vehicle_id,'PATCH',{current_odometer_km:km});
+  const v=fuelVehicles.find(x=>x.id===vehicle_id);if(!deviceMode&&km>Number(v?.current_odometer_km||0))await rest('v2_vehicles','id=eq.'+vehicle_id,'PATCH',{current_odometer_km:km});
   m.textContent='Abastecimento salvo.';document.getElementById('fuelEditCard').style.display='none';await loadFuel();
  }catch(e){m.textContent=e.message||String(e)}
 }
@@ -1867,6 +2093,7 @@ async function loadReports(){
 }
 
 async function v2Go(tab){
+ if(deviceMode&&!['equipehome','operacoes','ponto','combustivel','equipereport'].includes(tab))tab='equipehome';
  const host=document.getElementById('screenHost');
  const target=v2ScreenStore[tab];
  if(!host||!target){console.warn('Tela não encontrada:',tab);return}
@@ -1884,21 +2111,24 @@ async function v2Go(tab){
    x.classList.toggle('active',x.dataset.v2tab===tab);
  });
  window.scrollTo(0,0);
+ renderDeviceModeBar(tab);
 
  try{
-   if(tab==='inicio'){await loadPoultrySelectors();await loadDashboard();await loadPoultryDashboard();}
+   if(tab==='equipehome'){await loadTeamHome();}
+   else if(tab==='equipereport'){await loadTeamReport();}
+   else if(tab==='inicio'){await loadPoultrySelectors();await loadDashboard();await loadPoultryDashboard();}
    else if(tab==='equipes') await loadTeams();
    else if(tab==='funcionarios'){await loadEmployees();await loadProfessionalProfile();}
-   else if(tab==='operacoes'){await loadPoultrySelectors();await loadPoultryOps();}
+   else if(tab==='operacoes'){if(deviceMode)await loadDevicePoultryContext();else await loadPoultrySelectors();await loadPoultryOps();}
    else if(tab==='frota') await loadVehicles();
    else if(tab==='manutencoes') await loadMaintenances();
-   else if(tab==='combustivel') await loadFuel();
+   else if(tab==='combustivel'){await loadFuel();if(deviceMode&&fuelVehicles.length===1){const s=$('#fuelVehicle');if(s)s.value=fuelVehicles[0].id}}
    else if(tab==='documentosfrota') await loadVehicleDocs();
    else if(tab==='documentosrh') await loadEmpDocs();
    else if(tab==='financeiro') await loadFinance();
    else if(tab==='relatorios') await loadReports();
    else if(tab==='alertas') await loadSmartAlerts();
-   else if(tab==='ponto'){await loadSchedules();await loadRHPoint();}
+   else if(tab==='ponto'){await loadSchedules();if(deviceMode)await loadTeamPoint();else await loadRHPoint();}
  }catch(e){console.warn('Falha ao carregar tela',tab,e)}
 }
 document.addEventListener('click',async function(e){
@@ -1977,6 +2207,8 @@ $('#themeToggle').addEventListener('click',()=>{document.body.classList.toggle('
 if(localStorage.getItem('controla_theme')==='dark'){document.body.classList.add('darkmode');$('#themeToggle').textContent='☀'}
 (()=>{const d=new Date();$('#v2Today').textContent='Hoje, '+d.toLocaleDateString('pt-BR');$('#v2Weekday').textContent=d.toLocaleDateString('pt-BR',{weekday:'long'})})();
 
+if($('#closeTeamDeviceCode'))$('#closeTeamDeviceCode').addEventListener('click',()=>{$('#teamDeviceCodeCard').style.display='none'});
+if($('#refreshTeamReport'))$('#refreshTeamReport').addEventListener('click',loadTeamReport);
 $('#refreshRH').addEventListener('click',async()=>{await loadEmployees();await loadRHPoint()});
 
 $('#refreshBtn').addEventListener('click',loadDashboard);
@@ -1988,15 +2220,24 @@ window.addEventListener('error',e=>{if(!$('#app').classList.contains('hidden'))r
 (async()=>{try{
  const ss=session();
  if(ss&&ss.access_token){
-   setMsg('Sessão encontrada. Entrando...');
-   await enterApp(ss.user||null);
+   const u=ss.user||await getUser();
+   if(isAnonymousUser(u)){
+     try{await enterDeviceApp(u);return}
+     catch(e){
+       if(e&&e.code==='DEVICE_UNPAIRED'){
+         $('#app').classList.add('hidden');$('#login').classList.remove('hidden');
+         $('#deviceMsg').className='muted';$('#deviceMsg').textContent='Sessão do aparelho criada. Digite o código da equipe.';
+         return;
+       }
+       throw e;
+     }
+   }
+   setMsg('Sessão encontrada. Entrando...');await enterApp(u);
  }
 }catch(e){
- clearSession();
- document.body.classList.remove('app-ready');
- $('#app').classList.add('hidden');
- $('#login').classList.remove('hidden');
- setMsg('Sessão anterior expirada. Entre novamente.','muted');
+ clearSession();document.body.classList.remove('app-ready','device-mode');
+ $('#app').classList.add('hidden');$('#login').classList.remove('hidden');
+ const dm=$('#deviceMsg');if(dm){dm.className='muted';dm.textContent='Configure este celular ou use o acesso do administrador.'}
 }})();
 
 if(document.getElementById('takeEmployeePhoto'))document.getElementById('takeEmployeePhoto').addEventListener('click',()=>{const i=$('#employeePhotoCamera');i.value='';i.click()});
