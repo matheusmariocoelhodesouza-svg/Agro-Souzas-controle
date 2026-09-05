@@ -8,7 +8,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
-<title>Controla V2 • Beta 5.49 CRLV Inteligente</title>
+<title>Controla V2 • Beta 5.50 Alertas Inteligentes</title>
 <style>
 :root{--bg:#f3f6fb;--card:#fff;--ink:#0f172a;--muted:#64748b;--line:#e2e8f0;--accent:#0f172a}*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--ink)}header{position:sticky;top:0;z-index:20;background:linear-gradient(135deg,var(--accent),#1e293b);color:#fff;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 8px 24px rgba(15,23,42,.18)}.wrap{max-width:1200px;margin:auto;padding:12px}.card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:12px;box-shadow:0 4px 18px rgba(15,23,42,.045)}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:10px}.kpi{font-size:28px;font-weight:900}.label,.muted{font-size:12px;color:var(--muted)}.nav{display:flex;gap:8px;overflow:auto;padding:12px 0;scrollbar-width:none}.nav::-webkit-scrollbar{display:none}.nav button,.btn{border:0;border-radius:12px;padding:11px 14px;font-weight:800;white-space:nowrap;cursor:pointer}.nav button{background:#fff;border:1px solid var(--line);color:#334155}.nav button.active,.btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}.btn.soft{background:#e2e8f0}.btn.danger{background:#b91c1c;color:#fff}.btn.danger:hover{background:#991b1b}.hidden{display:none!important}.login{max-width:430px;margin:55px auto}.login input,.chat input{width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:10px;margin:6px 0 10px;font:inherit}.section{display:none}.section.active{display:block}.list{display:grid;gap:8px}.item{background:#fff;border:1px solid var(--line);border-radius:13px;padding:12px}.item strong{display:block}.pill{display:inline-block;padding:4px 8px;border-radius:999px;font-size:11px;font-weight:800;background:#e2e8f0}.pill.ok{background:#dcfce7;color:#166534}.pill.warn{background:#fef3c7;color:#92400e}.pill.danger{background:#fee2e2;color:#991b1b}.toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.chatbox{min-height:220px;max-height:52vh;overflow:auto;background:#fff;border:1px solid var(--line);border-radius:14px;padding:10px}.msg{padding:10px 12px;border-radius:12px;margin:8px 0;max-width:88%;white-space:pre-wrap}.msg.user{margin-left:auto;background:#e2e8f0}.msg.ai{background:#fff7ed;border:1px solid #fed7aa}.brand{display:flex;gap:10px;align-items:center}.logo{width:38px;height:38px;border-radius:10px;background:white;color:#0f172a;display:grid;place-items:center;font-weight:900}.error{color:#b91c1c;font-size:13px}.okmsg{color:#166534;font-size:13px}.debug{margin-top:8px;font-size:11px;color:#64748b;word-break:break-word}@media(max-width:640px){.wrap{padding:9px}.kpi{font-size:25px}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}header{padding:12px}.nav{position:sticky;top:66px;z-index:15;background:var(--bg);margin:0 -9px;padding:9px}}
 
@@ -132,7 +132,7 @@ body.app-ready .v2sidebar{display:block}
 <script defer src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
 <script>
 (function(){
-  const BUILD='5.49';
+  const BUILD='5.50';
   try{
     const marker='controla_cache_cleanup_'+BUILD;
     if(!localStorage.getItem(marker)){
@@ -170,9 +170,9 @@ body.app-ready .v2sidebar{display:block}
 <div class="v2group">EM BREVE</div>
 <button class="v2navbtn" type="button">Estoque</button><button class="v2navbtn" type="button">Financeiro</button><button class="v2navbtn" type="button">Relatórios &amp; BI</button>
 </aside>
-<header><div class="brand"><div class="logo">C</div><div><b>Controla</b><div><small id="companyName">Beta</small></div></div></div><div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill" id="buildBadge" title="Versão publicada">v5.49</span><button class="btn soft" id="themeToggle" type="button">☾</button><button class="btn soft hidden" id="logout">Sair</button></div></header>
+<header><div class="brand"><div class="logo">C</div><div><b>Controla</b><div><small id="companyName">Beta</small></div></div></div><div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill" id="buildBadge" title="Versão publicada">v5.50</span><button class="btn soft" id="themeToggle" type="button">☾</button><button class="btn soft hidden" id="logout">Sair</button></div></header>
 <main class="wrap">
-<section class="login" id="login"><div class="card"><h2>Entrar na Beta</h2><div class="muted">Use o mesmo acesso do app atual.</div><label>E-mail</label><input autocomplete="username" id="email" type="email"/><label>Senha</label><input autocomplete="current-password" id="password" type="password"/><button class="btn primary" id="loginBtn">Entrar</button><div class="muted" id="loginMsg" style="margin-top:10px">Beta 5.49 • CRLV inteligente</div><div class="debug" id="debug"></div></div></section>
+<section class="login" id="login"><div class="card"><h2>Entrar na Beta</h2><div class="muted">Use o mesmo acesso do app atual.</div><label>E-mail</label><input autocomplete="username" id="email" type="email"/><label>Senha</label><input autocomplete="current-password" id="password" type="password"/><button class="btn primary" id="loginBtn">Entrar</button><div class="muted" id="loginMsg" style="margin-top:10px">Beta 5.50 • alertas inteligentes</div><div class="debug" id="debug"></div></div></section>
 <section class="hidden" id="app">
 <div class="nav" id="nav"><button class="active" data-tab="inicio">Início</button><button data-tab="equipes">Equipes</button><button data-tab="funcionarios">RH &amp; Pessoas</button><button data-tab="ponto">Ponto</button><button data-tab="operacoes">Operações / Apanha</button><button data-tab="frota">Frota</button><button data-tab="manutencoes">Manutenções</button><button data-tab="combustivel">Combustível & KM</button><button data-tab="documentosfrota">Documentos</button><button data-tab="alertas">Alertas</button><button data-tab="ia">Controla IA</button></div>
 <div id="screenHost"></div>
@@ -185,7 +185,7 @@ body.app-ready .v2sidebar{display:block}
 <div class="v2panel"><div class="v2panelhead"><div><h3>Resumo operacional</h3><div class="muted">Indicadores disponíveis no banco atual</div></div></div><div class="v2stats" id="v2OpsSummary"></div></div>
 </div>
 <div>
-<div class="v2panel"><div class="v2panelhead"><h3>Alertas importantes</h3><button class="btn soft" data-jump="alertas" type="button">Ver todos</button></div><div id="v2Alerts"><div class="v2-empty">Carregando alertas...</div></div></div>
+<div class="v2panel"><div class="v2panelhead"><div><h3>Alertas inteligentes</h3><div class="muted">Frota, documentos, manutenção e RH.</div></div><button class="btn soft" data-jump="alertas" type="button">Ver todos</button></div><div id="v2Alerts"><div class="v2-empty">Carregando alertas...</div></div></div>
 <div class="v2panel"><div class="v2panelhead"><h3>Equipe &amp; Ponto</h3><button class="btn soft" data-jump="ponto" type="button">Abrir ponto</button></div><div class="v2stats" id="v2PeopleSummary"></div></div>
 <div class="v2panel"><h3>Próximos módulos do painel</h3><div class="v2alert">Mapa das equipes <span class="v2status">EM BREVE</span></div><div class="v2alert">Produção mensal <span class="v2status">EM BREVE</span></div><div class="v2alert">Previsto × faturado × recebido <span class="v2status">EM BREVE</span></div><div class="v2alert">Top integrados <span class="v2status">EM BREVE</span></div></div>
 </div>
@@ -419,7 +419,9 @@ body.app-ready .v2sidebar{display:block}
 <div class="toolbar" style="margin-top:12px"><button class="btn primary" id="saveVehicleDoc" type="button">SALVAR DOCUMENTO</button><button class="btn danger" id="deleteVehicleDoc" type="button" style="display:none">EXCLUIR</button></div><div class="muted" id="vehicleDocMsg" style="margin-top:8px"></div></div>
 
 <div class="card"><div class="toolbar" style="justify-content:space-between"><div><h3 style="margin:0">Documentos salvos</h3><div class="muted">Vermelho = vencido • amarelo = vence em até 30 dias.</div></div><button class="btn soft" id="refreshVehicleDocs" type="button">Atualizar</button></div><div class="list" id="vehicleDocsList" style="margin-top:12px"></div></div></div>
-<div class="section" data-screen="alertas" hidden="" id="alertas"><div class="card"><div class="toolbar"><h3 style="margin:0">Alertas</h3><button class="btn soft" id="refreshAlerts">Gerar/Atualizar</button></div><div class="list" id="alertsList"></div></div></div>
+<div class="section" data-screen="alertas" hidden="" id="alertas">
+<div class="card"><div class="toolbar" style="justify-content:space-between"><div><h3 style="margin:0">⚠ Alertas Inteligentes</h3><div class="muted">Pendências importantes da operação, RH e frota.</div></div><button class="btn primary" id="refreshAlerts" type="button">Atualizar alertas</button></div><div class="v2-kpis" id="alertsKpis" style="margin-top:14px"></div></div>
+<div class="card"><div class="list" id="alertsList"></div></div></div>
 <div class="section" data-screen="ia" hidden="" id="ia"><div class="card chat"><h3>Controla IA</h3><div class="muted">A IA avisará se a chave da OpenAI ainda não estiver configurada.</div><div class="chatbox" id="chatbox"></div><div class="toolbar" style="margin-top:10px"><input id="question" placeholder="Ex.: quais equipes estão atrasadas hoje?" style="flex:1;margin:0"/><button class="btn primary" id="sendAI">Enviar</button></div></div></div>
 </section></main>
 <script>
@@ -1639,6 +1641,36 @@ async function confirmCrlvImport(){
  }catch(e){msg.textContent=e.message||String(e)}
 }
 
+
+let smartAlertsCache=[];
+function daysUntil(dateStr){if(!dateStr)return null;const a=new Date();a.setHours(0,0,0,0);const d=new Date(String(dateStr).slice(0,10)+'T00:00:00');return Math.ceil((d-a)/86400000)}
+function alertRank(a){return a.level==='danger'?0:a.level==='warn'?1:2}
+async function loadSmartAlerts(){
+ const alerts=[];
+ try{
+  const [docs,plans,vehicles,employees]=await Promise.all([
+   rest('v2_vehicle_documents','select=id,vehicle_id,document_type,expires_at,status&company_id=eq.'+companyId),
+   rest('v2_maintenance_plans','select=id,vehicle_id,name,next_due_at,next_due_odometer_km,active&company_id=eq.'+companyId+'&active=eq.true'),
+   rest('v2_vehicles','select=id,description,plate,model,current_odometer_km,status,renavam&company_id=eq.'+companyId),
+   rest('v2_employees','select=id,full_name,job_title,status,metadata&company_id=eq.'+companyId+'&status=eq.active')
+  ]);
+  const vm=Object.fromEntries((vehicles||[]).map(v=>[v.id,v]));
+  for(const d of docs||[]){const n=daysUntil(d.expires_at),v=vm[d.vehicle_id];if(n===null)continue;if(n<0)alerts.push({level:'danger',title:d.document_type+' vencido',text:`${v?.description||v?.plate||'Veículo'} • há ${Math.abs(n)} dia(s)`,tab:'documentosfrota'});else if(n<=30)alerts.push({level:'warn',title:d.document_type+' vence em breve',text:`${v?.description||v?.plate||'Veículo'} • ${n} dia(s)`,tab:'documentosfrota'})}
+  for(const p of plans||[]){const v=vm[p.vehicle_id],cur=Number(v?.current_odometer_km||0),due=Number(p.next_due_odometer_km||0),n=daysUntil(p.next_due_at);if(due&&cur>=due)alerts.push({level:'danger',title:'Manutenção vencida por KM',text:`${v?.description||v?.plate||'Veículo'} • ${p.name||'Plano'}`,tab:'manutencoes'});else if(due&&due-cur<=1000)alerts.push({level:'warn',title:'Manutenção próxima por KM',text:`${v?.description||v?.plate||'Veículo'} • faltam ${(due-cur).toLocaleString('pt-BR')} km`,tab:'manutencoes'});if(n!==null&&n<0)alerts.push({level:'danger',title:'Manutenção vencida por data',text:`${v?.description||v?.plate||'Veículo'} • ${Math.abs(n)} dia(s)`,tab:'manutencoes'});else if(n!==null&&n<=30)alerts.push({level:'warn',title:'Manutenção próxima por data',text:`${v?.description||v?.plate||'Veículo'} • ${n} dia(s)`,tab:'manutencoes'})}
+  for(const v of vehicles||[]){if(v.status==='maintenance')alerts.push({level:'warn',title:'Veículo em manutenção',text:`${v.description||v.model||v.plate}`,tab:'frota'});if(!v.renavam)alerts.push({level:'warn',title:'RENAVAM não informado',text:`${v.description||v.model||v.plate}`,tab:'frota'})}
+  for(const e of employees||[]){if((e.job_title||'').toLowerCase().includes('motorista')){const md=e.metadata||{},exp=md.cnh_expires_at||md.cnh_expiry||null;if(exp){const n=daysUntil(exp);if(n<0)alerts.push({level:'danger',title:'CNH vencida',text:`${e.full_name} • há ${Math.abs(n)} dia(s)`,tab:'funcionarios'});else if(n<=30)alerts.push({level:'warn',title:'CNH vence em breve',text:`${e.full_name} • ${n} dia(s)`,tab:'funcionarios'})}}}
+ }catch(e){console.warn(e)}
+ smartAlertsCache=alerts.sort((a,b)=>alertRank(a)-alertRank(b));
+ renderSmartAlerts();
+}
+function renderSmartAlerts(){
+ const a=smartAlertsCache||[],d=a.filter(x=>x.level==='danger').length,w=a.filter(x=>x.level==='warn').length;
+ const k=document.getElementById('alertsKpis');if(k)k.innerHTML=`<div class="v2kpi"><span>Total</span><strong>${a.length}</strong></div><div class="v2kpi"><span>Urgentes</span><strong>${d}</strong></div><div class="v2kpi"><span>Atenção</span><strong>${w}</strong></div><div class="v2kpi"><span>Situação</span><strong>${d?'Crítica':w?'Atenção':'OK'}</strong></div>`;
+ const render=x=>`<div class="item"><div class="toolbar" style="justify-content:space-between"><div><strong>${esc(x.title)}</strong><div class="muted">${esc(x.text)}</div><span class="pill ${x.level==='danger'?'danger':'warn'}">${x.level==='danger'?'URGENTE':'ATENÇÃO'}</span></div><button class="btn soft alertJump" data-tab="${x.tab}">Abrir</button></div></div>`;
+ const l=document.getElementById('alertsList');if(l)l.innerHTML=a.map(render).join('')||'<div class="muted">Nenhuma pendência importante encontrada.</div>';
+ const dash=document.getElementById('v2Alerts');if(dash)dash.innerHTML=a.slice(0,6).map(x=>`<div class="v2alert"><strong>${esc(x.title)}</strong><div class="muted">${esc(x.text)}</div></div>`).join('')||'<div class="v2-empty">Nenhum alerta importante agora.</div>';
+}
+
 async function v2Go(tab){
  const host=document.getElementById('screenHost');
  const target=v2ScreenStore[tab];
@@ -1667,7 +1699,7 @@ async function v2Go(tab){
    else if(tab==='manutencoes') await loadMaintenances();
    else if(tab==='combustivel') await loadFuel();
    else if(tab==='documentosfrota') await loadVehicleDocs();
-   else if(tab==='alertas') await loadAlerts();
+   else if(tab==='alertas') await loadSmartAlerts();
    else if(tab==='ponto'){await loadSchedules();await loadRHPoint();}
  }catch(e){console.warn('Falha ao carregar tela',tab,e)}
 }
@@ -1687,6 +1719,8 @@ document.addEventListener('click',async function(e){
   if(e.target.closest('#saveVehicleDoc')){e.preventDefault();await saveVehicleDocument();return}
   if(e.target.closest('#deleteVehicleDoc')){e.preventDefault();await deleteVehicleDocument();return}
   if(e.target.closest('#refreshVehicleDocs')){e.preventDefault();await loadVehicleDocs();return}
+  if(e.target.closest('#refreshAlerts')){e.preventDefault();await loadSmartAlerts();return}
+  const aj=e.target.closest('.alertJump');if(aj){e.preventDefault();v2Go(aj.dataset.tab);return}
   const vdocView=e.target.closest('.vehicleDocView');if(vdocView){e.preventDefault();await downloadVehicleDoc(vdocView.dataset.file,false);return}
   const vdocDown=e.target.closest('.vehicleDocDownload');if(vdocDown){e.preventDefault();await downloadVehicleDoc(vdocDown.dataset.file,true);return}
   const edoc=e.target.closest('.editVehicleDocBtn');if(edoc){e.preventDefault();openVehicleDoc(edoc.dataset.id);return}
