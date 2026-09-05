@@ -8,7 +8,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
-<title>Controla V2 • Beta 5.50 Alertas Inteligentes</title>
+<title>Controla V2 • Beta 6.0 Feature Complete</title>
 <style>
 :root{--bg:#f3f6fb;--card:#fff;--ink:#0f172a;--muted:#64748b;--line:#e2e8f0;--accent:#0f172a}*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--ink)}header{position:sticky;top:0;z-index:20;background:linear-gradient(135deg,var(--accent),#1e293b);color:#fff;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 8px 24px rgba(15,23,42,.18)}.wrap{max-width:1200px;margin:auto;padding:12px}.card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:12px;box-shadow:0 4px 18px rgba(15,23,42,.045)}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:10px}.kpi{font-size:28px;font-weight:900}.label,.muted{font-size:12px;color:var(--muted)}.nav{display:flex;gap:8px;overflow:auto;padding:12px 0;scrollbar-width:none}.nav::-webkit-scrollbar{display:none}.nav button,.btn{border:0;border-radius:12px;padding:11px 14px;font-weight:800;white-space:nowrap;cursor:pointer}.nav button{background:#fff;border:1px solid var(--line);color:#334155}.nav button.active,.btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}.btn.soft{background:#e2e8f0}.btn.danger{background:#b91c1c;color:#fff}.btn.danger:hover{background:#991b1b}.hidden{display:none!important}.login{max-width:430px;margin:55px auto}.login input,.chat input{width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:10px;margin:6px 0 10px;font:inherit}.section{display:none}.section.active{display:block}.list{display:grid;gap:8px}.item{background:#fff;border:1px solid var(--line);border-radius:13px;padding:12px}.item strong{display:block}.pill{display:inline-block;padding:4px 8px;border-radius:999px;font-size:11px;font-weight:800;background:#e2e8f0}.pill.ok{background:#dcfce7;color:#166534}.pill.warn{background:#fef3c7;color:#92400e}.pill.danger{background:#fee2e2;color:#991b1b}.toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.chatbox{min-height:220px;max-height:52vh;overflow:auto;background:#fff;border:1px solid var(--line);border-radius:14px;padding:10px}.msg{padding:10px 12px;border-radius:12px;margin:8px 0;max-width:88%;white-space:pre-wrap}.msg.user{margin-left:auto;background:#e2e8f0}.msg.ai{background:#fff7ed;border:1px solid #fed7aa}.brand{display:flex;gap:10px;align-items:center}.logo{width:38px;height:38px;border-radius:10px;background:white;color:#0f172a;display:grid;place-items:center;font-weight:900}.error{color:#b91c1c;font-size:13px}.okmsg{color:#166534;font-size:13px}.debug{margin-top:8px;font-size:11px;color:#64748b;word-break:break-word}@media(max-width:640px){.wrap{padding:9px}.kpi{font-size:25px}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}header{padding:12px}.nav{position:sticky;top:66px;z-index:15;background:var(--bg);margin:0 -9px;padding:9px}}
 
@@ -132,7 +132,7 @@ body.app-ready .v2sidebar{display:block}
 <script defer src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
 <script>
 (function(){
-  const BUILD='5.50';
+  const BUILD='6.0';
   try{
     const marker='controla_cache_cleanup_'+BUILD;
     if(!localStorage.getItem(marker)){
@@ -159,22 +159,25 @@ body.app-ready .v2sidebar{display:block}
 <button class="v2navbtn" data-v2tab="equipes">👥   Equipes</button>
 <div class="v2group">GESTÃO</div>
 <button class="v2navbtn" data-v2tab="funcionarios">♙   RH &amp; Pessoas</button>
+<button class="v2navbtn" data-v2tab="documentosrh">📁   Documentos RH</button>
 <button class="v2navbtn" data-v2tab="ponto">◷   RH &amp; Ponto</button>
 <button class="v2navbtn" data-v2tab="frota">▰   Frota</button>
 <button class="v2navbtn" data-v2tab="manutencoes">🔧   Manutenções</button>
 <button class="v2navbtn" data-v2tab="combustivel">⛽   Combustível & KM</button>
 <button class="v2navbtn" data-v2tab="documentosfrota">📄   Documentos da Frota</button>
+<button class="v2navbtn" data-v2tab="financeiro">💰   Financeiro</button>
+<button class="v2navbtn" data-v2tab="relatorios">📊   Relatórios & BI</button>
 <button class="v2navbtn" data-v2tab="alertas">⚠   Alertas</button>
 <div class="v2group">INTELIGÊNCIA</div>
 <button class="v2navbtn" data-v2tab="ia">✦   Controla IA</button>
 <div class="v2group">EM BREVE</div>
-<button class="v2navbtn" type="button">Estoque</button><button class="v2navbtn" type="button">Financeiro</button><button class="v2navbtn" type="button">Relatórios &amp; BI</button>
+<button class="v2navbtn" type="button">Estoque</button>
 </aside>
-<header><div class="brand"><div class="logo">C</div><div><b>Controla</b><div><small id="companyName">Beta</small></div></div></div><div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill" id="buildBadge" title="Versão publicada">v5.50</span><button class="btn soft" id="themeToggle" type="button">☾</button><button class="btn soft hidden" id="logout">Sair</button></div></header>
+<header><div class="brand"><div class="logo">C</div><div><b>Controla</b><div><small id="companyName">Beta</small></div></div></div><div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill" id="buildBadge" title="Versão publicada">v6.0</span><button class="btn soft" id="themeToggle" type="button">☾</button><button class="btn soft hidden" id="logout">Sair</button></div></header>
 <main class="wrap">
-<section class="login" id="login"><div class="card"><h2>Entrar na Beta</h2><div class="muted">Use o mesmo acesso do app atual.</div><label>E-mail</label><input autocomplete="username" id="email" type="email"/><label>Senha</label><input autocomplete="current-password" id="password" type="password"/><button class="btn primary" id="loginBtn">Entrar</button><div class="muted" id="loginMsg" style="margin-top:10px">Beta 5.50 • alertas inteligentes</div><div class="debug" id="debug"></div></div></section>
+<section class="login" id="login"><div class="card"><h2>Entrar na Beta</h2><div class="muted">Use o mesmo acesso do app atual.</div><label>E-mail</label><input autocomplete="username" id="email" type="email"/><label>Senha</label><input autocomplete="current-password" id="password" type="password"/><button class="btn primary" id="loginBtn">Entrar</button><div class="muted" id="loginMsg" style="margin-top:10px">Beta 6.0 • feature complete</div><div class="debug" id="debug"></div></div></section>
 <section class="hidden" id="app">
-<div class="nav" id="nav"><button class="active" data-tab="inicio">Início</button><button data-tab="equipes">Equipes</button><button data-tab="funcionarios">RH &amp; Pessoas</button><button data-tab="ponto">Ponto</button><button data-tab="operacoes">Operações / Apanha</button><button data-tab="frota">Frota</button><button data-tab="manutencoes">Manutenções</button><button data-tab="combustivel">Combustível & KM</button><button data-tab="documentosfrota">Documentos</button><button data-tab="alertas">Alertas</button><button data-tab="ia">Controla IA</button></div>
+<div class="nav" id="nav"><button class="active" data-tab="inicio">Início</button><button data-tab="equipes">Equipes</button><button data-tab="funcionarios">RH &amp; Pessoas</button><button data-tab="documentosrh">Docs RH</button><button data-tab="ponto">Ponto</button><button data-tab="operacoes">Operações / Apanha</button><button data-tab="frota">Frota</button><button data-tab="manutencoes">Manutenções</button><button data-tab="combustivel">Combustível & KM</button><button data-tab="documentosfrota">Documentos</button><button data-tab="financeiro">Financeiro</button><button data-tab="relatorios">Relatórios</button><button data-tab="alertas">Alertas</button><button data-tab="ia">Controla IA</button></div>
 <div id="screenHost"></div>
 <div class="section active" data-screen="inicio" id="inicio"><div class="v2panel" id="poultryDashboardPanel"><div class="v2panelhead"><div><h3>Operação de Apanha — Hoje</h3><div class="muted">Produção real das equipes no dia.</div></div></div><div class="v2-kpis" id="poultryDashKpis"></div><div id="poultryDashTeams" class="list"><div class="v2-empty">Carregando produção...</div></div></div>
 <div class="v2hero"><div><h1>Dashboard Apanha de Aves</h1><p>Visão geral das operações de hoje • dados reais do Controla</p></div><button class="btn v2new" id="refreshBtn">↻ Atualizar painel</button></div>
@@ -419,6 +422,28 @@ body.app-ready .v2sidebar{display:block}
 <div class="toolbar" style="margin-top:12px"><button class="btn primary" id="saveVehicleDoc" type="button">SALVAR DOCUMENTO</button><button class="btn danger" id="deleteVehicleDoc" type="button" style="display:none">EXCLUIR</button></div><div class="muted" id="vehicleDocMsg" style="margin-top:8px"></div></div>
 
 <div class="card"><div class="toolbar" style="justify-content:space-between"><div><h3 style="margin:0">Documentos salvos</h3><div class="muted">Vermelho = vencido • amarelo = vence em até 30 dias.</div></div><button class="btn soft" id="refreshVehicleDocs" type="button">Atualizar</button></div><div class="list" id="vehicleDocsList" style="margin-top:12px"></div></div></div>
+<div class="section" data-screen="documentosrh" hidden="" id="documentosrh">
+<div class="card"><div class="toolbar" style="justify-content:space-between"><div><h3 style="margin:0">📁 Documentos dos Funcionários</h3><div class="muted">CNH, ASO, treinamentos, certificados e documentos com vencimento.</div></div><button class="btn primary" id="newEmpDocBtn" type="button">+ NOVO DOCUMENTO</button></div><div class="v2-kpis" id="empDocKpis" style="margin-top:14px"></div></div>
+<div class="card" id="empDocEditCard" style="display:none"><div class="toolbar" style="justify-content:space-between"><h3 id="empDocTitle" style="margin:0">Novo documento</h3><button class="btn soft" id="cancelEmpDoc" type="button">Cancelar</button></div><input id="empDocId" type="hidden"/>
+<div class="row" style="margin-top:12px"><div><label>Funcionário</label><select id="empDocEmployee"></select></div><div><label>Tipo</label><select id="empDocType"><option>CNH</option><option>ASO</option><option>NR-06</option><option>NR-11</option><option>NR-12</option><option>Treinamento</option><option>Certificado</option><option>RG</option><option>CPF</option><option>Outro</option></select></div><div><label>Vencimento</label><input id="empDocExpires" type="date"/></div></div>
+<div><label>PDF / Foto</label><input id="empDocFile" type="file" accept="application/pdf,image/jpeg,image/png,image/webp" style="width:100%;padding:10px;margin-top:6px;border:1px solid #cbd5e1;border-radius:10px"/></div>
+<div class="toolbar" style="margin-top:12px"><button class="btn primary" id="saveEmpDoc" type="button">SALVAR</button><button class="btn danger" id="deleteEmpDoc" type="button" style="display:none">EXCLUIR</button></div><div class="muted" id="empDocMsg" style="margin-top:8px"></div></div>
+<div class="card"><div class="list" id="empDocsList"></div></div>
+</div>
+
+<div class="section" data-screen="financeiro" hidden="" id="financeiro">
+<div class="card"><div class="toolbar" style="justify-content:space-between"><div><h3 style="margin:0">💰 Financeiro</h3><div class="muted">Entradas, saídas e resultado mensal.</div></div><button class="btn primary" id="newFinEntryBtn" type="button">+ NOVO LANÇAMENTO</button></div><div class="v2-kpis" id="financeKpis" style="margin-top:14px"></div></div>
+<div class="card" id="finEditCard" style="display:none"><div class="toolbar" style="justify-content:space-between"><h3 style="margin:0">Novo lançamento</h3><button class="btn soft" id="cancelFinEntry" type="button">Cancelar</button></div>
+<div class="row" style="margin-top:12px"><div><label>Tipo</label><select id="finType"><option value="income">Entrada</option><option value="expense">Saída</option></select></div><div><label>Descrição</label><input id="finDescription"/></div><div><label>Valor (R$)</label><input id="finAmount" type="number" min="0" step="0.01"/></div></div>
+<div class="row"><div><label>Data</label><input id="finIssueDate" type="date"/></div><div><label>Vencimento</label><input id="finDueDate" type="date"/></div><div><label>Cliente / fornecedor</label><input id="finCounterparty"/></div></div>
+<div class="toolbar"><button class="btn primary" id="saveFinEntry" type="button">SALVAR LANÇAMENTO</button></div><div class="muted" id="finMsg"></div></div>
+<div class="card"><div class="toolbar" style="justify-content:space-between"><h3 style="margin:0">Lançamentos</h3><button class="btn soft" id="refreshFinance" type="button">Atualizar</button></div><div class="list" id="financeList" style="margin-top:12px"></div></div>
+</div>
+
+<div class="section" data-screen="relatorios" hidden="" id="relatorios">
+<div class="card"><div class="toolbar" style="justify-content:space-between"><div><h3 style="margin:0">📊 Relatórios & BI</h3><div class="muted">Resumo consolidado de operação, aves, financeiro e ponto.</div></div><div class="toolbar"><input id="reportsMonth" type="month"/><button class="btn primary" id="refreshReports" type="button">GERAR</button><button class="btn soft" id="printReports" type="button">IMPRIMIR / PDF</button></div></div><div class="v2-kpis" id="reportsKpis" style="margin-top:14px"></div></div>
+<div class="card"><h3>Resumo mensal</h3><div id="reportsSummary" class="list"></div></div>
+</div>
 <div class="section" data-screen="alertas" hidden="" id="alertas">
 <div class="card"><div class="toolbar" style="justify-content:space-between"><div><h3 style="margin:0">⚠ Alertas Inteligentes</h3><div class="muted">Pendências importantes da operação, RH e frota.</div></div><button class="btn primary" id="refreshAlerts" type="button">Atualizar alertas</button></div><div class="v2-kpis" id="alertsKpis" style="margin-top:14px"></div></div>
 <div class="card"><div class="list" id="alertsList"></div></div></div>
@@ -1648,16 +1673,18 @@ function alertRank(a){return a.level==='danger'?0:a.level==='warn'?1:2}
 async function loadSmartAlerts(){
  const alerts=[];
  try{
-  const [docs,plans,vehicles,employees]=await Promise.all([
+  const [docs,plans,vehicles,employees,employeeDocs]=await Promise.all([
    rest('v2_vehicle_documents','select=id,vehicle_id,document_type,expires_at,status&company_id=eq.'+companyId),
    rest('v2_maintenance_plans','select=id,vehicle_id,name,next_due_at,next_due_odometer_km,active&company_id=eq.'+companyId+'&active=eq.true'),
    rest('v2_vehicles','select=id,description,plate,model,current_odometer_km,status,renavam&company_id=eq.'+companyId),
-   rest('v2_employees','select=id,full_name,job_title,status,metadata&company_id=eq.'+companyId+'&status=eq.active')
+   rest('v2_employees','select=id,full_name,job_title,status,metadata&company_id=eq.'+companyId+'&status=eq.active'),
+   rest('v2_employee_documents','select=id,employee_id,document_type,expires_at,status&company_id=eq.'+companyId)
   ]);
   const vm=Object.fromEntries((vehicles||[]).map(v=>[v.id,v]));
   for(const d of docs||[]){const n=daysUntil(d.expires_at),v=vm[d.vehicle_id];if(n===null)continue;if(n<0)alerts.push({level:'danger',title:d.document_type+' vencido',text:`${v?.description||v?.plate||'Veículo'} • há ${Math.abs(n)} dia(s)`,tab:'documentosfrota'});else if(n<=30)alerts.push({level:'warn',title:d.document_type+' vence em breve',text:`${v?.description||v?.plate||'Veículo'} • ${n} dia(s)`,tab:'documentosfrota'})}
   for(const p of plans||[]){const v=vm[p.vehicle_id],cur=Number(v?.current_odometer_km||0),due=Number(p.next_due_odometer_km||0),n=daysUntil(p.next_due_at);if(due&&cur>=due)alerts.push({level:'danger',title:'Manutenção vencida por KM',text:`${v?.description||v?.plate||'Veículo'} • ${p.name||'Plano'}`,tab:'manutencoes'});else if(due&&due-cur<=1000)alerts.push({level:'warn',title:'Manutenção próxima por KM',text:`${v?.description||v?.plate||'Veículo'} • faltam ${(due-cur).toLocaleString('pt-BR')} km`,tab:'manutencoes'});if(n!==null&&n<0)alerts.push({level:'danger',title:'Manutenção vencida por data',text:`${v?.description||v?.plate||'Veículo'} • ${Math.abs(n)} dia(s)`,tab:'manutencoes'});else if(n!==null&&n<=30)alerts.push({level:'warn',title:'Manutenção próxima por data',text:`${v?.description||v?.plate||'Veículo'} • ${n} dia(s)`,tab:'manutencoes'})}
   for(const v of vehicles||[]){if(v.status==='maintenance')alerts.push({level:'warn',title:'Veículo em manutenção',text:`${v.description||v.model||v.plate}`,tab:'frota'});if(!v.renavam)alerts.push({level:'warn',title:'RENAVAM não informado',text:`${v.description||v.model||v.plate}`,tab:'frota'})}
+  for(const d of employeeDocs||[]){const n=daysUntil(d.expires_at),e=(employees||[]).find(x=>x.id===d.employee_id);if(n===null)continue;if(n<0)alerts.push({level:'danger',title:(d.document_type||'Documento')+' vencido',text:`${e?.full_name||'Funcionário'} • há ${Math.abs(n)} dia(s)`,tab:'documentosrh'});else if(n<=30)alerts.push({level:'warn',title:(d.document_type||'Documento')+' vence em breve',text:`${e?.full_name||'Funcionário'} • ${n} dia(s)`,tab:'documentosrh'})}
   for(const e of employees||[]){if((e.job_title||'').toLowerCase().includes('motorista')){const md=e.metadata||{},exp=md.cnh_expires_at||md.cnh_expiry||null;if(exp){const n=daysUntil(exp);if(n<0)alerts.push({level:'danger',title:'CNH vencida',text:`${e.full_name} • há ${Math.abs(n)} dia(s)`,tab:'funcionarios'});else if(n<=30)alerts.push({level:'warn',title:'CNH vence em breve',text:`${e.full_name} • ${n} dia(s)`,tab:'funcionarios'})}}}
  }catch(e){console.warn(e)}
  smartAlertsCache=alerts.sort((a,b)=>alertRank(a)-alertRank(b));
@@ -1669,6 +1696,72 @@ function renderSmartAlerts(){
  const render=x=>`<div class="item"><div class="toolbar" style="justify-content:space-between"><div><strong>${esc(x.title)}</strong><div class="muted">${esc(x.text)}</div><span class="pill ${x.level==='danger'?'danger':'warn'}">${x.level==='danger'?'URGENTE':'ATENÇÃO'}</span></div><button class="btn soft alertJump" data-tab="${x.tab}">Abrir</button></div></div>`;
  const l=document.getElementById('alertsList');if(l)l.innerHTML=a.map(render).join('')||'<div class="muted">Nenhuma pendência importante encontrada.</div>';
  const dash=document.getElementById('v2Alerts');if(dash)dash.innerHTML=a.slice(0,6).map(x=>`<div class="v2alert"><strong>${esc(x.title)}</strong><div class="muted">${esc(x.text)}</div></div>`).join('')||'<div class="v2-empty">Nenhum alerta importante agora.</div>';
+}
+
+
+let empDocsCache=[],empDocsEmployees=[],empDocFiles={},financeCache=[];
+const COMPANY_DOC_BUCKET='company-documents';
+
+async function uploadCompanyDocument(file,entityType,entityId){
+ if(!file)return null;
+ if(file.size>15*1024*1024)throw new Error('Arquivo maior que 15 MB.');
+ const s=session(),u=await getUser();const path=`${companyId}/${entityType}/${entityId}/${Date.now()}-${safeFileName(file.name)}`;
+ const r=await fetch(`${API_URL}/storage/v1/object/${COMPANY_DOC_BUCKET}/${path}`,{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+s.access_token,'Content-Type':file.type||'application/octet-stream'},body:file});
+ await parseResponse(r);
+ const rows=await rest('v2_files','','POST',{company_id:companyId,storage_bucket:COMPANY_DOC_BUCKET,storage_path:path,original_name:file.name,mime_type:file.type||null,size_bytes:file.size,category:entityType+'_document',entity_type:entityType,entity_id:entityId,metadata:{source:'controla_beta_600'},uploaded_by:u?.id||null});
+ return rows?.[0]||null;
+}
+async function openStoredFile(fileId,download=false){
+ const f=empDocFiles[fileId]||vehicleDocFiles[fileId];if(!f)return alert('Arquivo não encontrado.');
+ const s=session(),r=await fetch(`${API_URL}/storage/v1/object/authenticated/${encodeURIComponent(f.storage_bucket)}/${f.storage_path.split('/').map(encodeURIComponent).join('/')}`,{headers:{apikey:KEY,Authorization:'Bearer '+s.access_token}});
+ if(!r.ok)return alert('Não foi possível abrir o arquivo.');
+ const blob=await r.blob(),url=URL.createObjectURL(blob);
+ if(download){const a=document.createElement('a');a.href=url;a.download=f.original_name||'documento';document.body.appendChild(a);a.click();a.remove()}else window.open(url,'_blank');
+ setTimeout(()=>URL.revokeObjectURL(url),60000);
+}
+async function loadEmpDocs(){
+ const [docs,emps,files]=await Promise.all([
+  rest('v2_employee_documents','select=*&company_id=eq.'+companyId+'&order=expires_at.asc.nullslast,created_at.desc'),
+  rest('v2_employees','select=id,full_name,employee_number,job_title,status&company_id=eq.'+companyId+'&status=eq.active&order=full_name.asc'),
+  rest('v2_files','select=id,storage_bucket,storage_path,original_name,mime_type,size_bytes&company_id=eq.'+companyId+'&category=eq.employee_document&archived_at=is.null&order=created_at.desc')
+ ]);
+ empDocsCache=docs||[];empDocsEmployees=emps||[];empDocFiles=Object.fromEntries((files||[]).map(f=>[f.id,f]));
+ const s=document.getElementById('empDocEmployee');if(s)s.innerHTML='<option value="">Selecione...</option>'+emps.map(e=>`<option value="${e.id}">${esc(e.full_name)} • ${esc(e.employee_number||'')}</option>`).join('');
+ let expired=0,soon=0;docs.forEach(d=>{const n=daysUntil(d.expires_at);if(n!==null&&n<0)expired++;else if(n!==null&&n<=30)soon++});
+ const k=document.getElementById('empDocKpis');if(k)k.innerHTML=`<div class="v2kpi"><span>Documentos</span><strong>${docs.length}</strong></div><div class="v2kpi"><span>Vencidos</span><strong>${expired}</strong></div><div class="v2kpi"><span>Próximos</span><strong>${soon}</strong></div><div class="v2kpi"><span>Funcionários</span><strong>${emps.length}</strong></div>`;
+ const l=document.getElementById('empDocsList');if(l)l.innerHTML=docs.map(d=>{const e=emps.find(x=>x.id===d.employee_id),n=daysUntil(d.expires_at),f=empDocFiles[d.file_id],cls=n!==null&&n<0?'danger':n!==null&&n<=30?'warn':'ok';return `<div class="item"><div class="toolbar" style="justify-content:space-between"><div><strong>${esc(d.document_type)} • ${esc(e?.full_name||'Funcionário')}</strong><div class="muted">${d.expires_at?'Vence '+new Date(d.expires_at+'T00:00:00').toLocaleDateString('pt-BR'):'Sem vencimento'}</div><span class="pill ${cls}">${n===null?'SEM DATA':n<0?'VENCIDO':n<=30?'PRÓXIMO':'EM DIA'}</span>${f?' <span class="pill ok">📎 Arquivo</span>':''}</div><div class="toolbar">${f?`<button class="btn soft empDocOpen" data-file="${f.id}">Abrir</button><button class="btn soft empDocDown" data-file="${f.id}">Baixar</button>`:''}<button class="btn soft empDocEdit" data-id="${d.id}">Editar</button></div></div></div>`}).join('')||'<div class="muted">Nenhum documento cadastrado.</div>';
+}
+function openEmpDoc(id=''){const d=empDocsCache.find(x=>x.id===id);document.getElementById('empDocId').value=d?.id||'';document.getElementById('empDocTitle').textContent=d?'Editar documento':'Novo documento';document.getElementById('empDocEmployee').value=d?.employee_id||'';document.getElementById('empDocType').value=d?.document_type||'CNH';document.getElementById('empDocExpires').value=d?.expires_at||'';document.getElementById('empDocFile').value='';document.getElementById('deleteEmpDoc').style.display=d?'inline-flex':'none';document.getElementById('empDocEditCard').style.display='block';document.getElementById('empDocMsg').textContent=''}
+async function saveEmpDoc(){const m=document.getElementById('empDocMsg'),id=document.getElementById('empDocId').value,employee_id=document.getElementById('empDocEmployee').value,file=document.getElementById('empDocFile').files?.[0];if(!employee_id){m.textContent='Selecione o funcionário.';return}try{const old=empDocsCache.find(x=>x.id===id);let file_id=old?.file_id||null;if(file){m.textContent='Enviando arquivo...';const f=await uploadCompanyDocument(file,'employee',employee_id);file_id=f?.id||file_id}const body={company_id:companyId,employee_id,file_id,document_type:document.getElementById('empDocType').value,expires_at:document.getElementById('empDocExpires').value||null,status:'active',metadata:{}};if(id)await rest('v2_employee_documents','id=eq.'+id,'PATCH',body);else await rest('v2_employee_documents','','POST',body);document.getElementById('empDocEditCard').style.display='none';await loadEmpDocs();await loadSmartAlerts()}catch(e){m.textContent=e.message}}
+async function deleteEmpDoc(){const id=document.getElementById('empDocId').value;if(!id||!confirm('Excluir este documento?'))return;try{const d=empDocsCache.find(x=>x.id===id);await rest('v2_employee_documents','id=eq.'+id,'DELETE');if(d?.file_id)try{await rest('v2_files','id=eq.'+d.file_id,'PATCH',{archived_at:new Date().toISOString()})}catch{}document.getElementById('empDocEditCard').style.display='none';await loadEmpDocs()}catch(e){alert(e.message)}}
+
+async function loadFinance(){
+ const [entries,rep]=await Promise.all([
+  rest('v2_financial_entries','select=*&company_id=eq.'+companyId+'&order=issue_date.desc,created_at.desc&limit=200'),
+  rest('v2_report_monthly_financial','select=*&company_id=eq.'+companyId+'&order=reference_month.desc&limit=12')
+ ]);
+ financeCache=entries||[];
+ const month=new Date().toISOString().slice(0,7),r=(rep||[]).find(x=>String(x.reference_month||'').slice(0,7)===month);
+ const income=Number(r?.income||financeCache.filter(x=>String(x.issue_date||'').slice(0,7)===month&&x.entry_type==='income'&&x.status!=='cancelled').reduce((a,x)=>a+Number(x.amount||0),0));
+ const expense=Number(r?.expense||financeCache.filter(x=>String(x.issue_date||'').slice(0,7)===month&&x.entry_type==='expense'&&x.status!=='cancelled').reduce((a,x)=>a+Number(x.amount||0),0));
+ const k=document.getElementById('financeKpis');if(k)k.innerHTML=`<div class="v2kpi"><span>Entradas mês</span><strong>${money(income)}</strong></div><div class="v2kpi"><span>Saídas mês</span><strong>${money(expense)}</strong></div><div class="v2kpi"><span>Resultado</span><strong>${money(income-expense)}</strong></div><div class="v2kpi"><span>Lançamentos</span><strong>${financeCache.length}</strong></div>`;
+ const l=document.getElementById('financeList');if(l)l.innerHTML=financeCache.map(x=>`<div class="item"><div class="toolbar" style="justify-content:space-between"><div><strong>${x.entry_type==='income'?'⬆ Entrada':'⬇ Saída'} • ${esc(x.description||'Sem descrição')}</strong><div class="muted">${x.issue_date?new Date(x.issue_date+'T00:00:00').toLocaleDateString('pt-BR'):''} • ${esc(x.counterparty_name||'')}</div><span class="pill ${x.entry_type==='income'?'ok':'warn'}">${money(x.amount)}</span>${x.status==='cancelled'?' <span class="pill danger">CANCELADO</span>':''}</div>${x.status!=='cancelled'?`<button class="btn danger finCancel" data-id="${x.id}">Cancelar</button>`:''}</div></div>`).join('')||'<div class="muted">Nenhum lançamento.</div>';
+}
+async function saveFinEntry(){const m=document.getElementById('finMsg'),amount=Number(document.getElementById('finAmount').value||0),desc=document.getElementById('finDescription').value.trim();if(!desc||amount<=0){m.textContent='Informe descrição e valor.';return}try{const u=await getUser(),d=document.getElementById('finIssueDate').value||new Date().toISOString().slice(0,10);await rest('v2_financial_entries','','POST',{company_id:companyId,entry_type:document.getElementById('finType').value,description:desc,amount,issue_date:d,due_date:document.getElementById('finDueDate').value||null,competence_date:d,status:'open',counterparty_name:document.getElementById('finCounterparty').value.trim()||null,source_type:'manual',metadata:{},created_by:u?.id||null});document.getElementById('finEditCard').style.display='none';await loadFinance()}catch(e){m.textContent=e.message}}
+async function cancelFinEntry(id){if(!id||!confirm('Cancelar este lançamento financeiro?'))return;try{await rest('v2_financial_entries','id=eq.'+id,'PATCH',{status:'cancelled'});await loadFinance()}catch(e){alert(e.message)}}
+
+async function loadReports(){
+ const month=document.getElementById('reportsMonth')?.value||new Date().toISOString().slice(0,7);if(document.getElementById('reportsMonth')&&!document.getElementById('reportsMonth').value)document.getElementById('reportsMonth').value=month;
+ const start=month+'-01';
+ const [fin,ops,poultry,att]=await Promise.all([
+  rest('v2_report_monthly_financial','select=*&company_id=eq.'+companyId+'&reference_month=eq.'+start),
+  rest('v2_report_operations_monthly','select=*&company_id=eq.'+companyId+'&reference_month=eq.'+start),
+  rest('v2_report_poultry_monthly','select=*&company_id=eq.'+companyId+'&reference_month=eq.'+start),
+  rest('v2_report_attendance_monthly','select=*&company_id=eq.'+companyId+'&reference_month=eq.'+start)
+ ]);
+ const f=fin?.[0]||{},o=ops?.[0]||{},p=poultry?.[0]||{},a=att?.[0]||{};
+ const k=document.getElementById('reportsKpis');if(k)k.innerHTML=`<div class="v2kpi"><span>Faturamento</span><strong>${money(o.revenue||f.income||0)}</strong></div><div class="v2kpi"><span>Custos</span><strong>${money(o.cost||f.expense||0)}</strong></div><div class="v2kpi"><span>Resultado</span><strong>${money(o.result||f.balance||0)}</strong></div><div class="v2kpi"><span>Aves</span><strong>${Number(p.birds||0).toLocaleString('pt-BR')}</strong></div>`;
+ const s=document.getElementById('reportsSummary');if(s)s.innerHTML=`<div class="item"><strong>Operação</strong><div class="muted">${Number(o.operations||0)} operações • ${Number(p.loadings||0)} apanhas • ${Number(p.trucks||0)} caminhões • média ${Number(p.avg_birds_per_truck||0).toLocaleString('pt-BR',{maximumFractionDigits:0})} aves/caminhão</div></div><div class="item"><strong>Ponto</strong><div class="muted">${Number(a.employees||0)} funcionários • ${fmtMinutes(a.worked_minutes||0)} trabalhadas • atrasos ${fmtMinutes(a.late_minutes||0)}</div></div><div class="item"><strong>Financeiro</strong><div class="muted">Entradas ${money(f.income||0)} • saídas ${money(f.expense||0)} • saldo ${money(f.balance||0)}</div></div>`;
 }
 
 async function v2Go(tab){
@@ -1699,6 +1792,9 @@ async function v2Go(tab){
    else if(tab==='manutencoes') await loadMaintenances();
    else if(tab==='combustivel') await loadFuel();
    else if(tab==='documentosfrota') await loadVehicleDocs();
+   else if(tab==='documentosrh') await loadEmpDocs();
+   else if(tab==='financeiro') await loadFinance();
+   else if(tab==='relatorios') await loadReports();
    else if(tab==='alertas') await loadSmartAlerts();
    else if(tab==='ponto'){await loadSchedules();await loadRHPoint();}
  }catch(e){console.warn('Falha ao carregar tela',tab,e)}
@@ -1720,6 +1816,20 @@ document.addEventListener('click',async function(e){
   if(e.target.closest('#deleteVehicleDoc')){e.preventDefault();await deleteVehicleDocument();return}
   if(e.target.closest('#refreshVehicleDocs')){e.preventDefault();await loadVehicleDocs();return}
   if(e.target.closest('#refreshAlerts')){e.preventDefault();await loadSmartAlerts();return}
+  if(e.target.closest('#newEmpDocBtn')){e.preventDefault();openEmpDoc();return}
+  if(e.target.closest('#cancelEmpDoc')){e.preventDefault();document.getElementById('empDocEditCard').style.display='none';return}
+  if(e.target.closest('#saveEmpDoc')){e.preventDefault();await saveEmpDoc();return}
+  if(e.target.closest('#deleteEmpDoc')){e.preventDefault();await deleteEmpDoc();return}
+  const ee=e.target.closest('.empDocEdit');if(ee){e.preventDefault();openEmpDoc(ee.dataset.id);return}
+  const eo=e.target.closest('.empDocOpen');if(eo){e.preventDefault();await openStoredFile(eo.dataset.file,false);return}
+  const ed=e.target.closest('.empDocDown');if(ed){e.preventDefault();await openStoredFile(ed.dataset.file,true);return}
+  if(e.target.closest('#newFinEntryBtn')){e.preventDefault();document.getElementById('finEditCard').style.display='block';document.getElementById('finIssueDate').value=new Date().toISOString().slice(0,10);document.getElementById('finMsg').textContent='';return}
+  if(e.target.closest('#cancelFinEntry')){e.preventDefault();document.getElementById('finEditCard').style.display='none';return}
+  if(e.target.closest('#saveFinEntry')){e.preventDefault();await saveFinEntry();return}
+  if(e.target.closest('#refreshFinance')){e.preventDefault();await loadFinance();return}
+  const fc=e.target.closest('.finCancel');if(fc){e.preventDefault();await cancelFinEntry(fc.dataset.id);return}
+  if(e.target.closest('#refreshReports')){e.preventDefault();await loadReports();return}
+  if(e.target.closest('#printReports')){e.preventDefault();window.print();return}
   const aj=e.target.closest('.alertJump');if(aj){e.preventDefault();v2Go(aj.dataset.tab);return}
   const vdocView=e.target.closest('.vehicleDocView');if(vdocView){e.preventDefault();await downloadVehicleDoc(vdocView.dataset.file,false);return}
   const vdocDown=e.target.closest('.vehicleDocDownload');if(vdocDown){e.preventDefault();await downloadVehicleDoc(vdocDown.dataset.file,true);return}
