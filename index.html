@@ -8,7 +8,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
-<title>Comando 360 • v6.32</title>
+<title>Comando 360 • v6.33</title>
 <link rel="manifest" href="./comando360.webmanifest"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
@@ -299,12 +299,59 @@ header .brand small{color:#718198;font-weight:650}
   .v2kpi{min-height:112px;padding:14px}
 }
 
+/* 6.33 — Dashboard executivo */
+.dashboard-kpis{grid-template-columns:repeat(6,minmax(135px,1fr));gap:11px}
+.dashboard-kpis .v2kpi{min-height:116px;padding:15px 14px}
+.dashboard-kpis .v2kpi .v{font-size:27px}
+.dashboard-kpis .v2ico{width:36px;height:36px;font-size:16px}
+.operation-kpis{grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.operation-kpis .v2kpi{min-height:88px;padding:13px}
+.operation-kpis .v2kpi:before{height:2px}
+.operation-kpis .v2kpi .v{font-size:23px}
+#poultryDashTeams:not(:has(.item)){margin-top:-5px}
+.v2main{align-items:start}
+.v2stats{gap:8px}
+.dash-stat{background:#f8fbff;border:1px solid #e7eef7;border-radius:13px;padding:12px;min-width:0}
+.dash-stat-top{display:flex;align-items:center;gap:7px;margin-bottom:6px}
+.dash-stat-icon{width:25px;height:25px;display:grid;place-items:center;border-radius:8px;background:#eaf5ff;font-size:12px}
+.dash-stat b{font-size:21px;color:#10213d;display:block}
+.dash-progress{height:5px;background:#e6eef7;border-radius:999px;overflow:hidden;margin-top:8px}
+.dash-progress i{display:block;height:100%;background:linear-gradient(90deg,#168cff,#48b9ff);border-radius:inherit}
+#v2PeopleSummary{grid-template-columns:1.45fr 1fr 1fr}
+.dash-ring-card{grid-column:span 3;display:flex;align-items:center;gap:14px;border:1px solid #e7eef7;border-radius:14px;padding:12px;background:linear-gradient(135deg,#f8fbff,#fff)}
+.dash-ring{--p:0;width:74px;height:74px;flex:0 0 auto;border-radius:50%;display:grid;place-items:center;background:conic-gradient(#178df3 calc(var(--p)*1%),#e7eef6 0)}
+.dash-ring:before{content:"";position:absolute;width:58px;height:58px;border-radius:50%;background:#fff}
+.dash-ring{position:relative}
+.dash-ring>div{position:relative;z-index:1;text-align:center;line-height:1.05}.dash-ring b{display:block;font-size:17px;color:#0d2140}.dash-ring span{font-size:8px;color:#77899f}
+.dash-ring-copy{display:flex;flex-direction:column}.dash-ring-copy strong{font-size:17px;color:#10213d}.dash-ring-copy span{font-size:11px;color:#72839a;margin-top:3px}
+#dashboardMonthStats{grid-template-columns:repeat(2,minmax(0,1fr))}
+.dash-month{border:1px solid #e8eef5;border-radius:12px;padding:10px 11px;background:#fbfcfe}
+.dash-month>div{display:flex;align-items:center;gap:6px}.dash-month small{color:#728399;font-size:10px}.dash-month b{display:block;font-size:16px;color:#10213d;margin-top:5px}
+.dash-month.income{background:#f5fcf8;border-color:#ddf3e5}.dash-month.income b{color:#137a45}
+.dash-month.expense{background:#fff9f7;border-color:#f7e5df}.dash-month.expense b{color:#a85035}
+.dash-prod-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.dash-prod-block{border:1px solid #e8eef5;border-radius:13px;padding:12px;background:#fbfcfe}
+.dash-prod-list{display:grid;gap:9px;margin-top:10px}
+.dash-prod-row>div:first-child{display:flex;justify-content:space-between;gap:10px;font-size:11px}.dash-prod-row b{color:#20334f}
+.dash-prod-bar{height:6px;background:#e7eef6;border-radius:999px;overflow:hidden;margin-top:5px}.dash-prod-bar i{display:block;height:100%;background:linear-gradient(90deg,#168cf3,#4dbdff);border-radius:inherit}
+#dashboardTeams{display:grid;gap:8px}
+.dash-team-card{display:flex;gap:11px;align-items:flex-start;border:1px solid #e7edf4;border-radius:13px;padding:11px;background:#fff;box-shadow:0 2px 8px rgba(18,46,78,.025)}
+.dash-team-avatar{width:39px;height:39px;border-radius:12px;display:grid;place-items:center;background:linear-gradient(135deg,#0d65bf,#28a5ff);color:#fff;font-weight:900;font-size:12px;flex:0 0 auto}
+.dash-team-main{min-width:0;flex:1}.dash-team-head{display:flex;align-items:center;justify-content:space-between;gap:8px}.dash-team-head strong{font-size:13px}.dash-team-head .pill{font-size:8px}
+.dash-team-meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:5px;color:#718198;font-size:9.5px}.dash-team-last{font-size:9px;color:#93a0b1;margin-top:5px}
+.dash-quick-grid{display:grid!important;grid-template-columns:repeat(3,1fr);width:100%}
+.dash-quick-grid .btn{display:flex;align-items:center;gap:7px;justify-content:flex-start;min-height:42px;border:1px solid #e5edf6!important;background:#f8fbfe!important;color:#1f4f7e!important}
+.dash-quick-grid .btn.primary{background:linear-gradient(135deg,#087cf0,#0b69d2)!important;color:#fff!important}
+@media(max-width:1450px){.dashboard-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:1100px){.dashboard-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.dash-prod-grid{grid-template-columns:1fr}.operation-kpis{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:700px){#v2PeopleSummary{grid-template-columns:1fr 1fr}.dash-ring-card{grid-column:span 2}.dash-quick-grid{grid-template-columns:repeat(2,1fr)}}
+
 </style>
 <script defer="" src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
 <script>
 (function(){
-  const BUILD='6.32';
+  const BUILD='6.33';
   try{
     const marker='controla_cache_cleanup_'+BUILD;
     if(!localStorage.getItem(marker)){
@@ -338,7 +385,7 @@ header .brand small{color:#718198;font-weight:650}
 <div class="v2group">INTELIGÊNCIA</div>
 <button class="v2navbtn" data-v2tab="ia">✦   Assistente IA</button>
 </aside>
-<header><div class="brand"><img class="header-brand-icon" src="./comando360-icon.svg" alt="Comando 360"/><div><b>Comando <span class="brand360">360</span></b><div><small id="companyName">Empresa</small></div></div></div><div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.32</span><button class="btn soft" id="themeToggle" type="button">☾</button><button class="btn soft hidden" id="logout">Sair</button></div></header>
+<header><div class="brand"><img class="header-brand-icon" src="./comando360-icon.svg" alt="Comando 360"/><div><b>Comando <span class="brand360">360</span></b><div><small id="companyName">Empresa</small></div></div></div><div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.33</span><button class="btn soft" id="themeToggle" type="button">☾</button><button class="btn soft hidden" id="logout">Sair</button></div></header>
 <main class="wrap">
 <section class="login team-entry" id="login">
 <div class="card" id="deviceSetupCard">
@@ -355,7 +402,7 @@ header .brand small{color:#718198;font-weight:650}
  <label>Senha</label><input autocomplete="current-password" id="password" type="password"/>
  <button class="btn primary" id="loginBtn">Entrar</button>
  <button class="btn soft" id="backDeviceSetup" type="button" style="margin-left:6px">Voltar</button>
- <div class="muted" id="loginMsg" style="margin-top:10px">Comando 360 • v6.32</div><div class="debug" id="debug"></div>
+ <div class="muted" id="loginMsg" style="margin-top:10px">Comando 360 • v6.33</div><div class="debug" id="debug"></div>
 </div>
 </section>
 <section class="hidden" id="app">
@@ -403,11 +450,11 @@ header .brand small{color:#718198;font-weight:650}
  <div class="toolbar"><button class="btn v2new" id="refreshBtn" type="button">↻ ATUALIZAR PAINEL</button></div>
 </div>
 
-<div class="v2-kpis" id="kpis"></div>
+<div class="v2-kpis dashboard-kpis" id="kpis"></div>
 
 <div class="v2panel" id="poultryDashboardPanel">
  <div class="v2panelhead"><div><h3>🐔 Operação de Apanha — Hoje</h3><div class="muted">Produção e andamento das equipes no dia.</div></div><button class="btn soft" data-jump="operacoes" type="button">Abrir apanhas</button></div>
- <div class="v2-kpis" id="poultryDashKpis"></div>
+ <div class="v2-kpis operation-kpis" id="poultryDashKpis"></div>
  <div id="poultryDashTeams" class="list"><div class="v2-empty">Carregando produção...</div></div>
 </div>
 
@@ -452,13 +499,13 @@ header .brand small{color:#718198;font-weight:650}
 
   <div class="v2panel">
    <h3 style="margin-top:0">Acessos rápidos</h3>
-   <div class="toolbar" style="gap:8px;flex-wrap:wrap">
-    <button class="btn primary" data-jump="operacoes" type="button">🐔 Apanhas</button>
-    <button class="btn soft" data-jump="funcionarios" type="button">👥 Funcionários</button>
-    <button class="btn soft" data-jump="frota" type="button">🚌 Frota</button>
-    <button class="btn soft" data-jump="manutencoes" type="button">🔧 Manutenção</button>
-    <button class="btn soft" data-jump="combustivel" type="button">⛽ Combustível</button>
-    <button class="btn soft" data-jump="financeiro" type="button">💰 Financeiro</button>
+   <div class="toolbar dash-quick-grid" style="gap:8px;flex-wrap:wrap">
+    <button class="btn primary" data-jump="operacoes" type="button">🐔 <span>Apanhas</span></button>
+    <button class="btn soft" data-jump="funcionarios" type="button">👥 <span>Funcionários</span></button>
+    <button class="btn soft" data-jump="frota" type="button">🚌 <span>Frota</span></button>
+    <button class="btn soft" data-jump="manutencoes" type="button">🔧 <span>Manutenção</span></button>
+    <button class="btn soft" data-jump="combustivel" type="button">⛽ <span>Combustível</span></button>
+    <button class="btn soft" data-jump="financeiro" type="button">💰 <span>Financeiro</span></button>
    </div>
   </div>
  </div>
@@ -1708,7 +1755,7 @@ async function loadDashboard(){
    ['AVES HOJE',birdsToday.toLocaleString('pt-BR'),birdsMonth.toLocaleString('pt-BR')+' no mês','▣'],
    ['SALDO DO MÊS',money(balance),'Entradas '+money(income),'💰']
   ];
-  $('#kpis').innerHTML=cards.map(x=>'<div class="v2kpi"><div class="t">'+esc(x[0])+'</div><div class="v">'+esc(x[1])+'</div><div class="s">'+esc(x[2])+'</div><div class="v2ico">'+x[3]+'</div></div>').join('');
+  $('#kpis').innerHTML=cards.map((x,i)=>'<div class="v2kpi dash-kpi dash-kpi-'+i+'"><div class="t">'+esc(x[0])+'</div><div class="v">'+esc(x[1])+'</div><div class="s">'+esc(x[2])+'</div><div class="v2ico">'+x[3]+'</div></div>').join('');
 
   $('#todayList').innerHTML=todayOps.length?todayOps.slice().sort((a,b)=>new Date(a.scheduled_start)-new Date(b.scheduled_start)).map(o=>{
    const late=!o.actual_start&&o.status!=='completed'&&o.status!=='cancelled'&&new Date(o.scheduled_start).getTime()<now;
@@ -1717,28 +1764,36 @@ async function loadDashboard(){
    return '<div class="item"><div class="toolbar" style="justify-content:space-between"><div><strong>'+esc(o.title||o.customer_name||'Apanha')+'</strong><div class="muted">'+esc(team?.name||'Equipe não informada')+' • '+esc(o.customer_name||'Integrado não informado')+' • '+esc(o.location_name||'Local não informado')+'</div></div><span class="pill '+(o.status==='completed'?'ok':late?'danger':o.status==='in_progress'?'warn':'')+'">'+esc(late?'Atrasada '+minutes+' min':dashboardOperationStatus(o))+'</span></div></div>';
   }).join(''):'<div class="v2-empty">Nenhuma apanha programada para hoje.</div>';
 
-  $('#v2OpsSummary').innerHTML=[
-   ['Programadas',todayOps.filter(o=>['planned','scheduled'].includes(o.status)).length],
-   ['Em andamento',todayOps.filter(o=>o.status==='in_progress').length],
-   ['Concluídas',todayOps.filter(o=>o.status==='completed').length],
-   ['Aves',birdsToday.toLocaleString('pt-BR')]
-  ].map(x=>'<div class="v2mini"><span class="muted">'+esc(x[0])+'</span><b>'+esc(x[1])+'</b></div>').join('');
+  {
+   const planned=todayOps.filter(o=>['planned','scheduled'].includes(o.status)).length;
+   const inProgress=todayOps.filter(o=>o.status==='in_progress').length;
+   const completed=todayOps.filter(o=>o.status==='completed').length;
+   const total=Math.max(1,todayOps.length);
+   $('#v2OpsSummary').innerHTML=[
+    ['Programadas',planned,'📅',Math.round(planned/total*100)],
+    ['Em andamento',inProgress,'▶',Math.round(inProgress/total*100)],
+    ['Concluídas',completed,'✓',Math.round(completed/total*100)],
+    ['Aves',birdsToday.toLocaleString('pt-BR'),'🐔',todayOps.length?100:0]
+   ].map(x=>'<div class="dash-stat"><div class="dash-stat-top"><span class="dash-stat-icon">'+x[2]+'</span><span class="muted">'+esc(x[0])+'</span></div><b>'+esc(x[1])+'</b><div class="dash-progress"><i style="width:'+x[3]+'%"></i></div></div>').join('');
+  }
 
-  $('#v2PeopleSummary').innerHTML=[
-   ['Funcionários ativos',employees.length],
-   ['Bateram ponto hoje',pointedEmployees],
-   ['Equipes',teams.length],
-   ['Celulares ativos',devices.length]
-  ].map(x=>'<div class="v2mini"><span class="muted">'+esc(x[0])+'</span><b>'+esc(x[1])+'</b></div>').join('');
+  {
+   const presencePct=employees.length?Math.round(pointedEmployees/employees.length*100):0;
+   const devicePct=teams.length?Math.round(devices.length/teams.length*100):0;
+   $('#v2PeopleSummary').innerHTML=
+    '<div class="dash-ring-card"><div class="dash-ring" style="--p:'+presencePct+'"><div><b>'+presencePct+'%</b><span>ponto hoje</span></div></div><div class="dash-ring-copy"><strong>'+pointedEmployees+' de '+employees.length+'</strong><span>funcionários com registro hoje</span></div></div>'+
+    '<div class="dash-stat"><div class="dash-stat-top"><span class="dash-stat-icon">👥</span><span class="muted">Equipes</span></div><b>'+teams.length+'</b><div class="dash-progress"><i style="width:100%"></i></div></div>'+
+    '<div class="dash-stat"><div class="dash-stat-top"><span class="dash-stat-icon">📱</span><span class="muted">Celulares ativos</span></div><b>'+devices.length+'</b><div class="dash-progress"><i style="width:'+devicePct+'%"></i></div></div>';
+  }
 
   $('#dashboardMonthStats').innerHTML=[
-   ['Apanhas',opsMonth.length],
-   ['Aves',birdsMonth.toLocaleString('pt-BR')],
-   ['Diesel / combustível',fuelLiters.toLocaleString('pt-BR',{maximumFractionDigits:1})+' L'],
-   ['Custo combustível',money(fuelCost)],
-   ['Entradas',money(income)],
-   ['Saídas',money(expense)]
-  ].map(x=>'<div class="v2mini"><span class="muted">'+esc(x[0])+'</span><b>'+esc(x[1])+'</b></div>').join('');
+   ['Apanhas',opsMonth.length,'🐔','neutral'],
+   ['Aves',birdsMonth.toLocaleString('pt-BR'),'▣','neutral'],
+   ['Combustível',fuelLiters.toLocaleString('pt-BR',{maximumFractionDigits:1})+' L','⛽','neutral'],
+   ['Custo combustível',money(fuelCost),'↘','expense'],
+   ['Entradas',money(income),'↗','income'],
+   ['Saídas',money(expense),'↘','expense']
+  ].map(x=>'<div class="dash-month '+x[3]+'"><div><span>'+x[2]+'</span><small>'+esc(x[0])+'</small></div><b>'+esc(x[1])+'</b></div>').join('');
 
   const byTeam={};
   opsMonth.forEach(o=>{
@@ -1749,16 +1804,24 @@ async function loadDashboard(){
   opsMonth.forEach(o=>{const n=o.customer_name||'Não informado';if(!byCustomer[n])byCustomer[n]=0;byCustomer[n]+=poN(o.actual_birds||o.planned_birds)});
   const teamRows=Object.entries(byTeam).sort((a,b)=>b[1].birds-a[1].birds).slice(0,5);
   const customerRows=Object.entries(byCustomer).sort((a,b)=>b[1]-a[1]).slice(0,5);
-  $('#dashboardMonthProduction').innerHTML=(teamRows.length||customerRows.length)?
-   '<div class="item"><strong>Por equipe</strong><div style="margin-top:7px">'+(teamRows.map(([n,v])=>'<div class="toolbar" style="justify-content:space-between"><span>'+esc(n)+'</span><b>'+v.birds.toLocaleString('pt-BR')+' aves</b></div>').join('')||'<div class="muted">Sem produção por equipe.</div>')+'</div></div>'+
-   '<div class="item"><strong>Principais integrados</strong><div style="margin-top:7px">'+(customerRows.map(([n,v])=>'<div class="toolbar" style="justify-content:space-between"><span>'+esc(n)+'</span><b>'+v.toLocaleString('pt-BR')+' aves</b></div>').join('')||'<div class="muted">Sem integrados no mês.</div>')+'</div></div>'
-   :'<div class="v2-empty">Ainda não há apanhas registradas neste mês.</div>';
+  {
+   const maxTeam=Math.max(1,...teamRows.map(x=>x[1].birds));
+   const maxCustomer=Math.max(1,...customerRows.map(x=>x[1]));
+   $('#dashboardMonthProduction').innerHTML=(teamRows.length||customerRows.length)?
+    '<div class="dash-prod-grid">'+
+     '<div class="dash-prod-block"><strong>Por equipe</strong><div class="dash-prod-list">'+(teamRows.map(([n,v])=>'<div class="dash-prod-row"><div><span>'+esc(n)+'</span><b>'+v.birds.toLocaleString('pt-BR')+'</b></div><div class="dash-prod-bar"><i style="width:'+Math.max(4,Math.round(v.birds/maxTeam*100))+'%"></i></div></div>').join('')||'<div class="muted">Sem produção por equipe.</div>')+'</div></div>'+
+     '<div class="dash-prod-block"><strong>Principais integrados</strong><div class="dash-prod-list">'+(customerRows.map(([n,v])=>'<div class="dash-prod-row"><div><span>'+esc(n)+'</span><b>'+v.toLocaleString('pt-BR')+'</b></div><div class="dash-prod-bar"><i style="width:'+Math.max(4,Math.round(v/maxCustomer*100))+'%"></i></div></div>').join('')||'<div class="muted">Sem integrados no mês.</div>')+'</div></div>'+
+    '</div>'
+    :'<div class="v2-empty">Ainda não há apanhas registradas neste mês.</div>';
+  }
 
   $('#dashboardTeams').innerHTML=teams.length?teams.map(t=>{
    const members=employees.filter(e=>String(e.primary_team||'').trim().toLowerCase()===String(t.name||'').trim().toLowerCase()).length;
    const vehicleId=t.metadata?.primary_vehicle_id||null,v=vehicles.find(x=>x.id===vehicleId),dev=devices.find(x=>x.team_id===t.id);
+   const supervisor=employees.find(e=>e.id===t.supervisor_employee_id);
    const last=dev?.last_seen_at?new Date(dev.last_seen_at).toLocaleString('pt-BR'):'—';
-   return '<div class="item"><div class="toolbar" style="justify-content:space-between"><div><strong>'+esc(t.name)+'</strong><div class="muted">'+members+' funcionário(s) • '+esc(v?(v.description||v.model||'Condução')+(v.plate?' • '+v.plate:''):'Sem condução vinculada')+'</div></div><span class="pill '+(dev?'ok':'warn')+'">'+(dev?'CELULAR ATIVO':'SEM CELULAR')+'</span></div>'+(dev?'<div class="muted" style="margin-top:5px">Último acesso: '+esc(last)+'</div>':'')+'</div>';
+   const initials=String(t.name||'E').split(/\s+/).slice(0,2).map(x=>x[0]||'').join('').toUpperCase();
+   return '<div class="dash-team-card"><div class="dash-team-avatar">'+esc(initials)+'</div><div class="dash-team-main"><div class="dash-team-head"><strong>'+esc(t.name)+'</strong><span class="pill '+(dev?'ok':'warn')+'">'+(dev?'CELULAR ATIVO':'SEM CELULAR')+'</span></div><div class="dash-team-meta"><span>👥 '+members+' funcionários</span><span>👤 '+esc(supervisor?.full_name||'Encarregado não informado')+'</span><span>🚌 '+esc(v?(v.description||v.model||'Condução')+(v.plate?' • '+v.plate:''):'Sem condução vinculada')+'</span></div>'+(dev?'<div class="dash-team-last">Último acesso: '+esc(last)+'</div>':'')+'</div></div>';
   }).join(''):'<div class="v2-empty">Nenhuma equipe ativa cadastrada.</div>';
 
   const clientName=cleanCompanyName(companyProfile.trade_name||companyProfile.legal_name);
@@ -3784,7 +3847,7 @@ setInterval(()=>{
 },60000);
 if('serviceWorker' in navigator){
  window.addEventListener('load',()=>{
-  navigator.serviceWorker.register('./sw-v6-32.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
+  navigator.serviceWorker.register('./sw-v6-33.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
  });
 }
 
