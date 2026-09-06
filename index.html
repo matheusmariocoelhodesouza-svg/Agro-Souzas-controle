@@ -8,7 +8,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
-<title>Comando 360 • v6.47</title>
+<title>Comando 360 • v6.48</title>
 <link rel="manifest" href="./comando360.webmanifest"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
@@ -347,13 +347,35 @@ header .brand small{color:#718198;font-weight:650}
 @media(max-width:700px){#v2PeopleSummary{grid-template-columns:1fr 1fr}.dash-ring-card{grid-column:span 2}.dash-quick-grid{grid-template-columns:repeat(2,1fr)}}
 
 
+/* 6.48 — Dashboard executivo interativo */
+.dashboard-kpis .v2kpi{appearance:none;text-align:left;font:inherit;cursor:pointer;width:100%;transition:transform .15s ease,box-shadow .15s ease,border-color .15s ease;color:inherit}
+.dashboard-kpis .v2kpi:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(24,51,83,.09);border-color:#cfe2f5}
+.dashboard-kpis .v2kpi:active{transform:translateY(0)}
+.dash-health{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:-4px 0 16px}
+.dash-health-card{appearance:none;border:1px solid #e5edf6;background:#fff;border-radius:14px;padding:12px 38px 12px 13px;text-align:left;cursor:pointer;position:relative;min-height:82px;color:#10203b;box-shadow:0 3px 12px rgba(24,51,83,.035);transition:.15s ease}
+.dash-health-card:hover{transform:translateY(-1px);box-shadow:0 7px 18px rgba(24,51,83,.07)}
+.dash-health-card:before{content:"";position:absolute;left:0;top:12px;bottom:12px;width:3px;border-radius:999px;background:#94a3b8}
+.dash-health-card.ok:before{background:#16a467}.dash-health-card.warn:before{background:#e7a21a}.dash-health-card.danger:before{background:#d44b4b}
+.dash-health-label{display:block;font-size:9px;font-weight:900;letter-spacing:.55px;text-transform:uppercase;color:#728399}
+.dash-health-card strong{display:block;font-size:18px;margin-top:4px;color:#10213d}
+.dash-health-card small{display:block;color:#8290a2;font-size:10px;margin-top:2px}
+.dash-health-arrow{position:absolute;right:13px;top:50%;transform:translateY(-50%);font-size:24px;color:#a3b3c5}
+.dash-alert{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;text-align:left;background:transparent;border:0;border-bottom:1px solid #eef2f7;padding:11px 2px;cursor:pointer;color:inherit}
+.dash-alert:last-child{border-bottom:0}.dash-alert>span{min-width:0;display:block}.dash-alert .muted{display:block;margin-top:2px}.dash-alert>b{font-size:20px;color:#a5b4c4}
+.dash-alert.danger strong{color:#a83232}.dash-alert.warn strong{color:#8b6508}
+.dash-all-good{display:flex!important;flex-direction:column;gap:3px;color:#28805a;padding:16px 4px}.dash-all-good span{color:#7b8b9f;font-size:11px}
+.darkmode .dash-health-card{background:#101c2e;border-color:#203047;color:#e7eef9}.darkmode .dash-health-card strong{color:#e7eef9}.darkmode .dash-alert{border-color:#203047}
+@media(max-width:1050px){.dash-health{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){.dash-health{grid-template-columns:1fr 1fr}.dash-health-card{min-height:78px;padding:10px 30px 10px 11px}.dash-health-card strong{font-size:16px}.dash-health-arrow{right:9px}}
+@media(max-width:390px){.dash-health{grid-template-columns:1fr}}
+
 .truck-barn-checks{display:grid;gap:7px;margin-top:5px}.truck-cata-row{display:grid;grid-template-columns:minmax(90px,1fr) minmax(110px,1fr) auto;gap:7px;align-items:center;padding:8px;border:1px solid #dbe4ee;border-radius:10px;background:#fff}.truck-cata-row input{margin:0!important;min-width:0}.truck-cata-remove{padding:7px 10px!important;min-width:38px}@media(max-width:520px){.truck-cata-row{grid-template-columns:1fr 1fr auto}}
 </style>
 <script defer="" src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
 <script>
 (function(){
-  const BUILD='6.47';
+  const BUILD='6.48';
   try{
     const marker='controla_cache_cleanup_'+BUILD;
     if(!localStorage.getItem(marker)){
@@ -387,7 +409,7 @@ header .brand small{color:#718198;font-weight:650}
 <div class="v2group">INTELIGÊNCIA</div>
 <button class="v2navbtn" data-v2tab="ia">✦   Assistente IA</button>
 </aside>
-<header><div class="brand"><img class="header-brand-icon" src="./comando360-icon.svg" alt="Comando 360"/><div><b>Comando <span class="brand360">360</span></b><div><small id="companyName">Empresa</small></div></div></div><div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.47</span><button class="btn soft" id="themeToggle" type="button">☾</button><button class="btn soft hidden" id="logout">Sair</button></div></header>
+<header><div class="brand"><img class="header-brand-icon" src="./comando360-icon.svg" alt="Comando 360"/><div><b>Comando <span class="brand360">360</span></b><div><small id="companyName">Empresa</small></div></div></div><div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.48</span><button class="btn soft" id="themeToggle" type="button">☾</button><button class="btn soft hidden" id="logout">Sair</button></div></header>
 <main class="wrap">
 <section class="login team-entry" id="login">
 <div class="card" id="deviceSetupCard">
@@ -404,7 +426,7 @@ header .brand small{color:#718198;font-weight:650}
  <label>Senha</label><input autocomplete="current-password" id="password" type="password"/>
  <button class="btn primary" id="loginBtn">Entrar</button>
  <button class="btn soft" id="backDeviceSetup" type="button" style="margin-left:6px">Voltar</button>
- <div class="muted" id="loginMsg" style="margin-top:10px">Comando 360 • v6.47</div><div class="debug" id="debug"></div>
+ <div class="muted" id="loginMsg" style="margin-top:10px">Comando 360 • v6.48</div><div class="debug" id="debug"></div>
 </div>
 </section>
 <section class="hidden" id="app">
@@ -453,6 +475,7 @@ header .brand small{color:#718198;font-weight:650}
 </div>
 
 <div class="v2-kpis dashboard-kpis" id="kpis"></div>
+<div class="dash-health" id="dashboardHealth"></div>
 
 <div class="v2panel" id="poultryDashboardPanel">
  <div class="v2panelhead"><div><h3>🐔 Operação de Apanha — Hoje</h3><div class="muted">Produção e andamento das equipes no dia.</div></div><button class="btn soft" data-jump="operacoes" type="button">Abrir apanhas</button></div>
@@ -1542,7 +1565,7 @@ async function syncPoultryTruckOfflineItem(item){
   .map(x=>({barn_id:x?.barn_id||null,barn_number:normalizeAviaryNumber(x?.barn_number),birds:poN(x?.birds)}))
   .filter(x=>x.barn_number||x.barn_id);
 
- // Compatibilidade com itens offline criados antes da v6.47.
+ // Compatibilidade com itens offline criados antes da v6.48.
  if(!barnBreakdown.length&&item.barn_id){
   const oldId=String(item.barn_id).startsWith('offline:')?(refs.loading?.metadata?.default_barn_id||null):item.barn_id;
   const oldBarn=poultryBarns.find(b=>b.id===oldId);
@@ -1836,15 +1859,28 @@ async function loadDashboard(){
    return byKm||byDate;
   }).length;
 
+  const completedToday=todayOps.filter(o=>o.status==='completed').length;
+  const opsCompletionPct=todayOps.length?Math.round(completedToday/todayOps.length*100):100;
+  const pointPct=employees.length?Math.round(pointedEmployees/employees.length*100):0;
+  const deviceCoveragePct=teams.length?Math.min(100,Math.round(new Set(devices.map(d=>d.team_id).filter(Boolean)).size/teams.length*100)):100;
+  const health=$('#dashboardHealth');
+  if(health)health.innerHTML=[
+   ['Operação do dia',todayOps.length?opsCompletionPct+'% concluída':'Sem apanhas hoje',todayOps.length?(completedToday+' de '+todayOps.length+' concluídas'):'Nenhuma operação programada','operacoes',opsCompletionPct>=100?'ok':opsCompletionPct>0?'warn':'neutral'],
+   ['Ponto hoje',pointPct+'%',pointedEmployees+' de '+employees.length+' funcionários','ponto',pointPct>=90?'ok':pointPct>0?'warn':'neutral'],
+   ['Equipes com aparelho',deviceCoveragePct+'%',devices.length+' aparelho(s) ativo(s)','equipes',deviceCoveragePct>=100?'ok':'warn'],
+   ['Manutenção',overdueMaintenance?overdueMaintenance+' vencida(s)':'Em dia',overdueMaintenance?'Requer atenção':'Nenhuma vencida','manutencoes',overdueMaintenance?'danger':'ok']
+  ].map(x=>'<button class="dash-health-card '+x[5]+'" data-jump="'+x[4]+'" type="button"><span class="dash-health-label">'+esc(x[0])+'</span><strong>'+esc(x[1])+'</strong><small>'+esc(x[2])+'</small><span class="dash-health-arrow">›</span></button>').join('');
+
   const cards=[
    ['FUNCIONÁRIOS',employees.length,'ativos','👥'],
    ['EQUIPES',teams.length,devices.length+' celular(es) ativo(s)','📱'],
    ['CONDUÇÕES',vehicles.length,overdueMaintenance+' manutenção(ões) vencida(s)','🚌'],
-   ['APANHAS HOJE',todayOps.length,todayOps.filter(o=>o.status==='completed').length+' concluída(s)','🐔'],
+   ['APANHAS HOJE',todayOps.length,completedToday+' concluída(s)','🐔'],
    ['AVES HOJE',birdsToday.toLocaleString('pt-BR'),birdsMonth.toLocaleString('pt-BR')+' no mês','▣'],
    ['SALDO DO MÊS',money(balance),'Entradas '+money(income),'💰']
   ];
-  $('#kpis').innerHTML=cards.map((x,i)=>'<div class="v2kpi dash-kpi dash-kpi-'+i+'"><div class="t">'+esc(x[0])+'</div><div class="v">'+esc(x[1])+'</div><div class="s">'+esc(x[2])+'</div><div class="v2ico">'+x[3]+'</div></div>').join('');
+  const cardTabs=['funcionarios','equipes','frota','operacoes','operacoes','financeiro'];
+  $('#kpis').innerHTML=cards.map((x,i)=>'<button class="v2kpi dash-kpi dash-kpi-'+i+'" data-jump="'+cardTabs[i]+'" type="button"><div class="t">'+esc(x[0])+'</div><div class="v">'+esc(x[1])+'</div><div class="s">'+esc(x[2])+'</div><div class="v2ico">'+x[3]+'</div></button>').join('');
 
   $('#todayList').innerHTML=todayOps.length?todayOps.slice().sort((a,b)=>new Date(a.scheduled_start)-new Date(b.scheduled_start)).map(o=>{
    const late=!o.actual_start&&o.status!=='completed'&&o.status!=='cancelled'&&new Date(o.scheduled_start).getTime()<now;
@@ -3822,7 +3858,7 @@ function renderSmartAlerts(){
  const k=document.getElementById('alertsKpis');if(k)k.innerHTML=`<div class="v2kpi"><span>Total</span><strong>${a.length}</strong></div><div class="v2kpi"><span>Urgentes</span><strong>${d}</strong></div><div class="v2kpi"><span>Atenção</span><strong>${w}</strong></div><div class="v2kpi"><span>Situação</span><strong>${d?'Crítica':w?'Atenção':'OK'}</strong></div>`;
  const render=x=>`<div class="item"><div class="toolbar" style="justify-content:space-between"><div><strong>${esc(x.title)}</strong><div class="muted">${esc(x.text)}</div><span class="pill ${x.level==='danger'?'danger':'warn'}">${x.level==='danger'?'URGENTE':'ATENÇÃO'}</span></div><button class="btn soft alertJump" data-tab="${x.tab}">Abrir</button></div></div>`;
  const l=document.getElementById('alertsList');if(l)l.innerHTML=a.map(render).join('')||'<div class="muted">Nenhuma pendência importante encontrada.</div>';
- const dash=document.getElementById('v2Alerts');if(dash)dash.innerHTML=a.slice(0,6).map(x=>`<div class="v2alert"><strong>${esc(x.title)}</strong><div class="muted">${esc(x.text)}</div></div>`).join('')||'<div class="v2-empty">Nenhum alerta importante agora.</div>';
+ const dash=document.getElementById('v2Alerts');if(dash)dash.innerHTML=a.slice(0,6).map(x=>`<button class="v2alert dash-alert ${x.level}" data-jump="${x.tab}" type="button"><span><strong>${esc(x.title)}</strong><span class="muted">${esc(x.text)}</span></span><b>›</b></button>`).join('')||'<div class="v2-empty dash-all-good"><strong>✓ Tudo certo</strong><span>Nenhum alerta importante agora.</span></div>';
 }
 
 
@@ -4132,7 +4168,7 @@ setInterval(()=>{
 },60000);
 if('serviceWorker' in navigator){
  window.addEventListener('load',()=>{
-  navigator.serviceWorker.register('./sw-v6-47.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
+  navigator.serviceWorker.register('./sw-v6-48.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
  });
 }
 
