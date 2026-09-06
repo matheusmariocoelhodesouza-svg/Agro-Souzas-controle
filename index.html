@@ -8,7 +8,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
-<title>Controla V2 • Beta 6.12 Modo Equipe</title>
+<title>Controla V2 • Beta 6.13 Modo Equipe</title>
 <style>
 :root{--bg:#f3f6fb;--card:#fff;--ink:#0f172a;--muted:#64748b;--line:#e2e8f0;--accent:#0f172a}*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--ink)}header{position:sticky;top:0;z-index:20;background:linear-gradient(135deg,var(--accent),#1e293b);color:#fff;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 8px 24px rgba(15,23,42,.18)}.wrap{max-width:1200px;margin:auto;padding:12px}.card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:12px;box-shadow:0 4px 18px rgba(15,23,42,.045)}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:10px}.kpi{font-size:28px;font-weight:900}.label,.muted{font-size:12px;color:var(--muted)}.nav{display:flex;gap:8px;overflow:auto;padding:12px 0;scrollbar-width:none}.nav::-webkit-scrollbar{display:none}.nav button,.btn{border:0;border-radius:12px;padding:11px 14px;font-weight:800;white-space:nowrap;cursor:pointer}.nav button{background:#fff;border:1px solid var(--line);color:#334155}.nav button.active,.btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}.btn.soft{background:#e2e8f0}.btn.danger{background:#b91c1c;color:#fff}.btn.danger:hover{background:#991b1b}.hidden{display:none!important}.login{max-width:430px;margin:55px auto}.login input,.chat input{width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:10px;margin:6px 0 10px;font:inherit}.section{display:none}.section.active{display:block}.list{display:grid;gap:8px}.item{background:#fff;border:1px solid var(--line);border-radius:13px;padding:12px}.item strong{display:block}.pill{display:inline-block;padding:4px 8px;border-radius:999px;font-size:11px;font-weight:800;background:#e2e8f0}.pill.ok{background:#dcfce7;color:#166534}.pill.warn{background:#fef3c7;color:#92400e}.pill.danger{background:#fee2e2;color:#991b1b}.toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.chatbox{min-height:220px;max-height:52vh;overflow:auto;background:#fff;border:1px solid var(--line);border-radius:14px;padding:10px}.msg{padding:10px 12px;border-radius:12px;margin:8px 0;max-width:88%;white-space:pre-wrap}.msg.user{margin-left:auto;background:#e2e8f0}.msg.ai{background:#fff7ed;border:1px solid #fed7aa}.brand{display:flex;gap:10px;align-items:center}.logo{width:38px;height:38px;border-radius:10px;background:white;color:#0f172a;display:grid;place-items:center;font-weight:900}.error{color:#b91c1c;font-size:13px}.okmsg{color:#166534;font-size:13px}.debug{margin-top:8px;font-size:11px;color:#64748b;word-break:break-word}@media(max-width:640px){.wrap{padding:9px}.kpi{font-size:25px}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}header{padding:12px}.nav{position:sticky;top:66px;z-index:15;background:var(--bg);margin:0 -9px;padding:9px}}
 
@@ -127,7 +127,7 @@ body.app-ready .v2sidebar{display:block}
 .po-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
 .pill.warn{background:#fff3cd;color:#7c5700}
 
-/* Beta 6.12 — Modo Equipe */
+/* Beta 6.13 — Modo Equipe */
 .team-entry{max-width:520px;margin:42px auto}
 .team-entry .card{padding:20px}
 .team-entry-title{text-align:center;margin-bottom:18px}
@@ -170,7 +170,7 @@ body.device-mode .admin-only{display:none!important}
 <script defer src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
 <script>
 (function(){
-  const BUILD='6.12';
+  const BUILD='6.13';
   try{
     const marker='controla_cache_cleanup_'+BUILD;
     if(!localStorage.getItem(marker)){
@@ -211,7 +211,7 @@ body.device-mode .admin-only{display:none!important}
 <div class="v2group">EM BREVE</div>
 <button class="v2navbtn" type="button">Estoque</button>
 </aside>
-<header><div class="brand"><div class="logo">C</div><div><b>Controla</b><div><small id="companyName">Beta</small></div></div></div><div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill" id="buildBadge" title="Versão publicada">v6.12</span><button class="btn soft" id="themeToggle" type="button">☾</button><button class="btn soft hidden" id="logout">Sair</button></div></header>
+<header><div class="brand"><div class="logo">C</div><div><b>Controla</b><div><small id="companyName">Beta</small></div></div></div><div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill" id="buildBadge" title="Versão publicada">v6.13</span><button class="btn soft" id="themeToggle" type="button">☾</button><button class="btn soft hidden" id="logout">Sair</button></div></header>
 <main class="wrap">
 <section class="login team-entry" id="login">
 <div class="card" id="deviceSetupCard">
@@ -228,7 +228,7 @@ body.device-mode .admin-only{display:none!important}
  <label>Senha</label><input autocomplete="current-password" id="password" type="password"/>
  <button class="btn primary" id="loginBtn">Entrar</button>
  <button class="btn soft" id="backDeviceSetup" type="button" style="margin-left:6px">Voltar</button>
- <div class="muted" id="loginMsg" style="margin-top:10px">Beta 6.12 • Modo Equipe</div><div class="debug" id="debug"></div>
+ <div class="muted" id="loginMsg" style="margin-top:10px">Beta 6.13 • Modo Equipe</div><div class="debug" id="debug"></div>
 </div>
 </section>
 <section class="hidden" id="app">
@@ -247,9 +247,12 @@ body.device-mode .admin-only{display:none!important}
  </div>
 </div>
 <div class="section" data-screen="equipereport" hidden="" id="equipereport">
- <div class="v2hero"><div><h1>Relatório da Equipe</h1><p id="teamReportSubtitle">Resumo operacional</p></div><button class="btn soft" id="refreshTeamReport" type="button">↻ Atualizar</button></div>
+ <div class="v2hero">
+  <div><h1>Relatório da Equipe</h1><p id="teamReportSubtitle">Resumo operacional</p></div>
+  <div class="toolbar"><input id="teamReportDate" type="date"/><button class="btn soft" id="refreshTeamReport" type="button">↻ Atualizar</button><button class="btn primary" id="printTeamReport" type="button">IMPRIMIR / PDF</button></div>
+ </div>
  <div class="team-report-grid" id="teamReportKpis"></div>
- <div class="card"><h3>Resumo de hoje</h3><div class="list" id="teamReportToday"></div></div>
+ <div class="card"><h3>Resumo do dia</h3><div class="list" id="teamReportToday"></div></div>
 </div>
 <div class="section active" data-screen="inicio" id="inicio"><div class="v2panel" id="poultryDashboardPanel"><div class="v2panelhead"><div><h3>Operação de Apanha — Hoje</h3><div class="muted">Produção real das equipes no dia.</div></div></div><div class="v2-kpis" id="poultryDashKpis"></div><div id="poultryDashTeams" class="list"><div class="v2-empty">Carregando produção...</div></div></div>
 <div class="v2hero"><div><h1>Dashboard Apanha de Aves</h1><p>Visão geral das operações de hoje • dados reais do Controla</p></div><button class="btn v2new" id="refreshBtn">↻ Atualizar painel</button></div>
@@ -1825,27 +1828,68 @@ document.addEventListener('click',async e=>{
 async function loadTeamHome(){if(!deviceMode)return}
 async function loadTeamReport(){
  if(!deviceMode)return;
+ const dateEl=$('#teamReportDate');
+ if(dateEl&&!dateEl.value)dateEl.value=localDateBR();
+ const day=dateEl?.value||localDateBR();
  const k=$('#teamReportKpis'),list=$('#teamReportToday'),sub=$('#teamReportSubtitle');
- if(sub)sub.textContent=(deviceTeam?.name||'Equipe')+' • '+new Date().toLocaleDateString('pt-BR');
+ const dayLabel=new Date(day+'T12:00:00').toLocaleDateString('pt-BR');
+ if(sub)sub.textContent=(deviceTeam?.name||'Equipe')+' • '+dayLabel;
  try{
-  const bounds=saoPauloDayUtcBounds(localDateBR());
+  const bounds=saoPauloDayUtcBounds(day);
   const [ops,loadings,trucks,events,fuel,emps]=await Promise.all([
-   rest('v2_operations','select=id,status,scheduled_start,actual_birds&company_id=eq.'+companyId+'&operation_type=eq.poultry_catching&scheduled_start=gte.'+encodeURIComponent(bounds.start)+'&scheduled_start=lt.'+encodeURIComponent(bounds.end)),
+   rest('v2_operations','select=id,title,customer_name,location_name,status,scheduled_start,actual_birds&company_id=eq.'+companyId+'&operation_type=eq.poultry_catching&scheduled_start=gte.'+encodeURIComponent(bounds.start)+'&scheduled_start=lt.'+encodeURIComponent(bounds.end)+'&order=scheduled_start.asc'),
    rest('v2_poultry_loadings','select=id,operation_id,reported_birds&company_id=eq.'+companyId+'&team_id=eq.'+encodeURIComponent(deviceAccess.team_id)),
-   rest('v2_poultry_truck_loads','select=id,loading_id,birds,is_cata&company_id=eq.'+companyId),
-   rest('v2_attendance_events','select=employee_id,event_type,occurred_at&company_id=eq.'+companyId+'&occurred_at=gte.'+encodeURIComponent(bounds.start)+'&occurred_at=lt.'+encodeURIComponent(bounds.end)),
-   rest('v2_fuel_logs','select=liters,total_amount,fueled_at&company_id=eq.'+companyId+'&order=fueled_at.desc&limit=100'),
-   rest('v2_employees','select=id,full_name,status&company_id=eq.'+companyId+'&status=eq.active')
+   rest('v2_poultry_truck_loads','select=id,loading_id,birds,is_cata,truck_plate,driver_name,started_at,completed_at&company_id=eq.'+companyId),
+   rest('v2_attendance_events','select=employee_id,event_type,occurred_at&company_id=eq.'+companyId+'&occurred_at=gte.'+encodeURIComponent(bounds.start)+'&occurred_at=lt.'+encodeURIComponent(bounds.end)+'&order=occurred_at.asc'),
+   rest('v2_fuel_logs','select=liters,total_amount,fueled_at,station_name,odometer_km,metadata&company_id=eq.'+companyId+'&fueled_at=gte.'+encodeURIComponent(bounds.start)+'&fueled_at=lt.'+encodeURIComponent(bounds.end)+'&order=fueled_at.asc'),
+   rest('v2_employees','select=id,full_name,status&company_id=eq.'+companyId+'&status=eq.active&order=full_name.asc')
   ]);
-  const loadingIds=new Set((loadings||[]).filter(x=>ops.some(o=>o.id===x.operation_id)).map(x=>x.id));
-  const todayTrucks=(trucks||[]).filter(x=>loadingIds.has(x.loading_id));
-  const birds=todayTrucks.reduce((a,x)=>a+Number(x.birds||0),0);
-  const present=new Set((events||[]).map(x=>x.employee_id)).size;
-  const month=new Date().toISOString().slice(0,7),mf=(fuel||[]).filter(x=>String(x.fueled_at||'').slice(0,7)===month);
-  const liters=mf.reduce((a,x)=>a+Number(x.liters||0),0),fuelCost=mf.reduce((a,x)=>a+Number(x.total_amount||0),0);
-  if(k)k.innerHTML=[['Apanhas hoje',ops.length],['Caminhões',todayTrucks.length],['Aves hoje',birds.toLocaleString('pt-BR')],['Com ponto',present+'/'+emps.length],['Litros no mês',liters.toLocaleString('pt-BR',{maximumFractionDigits:1})+' L'],['Combustível no mês',money(fuelCost)]].map(x=>'<div class="team-report-kpi"><span class="muted">'+x[0]+'</span><b>'+x[1]+'</b></div>').join('');
-  if(list)list.innerHTML='<div class="item"><strong>Apanha</strong><div class="muted">'+ops.length+' operação(ões) hoje • '+todayTrucks.length+' caminhão(ões) • '+birds.toLocaleString('pt-BR')+' aves</div></div><div class="item"><strong>Ponto</strong><div class="muted">'+present+' de '+emps.length+' funcionário(s) com registro hoje</div></div><div class="item"><strong>Abastecimento</strong><div class="muted">'+liters.toLocaleString('pt-BR',{maximumFractionDigits:1})+' litros no mês • '+money(fuelCost)+'</div></div>';
+  const opIds=new Set((ops||[]).map(o=>o.id));
+  const dayLoadings=(loadings||[]).filter(x=>opIds.has(x.operation_id));
+  const loadingIds=new Set(dayLoadings.map(x=>x.id));
+  const dayTrucks=(trucks||[]).filter(x=>loadingIds.has(x.loading_id));
+  const birds=dayTrucks.reduce((a,x)=>a+Number(x.birds||0),0);
+  const presentIds=[...new Set((events||[]).map(x=>x.employee_id))];
+  const present=presentIds.length;
+  const liters=(fuel||[]).reduce((a,x)=>a+Number(x.liters||0),0);
+  const fuelCost=(fuel||[]).reduce((a,x)=>a+Number(x.total_amount||0),0);
+  const catas=dayTrucks.filter(x=>x.is_cata).length;
+  if(k)k.innerHTML=[
+   ['Apanhas',ops.length],
+   ['Caminhões',dayTrucks.length],
+   ['Aves',birds.toLocaleString('pt-BR')],
+   ['Funcionários com ponto',present+'/'+emps.length],
+   ['Litros',liters.toLocaleString('pt-BR',{maximumFractionDigits:1})+' L'],
+   ['Combustível',money(fuelCost)]
+  ].map(x=>'<div class="team-report-kpi"><span class="muted">'+x[0]+'</span><b>'+x[1]+'</b></div>').join('');
+
+  let html='';
+  if(ops.length){
+   html+='<div class="item"><strong>🐔 Apanhas</strong><div class="muted">'+ops.length+' operação(ões) • '+dayTrucks.length+' caminhão(ões) • '+birds.toLocaleString('pt-BR')+' aves • '+catas+' cata(s)</div>';
+   html+='<div style="margin-top:8px">'+ops.map(o=>{
+    const l=dayLoadings.find(x=>x.operation_id===o.id),ts=l?dayTrucks.filter(x=>x.loading_id===l.id):[],b=ts.reduce((a,x)=>a+Number(x.birds||0),0);
+    return '<div class="muted" style="padding:4px 0"><b>'+esc(o.customer_name||o.title||'Apanha')+'</b> • '+esc(o.location_name||'')+' • '+ts.length+' caminhão(ões) • '+b.toLocaleString('pt-BR')+' aves • '+esc(poSL(o.status))+'</div>';
+   }).join('')+'</div></div>';
+  }else html+='<div class="item"><strong>🐔 Apanhas</strong><div class="muted">Nenhuma apanha registrada nesta data.</div></div>';
+
+  const presentNames=presentIds.map(id=>emps.find(e=>e.id===id)?.full_name).filter(Boolean);
+  html+='<div class="item"><strong>⏱️ Ponto</strong><div class="muted">'+present+' de '+emps.length+' funcionário(s) com registro • '+events.length+' batida(s)</div>'+(presentNames.length?'<div class="muted" style="margin-top:6px">'+esc(presentNames.join(', '))+'</div>':'')+'</div>';
+
+  if(fuel.length){
+   html+='<div class="item"><strong>⛽ Abastecimento</strong><div class="muted">'+liters.toLocaleString('pt-BR',{maximumFractionDigits:1})+' litros • '+money(fuelCost)+'</div><div style="margin-top:8px">'+fuel.map(x=>'<div class="muted" style="padding:4px 0">'+new Date(x.fueled_at).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})+' • '+Number(x.liters||0).toLocaleString('pt-BR',{maximumFractionDigits:2})+' L • '+money(x.total_amount||0)+(x.station_name?' • '+esc(x.station_name):'')+(x.metadata?.driver?' • '+esc(x.metadata.driver):'')+(x.odometer_km?' • '+Number(x.odometer_km).toLocaleString('pt-BR')+' km':'')+'</div>').join('')+'</div></div>';
+  }else html+='<div class="item"><strong>⛽ Abastecimento</strong><div class="muted">Nenhum abastecimento registrado nesta data.</div></div>';
+
+  if(list)list.innerHTML=html;
  }catch(e){if(list)list.innerHTML='<div class="error">'+esc(e.message)+'</div>'}
+}
+function printTeamReport(){
+ const date=$('#teamReportDate')?.value||localDateBR(),team=deviceTeam?.name||'Equipe';
+ const dayLabel=new Date(date+'T12:00:00').toLocaleDateString('pt-BR');
+ const k=$('#teamReportKpis')?.innerHTML||'',body=$('#teamReportToday')?.innerHTML||'';
+ const w=window.open('','_blank');
+ if(!w)return alert('O navegador bloqueou a janela de impressão.');
+ w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>Relatório '+esc(team)+' - '+esc(dayLabel)+'</title><style>body{font-family:Arial,sans-serif;color:#111;padding:28px}h1{margin:0 0 4px}.sub{color:#555;margin-bottom:20px}.team-report-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px}.team-report-kpi,.item{border:1px solid #ddd;border-radius:10px;padding:12px}.team-report-kpi b{display:block;font-size:22px;margin-top:5px}.muted{color:#555;font-size:12px}.list{display:grid;gap:10px}.pill{display:inline-block;border:1px solid #ccc;border-radius:999px;padding:3px 7px;font-size:11px}@media print{button{display:none}}</style></head><body><h1>Relatório da Equipe</h1><div class="sub">'+esc(team)+' • '+esc(dayLabel)+'</div><div class="team-report-grid">'+k+'</div><div class="list">'+body+'</div><script>window.onload=function(){window.print()}<\/script></body></html>');
+ w.document.close();
 }
 function renderDeviceModeBar(tab){const bar=$('#deviceModeBar');if(bar)bar.classList.toggle('hidden',!deviceMode||tab==='equipehome')}
 // Navegação resiliente: um único listener delegado atende desktop e mobile.
@@ -2418,6 +2462,8 @@ if($('#copyTeamDeviceCode'))$('#copyTeamDeviceCode').addEventListener('click',as
 });
 if($('#refreshTeamDevices'))$('#refreshTeamDevices').addEventListener('click',loadTeams);
 if($('#refreshTeamReport'))$('#refreshTeamReport').addEventListener('click',loadTeamReport);
+if($('#teamReportDate'))$('#teamReportDate').addEventListener('change',loadTeamReport);
+if($('#printTeamReport'))$('#printTeamReport').addEventListener('click',printTeamReport);
 $('#refreshRH').addEventListener('click',async()=>{await loadEmployees();await loadRHPoint()});
 
 $('#refreshBtn').addEventListener('click',loadDashboard);
