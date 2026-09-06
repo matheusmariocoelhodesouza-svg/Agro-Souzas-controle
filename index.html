@@ -8,7 +8,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
-<title>Controla V2 • Beta 6.23 Modo Equipe</title>
+<title>Agro Souza's Controle • v6.24</title>
 <link rel="manifest" href="./agro-souzas-controle-v7.webmanifest"/>
 <link rel="apple-touch-icon" href="./apple-touch-icon-180.png"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
@@ -132,7 +132,7 @@ body.app-ready .v2sidebar{display:block}
 .po-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
 .pill.warn{background:#fff3cd;color:#7c5700}
 
-/* Beta 6.23 — Modo Equipe */
+/* 6.24 — Modo Equipe */
 .team-entry{max-width:520px;margin:42px auto}
 .team-entry .card{padding:20px}
 .team-entry-title{text-align:center;margin-bottom:18px}
@@ -189,7 +189,7 @@ body.device-mode .admin-only{display:none!important}
 <script defer src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
 <script>
 (function(){
-  const BUILD='6.23';
+  const BUILD='6.24';
   try{
     const marker='controla_cache_cleanup_'+BUILD;
     if(!localStorage.getItem(marker)){
@@ -204,7 +204,7 @@ body.device-mode .admin-only{display:none!important}
 </head>
 <body>
 <aside class="v2sidebar" id="v2sidebar">
-<div class="v2logo"><div class="v2mark">C</div><div><strong>CONTROLA V2</strong><small>Agro Souza's Controle</small></div></div>
+<div class="v2logo"><div class="v2mark">AS</div><div><strong>AGRO SOUZA'S</strong><small>Controle & Gestão</small></div></div>
 <div class="v2group">OPERAÇÃO</div>
 <button class="v2navbtn active" data-v2tab="inicio">▦   Dashboard Apanha</button>
 <button class="v2navbtn" data-v2tab="operacoes">▣   Apanhas</button>
@@ -221,11 +221,9 @@ body.device-mode .admin-only{display:none!important}
 <button class="v2navbtn" data-v2tab="relatorios">📊   Relatórios & BI</button>
 <button class="v2navbtn" data-v2tab="alertas">⚠   Alertas</button>
 <div class="v2group">INTELIGÊNCIA</div>
-<button class="v2navbtn" data-v2tab="ia">✦   Controla IA</button>
-<div class="v2group">EM BREVE</div>
-<button class="v2navbtn" type="button">Estoque</button>
+<button class="v2navbtn" data-v2tab="ia">✦   Assistente IA</button>
 </aside>
-<header><div class="brand"><div class="logo">C</div><div><b>Controla</b><div><small id="companyName">Beta</small></div></div></div><div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.23</span><button class="btn soft" id="themeToggle" type="button">☾</button><button class="btn soft hidden" id="logout">Sair</button></div></header>
+<header><div class="brand"><div class="logo">AS</div><div><b>Agro Souza's Controle</b><div><small id="companyName">Administrador</small></div></div></div><div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.24</span><button class="btn soft" id="themeToggle" type="button">☾</button><button class="btn soft hidden" id="logout">Sair</button></div></header>
 <main class="wrap">
 <section class="login team-entry" id="login">
 <div class="card" id="deviceSetupCard">
@@ -237,16 +235,16 @@ body.device-mode .admin-only{display:none!important}
  <button class="btn soft" id="showAdminLogin" type="button" style="width:100%;margin-top:14px">Acesso do administrador</button>
 </div>
 <div class="card hidden" id="adminLoginCard">
- <h2>Administrador</h2><div class="muted">Acesso completo ao Controla.</div>
+ <h2>Administrador</h2><div class="muted">Acesso completo ao Agro Souza's Controle.</div>
  <label>E-mail</label><input autocomplete="username" id="email" type="email"/>
  <label>Senha</label><input autocomplete="current-password" id="password" type="password"/>
  <button class="btn primary" id="loginBtn">Entrar</button>
  <button class="btn soft" id="backDeviceSetup" type="button" style="margin-left:6px">Voltar</button>
- <div class="muted" id="loginMsg" style="margin-top:10px">Beta 6.23 • Modo Equipe</div><div class="debug" id="debug"></div>
+ <div class="muted" id="loginMsg" style="margin-top:10px">Agro Souza's Controle • v6.24</div><div class="debug" id="debug"></div>
 </div>
 </section>
 <section class="hidden" id="app">
-<div class="nav" id="nav"><button class="active" data-tab="inicio">Início</button><button data-tab="equipes">Equipes</button><button data-tab="funcionarios">RH &amp; Pessoas</button><button data-tab="documentosrh">Docs RH</button><button data-tab="ponto">Ponto</button><button data-tab="operacoes">Operações / Apanha</button><button data-tab="frota">Frota</button><button data-tab="manutencoes">Manutenções</button><button data-tab="combustivel">Combustível & KM</button><button data-tab="documentosfrota">Documentos</button><button data-tab="financeiro">Financeiro</button><button data-tab="relatorios">Relatórios</button><button data-tab="alertas">Alertas</button><button data-tab="ia">Controla IA</button></div>
+<div class="nav" id="nav"><button class="active" data-tab="inicio">Início</button><button data-tab="equipes">Equipes</button><button data-tab="funcionarios">RH &amp; Pessoas</button><button data-tab="documentosrh">Docs RH</button><button data-tab="ponto">Ponto</button><button data-tab="operacoes">Operações / Apanha</button><button data-tab="frota">Frota</button><button data-tab="manutencoes">Manutenções</button><button data-tab="combustivel">Combustível & KM</button><button data-tab="documentosfrota">Documentos</button><button data-tab="financeiro">Financeiro</button><button data-tab="relatorios">Relatórios</button><button data-tab="alertas">Alertas</button><button data-tab="ia">Assistente IA</button></div>
 <div class="team-mode-bar hidden" id="deviceModeBar"><div><strong id="deviceModeTeam">Equipe</strong><div class="muted">Acesso restrito a este aparelho</div></div><button class="btn soft" type="button" data-teamtab="equipehome">⌂ Início</button></div>
 <div class="offline-sync-panel hidden" id="offlineSyncPanel">
  <div class="offline-sync-box">
@@ -284,20 +282,73 @@ body.device-mode .admin-only{display:none!important}
  </div>
  <div id="teamReportToday"></div>
 </div>
-<div class="section active" data-screen="inicio" id="inicio"><div class="v2panel" id="poultryDashboardPanel"><div class="v2panelhead"><div><h3>Operação de Apanha — Hoje</h3><div class="muted">Produção real das equipes no dia.</div></div></div><div class="v2-kpis" id="poultryDashKpis"></div><div id="poultryDashTeams" class="list"><div class="v2-empty">Carregando produção...</div></div></div>
-<div class="v2hero"><div><h1>Dashboard Apanha de Aves</h1><p>Visão geral das operações de hoje • dados reais do Controla</p></div><button class="btn v2new" id="refreshBtn">↻ Atualizar painel</button></div>
+<div class="section active" data-screen="inicio" id="inicio">
+<div class="v2hero">
+ <div><h1>Dashboard Agro Souza's</h1><p>Operação, equipes, frota, ponto e financeiro em uma única visão.</p><div class="muted" id="dashboardLastUpdate">Carregando dados...</div></div>
+ <div class="toolbar"><button class="btn v2new" id="refreshBtn" type="button">↻ ATUALIZAR PAINEL</button></div>
+</div>
+
 <div class="v2-kpis" id="kpis"></div>
+
+<div class="v2panel" id="poultryDashboardPanel">
+ <div class="v2panelhead"><div><h3>🐔 Operação de Apanha — Hoje</h3><div class="muted">Produção e andamento das equipes no dia.</div></div><button class="btn soft" data-jump="operacoes" type="button">Abrir apanhas</button></div>
+ <div class="v2-kpis" id="poultryDashKpis"></div>
+ <div id="poultryDashTeams" class="list"><div class="v2-empty">Carregando produção...</div></div>
+</div>
+
 <div class="v2main">
-<div>
-<div class="v2panel"><div class="v2panelhead"><div><h3>Apanhas de hoje</h3><div class="muted">Programação e andamento das equipes</div></div><span class="v2status">TEMPO REAL</span></div><div class="list" id="todayList"></div></div>
-<div class="v2panel"><div class="v2panelhead"><div><h3>Resumo operacional</h3><div class="muted">Indicadores disponíveis no banco atual</div></div></div><div class="v2stats" id="v2OpsSummary"></div></div>
+ <div>
+  <div class="v2panel">
+   <div class="v2panelhead"><div><h3>Apanhas de hoje</h3><div class="muted">Horários, status e integrado/granja.</div></div><span class="v2status">AO VIVO</span></div>
+   <div class="list" id="todayList"><div class="v2-empty">Carregando...</div></div>
+  </div>
+
+  <div class="v2panel">
+   <div class="v2panelhead"><div><h3>Produção do mês</h3><div class="muted">Por equipe e principais integrados.</div></div><button class="btn soft" data-jump="relatorios" type="button">Relatórios</button></div>
+   <div id="dashboardMonthProduction" class="list"><div class="v2-empty">Carregando produção mensal...</div></div>
+  </div>
+
+  <div class="v2panel">
+   <div class="v2panelhead"><div><h3>Equipes</h3><div class="muted">Pessoas, condução e celular de campo.</div></div><button class="btn soft" data-jump="equipes" type="button">Gerenciar</button></div>
+   <div id="dashboardTeams" class="list"><div class="v2-empty">Carregando equipes...</div></div>
+  </div>
+ </div>
+
+ <div>
+  <div class="v2panel">
+   <div class="v2panelhead"><div><h3>Alertas importantes</h3><div class="muted">Documentos, manutenção, frota e RH.</div></div><button class="btn soft" data-jump="alertas" type="button">Ver todos</button></div>
+   <div id="v2Alerts"><div class="v2-empty">Carregando alertas...</div></div>
+  </div>
+
+  <div class="v2panel">
+   <div class="v2panelhead"><div><h3>Gestão do mês</h3><div class="muted">Produção, combustível e financeiro.</div></div></div>
+   <div class="v2stats" id="dashboardMonthStats"></div>
+  </div>
+
+  <div class="v2panel">
+   <div class="v2panelhead"><div><h3>Equipe & Ponto</h3><div class="muted">Presença e celulares das equipes.</div></div><button class="btn soft" data-jump="ponto" type="button">Abrir ponto</button></div>
+   <div class="v2stats" id="v2PeopleSummary"></div>
+  </div>
+
+  <div class="v2panel">
+   <div class="v2panelhead"><div><h3>Resumo operacional</h3><div class="muted">Situação de hoje.</div></div></div>
+   <div class="v2stats" id="v2OpsSummary"></div>
+  </div>
+
+  <div class="v2panel">
+   <h3 style="margin-top:0">Acessos rápidos</h3>
+   <div class="toolbar" style="gap:8px;flex-wrap:wrap">
+    <button class="btn primary" data-jump="operacoes" type="button">🐔 Nova apanha</button>
+    <button class="btn soft" data-jump="funcionarios" type="button">👥 Funcionários</button>
+    <button class="btn soft" data-jump="frota" type="button">🚌 Frota</button>
+    <button class="btn soft" data-jump="manutencoes" type="button">🔧 Manutenção</button>
+    <button class="btn soft" data-jump="combustivel" type="button">⛽ Combustível</button>
+    <button class="btn soft" data-jump="financeiro" type="button">💰 Financeiro</button>
+   </div>
+  </div>
+ </div>
 </div>
-<div>
-<div class="v2panel"><div class="v2panelhead"><div><h3>Alertas inteligentes</h3><div class="muted">Frota, documentos, manutenção e RH.</div></div><button class="btn soft" data-jump="alertas" type="button">Ver todos</button></div><div id="v2Alerts"><div class="v2-empty">Carregando alertas...</div></div></div>
-<div class="v2panel"><div class="v2panelhead"><h3>Equipe &amp; Ponto</h3><button class="btn soft" data-jump="ponto" type="button">Abrir ponto</button></div><div class="v2stats" id="v2PeopleSummary"></div></div>
-<div class="v2panel"><h3>Próximos módulos do painel</h3><div class="v2alert">Mapa das equipes <span class="v2status">EM BREVE</span></div><div class="v2alert">Produção mensal <span class="v2status">EM BREVE</span></div><div class="v2alert">Previsto × faturado × recebido <span class="v2status">EM BREVE</span></div><div class="v2alert">Top integrados <span class="v2status">EM BREVE</span></div></div>
 </div>
-</div></div>
 <div class="section" data-screen="equipes" hidden="" id="equipes">
 <div class="card"><div class="toolbar" style="justify-content:space-between"><div><h3 style="margin:0">Equipes</h3><div class="muted">Organize equipes, contratantes e conduções.</div></div><div class="toolbar"><button class="btn primary" id="newTeamBtn" type="button">+ NOVA EQUIPE</button><button class="btn soft" id="refreshTeams" type="button">Atualizar</button></div></div><div class="list" id="teamsList" style="margin-top:12px"></div></div>
 <div class="card" id="teamDevicesCard">
@@ -595,7 +646,7 @@ body.device-mode .admin-only{display:none!important}
 <div class="section" data-screen="alertas" hidden="" id="alertas">
 <div class="card"><div class="toolbar" style="justify-content:space-between"><div><h3 style="margin:0">⚠ Alertas Inteligentes</h3><div class="muted">Pendências importantes da operação, RH e frota.</div></div><button class="btn primary" id="refreshAlerts" type="button">Atualizar alertas</button></div><div class="v2-kpis" id="alertsKpis" style="margin-top:14px"></div></div>
 <div class="card"><div class="list" id="alertsList"></div></div></div>
-<div class="section" data-screen="ia" hidden="" id="ia"><div class="card chat"><h3>Controla IA</h3><div class="muted">A IA avisará se a chave da OpenAI ainda não estiver configurada.</div><div class="chatbox" id="chatbox"></div><div class="toolbar" style="margin-top:10px"><input id="question" placeholder="Ex.: quais equipes estão atrasadas hoje?" style="flex:1;margin:0"/><button class="btn primary" id="sendAI">Enviar</button></div></div></div>
+<div class="section" data-screen="ia" hidden="" id="ia"><div class="card chat"><h3>Assistente IA</h3><div class="muted">A IA avisará se a chave da OpenAI ainda não estiver configurada.</div><div class="chatbox" id="chatbox"></div><div class="toolbar" style="margin-top:10px"><input id="question" placeholder="Ex.: quais equipes estão atrasadas hoje?" style="flex:1;margin:0"/><button class="btn primary" id="sendAI">Enviar</button></div></div></div>
 </section></main>
 <script>
 'use strict';
@@ -605,6 +656,10 @@ let companyId=null, conversationId=null, scheduleCache={}, companyProfile={}, cu
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 const money=v=>Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+function cleanCompanyName(v){
+ const s=String(v||"Agro Souza's").replace(/\s*[•-]?\s*BETA(?:\s*-\s*DADOS FICTÍCIOS)?/gi,'').trim();
+ return s||"Agro Souza's";
+}
 const session=()=>{try{return JSON.parse(localStorage.getItem('controla_beta_session')||'null')}catch{return null}};
 const saveSession=s=>localStorage.setItem('controla_beta_session',JSON.stringify(s));
 const clearSession=()=>localStorage.removeItem('controla_beta_session');
@@ -1338,10 +1393,12 @@ async function enterApp(authUser){
   if(!ids.length)throw new Error('Seu usuário ainda não possui empresa V2.');
   const filter=ids.map(function(id){return '"'+id+'"'}).join(',');
   const companies=await v2Rest('v2_companies','select=id,legal_name,trade_name,tax_id,timezone&status=eq.active&id=in.('+encodeURIComponent(filter)+')');
-  const beta=(companies||[]).find(function(x){return String(x.trade_name||'').toUpperCase().includes('BETA')})||(companies||[])[0];
-  if(!beta)throw new Error('Empresa não encontrada.');
-  companyId=beta.id;
-  companyProfile=beta;
+  const realCompany=(companies||[]).find(function(x){
+    return !String(x.legal_name||'').toUpperCase().includes('DADOS FICTÍCIOS');
+  })||(companies||[])[0];
+  if(!realCompany)throw new Error('Empresa não encontrada.');
+  companyId=realCompany.id;
+  companyProfile=realCompany;
   const activeMember=(members||[]).find(function(x){return x.company_id===companyId});
   if(activeMember&&activeMember.role_id){
     try{
@@ -1350,7 +1407,7 @@ async function enterApp(authUser){
     }catch(_){currentRoleCode=null}
   }
   isAdminGeneral=['owner','admin','general_admin'].includes(String(currentRoleCode||'').toLowerCase());
-  $('#companyName').textContent=companyProfile.trade_name||'Agro Souza\'s';
+  $('#companyName').textContent=cleanCompanyName(companyProfile.trade_name||companyProfile.legal_name);
   $('#login').classList.add('hidden');
   $('#app').classList.remove('hidden');
   $('#logout').classList.remove('hidden');
@@ -1425,31 +1482,127 @@ async function loadPoultryDashboard(){
   list.innerHTML=Object.keys(bt).length?Object.entries(bt).map(([n,v])=>`<div class="item"><div class="toolbar" style="justify-content:space-between"><strong>${esc(n)}</strong><span class="pill">${v.done}/${v.ops} concluídas</span></div><div class="muted">${v.birds.toLocaleString('pt-BR')} aves no dia</div></div>`).join(''):'<div class="v2-empty">Nenhuma apanha programada para hoje.</div>';
  }catch(e){list.innerHTML='<div class="error">'+esc(e.message)+'</div>'}
 }
-async function loadDashboard(){try{
- const dashboardMounted=!!document.querySelector('#screenHost [data-screen="inicio"]');
- if(!dashboardMounted)return;
- if($('#todayList')) $('#todayList').innerHTML='<div class="v2-empty">Atualizando painel...</div>';
- const rows=await dashRest('v2_dashboard_company_summary','select=*&company_id=eq.'+companyId),d=rows?.[0]||{};
- const cards=[
-  ['FUNCIONÁRIOS ATIVOS',d.active_employees||0,'Pessoas','👥'],
-  ['CONDUÇÕES ATIVAS',d.active_vehicles||0,'Frota','🚌'],
-  ['APANHAS / OPERAÇÕES HOJE',d.operations_today||0,(d.open_operations||0)+' em aberto','▣'],
-  ['ALERTAS IMPORTANTES',d.open_alerts||0,(d.critical_alerts||0)+' críticos','⚠']
- ];
- $('#kpis').innerHTML=cards.map((x,i)=>`<div class="v2kpi"><div class="t">${esc(x[0])}</div><div class="v">${esc(x[1])}</div><div class="s">${esc(x[2])}</div><div class="v2ico">${x[3]}</div></div>`).join('');
- const t=await dashRest('v2_dashboard_team_today','select=*&company_id=eq.'+companyId+'&order=scheduled_start.asc');
- $('#todayList').innerHTML=t.length?t.map(o=>`<div class="item"><div class="toolbar" style="justify-content:space-between"><strong>${esc(o.title)}</strong><span class="pill ${o.delayed?'danger':'ok'}">${o.delayed?'Atrasada '+o.delay_minutes+' min':'No horário'}</span></div><div class="muted">${esc(o.customer_name||'Cliente não informado')} • ${esc(o.location_name||'Local não informado')}</div></div>`).join(''):'<div class="v2-empty">Nenhuma apanha/operação programada para hoje.</div>';
- const todayOps=await rest('v2_operations','select=planned_birds,actual_birds,status,scheduled_start&company_id=eq.'+companyId+'&operation_type=eq.poultry_catching');
- const todayPoultry=todayOps.filter(o=>o.scheduled_start&&new Date(o.scheduled_start).toDateString()===new Date().toDateString());
- const birdsToday=todayPoultry.reduce((a,o)=>a+poN(o.actual_birds||o.planned_birds),0);
- $('#v2OpsSummary').innerHTML=[
-   ['Apanhas hoje',todayPoultry.length],
-   ['Aves hoje',birdsToday.toLocaleString('pt-BR')],
-   ['Concluídas',todayPoultry.filter(o=>o.status==='completed').length]
- ].map(x=>`<div class="v2mini"><span class="muted">${x[0]}</span><b>${esc(x[1])}</b></div>`).join('');
- $('#v2PeopleSummary').innerHTML=[['Ativos',d.active_employees||0],['Frota',d.active_vehicles||0],['Despesas mês',money(d.month_expense)]].map(x=>`<div class="v2mini"><span class="muted">${x[0]}</span><b>${esc(x[1])}</b></div>`).join('');
- try{const a=await dashRest('v2_alerts','select=title,severity,status,created_at&company_id=eq.'+companyId+'&status=eq.open&order=created_at.desc&limit=5');$('#v2Alerts').innerHTML=a.length?a.map(x=>`<div class="v2alert"><b>${esc(x.title||'Alerta')}</b><div class="muted">${esc(x.severity||'atenção')}</div></div>`).join(''):'<div class="v2-empty">Nenhum alerta aberto.</div>'}catch(_){$('#v2Alerts').innerHTML='<div class="v2-empty">Alertas disponíveis na aba Alertas.</div>'}
-}catch(e){$('#todayList').innerHTML='<div class="error">'+esc(e.message)+'</div>'}}
+async function dashSafe(table,query,timeoutMs=7000){
+ try{return await dashRest(table,query,timeoutMs)||[]}catch(e){console.warn('Dashboard '+table,e);return[]}
+}
+function dashLocalBounds(){
+ const n=new Date(),todayStart=new Date(n.getFullYear(),n.getMonth(),n.getDate()),tomorrow=new Date(n.getFullYear(),n.getMonth(),n.getDate()+1);
+ const monthStart=new Date(n.getFullYear(),n.getMonth(),1),nextMonth=new Date(n.getFullYear(),n.getMonth()+1,1);
+ const dateOnly=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+ return {todayStart:todayStart.toISOString(),tomorrow:tomorrow.toISOString(),monthStart:monthStart.toISOString(),nextMonth:nextMonth.toISOString(),monthDate:dateOnly(monthStart),nextMonthDate:dateOnly(nextMonth)};
+}
+function dashboardOperationStatus(o){
+ const map={planned:'Programada',scheduled:'Programada',in_progress:'Em andamento',completed:'Concluída',cancelled:'Cancelada'};
+ return map[o.status]||o.status||'—';
+}
+async function loadDashboard(){
+ try{
+  const dashboardMounted=!!document.querySelector('#screenHost [data-screen="inicio"]');
+  if(!dashboardMounted)return;
+  const b=dashLocalBounds();
+  if($('#todayList'))$('#todayList').innerHTML='<div class="v2-empty">Atualizando painel...</div>';
+
+  const [employees,teams,vehicles,opsMonth,fuelMonth,financeMonth,maintenance,attendanceToday,devices]=await Promise.all([
+   dashSafe('v2_employees','select=id,full_name,primary_team,status&company_id=eq.'+companyId+'&status=eq.active'),
+   dashSafe('v2_teams','select=id,name,code,supervisor_employee_id,status,metadata&company_id=eq.'+companyId+'&status=eq.active&order=name.asc'),
+   dashSafe('v2_vehicles','select=id,description,plate,model,current_odometer_km,status,metadata&company_id=eq.'+companyId+'&status=eq.active&order=description.asc'),
+   dashSafe('v2_operations','select=id,team_id,title,customer_name,location_name,scheduled_start,actual_start,actual_end,status,planned_birds,actual_birds,actual_revenue,actual_cost&company_id=eq.'+companyId+'&operation_type=eq.poultry_catching&scheduled_start=gte.'+encodeURIComponent(b.monthStart)+'&scheduled_start=lt.'+encodeURIComponent(b.nextMonth)+'&order=scheduled_start.desc'),
+   dashSafe('v2_fuel_logs','select=id,vehicle_id,fueled_at,liters,total_amount,odometer_km&company_id=eq.'+companyId+'&fueled_at=gte.'+encodeURIComponent(b.monthStart)+'&fueled_at=lt.'+encodeURIComponent(b.nextMonth)),
+   dashSafe('v2_financial_entries','select=id,entry_type,amount,status,competence_date,paid_at&company_id=eq.'+companyId+'&competence_date=gte.'+b.monthDate+'&competence_date=lt.'+b.nextMonthDate+'&status=neq.cancelled'),
+   dashSafe('v2_maintenance_plans','select=id,vehicle_id,name,next_due_at,next_due_odometer_km,active&company_id=eq.'+companyId+'&active=eq.true'),
+   dashSafe('v2_attendance_events','select=id,employee_id,event_type,occurred_at&company_id=eq.'+companyId+'&occurred_at=gte.'+encodeURIComponent(b.todayStart)+'&occurred_at=lt.'+encodeURIComponent(b.tomorrow)),
+   dashSafe('v2_device_access','select=id,team_id,device_name,active,last_seen_at&company_id=eq.'+companyId+'&active=eq.true')
+  ]);
+
+  const now=Date.now();
+  const todayOps=opsMonth.filter(o=>{
+   if(!o.scheduled_start)return false;
+   const d=new Date(o.scheduled_start);return d>=new Date(b.todayStart)&&d<new Date(b.tomorrow);
+  });
+  const birdsToday=todayOps.reduce((a,o)=>a+poN(o.actual_birds||o.planned_birds),0);
+  const birdsMonth=opsMonth.reduce((a,o)=>a+poN(o.actual_birds||o.planned_birds),0);
+  const fuelLiters=fuelMonth.reduce((a,x)=>a+poN(x.liters),0);
+  const fuelCost=fuelMonth.reduce((a,x)=>a+poN(x.total_amount),0);
+  const income=financeMonth.filter(x=>x.entry_type==='income').reduce((a,x)=>a+poN(x.amount),0);
+  const expense=financeMonth.filter(x=>x.entry_type==='expense').reduce((a,x)=>a+poN(x.amount),0);
+  const balance=income-expense;
+  const pointedEmployees=new Set(attendanceToday.map(x=>x.employee_id).filter(Boolean)).size;
+
+  const overdueMaintenance=maintenance.filter(p=>{
+   const v=vehicles.find(x=>x.id===p.vehicle_id),cur=poN(v?.current_odometer_km),due=poN(p.next_due_odometer_km);
+   const byKm=due>0&&cur>=due;
+   const byDate=p.next_due_at&&new Date(String(p.next_due_at).slice(0,10)+'T23:59:59').getTime()<now;
+   return byKm||byDate;
+  }).length;
+
+  const cards=[
+   ['FUNCIONÁRIOS',employees.length,'ativos','👥'],
+   ['EQUIPES',teams.length,devices.length+' celular(es) ativo(s)','📱'],
+   ['CONDUÇÕES',vehicles.length,overdueMaintenance+' manutenção(ões) vencida(s)','🚌'],
+   ['APANHAS HOJE',todayOps.length,todayOps.filter(o=>o.status==='completed').length+' concluída(s)','🐔'],
+   ['AVES HOJE',birdsToday.toLocaleString('pt-BR'),birdsMonth.toLocaleString('pt-BR')+' no mês','▣'],
+   ['SALDO DO MÊS',money(balance),'Entradas '+money(income),'💰']
+  ];
+  $('#kpis').innerHTML=cards.map(x=>'<div class="v2kpi"><div class="t">'+esc(x[0])+'</div><div class="v">'+esc(x[1])+'</div><div class="s">'+esc(x[2])+'</div><div class="v2ico">'+x[3]+'</div></div>').join('');
+
+  $('#todayList').innerHTML=todayOps.length?todayOps.slice().sort((a,b)=>new Date(a.scheduled_start)-new Date(b.scheduled_start)).map(o=>{
+   const late=!o.actual_start&&o.status!=='completed'&&o.status!=='cancelled'&&new Date(o.scheduled_start).getTime()<now;
+   const minutes=late?Math.max(0,Math.round((now-new Date(o.scheduled_start).getTime())/60000)):0;
+   const team=teams.find(t=>t.id===o.team_id);
+   return '<div class="item"><div class="toolbar" style="justify-content:space-between"><div><strong>'+esc(o.title||o.customer_name||'Apanha')+'</strong><div class="muted">'+esc(team?.name||'Equipe não informada')+' • '+esc(o.customer_name||'Integrado não informado')+' • '+esc(o.location_name||'Local não informado')+'</div></div><span class="pill '+(o.status==='completed'?'ok':late?'danger':o.status==='in_progress'?'warn':'')+'">'+esc(late?'Atrasada '+minutes+' min':dashboardOperationStatus(o))+'</span></div></div>';
+  }).join(''):'<div class="v2-empty">Nenhuma apanha programada para hoje.</div>';
+
+  $('#v2OpsSummary').innerHTML=[
+   ['Programadas',todayOps.filter(o=>['planned','scheduled'].includes(o.status)).length],
+   ['Em andamento',todayOps.filter(o=>o.status==='in_progress').length],
+   ['Concluídas',todayOps.filter(o=>o.status==='completed').length],
+   ['Aves',birdsToday.toLocaleString('pt-BR')]
+  ].map(x=>'<div class="v2mini"><span class="muted">'+esc(x[0])+'</span><b>'+esc(x[1])+'</b></div>').join('');
+
+  $('#v2PeopleSummary').innerHTML=[
+   ['Funcionários ativos',employees.length],
+   ['Bateram ponto hoje',pointedEmployees],
+   ['Equipes',teams.length],
+   ['Celulares ativos',devices.length]
+  ].map(x=>'<div class="v2mini"><span class="muted">'+esc(x[0])+'</span><b>'+esc(x[1])+'</b></div>').join('');
+
+  $('#dashboardMonthStats').innerHTML=[
+   ['Apanhas',opsMonth.length],
+   ['Aves',birdsMonth.toLocaleString('pt-BR')],
+   ['Diesel / combustível',fuelLiters.toLocaleString('pt-BR',{maximumFractionDigits:1})+' L'],
+   ['Custo combustível',money(fuelCost)],
+   ['Entradas',money(income)],
+   ['Saídas',money(expense)]
+  ].map(x=>'<div class="v2mini"><span class="muted">'+esc(x[0])+'</span><b>'+esc(x[1])+'</b></div>').join('');
+
+  const byTeam={};
+  opsMonth.forEach(o=>{
+   const n=teams.find(t=>t.id===o.team_id)?.name||'Sem equipe';
+   if(!byTeam[n])byTeam[n]={ops:0,birds:0};byTeam[n].ops++;byTeam[n].birds+=poN(o.actual_birds||o.planned_birds);
+  });
+  const byCustomer={};
+  opsMonth.forEach(o=>{const n=o.customer_name||'Não informado';if(!byCustomer[n])byCustomer[n]=0;byCustomer[n]+=poN(o.actual_birds||o.planned_birds)});
+  const teamRows=Object.entries(byTeam).sort((a,b)=>b[1].birds-a[1].birds).slice(0,5);
+  const customerRows=Object.entries(byCustomer).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  $('#dashboardMonthProduction').innerHTML=(teamRows.length||customerRows.length)?
+   '<div class="item"><strong>Por equipe</strong><div style="margin-top:7px">'+(teamRows.map(([n,v])=>'<div class="toolbar" style="justify-content:space-between"><span>'+esc(n)+'</span><b>'+v.birds.toLocaleString('pt-BR')+' aves</b></div>').join('')||'<div class="muted">Sem produção por equipe.</div>')+'</div></div>'+
+   '<div class="item"><strong>Principais integrados</strong><div style="margin-top:7px">'+(customerRows.map(([n,v])=>'<div class="toolbar" style="justify-content:space-between"><span>'+esc(n)+'</span><b>'+v.toLocaleString('pt-BR')+' aves</b></div>').join('')||'<div class="muted">Sem integrados no mês.</div>')+'</div></div>'
+   :'<div class="v2-empty">Ainda não há apanhas registradas neste mês.</div>';
+
+  $('#dashboardTeams').innerHTML=teams.length?teams.map(t=>{
+   const members=employees.filter(e=>String(e.primary_team||'').trim().toLowerCase()===String(t.name||'').trim().toLowerCase()).length;
+   const vehicleId=t.metadata?.primary_vehicle_id||null,v=vehicles.find(x=>x.id===vehicleId),dev=devices.find(x=>x.team_id===t.id);
+   const last=dev?.last_seen_at?new Date(dev.last_seen_at).toLocaleString('pt-BR'):'—';
+   return '<div class="item"><div class="toolbar" style="justify-content:space-between"><div><strong>'+esc(t.name)+'</strong><div class="muted">'+members+' funcionário(s) • '+esc(v?(v.description||v.model||'Condução')+(v.plate?' • '+v.plate:''):'Sem condução vinculada')+'</div></div><span class="pill '+(dev?'ok':'warn')+'">'+(dev?'CELULAR ATIVO':'SEM CELULAR')+'</span></div>'+(dev?'<div class="muted" style="margin-top:5px">Último acesso: '+esc(last)+'</div>':'')+'</div>';
+  }).join(''):'<div class="v2-empty">Nenhuma equipe ativa cadastrada.</div>';
+
+  if($('#dashboardLastUpdate'))$('#dashboardLastUpdate').textContent='Atualizado em '+new Date().toLocaleString('pt-BR')+' • '+cleanCompanyName(companyProfile.trade_name||companyProfile.legal_name);
+  await loadSmartAlerts();
+ }catch(e){
+  console.error('Dashboard',e);
+  if($('#todayList'))$('#todayList').innerHTML='<div class="error">Falha ao atualizar o painel: '+esc(e.message||String(e))+'</div>';
+ }
+}
 async function loadTeams(){
  try{
   const [r,v,e,d]=await Promise.all([
@@ -1707,7 +1860,7 @@ function printMonthlyMirror(){
   .legal{margin-top:14px;padding:10px;border:1px solid #bbb;background:#fafafa}.footer{margin-top:16px;border-top:1px solid #bbb;padding-top:8px;font-size:10px;color:#555}
   @media print{body{padding:0}@page{size:A4;margin:12mm}}
   </style></head><body>
-  <div class="head"><h1>ESPELHO DE PONTO ELETRÔNICO</h1><div class="muted">Documento gerado pelo Controla • ID ${esc(docId)}</div></div>
+  <div class="head"><h1>ESPELHO DE PONTO ELETRÔNICO</h1><div class="muted">Documento gerado pelo Agro Souza's Controle • ID ${esc(docId)}</div></div>
   <div class="meta">
     <div><b>Empregador:</b> ${esc(employer)}</div><div><b>CNPJ:</b> ${esc(cnpj||'Não informado')}</div>
     <div><b>Trabalhador:</b> ${esc(empName)}</div><div><b>Período:</b> ${esc(month)}</div>
@@ -3312,7 +3465,7 @@ setInterval(()=>{
 },60000);
 if('serviceWorker' in navigator){
  window.addEventListener('load',()=>{
-  navigator.serviceWorker.register('./sw-v6-23.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
+  navigator.serviceWorker.register('./sw-v6-24.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
  });
 }
 
@@ -3331,7 +3484,7 @@ if($('#refreshTeamReport'))$('#refreshTeamReport').addEventListener('click',load
 if($('#teamReportDate'))$('#teamReportDate').addEventListener('change',loadTeamReport);
 $('#refreshRH').addEventListener('click',async()=>{await loadEmployees();await loadRHPoint()});
 
-$('#refreshBtn').addEventListener('click',loadDashboard);
+$('#refreshBtn').addEventListener('click',async()=>{const b=$('#refreshBtn');if(b.disabled)return;b.disabled=true;b.textContent='ATUALIZANDO...';try{await loadPoultrySelectors();await Promise.all([loadDashboard(),loadPoultryDashboard()])}finally{b.disabled=false;b.textContent='↻ ATUALIZAR PAINEL'}});
 $('#refreshAlerts').addEventListener('click',async()=>{try{await rpc('v2_refresh_company_alerts',{p_company_id:companyId});await loadAlerts();await loadDashboard()}catch(e){alert(e.message)}});
 function addChat(t,r){const d=document.createElement('div');d.className='msg '+r;d.textContent=t;$('#chatbox').appendChild(d);$('#chatbox').scrollTop=$('#chatbox').scrollHeight}
 $('#sendAI').addEventListener('click',async()=>{const q=$('#question').value.trim();if(!q)return;addChat(q,'user');$('#question').value='';try{const s=session();const body={company_id:companyId,question:q};if(conversationId)body.conversation_id=conversationId;const r=await fetch(API_URL+'/functions/v1/controla-ai',{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+s.access_token,'Content-Type':'application/json'},body:JSON.stringify(body)});const data=await parseResponse(r);if(data?.conversation_id)conversationId=data.conversation_id;addChat(data?.answer||data?.message||'Sem resposta.','ai')}catch(e){addChat(e.message||'Falha ao consultar a IA.','ai')}});
