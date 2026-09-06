@@ -8,7 +8,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
-<title>Comando 360 • v6.41</title>
+<title>Comando 360 • v6.42</title>
 <link rel="manifest" href="./comando360.webmanifest"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
@@ -347,13 +347,13 @@ header .brand small{color:#718198;font-weight:650}
 @media(max-width:700px){#v2PeopleSummary{grid-template-columns:1fr 1fr}.dash-ring-card{grid-column:span 2}.dash-quick-grid{grid-template-columns:repeat(2,1fr)}}
 
 
-.truck-barn-checks{display:grid;gap:7px;margin-top:5px}.truck-barn-checks label{display:grid;grid-template-columns:auto 1fr minmax(110px,145px);align-items:center;gap:8px;padding:8px 10px;border:1px solid #dbe4ee;border-radius:10px;background:#fff}.truck-barn-checks input[type="checkbox"]{width:auto;margin:0}.truck-barn-birds{margin:0!important;padding:7px 8px!important;min-width:0}.truck-barn-birds:disabled{opacity:.45}
+.truck-barn-checks{display:grid;gap:7px;margin-top:5px}.truck-cata-row{display:grid;grid-template-columns:minmax(90px,1fr) minmax(110px,1fr) auto;gap:7px;align-items:center;padding:8px;border:1px solid #dbe4ee;border-radius:10px;background:#fff}.truck-cata-row input{margin:0!important;min-width:0}.truck-cata-remove{padding:7px 10px!important;min-width:38px}@media(max-width:520px){.truck-cata-row{grid-template-columns:1fr 1fr auto}}
 </style>
 <script defer="" src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
 <script>
 (function(){
-  const BUILD='6.41';
+  const BUILD='6.42';
   try{
     const marker='controla_cache_cleanup_'+BUILD;
     if(!localStorage.getItem(marker)){
@@ -387,7 +387,7 @@ header .brand small{color:#718198;font-weight:650}
 <div class="v2group">INTELIGÊNCIA</div>
 <button class="v2navbtn" data-v2tab="ia">✦   Assistente IA</button>
 </aside>
-<header><div class="brand"><img class="header-brand-icon" src="./comando360-icon.svg" alt="Comando 360"/><div><b>Comando <span class="brand360">360</span></b><div><small id="companyName">Empresa</small></div></div></div><div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.41</span><button class="btn soft" id="themeToggle" type="button">☾</button><button class="btn soft hidden" id="logout">Sair</button></div></header>
+<header><div class="brand"><img class="header-brand-icon" src="./comando360-icon.svg" alt="Comando 360"/><div><b>Comando <span class="brand360">360</span></b><div><small id="companyName">Empresa</small></div></div></div><div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.42</span><button class="btn soft" id="themeToggle" type="button">☾</button><button class="btn soft hidden" id="logout">Sair</button></div></header>
 <main class="wrap">
 <section class="login team-entry" id="login">
 <div class="card" id="deviceSetupCard">
@@ -404,7 +404,7 @@ header .brand small{color:#718198;font-weight:650}
  <label>Senha</label><input autocomplete="current-password" id="password" type="password"/>
  <button class="btn primary" id="loginBtn">Entrar</button>
  <button class="btn soft" id="backDeviceSetup" type="button" style="margin-left:6px">Voltar</button>
- <div class="muted" id="loginMsg" style="margin-top:10px">Comando 360 • v6.41</div><div class="debug" id="debug"></div>
+ <div class="muted" id="loginMsg" style="margin-top:10px">Comando 360 • v6.42</div><div class="debug" id="debug"></div>
 </div>
 </section>
 <section class="hidden" id="app">
@@ -644,10 +644,10 @@ header .brand small{color:#718198;font-weight:650}
 </div></div>
 
 <div class="section" data-screen="operacoes" hidden="" id="operacoes">
-<div class="v2hero"><div><h1>Apanhas</h1><p>Cadastro do aviário e carregamento caminhão por caminhão.</p></div><button class="btn v2new" id="newPoultryOp">+ Nova Apanha</button></div>
+<div class="v2hero"><div><h1>Apanhas</h1><p>Cadastro da granja e carregamento caminhão por caminhão.</p></div><button class="btn v2new" id="newPoultryOp">+ Nova Apanha</button></div>
 
 <div class="card hidden" id="poultryForm">
- <div class="toolbar"><div><strong>Nova Apanha</strong><div class="muted">Os dados do aviário ficam salvos para a próxima visita.</div></div><button class="btn soft" id="closePoultryForm">Fechar</button></div>
+ <div class="toolbar"><div><strong>Nova Apanha</strong><div class="muted">Os dados da granja ficam salvos para a próxima visita. O número do aviário é informado em cada caminhão.</div></div><button class="btn soft" id="closePoultryForm">Fechar</button></div>
  <div class="row">
    <div><label>Equipe</label><div class="toolbar"><select id="poTeam" style="flex:1"></select><button id="quickTeamBtn" class="btn soft" type="button">+ Equipe</button></div></div>
    <div><label>Início previsto</label><input id="poStart" type="datetime-local"></div>
@@ -655,20 +655,19 @@ header .brand small{color:#718198;font-weight:650}
  </div>
 
  <div class="card-lite">
-   <div class="toolbar"><div><strong>Local / Aviário</strong><div class="muted">Selecione um já salvo ou cadastre os dados uma única vez.</div></div></div>
-   <label>Aviário já cadastrado</label>
-   <select id="poSavedAviary"><option value="">Novo / selecione...</option></select>
+   <div class="toolbar"><div><strong>Local / Granja</strong><div class="muted">Selecione uma granja já salva ou cadastre os dados fixos uma única vez.</div></div></div>
+   <label>Granja já cadastrada</label>
+   <select id="poSavedAviary"><option value="">Nova / selecione...</option></select>
    <div class="row" style="margin-top:10px">
      <div><label>Nome do integrado / produtor</label><input id="poIntegratedName" placeholder="Ex.: João da Silva"></div>
      <div><label>Cidade</label><input id="poCity" placeholder="Ex.: Tatuí"></div>
      <div><label>Granja / propriedade (opcional)</label><input id="poFarmName" placeholder="Ex.: Granja Boa Vista"></div>
    </div>
    <div class="row">
-     <div><label>Aviário</label><input id="poAviaryName" placeholder="Ex.: Aviário 01"></div>
-     <div><label>Tomada</label><input id="poOutletType" placeholder="Ex.: 6 polos + terra"></div>
+     <div><label>Tomada da granja</label><input id="poOutletType" placeholder="Ex.: 6 polos + terra"></div>
      <div><label>Tipo de energia</label><input id="poEnergyType" placeholder="Ex.: Trifásico 380 V"></div>
    </div>
-   <div class="toolbar"><button id="saveAviaryProfile" class="btn soft" type="button">Salvar dados do aviário</button><span id="aviaryMsg" class="muted"></span></div>
+   <div class="toolbar"><button id="saveAviaryProfile" class="btn soft" type="button">Salvar dados da granja</button><span id="aviaryMsg" class="muted"></span></div>
  </div>
 
  <div class="card-lite admin-only" id="poAdminPlanning">
@@ -710,8 +709,13 @@ header .brand small{color:#718198;font-weight:650}
    <div><label>Motorista</label><input id="poTruckDriver" list="poDriverSuggestions" autocomplete="off" placeholder="Digite ou selecione o motorista"><datalist id="poDriverSuggestions"></datalist></div>
    <div><label>Placa</label><input id="poTruckPlate" list="poPlateSuggestions" autocomplete="off" autocapitalize="characters" placeholder="Digite ou selecione a placa"><datalist id="poPlateSuggestions"></datalist></div>
    <div>
-     <div id="poTruckSingleBarnWrap"><label>Aviário</label><select id="poTruckBarn"></select></div>
-     <div id="poTruckMultiBarnWrap" class="hidden"><label>Aviários da CATA</label><div id="poTruckBarnChecks" class="truck-barn-checks"></div><div id="poTruckBarnHint" class="muted" style="margin-top:5px">Selecione pelo menos 2 aviários.</div></div>
+     <div id="poTruckSingleBarnWrap"><label>Nº do aviário</label><input id="poTruckAviaryNumber" autocomplete="off" placeholder="Ex.: 01"></div>
+     <div id="poTruckMultiBarnWrap" class="hidden">
+       <label>Aviários da CATA</label>
+       <div id="poTruckBarnChecks" class="truck-barn-checks"></div>
+       <button id="poTruckAddCataAviary" class="btn soft" type="button" style="margin-top:7px">+ Adicionar aviário</button>
+       <div id="poTruckBarnHint" class="muted" style="margin-top:5px">Informe o número e as aves de cada aviário.</div>
+     </div>
    </div>
  </div>
  <div class="row">
@@ -1463,7 +1467,7 @@ async function syncPoultryOperationOfflineItem(item){
   p_integrated:f.integrated,
   p_city:f.city,
   p_farm_name:f.farm_name||null,
-  p_aviary:f.aviary,
+  p_aviary:null,
   p_outlet_type:f.outlet_type||null,
   p_energy_type:f.energy_type||null,
   p_scheduled_start:f.scheduled_start,
@@ -1498,18 +1502,18 @@ async function syncPoultryTruckOfflineItem(item){
  const p=item.payload||{},sheet=p.sheet||{};
  const existing=await rest('v2_poultry_truck_loads','select=id,loading_id,external_reference&company_id=eq.'+encodeURIComponent(item.company_id)+'&external_reference=eq.'+encodeURIComponent(item.id)+'&limit=1');
  let truck=existing?.[0]||null;
- const defaultBarn=refs.loading?.metadata?.default_barn_id||null;
- const rawBreakdown=(Array.isArray(item.barn_breakdown)&&item.barn_breakdown.length?item.barn_breakdown:(Array.isArray(p.barn_breakdown)?p.barn_breakdown:[]));
- const rawBarnIds=(Array.isArray(item.barn_ids)&&item.barn_ids.length?item.barn_ids:[item.barn_id]).filter(Boolean);
- let barnBreakdown=rawBreakdown.map(x=>({
-   barn_id:(!x?.barn_id||String(x.barn_id).startsWith('offline:'))?defaultBarn:x.barn_id,
-   barn_number:x?.barn_number||null,
-   birds:poN(x?.birds)
- })).filter(x=>x.barn_id);
- if(!barnBreakdown.length)barnBreakdown=rawBarnIds.map(id=>({barn_id:(!id||String(id).startsWith('offline:'))?defaultBarn:id,barn_number:null,birds:0})).filter(x=>x.barn_id);
- const barnIds=[...new Set(barnBreakdown.map(x=>x.barn_id).filter(Boolean))];
- const barnId=barnIds[0]||defaultBarn;
- if(!barnId)throw new Error('Aviário do caminhão não foi encontrado.');
+
+ let barnBreakdown=(Array.isArray(item.barn_breakdown)&&item.barn_breakdown.length?item.barn_breakdown:(Array.isArray(p.barn_breakdown)?p.barn_breakdown:[]))
+  .map(x=>({barn_id:x?.barn_id||null,barn_number:normalizeAviaryNumber(x?.barn_number),birds:poN(x?.birds)}))
+  .filter(x=>x.barn_number||x.barn_id);
+
+ // Compatibilidade com itens offline criados antes da v6.42.
+ if(!barnBreakdown.length&&item.barn_id){
+  const oldId=String(item.barn_id).startsWith('offline:')?(refs.loading?.metadata?.default_barn_id||null):item.barn_id;
+  const oldBarn=poultryBarns.find(b=>b.id===oldId);
+  barnBreakdown=[{barn_id:oldId,barn_number:oldBarn?.barn_number||sheet.sheet_aviaries||'Aviário',birds:poN(p.birds)}];
+ }
+ if(!barnBreakdown.length)throw new Error('Número do aviário do caminhão não foi encontrado.');
 
  let sheetPath=item.sheet_uploaded_path||null;
  if(item.sheet_blob&&!sheetPath){
@@ -1524,18 +1528,24 @@ async function syncPoultryTruckOfflineItem(item){
    truck_plate:p.truck_plate||null,driver_name:p.driver_name||null,birds:p.birds||0,
    started_at:p.started_at||null,completed_at:p.completed_at||null,is_cata:!!p.is_cata,
    external_reference:item.id,
-   metadata:{barn_id:barnId,barn_ids:barnIds,barn_breakdown:barnBreakdown,notes:p.notes||null,...sheet,sheet_photo_path:sheetPath,source:'team_device_offline_sync'}
+   metadata:{
+    aviary_number:p.is_cata?null:(barnBreakdown[0]?.barn_number||null),
+    barn_breakdown:barnBreakdown,notes:p.notes||null,...sheet,sheet_photo_path:sheetPath,source:'team_device_offline_sync'
+   }
   });
   truck=rows?.[0]||null;
  }
  if(!truck?.id)throw new Error('Caminhão offline não foi salvo.');
 
- const barnLinks=await rest('v2_poultry_truck_barns','select=id,barn_id&company_id=eq.'+encodeURIComponent(item.company_id)+'&truck_load_id=eq.'+encodeURIComponent(truck.id));
- const linked=new Set((barnLinks||[]).map(x=>x.barn_id));
- for(let i=0;i<barnBreakdown.length;i++){
-  const bb=barnBreakdown[i];
-  if(linked.has(bb.barn_id))continue;
-  await rest('v2_poultry_truck_barns','','POST',{company_id:item.company_id,truck_load_id:truck.id,barn_id:bb.barn_id,sequence_no:i+1,birds:poN(bb.birds)||null,started_at:p.started_at||null,completed_at:p.completed_at||null,notes:p.notes||null});
+ // Histórico antigo com barn_id continua ligado à tabela estruturada.
+ const legacy= barnBreakdown.filter(x=>x.barn_id);
+ if(legacy.length){
+  const barnLinks=await rest('v2_poultry_truck_barns','select=id,barn_id&company_id=eq.'+encodeURIComponent(item.company_id)+'&truck_load_id=eq.'+encodeURIComponent(truck.id));
+  const linked=new Set((barnLinks||[]).map(x=>x.barn_id));
+  for(let i=0;i<legacy.length;i++){
+   const bb=legacy[i];if(linked.has(bb.barn_id))continue;
+   await rest('v2_poultry_truck_barns','','POST',{company_id:item.company_id,truck_load_id:truck.id,barn_id:bb.barn_id,sequence_no:i+1,birds:poN(bb.birds)||null,started_at:p.started_at||null,completed_at:p.completed_at||null,notes:p.notes||null});
+  }
  }
  try{await saveTruckDriverPair(p.driver_name,p.truck_plate,item.team_id||null)}catch(e){console.warn('Atalho motorista/placa offline',e)}
  if(refs.operationId)await refreshOperationBirdTotals(refs.operationId,refs.loadingId);
@@ -2491,6 +2501,14 @@ function applyPoultryRoleUI(){
  const finance=document.getElementById('poFinanceCard');
  if(finance)finance.classList.add('hidden');
 }
+function populateSavedFarmOptions(){
+ const saved=$('#poSavedAviary');
+ if(!saved)return;
+ saved.innerHTML='<option value="">Nova / selecione...</option>'+poultryFarms.map(f=>{
+  const label=[f.producer_name||'Integrado',f.farm_name||'',f.city||f.address?.city||''].filter(Boolean).join(' • ');
+  return '<option value="'+esc(f.id)+'">'+esc(label)+'</option>';
+ }).join('');
+}
 async function loadDevicePoultryContext(){
  try{
   if(deviceMode&&!navigator.onLine){
@@ -2503,10 +2521,10 @@ async function loadDevicePoultryContext(){
   }else{
    poultryTeams=await rest('v2_teams','select=id,name,status,metadata,supervisor_employee_id&company_id=eq.'+companyId+'&id=eq.'+encodeURIComponent(deviceAccess.team_id))||[];
    if(!poultryTeams.length&&deviceTeam)poultryTeams=[deviceTeam];
-   const loadings=await rest('v2_poultry_loadings','select=id,farm_id,operation_id,metadata,team_id,status&company_id=eq.'+companyId+'&team_id=eq.'+encodeURIComponent(deviceAccess.team_id)+'&order=created_at.desc&limit=200')||[];
-   poultryLoadings=loadings;
+   poultryLoadings=await rest('v2_poultry_loadings','select=id,farm_id,operation_id,metadata,team_id,status&company_id=eq.'+companyId+'&team_id=eq.'+encodeURIComponent(deviceAccess.team_id)+'&order=created_at.desc&limit=200')||[];
    poultryFarms=await rest('v2_poultry_farms','select=id,integrator_id,producer_name,farm_name,city,address,status,metadata&company_id=eq.'+companyId+'&status=eq.active&order=producer_name.asc')||[];
-   poultryBarns=await rest('v2_poultry_barns','select=id,farm_id,barn_number,outlet_type,energy_type,status&company_id=eq.'+companyId+'&status=eq.active&order=barn_number.asc')||[];
+   // Mantido apenas para ler histórico antigo; novos lançamentos não dependem de cadastro de aviário.
+   try{poultryBarns=await rest('v2_poultry_barns','select=id,farm_id,barn_number,outlet_type,energy_type,status&company_id=eq.'+companyId+'&status=eq.active&order=barn_number.asc')||[]}catch(_){poultryBarns=[]}
    if(deviceMode)await offlineCacheSet(offlineTeamKey('poultry_context'),{teams:poultryTeams,farms:poultryFarms,barns:poultryBarns,loadings:poultryLoadings});
    loadTruckDriverPairs().catch(()=>{});
   }
@@ -2514,11 +2532,17 @@ async function loadDevicePoultryContext(){
   if(deviceMode){
    const pending=(await offlineQueueList()).filter(x=>x.type==='poultry_operation');
    for(const item of pending){
-    const f=item.form||{},farmId='offline-farm:'+item.id,barnId='offline-barn:'+item.id;
-    if(!poultryFarms.some(x=>x.id===farmId))poultryFarms.unshift({id:farmId,producer_name:f.integrated,farm_name:f.farm_name||f.integrated,city:f.city,address:{city:f.city},status:'active',metadata:{offline_pending:true}});
-    if(!poultryBarns.some(x=>x.id===barnId))poultryBarns.unshift({id:barnId,farm_id:farmId,barn_number:f.aviary,outlet_type:f.outlet_type||null,energy_type:f.energy_type||null,status:'active',offline_pending:true});
+    const f=item.form||{},syntheticFarmId='offline-farm:'+item.id,farmId=f.source_farm_id||syntheticFarmId;
+    if(!f.source_farm_id&&!poultryFarms.some(x=>x.id===syntheticFarmId)){
+     poultryFarms.unshift({
+      id:syntheticFarmId,producer_name:f.integrated,farm_name:f.farm_name||f.integrated,city:f.city,address:{city:f.city},status:'active',
+      metadata:{offline_pending:true,outlet_type:f.outlet_type||null,energy_type:f.energy_type||null}
+     });
+    }
     const loadingId='offline:'+item.id;
-    if(!poultryLoadings.some(x=>x.id===loadingId))poultryLoadings.unshift({id:loadingId,operation_id:'offline:'+item.id,farm_id:farmId,team_id:item.team_id,status:'planned',metadata:{default_barn_id:barnId,offline_pending:true}});
+    if(!poultryLoadings.some(x=>x.id===loadingId))poultryLoadings.unshift({
+     id:loadingId,operation_id:'offline:'+item.id,farm_id:farmId,team_id:item.team_id,status:'planned',metadata:{offline_pending:true}
+    });
    }
   }
 
@@ -2529,13 +2553,7 @@ async function loadDevicePoultryContext(){
    if(t)team.value=t.id;
    team.disabled=true;
   }
-  const saved=$('#poSavedAviary');
-  if(saved){
-   saved.innerHTML='<option value="">Novo / selecione...</option>'+poultryBarns.map(b=>{
-    const f=poultryFarms.find(x=>x.id===b.farm_id);
-    return '<option value="'+esc(b.id)+'">'+esc(f?.producer_name||'Integrado')+' • '+esc(f?.city||f?.address?.city||'Cidade')+' • '+esc(b.barn_number)+(b.offline_pending?' • OFFLINE':'')+'</option>';
-   }).join('');
-  }
+  populateSavedFarmOptions();
   applyPoultryRoleUI();
  }catch(e){
   console.warn('Contexto da equipe',e);
@@ -2546,7 +2564,6 @@ async function loadDevicePoultryContext(){
 async function loadPoultrySelectors(){
  const team=$('#poTeam');
  if(team)team.innerHTML='<option value="">Carregando equipes...</option>';
-
  try{
   poultryTeams=await rest('v2_teams','select=id,name,status&company_id=eq.'+companyId+'&status=eq.active&order=name.asc')||[];
   if(team){
@@ -2557,38 +2574,20 @@ async function loadPoultrySelectors(){
   console.error('Erro somente ao carregar equipes',e);
   if(team)team.innerHTML='<option value="">Erro ao carregar equipes</option>';
  }
-
- // Os demais cadastros não podem impedir a equipe de aparecer.
- try{
-  await rest('v2_poultry_integrators','select=id,name,status&company_id=eq.'+companyId+'&status=eq.active&order=name.asc');
- }catch(e){console.warn('Integrados não carregados',e)}
-
- try{
-  poultryFarms=await rest('v2_poultry_farms','select=id,integrator_id,producer_name,farm_name,city,address,status,metadata&company_id=eq.'+companyId+'&status=eq.active&order=producer_name.asc')||[];
- }catch(e){console.warn('Granjas não carregadas',e);poultryFarms=[]}
-
- try{
-  poultryBarns=await rest('v2_poultry_barns','select=id,farm_id,barn_number,outlet_type,energy_type,status&company_id=eq.'+companyId+'&status=eq.active&order=barn_number.asc')||[];
- }catch(e){console.warn('Aviários não carregados',e);poultryBarns=[]}
-
- const saved=$('#poSavedAviary');
- if(saved){
-  saved.innerHTML='<option value="">Novo / selecione...</option>'+poultryBarns.map(b=>{
-   const f=poultryFarms.find(x=>x.id===b.farm_id);
-   return `<option value="${b.id}">${esc(f?.producer_name||'Integrado')} • ${esc(f?.city||f?.address?.city||'Cidade')} • ${esc(b.barn_number)}</option>`
-  }).join('');
- }
+ try{await rest('v2_poultry_integrators','select=id,name,status&company_id=eq.'+companyId+'&status=eq.active&order=name.asc')}catch(e){console.warn('Integrados não carregados',e)}
+ try{poultryFarms=await rest('v2_poultry_farms','select=id,integrator_id,producer_name,farm_name,city,address,status,metadata&company_id=eq.'+companyId+'&status=eq.active&order=producer_name.asc')||[]}catch(e){console.warn('Granjas não carregadas',e);poultryFarms=[]}
+ try{poultryBarns=await rest('v2_poultry_barns','select=id,farm_id,barn_number,outlet_type,energy_type,status&company_id=eq.'+companyId+'&status=eq.active&order=barn_number.asc')||[]}catch(e){poultryBarns=[]}
+ populateSavedFarmOptions();
  applyPoultryRoleUI();
 }
-function fillAviaryProfile(barnId){
- const b=poultryBarns.find(x=>x.id===barnId),f=b&&poultryFarms.find(x=>x.id===b.farm_id);
- if(!b||!f)return;
+function fillAviaryProfile(farmId){
+ const f=poultryFarms.find(x=>x.id===farmId);
+ if(!f)return;
  $('#poIntegratedName').value=f.producer_name||'';
  $('#poCity').value=f.city||f.address?.city||'';
  $('#poFarmName').value=f.farm_name||'';
- $('#poAviaryName').value=b.barn_number||'';
- $('#poOutletType').value=b.outlet_type||'';
- $('#poEnergyType').value=b.energy_type||'';
+ $('#poOutletType').value=f.metadata?.outlet_type||'';
+ $('#poEnergyType').value=f.metadata?.energy_type||'';
 }
 async function ensurePoultryIntegrator(name){
  const clean=(name||'').trim();
@@ -2605,66 +2604,72 @@ async function ensurePoultryIntegrator(name){
  return found;
 }
 async function ensureAviaryProfile(){
- const integrated=$('#poIntegratedName').value.trim(),city=$('#poCity').value.trim(),farmName=$('#poFarmName').value.trim(),aviary=$('#poAviaryName').value.trim();
- if(!integrated||!city||!aviary)throw new Error('Preencha nome do integrado, cidade e aviário.');
+ const integrated=$('#poIntegratedName').value.trim(),city=$('#poCity').value.trim(),farmName=$('#poFarmName').value.trim();
+ const outlet=$('#poOutletType').value.trim()||null,energy=$('#poEnergyType').value.trim()||null;
+ if(!integrated||!city)throw new Error('Preencha nome do integrado e cidade.');
  if(deviceMode){
-  const res=await rpc('v2_device_ensure_aviary',{
-   p_company_id:companyId,
-   p_integrated:integrated,
-   p_city:city,
-   p_farm_name:farmName||null,
-   p_aviary:aviary,
-   p_outlet_type:$('#poOutletType').value.trim()||null,
-   p_energy_type:$('#poEnergyType').value.trim()||null
+  const res=await rpc('v2_device_ensure_farm',{
+   p_company_id:companyId,p_integrated:integrated,p_city:city,p_farm_name:farmName||null,
+   p_outlet_type:outlet,p_energy_type:energy
   });
   const row=Array.isArray(res)?res[0]:res;
-  if(!row?.farm_id||!row?.barn_id)throw new Error('Não foi possível salvar o aviário para esta equipe.');
-  const farm={id:row.farm_id,integrator_id:row.integrator_id,producer_name:row.producer_name,farm_name:row.farm_name,city:row.city,address:{city:row.city},status:'active',metadata:{}};
-  const barn={id:row.barn_id,farm_id:row.farm_id,barn_number:row.barn_number,outlet_type:row.outlet_type,energy_type:row.energy_type,status:'active'};
+  if(!row?.farm_id)throw new Error('Não foi possível salvar a granja para esta equipe.');
+  const farm={
+   id:row.farm_id,integrator_id:row.integrator_id,producer_name:row.producer_name,farm_name:row.farm_name,
+   city:row.city,address:{city:row.city},status:'active',
+   metadata:{outlet_type:row.outlet_type||null,energy_type:row.energy_type||null}
+  };
   poultryFarms=[farm,...poultryFarms.filter(x=>x.id!==farm.id)];
-  poultryBarns=[barn,...poultryBarns.filter(x=>x.id!==barn.id)];
-  return {farm,barn};
+  populateSavedFarmOptions();
+  if($('#poSavedAviary'))$('#poSavedAviary').value=farm.id;
+  return {farm};
  }
- let farm=poultryFarms.find(f=>String(f.producer_name||'').toLowerCase()===integrated.toLowerCase()&&String(f.city||f.address?.city||'').toLowerCase()===city.toLowerCase()&&String(f.farm_name||'').toLowerCase()===farmName.toLowerCase());
+ let farm=poultryFarms.find(f=>
+  String(f.producer_name||'').toLowerCase()===integrated.toLowerCase()&&
+  String(f.city||f.address?.city||'').toLowerCase()===city.toLowerCase()&&
+  String(f.farm_name||'').toLowerCase()===String(farmName||integrated).toLowerCase()
+ );
  const integrator=await ensurePoultryIntegrator(integrated);
+ const metadata={...(farm?.metadata||{}),outlet_type:outlet,energy_type:energy};
  if(!farm){
-  const rows=await rest('v2_poultry_farms','','POST',{company_id:companyId,integrator_id:integrator.id,producer_name:integrated,farm_name:farmName||integrated,city,address:{city},status:'active',metadata:{}});
+  const rows=await rest('v2_poultry_farms','','POST',{
+   company_id:companyId,integrator_id:integrator.id,producer_name:integrated,farm_name:farmName||integrated,
+   city,address:{city},status:'active',metadata
+  });
   farm=rows?.[0];
  }else{
-  await rest('v2_poultry_farms','id=eq.'+farm.id,'PATCH',{integrator_id:integrator.id,producer_name:integrated,farm_name:farmName||farm.farm_name,city,address:{...(farm.address||{}),city},metadata:farm.metadata||{}});
+  const rows=await rest('v2_poultry_farms','id=eq.'+farm.id,'PATCH',{
+   integrator_id:integrator.id,producer_name:integrated,farm_name:farmName||farm.farm_name,
+   city,address:{...(farm.address||{}),city},metadata
+  });
+  farm=rows?.[0]||{...farm,integrator_id:integrator.id,producer_name:integrated,farm_name:farmName||farm.farm_name,city,address:{...(farm.address||{}),city},metadata};
  }
- let barn=poultryBarns.find(b=>b.farm_id===farm.id&&String(b.barn_number||'').toLowerCase()===aviary.toLowerCase());
- const barnBody={outlet_type:$('#poOutletType').value.trim()||null,energy_type:$('#poEnergyType').value.trim()||null,status:'active'};
- if(!barn){
-  const rows=await rest('v2_poultry_barns','','POST',{company_id:companyId,farm_id:farm.id,barn_number:aviary,...barnBody});
-  barn=rows?.[0];
- }else{
-  await rest('v2_poultry_barns','id=eq.'+barn.id,'PATCH',barnBody);
- }
+ if(!farm?.id)throw new Error('Não foi possível salvar a granja.');
  await loadPoultrySelectors();
- if(barn?.id)$('#poSavedAviary').value=barn.id;
- return {farm,barn};
+ if($('#poSavedAviary'))$('#poSavedAviary').value=farm.id;
+ return {farm};
 }
 async function saveAviaryProfile(){
- try{$('#aviaryMsg').textContent='Salvando...';await ensureAviaryProfile();$('#aviaryMsg').textContent='Dados do aviário salvos ✓'}catch(e){$('#aviaryMsg').textContent=e.message}
+ try{
+  $('#aviaryMsg').textContent='Salvando...';
+  await ensureAviaryProfile();
+  $('#aviaryMsg').textContent='Dados da granja salvos ✓';
+ }catch(e){$('#aviaryMsg').textContent=e.message}
 }
 async function savePoultryOperation(){
  const t=poultryTeams.find(x=>x.id===$('#poTeam').value)||(deviceMode?deviceTeam:null);
  if(!t||!$('#poStart').value)return $('#poMsg').textContent='Selecione a equipe e informe o início.';
 
  if(deviceMode&&!navigator.onLine){
-  const integrated=$('#poIntegratedName').value.trim(),city=$('#poCity').value.trim(),farmName=$('#poFarmName').value.trim(),aviary=$('#poAviaryName').value.trim();
-  if(!integrated||!city||!aviary)return $('#poMsg').textContent='Preencha nome do integrado, cidade e aviário.';
+  const integrated=$('#poIntegratedName').value.trim(),city=$('#poCity').value.trim(),farmName=$('#poFarmName').value.trim();
+  if(!integrated||!city)return $('#poMsg').textContent='Preencha nome do integrado e cidade.';
   try{
    $('#poMsg').textContent='Salvando apanha neste celular...';
    const id=makeOfflineId('apanha');
-   const savedBarnId=$('#poSavedAviary')?.value||'';
-   const savedBarn=poultryBarns.find(b=>b.id===savedBarnId)||null;
-   const savedFarm=savedBarn?poultryFarms.find(f=>f.id===savedBarn.farm_id):null;
+   const selectedFarmId=$('#poSavedAviary')?.value||'';
+   const savedFarm=poultryFarms.find(f=>f.id===selectedFarmId)||null;
    const form={
-    integrated,city,farm_name:farmName||null,aviary,
-    source_farm_id:savedFarm?.id||null,
-    source_barn_id:savedBarn?.id||null,
+    integrated,city,farm_name:farmName||null,source_farm_id:savedFarm?.id||null,
     outlet_type:$('#poOutletType').value.trim()||null,
     energy_type:$('#poEnergyType').value.trim()||null,
     scheduled_start:new Date($('#poStart').value).toISOString(),
@@ -2680,17 +2685,19 @@ async function savePoultryOperation(){
     name:integrated,sequence:1
    });
    $('#poTruckMsg').className='okmsg';
-   $('#poTruckMsg').textContent='Apanha salva offline ✓ Registre os caminhões normalmente. Tudo será sincronizado quando voltar a internet.';
+   $('#poTruckMsg').textContent='Apanha salva offline ✓ Agora informe o aviário em cada caminhão.';
   }catch(e){$('#poMsg').textContent=e.message||String(e)}
   return;
  }
 
  try{
   $('#poMsg').textContent='Salvando...';
-  const {farm,barn}=await ensureAviaryProfile();
+  const {farm}=await ensureAviaryProfile();
   const planned=isAdminGeneral?poN($('#poPlannedBirds')?.value):0;
   const price=isAdminGeneral?poN($('#poPricePerBird')?.value):0;
-  const location=`${farm.city||farm.address?.city||''} • ${farm.producer_name} • ${barn.barn_number}`;
+  const outlet=farm.metadata?.outlet_type||$('#poOutletType').value.trim()||null;
+  const energy=farm.metadata?.energy_type||$('#poEnergyType').value.trim()||null;
+  const location=[farm.city||farm.address?.city||'',farm.farm_name||farm.producer_name||''].filter(Boolean).join(' • ');
   const opRows=await rest('v2_operations','','POST',{
     company_id:companyId,operation_type:'poultry_catching',title:'Apanha - '+farm.producer_name,
     customer_name:farm.producer_name,location_name:location,team_id:t.id,
@@ -2698,14 +2705,14 @@ async function savePoultryOperation(){
     scheduled_end:$('#poEnd').value?new Date($('#poEnd').value).toISOString():null,
     status:'planned',planned_birds:planned||null,price_per_bird:price||null,
     planned_revenue:planned&&price?planned*price:null,notes:$('#poNotes').value.trim()||null,
-    metadata:{team_name:t.name,farm_id:farm.id,barn_id:barn.id,city:farm.city,integrated_name:farm.producer_name,outlet_type:barn.outlet_type,energy_type:barn.energy_type}
+    metadata:{team_name:t.name,farm_id:farm.id,city:farm.city,integrated_name:farm.producer_name,outlet_type:outlet,energy_type:energy}
   });
   const op=opRows?.[0];
   if(!op)throw new Error('Apanha não foi criada.');
   const loadingRows=await rest('v2_poultry_loadings','','POST',{
     company_id:companyId,operation_id:op.id,integrator_id:farm.integrator_id,farm_id:farm.id,loading_date:$('#poStart').value.slice(0,10),
     catching_method:'back',planned_birds:planned||null,reported_birds:0,planned_trucks:null,reported_trucks:0,status:'planned',team_id:t.id,
-    metadata:{default_barn_id:barn.id}
+    metadata:{source:'field_entry'}
   });
   const loading=loadingRows?.[0];
   if(!loading?.id)throw new Error('Apanha criada, mas o carregamento não foi vinculado.');
@@ -2735,16 +2742,17 @@ async function loadPoultryOps(){
    const queue=await offlineQueueList();
    for(const item of queue.filter(x=>x.type==='poultry_operation')){
     const f=item.form||{},opId='offline:'+item.id,loadingId='offline:'+item.id;
-    const syntheticFarmId='offline-farm:'+item.id,syntheticBarnId='offline-barn:'+item.id;
-    const farmId=f.source_farm_id||syntheticFarmId,barnId=f.source_barn_id||syntheticBarnId;
-    if(!f.source_farm_id&&!poultryFarms.some(x=>x.id===syntheticFarmId))poultryFarms.unshift({id:syntheticFarmId,producer_name:f.integrated,farm_name:f.farm_name||f.integrated,city:f.city,address:{city:f.city},status:'active',metadata:{offline_pending:true}});
-    if(!f.source_barn_id&&!poultryBarns.some(x=>x.id===syntheticBarnId))poultryBarns.unshift({id:syntheticBarnId,farm_id:farmId,barn_number:f.aviary,outlet_type:f.outlet_type||null,energy_type:f.energy_type||null,status:'active',offline_pending:true});
-    if(!ops.some(o=>o.id===opId))ops.unshift({
-     id:opId,operation_number:null,title:'Apanha - '+f.integrated,customer_name:f.integrated,location_name:(f.city||'')+' • '+(f.integrated||'')+' • '+(f.aviary||''),
-     team_id:item.team_id,scheduled_start:f.scheduled_start,scheduled_end:f.scheduled_end,status:'planned',notes:f.notes||null,
-     offline_event_id:item.id,metadata:{farm_id:farmId,barn_id:barnId,city:f.city,integrated_name:f.integrated,offline_pending:true}
+    const syntheticFarmId='offline-farm:'+item.id,farmId=f.source_farm_id||syntheticFarmId;
+    if(!f.source_farm_id&&!poultryFarms.some(x=>x.id===syntheticFarmId))poultryFarms.unshift({
+     id:syntheticFarmId,producer_name:f.integrated,farm_name:f.farm_name||f.integrated,city:f.city,address:{city:f.city},status:'active',
+     metadata:{offline_pending:true,outlet_type:f.outlet_type||null,energy_type:f.energy_type||null}
     });
-    if(!loadings.some(l=>l.id===loadingId))loadings.unshift({id:loadingId,operation_id:opId,farm_id:farmId,status:'planned',reported_birds:0,reported_trucks:0,team_id:item.team_id,metadata:{default_barn_id:barnId,offline_pending:true}});
+    if(!ops.some(o=>o.id===opId))ops.unshift({
+     id:opId,operation_number:null,title:'Apanha - '+f.integrated,customer_name:f.integrated,location_name:[f.city,f.farm_name||f.integrated].filter(Boolean).join(' • '),
+     team_id:item.team_id,scheduled_start:f.scheduled_start,scheduled_end:f.scheduled_end,status:'planned',notes:f.notes||null,
+     offline_event_id:item.id,metadata:{farm_id:farmId,city:f.city,integrated_name:f.integrated,outlet_type:f.outlet_type||null,energy_type:f.energy_type||null,offline_pending:true}
+    });
+    if(!loadings.some(l=>l.id===loadingId))loadings.unshift({id:loadingId,operation_id:opId,farm_id:farmId,status:'planned',reported_birds:0,reported_trucks:0,team_id:item.team_id,metadata:{offline_pending:true}});
    }
 
    for(const item of queue.filter(x=>x.type==='poultry_truck')){
@@ -2753,7 +2761,7 @@ async function loadPoultryOps(){
      id:'offline-truck:'+item.id,loading_id:loadingId,truck_sequence:item.payload?.truck_sequence,
      truck_plate:item.payload?.truck_plate,driver_name:item.payload?.driver_name,birds:item.payload?.birds,
      started_at:item.payload?.started_at,completed_at:item.payload?.completed_at,is_cata:!!item.payload?.is_cata,
-     external_reference:item.id,metadata:{barn_id:item.barn_id,barn_ids:item.barn_ids||[item.barn_id].filter(Boolean),barn_breakdown:item.barn_breakdown||item.payload?.barn_breakdown||[],notes:item.payload?.notes,...(item.payload?.sheet||{}),sheet_photo_path:item.sheet_blob?'local-pending':null,offline_pending:true}
+     external_reference:item.id,metadata:{aviary_number:item.payload?.is_cata?null:(item.barn_breakdown?.[0]?.barn_number||item.payload?.barn_breakdown?.[0]?.barn_number||null),barn_breakdown:item.barn_breakdown||item.payload?.barn_breakdown||[],notes:item.payload?.notes,...(item.payload?.sheet||{}),sheet_photo_path:item.sheet_blob?'local-pending':null,offline_pending:true}
     });
    }
 
@@ -2784,14 +2792,14 @@ async function loadPoultryOps(){
       '<div class="truck-row" style="padding:12px;border:1px solid #e5e7eb;border-radius:12px;margin:8px 0;background:#fff">'+
        '<div class="toolbar" style="justify-content:space-between;align-items:flex-start"><div><b style="font-size:15px">🚚 Caminhão '+esc(t.truck_sequence||'')+'</b><div class="muted" style="margin-top:3px">'+esc(t.truck_plate||'')+' • '+esc(t.driver_name||'')+'</div></div>'+
        (t.metadata?.offline_pending?'<span class="pill warn">OFFLINE • PENDENTE</span>':(t.is_cata?'<span class="pill warn">CATA</span>':''))+'</div>'+
-       '<div style="margin-top:8px"><b>'+poN(t.birds).toLocaleString('pt-BR')+' aves</b> • '+(t.started_at?new Date(t.started_at).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'—')+' → '+(t.completed_at?new Date(t.completed_at).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'—')+' • '+esc(t.is_cata&&Array.isArray(t.metadata?.barn_breakdown)&&t.metadata.barn_breakdown.length?t.metadata.barn_breakdown.map(x=>(x.barn_number||poultryBarns.find(b=>b.id===x.barn_id)?.barn_number||'Aviário')+': '+poN(x.birds).toLocaleString('pt-BR')).join(' • '):(poultryBarns.find(b=>b.id===t.metadata?.barn_id)?.barn_number||barn?.barn_number||'Aviário'))+'</div>'+
+       '<div style="margin-top:8px"><b>'+poN(t.birds).toLocaleString('pt-BR')+' aves</b> • '+(t.started_at?new Date(t.started_at).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'—')+' → '+(t.completed_at?new Date(t.completed_at).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'—')+' • '+esc(Array.isArray(t.metadata?.barn_breakdown)&&t.metadata.barn_breakdown.length?t.metadata.barn_breakdown.map(x=>(x.barn_number||poultryBarns.find(b=>b.id===x.barn_id)?.barn_number||'Aviário')+(t.is_cata?': '+poN(x.birds).toLocaleString('pt-BR'):'')).join(' • '):(t.metadata?.aviary_number||poultryBarns.find(b=>b.id===t.metadata?.barn_id)?.barn_number||'Aviário'))+'</div>'+
        '<div class="muted" style="margin-top:4px">'+(t.metadata?.boxes_count?'Caixas: '+poN(t.metadata.boxes_count).toLocaleString('pt-BR')+' • ':'')+(t.metadata?.birds_per_box?'Aves/caixa: '+poN(t.metadata.birds_per_box).toLocaleString('pt-BR',{maximumFractionDigits:2})+' • ':'')+'Vazias: '+poN(t.metadata?.empty_boxes).toLocaleString('pt-BR')+' • Mortes: '+poN(t.metadata?.loading_deaths).toLocaleString('pt-BR')+(t.metadata?.sheet_photo_path?' • 📷 Ficha anexada':'')+'</div></div>'
     ).join(''):'<div class="muted" style="padding:10px 0">Nenhum caminhão registrado ainda. Comece pelo Caminhão 1.</div>';
 
     return '<div class="item">'+
-      '<div class="toolbar" style="justify-content:space-between"><div><strong>'+esc(farm?.producer_name||o.customer_name||o.title)+'</strong><div class="muted">'+esc(farm?.city||o.metadata?.city||'')+' • '+esc(barn?.barn_number||'Aviário não informado')+' • '+esc(team?.name||deviceTeam?.name||'Equipe')+'</div></div>'+
+      '<div class="toolbar" style="justify-content:space-between"><div><strong>'+esc(farm?.producer_name||o.customer_name||o.title)+'</strong><div class="muted">'+esc(farm?.city||o.metadata?.city||'')+' • '+esc(farm?.farm_name||'Granja não informada')+' • '+esc(team?.name||deviceTeam?.name||'Equipe')+'</div></div>'+
       (pending?'<span class="pill warn">APANHA OFFLINE • PENDENTE</span>':'<span class="pill '+(o.status==='completed'?'ok':'')+'">'+esc(poSL(o.status))+'</span>')+'</div>'+
-      '<div class="site-memory"><b>Tomada:</b> '+esc(barn?.outlet_type||'Não informada')+' &nbsp; • &nbsp; <b>Energia:</b> '+esc(barn?.energy_type||'Não informada')+'</div>'+
+      '<div class="site-memory"><b>Tomada:</b> '+esc(farm?.metadata?.outlet_type||o.metadata?.outlet_type||'Não informada')+' &nbsp; • &nbsp; <b>Energia:</b> '+esc(farm?.metadata?.energy_type||o.metadata?.energy_type||'Não informada')+'</div>'+
       '<div class="po-detail"><div><span class="muted">Caminhões</span><br><b>'+opTrucks.length+'</b></div><div><span class="muted">Aves carregadas</span><br><b>'+totalBirds.toLocaleString('pt-BR')+'</b></div><div><span class="muted">Catas</span><br><b>'+opTrucks.filter(t=>t.is_cata).length+'</b></div><div><span class="muted">Início previsto</span><br><b>'+(o.scheduled_start?new Date(o.scheduled_start).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'—')+'</b></div></div>'+
       '<div style="margin-top:14px;padding-top:12px;border-top:1px solid #e5e7eb"><div class="toolbar" style="justify-content:space-between;align-items:flex-end"><div><strong>🚚 Carregamento caminhão por caminhão</strong><div class="muted">Cada caminhão fica registrado separadamente nesta apanha.</div></div><div class="muted">'+opTrucks.length+' registrado(s)</div></div><div class="truck-list">'+truckHtml+'</div></div>'+
       '<div class="po-actions" style="margin-top:12px">'+
@@ -2822,41 +2830,46 @@ async function uploadPoultrySheet(file,token){
  const r=await fetch(API_URL+'/storage/v1/object/'+POULTRY_SHEET_BUCKET+'/'+path,{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+s.access_token,'Content-Type':file.type||'image/jpeg','x-upsert':'false'},body:file});
  await parseResponse(r);return path;
 }
-function selectedTruckBarnIds(){
- const isCata=!!$('#poTruckCata')?.checked;
- if(!isCata){
-  const id=$('#poTruckBarn')?.value||'';
-  return id?[id]:[];
- }
- return [...document.querySelectorAll('#poTruckBarnChecks input[type="checkbox"]:checked')].map(x=>x.value).filter(Boolean);
+function normalizeAviaryNumber(v){return String(v||'').trim()}
+function rawTruckCataRows(){
+ return [...document.querySelectorAll('#poTruckBarnChecks .truck-cata-row')].map(row=>({
+  barn_id:null,
+  barn_number:normalizeAviaryNumber(row.querySelector('.truck-barn-number')?.value),
+  birds:poN(row.querySelector('.truck-barn-birds')?.value)
+ }));
+}
+function renderTruckCataRows(rows=null){
+ const box=$('#poTruckBarnChecks');if(!box)return;
+ const list=Array.isArray(rows)&&rows.length?rows:[{barn_number:'',birds:''},{barn_number:'',birds:''}];
+ box.innerHTML=list.map((r,i)=>`<div class="truck-cata-row">
+   <input class="truck-barn-number" autocomplete="off" placeholder="Aviário ${i+1}" value="${esc(r?.barn_number||'')}">
+   <input class="truck-barn-birds" type="number" min="0" step="1" inputmode="numeric" placeholder="Aves" value="${poN(r?.birds)||''}">
+   <button class="btn soft truck-cata-remove" type="button" title="Remover">×</button>
+  </div>`).join('');
+ calcTruckCataBirdTotal();
+}
+function addTruckCataRow(){
+ const rows=rawTruckCataRows();
+ rows.push({barn_number:'',birds:''});
+ renderTruckCataRows(rows);
+ const last=document.querySelector('#poTruckBarnChecks .truck-cata-row:last-child .truck-barn-number');
+ last?.focus();
 }
 function selectedTruckBarnBreakdown(){
  const isCata=!!$('#poTruckCata')?.checked;
  if(!isCata){
-  const id=$('#poTruckBarn')?.value||'';
-  if(!id)return [];
-  const b=poultryBarns.find(x=>x.id===id);
-  return [{barn_id:id,barn_number:b?.barn_number||'Aviário',birds:poN($('#poTruckBirds')?.value)}];
+  const n=normalizeAviaryNumber($('#poTruckAviaryNumber')?.value);
+  return n?[{barn_id:null,barn_number:n,birds:poN($('#poTruckBirds')?.value)}]:[];
  }
- return [...document.querySelectorAll('#poTruckBarnChecks input[type="checkbox"]:checked')].map(cb=>{
-  const b=poultryBarns.find(x=>x.id===cb.value);
-  const inp=document.querySelector('.truck-barn-birds[data-barn-id="'+CSS.escape(cb.value)+'"]');
-  return {barn_id:cb.value,barn_number:b?.barn_number||'Aviário',birds:poN(inp?.value)};
- });
+ return rawTruckCataRows().filter(x=>x.barn_number||x.birds);
 }
-function selectedTruckBarnLabels(){
- return selectedTruckBarnBreakdown().map(x=>x.barn_number).filter(Boolean);
-}
+function selectedTruckBarnLabels(){return selectedTruckBarnBreakdown().map(x=>x.barn_number).filter(Boolean)}
 function calcTruckCataBirdTotal(){
- const total=selectedTruckBarnBreakdown().reduce((a,x)=>a+poN(x.birds),0);
+ if(!$('#poTruckCata')?.checked)return poN($('#poTruckBirds')?.value);
+ const total=rawTruckCataRows().reduce((a,x)=>a+poN(x.birds),0);
  const totalEl=$('#poTruckBirds'),hint=$('#poTruckBarnHint');
- if($('#poTruckCata')?.checked&&totalEl){
-  totalEl.value=total||'';
-  totalEl.readOnly=true;
-  if(hint)hint.textContent='Total da CATA: '+total.toLocaleString('pt-BR')+' aves.';
- }else if(totalEl){
-  totalEl.readOnly=false;
- }
+ if(totalEl){totalEl.value=total||'';totalEl.readOnly=true}
+ if(hint)hint.textContent='Total da CATA: '+total.toLocaleString('pt-BR')+' aves.';
  return total;
 }
 function truckSheetMetadata(){
@@ -2874,7 +2887,9 @@ function truckSheetMetadata(){
  };
 }
 function calcTruckSheetTotalHint(){
- const boxes=poN($('#poTruckBoxes')?.value),per=poN($('#poTruckBirdsPerBox')?.value),hint=$('#poTruckCalcHint');
+ const hint=$('#poTruckCalcHint');
+ if($('#poTruckCata')?.checked){calcTruckCataBirdTotal();if(hint)hint.textContent='No CATA, o total é a soma das aves informadas por aviário.';return}
+ const boxes=poN($('#poTruckBoxes')?.value),per=poN($('#poTruckBirdsPerBox')?.value);
  if(!hint)return;
  if(boxes>0&&per>0){
   const suggested=Math.round(boxes*per);
@@ -2882,37 +2897,23 @@ function calcTruckSheetTotalHint(){
   if(!poN($('#poTruckBirds')?.value))$('#poTruckBirds').value=suggested;
  }else hint.textContent='Informe caixas e aves/caixa para conferir o total.';
 }
-function loadTruckBarnOptions(farmId,selectedBarnId){
- const barns=poultryBarns.filter(b=>b.farm_id===farmId);
- const single=$('#poTruckBarn');
- if(single)single.innerHTML=barns.map(b=>`<option value="${b.id}" ${b.id===selectedBarnId?'selected':''}>${esc(b.barn_number)}</option>`).join('');
- const checks=$('#poTruckBarnChecks');
- if(checks)checks.innerHTML=barns.map(b=>`<label><input class="truck-barn-check" type="checkbox" value="${esc(b.id)}" ${b.id===selectedBarnId?'checked':''}><span>${esc(b.barn_number)}</span><input class="truck-barn-birds" data-barn-id="${esc(b.id)}" type="number" min="0" step="1" inputmode="numeric" placeholder="Aves" ${b.id===selectedBarnId?'':'disabled'}></label>`).join('');
- const hint=$('#poTruckBarnHint');
- if(hint)hint.textContent=barns.length<2?'Cadastre pelo menos 2 aviários nesta granja para usar CATA.':'Selecione pelo menos 2 aviários e informe as aves de cada um.';
+function loadTruckBarnOptions(){
+ if($('#poTruckAviaryNumber'))$('#poTruckAviaryNumber').value='';
+ renderTruckCataRows();
 }
 function toggleTruckCataAviaries(){
  const cata=!!$('#poTruckCata')?.checked;
- const singleWrap=$('#poTruckSingleBarnWrap'),multiWrap=$('#poTruckMultiBarnWrap'),single=$('#poTruckBarn');
+ const singleWrap=$('#poTruckSingleBarnWrap'),multiWrap=$('#poTruckMultiBarnWrap'),totalEl=$('#poTruckBirds');
  if(cata){
   if(singleWrap)singleWrap.classList.add('hidden');
   if(multiWrap)multiWrap.classList.remove('hidden');
-  const current=single?.value;
-  if(current){
-   const cb=document.querySelector('#poTruckBarnChecks input[value="'+CSS.escape(current)+'"]');
-   if(cb)cb.checked=true;
-  }
-  document.querySelectorAll('#poTruckBarnChecks .truck-barn-check').forEach(cb=>{
-   const inp=document.querySelector('.truck-barn-birds[data-barn-id="'+CSS.escape(cb.value)+'"]');
-   if(inp)inp.disabled=!cb.checked;
-  });
+  if(!document.querySelector('#poTruckBarnChecks .truck-cata-row'))renderTruckCataRows();
   calcTruckCataBirdTotal();
  }else{
-  const checked=[...document.querySelectorAll('#poTruckBarnChecks input[type="checkbox"]:checked')];
-  if(checked.length&&single)single.value=checked[0].value;
   if(singleWrap)singleWrap.classList.remove('hidden');
   if(multiWrap)multiWrap.classList.add('hidden');
-  const totalEl=$('#poTruckBirds');if(totalEl)totalEl.readOnly=false;
+  if(totalEl)totalEl.readOnly=false;
+  calcTruckSheetTotalHint();
  }
 }
 function normalizedPlate(v){return String(v||'').toUpperCase().replace(/[^A-Z0-9]/g,'')}
@@ -3020,16 +3021,17 @@ async function saveTruckLoad(closeAfter=false){
        plate=$('#poTruckPlate').value.trim().toUpperCase(),
        isCata=!!$('#poTruckCata').checked,
        barnBreakdown=selectedTruckBarnBreakdown(),
-       barnIds=barnBreakdown.map(x=>x.barn_id),
        birds=isCata?barnBreakdown.reduce((a,x)=>a+poN(x.birds),0):poN($('#poTruckBirds').value),
        start=$('#poTruckStart').value,
        end=$('#poTruckEnd').value,
        sheetFile=$('#poTruckSheetFile')?.files?.[0]||null;
- const barnId=barnIds[0]||'';
- if(!operationId||!loadingId||!driver||!plate||!birds||!barnId||!start||!end)return $('#poTruckMsg').textContent='Preencha motorista, placa, total de aves, aviário, início e término.';
- if(!isCata&&barnIds.length!==1)return $('#poTruckMsg').textContent='Carregamento normal deve ter exatamente 1 aviário.';
- if(isCata&&barnIds.length<2)return $('#poTruckMsg').textContent='Para CATA, selecione pelo menos 2 aviários.';
- if(isCata&&barnBreakdown.some(x=>poN(x.birds)<=0))return $('#poTruckMsg').textContent='Informe quantas aves foram carregadas em cada aviário da CATA.';
+
+ if(!operationId||!loadingId||!driver||!plate||!birds||!start||!end)return $('#poTruckMsg').textContent='Preencha motorista, placa, total de aves, aviário, início e término.';
+ if(!isCata&&barnBreakdown.length!==1)return $('#poTruckMsg').textContent='Informe o número do aviário deste caminhão.';
+ if(isCata&&barnBreakdown.length<2)return $('#poTruckMsg').textContent='Para CATA, informe pelo menos 2 aviários.';
+ if(isCata&&barnBreakdown.some(x=>!x.barn_number||poN(x.birds)<=0))return $('#poTruckMsg').textContent='Informe o número e a quantidade de aves de cada aviário da CATA.';
+ const names=barnBreakdown.map(x=>x.barn_number.toLowerCase());
+ if(new Set(names).size!==names.length)return $('#poTruckMsg').textContent='Não repita o mesmo aviário no CATA.';
 
  const existing=poultryTruckLoads.filter(t=>t.loading_id===loadingId);
  const sequence=Number($('#poTruckSequence').value||existing.length+1);
@@ -3037,8 +3039,7 @@ async function saveTruckLoad(closeAfter=false){
  const payload={
   truck_sequence:sequence,truck_plate:plate,driver_name:driver,birds,
   started_at:new Date(start).toISOString(),completed_at:new Date(end).toISOString(),
-  is_cata:isCata,barn_breakdown:barnBreakdown,notes:$('#poTruckNotes').value.trim()||null,
-  sheet
+  is_cata:isCata,barn_breakdown:barnBreakdown,notes:$('#poTruckNotes').value.trim()||null,sheet
  };
 
  if(deviceMode&&!navigator.onLine){
@@ -3050,8 +3051,7 @@ async function saveTruckLoad(closeAfter=false){
     id,type:'poultry_truck',company_id:companyId,team_id:deviceAccess?.team_id||null,created_at:new Date().toISOString(),
     operation_id:operationOfflineId?null:operationId,
     loading_id:operationOfflineId?('offline:'+operationOfflineId):loadingId,
-    operation_offline_id:operationOfflineId,barn_id:barnId,barn_ids:barnIds,barn_breakdown:barnBreakdown,payload,
-    sheet_blob:sheetFile||null
+    operation_offline_id:operationOfflineId,barn_breakdown:barnBreakdown,payload,sheet_blob:sheetFile||null
    });
    await rememberTruckDriverPairOffline(driver,plate);
    const farmId=poultryLoadings.find(l=>l.id===loadingId)?.farm_id||'';
@@ -3072,13 +3072,12 @@ async function saveTruckLoad(closeAfter=false){
   const rows=await rest('v2_poultry_truck_loads','','POST',{
    company_id:companyId,loading_id:loadingId,truck_sequence:sequence,truck_plate:plate,driver_name:driver,birds,
    started_at:payload.started_at,completed_at:payload.completed_at,is_cata:payload.is_cata,
-   metadata:{barn_id:barnId,barn_ids:barnIds,barn_breakdown:barnBreakdown,notes:payload.notes,...sheet,sheet_photo_path:sheetPath}
+   metadata:{
+    aviary_number:isCata?null:(barnBreakdown[0]?.barn_number||null),
+    barn_breakdown:barnBreakdown,notes:payload.notes,...sheet,sheet_photo_path:sheetPath
+   }
   });
   const truck=rows?.[0];if(!truck)throw new Error('Caminhão não foi salvo.');
-  for(let i=0;i<barnBreakdown.length;i++){
-   const bb=barnBreakdown[i];
-   await rest('v2_poultry_truck_barns','','POST',{company_id:companyId,truck_load_id:truck.id,barn_id:bb.barn_id,sequence_no:i+1,birds:poN(bb.birds)||null,started_at:payload.started_at,completed_at:payload.completed_at,notes:payload.notes});
-  }
   try{await saveTruckDriverPair(driver,plate)}catch(e){console.warn('Motorista/placa não salvo no atalho',e)}
   await refreshOperationBirdTotals(operationId,loadingId);
   const farmId=poultryLoadings.find(l=>l.id===loadingId)?.farm_id||'';
@@ -3172,13 +3171,16 @@ if($('#poTruckSheetFile'))$('#poTruckSheetFile').addEventListener('change',e=>{
 });
 ['poTruckBoxes','poTruckBirdsPerBox'].forEach(id=>{if($('#'+id))$('#'+id).addEventListener('input',calcTruckSheetTotalHint)});
 if($('#poTruckCata'))$('#poTruckCata').addEventListener('change',toggleTruckCataAviaries);
-if($('#poTruckBarnChecks'))$('#poTruckBarnChecks').addEventListener('change',e=>{
- const cb=e.target.closest('.truck-barn-check');if(!cb)return;
- const inp=document.querySelector('.truck-barn-birds[data-barn-id="'+CSS.escape(cb.value)+'"]');
- if(inp){inp.disabled=!cb.checked;if(!cb.checked)inp.value='';}
+if($('#poTruckAddCataAviary'))$('#poTruckAddCataAviary').addEventListener('click',addTruckCataRow);
+if($('#poTruckBarnChecks'))$('#poTruckBarnChecks').addEventListener('input',()=>calcTruckCataBirdTotal());
+if($('#poTruckBarnChecks'))$('#poTruckBarnChecks').addEventListener('click',e=>{
+ const rm=e.target.closest('.truck-cata-remove');if(!rm)return;
+ const rows=[...document.querySelectorAll('#poTruckBarnChecks .truck-cata-row')];
+ if(rows.length<=2){
+  const row=rm.closest('.truck-cata-row');row?.querySelectorAll('input').forEach(x=>x.value='');
+ }else rm.closest('.truck-cata-row')?.remove();
  calcTruckCataBirdTotal();
 });
-if($('#poTruckBarnChecks'))$('#poTruckBarnChecks').addEventListener('input',e=>{if(e.target.closest('.truck-barn-birds'))calcTruckCataBirdTotal()});
 if($('#poTruckDriver')){['input','change'].forEach(ev=>$('#poTruckDriver').addEventListener(ev,()=>fillTruckPairFrom('driver')))}
 if($('#poTruckPlate')){['input','change'].forEach(ev=>$('#poTruckPlate').addEventListener(ev,()=>fillTruckPairFrom('plate')))}
 if($('#poTruckSave'))$('#poTruckSave').addEventListener('click',()=>saveTruckLoad(false));
@@ -3271,8 +3273,7 @@ async function loadTeamReport(){
   list.innerHTML=teamCatchReports.map((r,idx)=>{
    const farmName=r.farm.farm_name||r.farm.producer_name||r.op.customer_name||r.op.title||'Granja';
    const integrated=r.farm.producer_name||r.op.customer_name||'Não informado';
-   const barn=r.defaultBarn.barn_number||'Não informado';
-   return '<div class="catch-report-card"><div class="catch-report-title"><div><div class="muted">RELATÓRIO DE APANHA DE AVES'+(r.op.operation_number?' • Nº '+esc(r.op.operation_number):'')+'</div><h3>'+esc(integrated)+'</h3><div class="muted">'+esc(farmName)+' • '+esc(r.farm.city||r.op.metadata?.city||'Cidade não informada')+' • Aviário '+esc(barn)+'</div></div><span class="pill '+(r.op.metadata?.offline_pending?'warn':(r.op.status==='completed'?'ok':''))+'">'+esc(r.op.metadata?.offline_pending?'OFFLINE • PENDENTE':poSL(r.op.status))+'</span></div><div class="catch-report-meta"><div><span class="muted">Total de aves</span><div class="catch-report-total">'+r.totalBirds.toLocaleString('pt-BR')+'</div></div><div><span class="muted">Caminhões</span><div class="catch-report-total">'+r.trucks.length+'</div></div><div><span class="muted">Horário</span><div><b>'+catchTime(r.actualStart)+' → '+catchTime(r.actualEnd)+'</b><br><span class="muted">Duração '+catchDuration(r.actualStart,r.actualEnd)+'</span></div></div><div><span class="muted">Encarregado</span><div><b>'+esc(r.supervisor.name)+'</b><br><span class="muted">'+esc(r.supervisor.phone)+'</span></div></div></div><div class="toolbar" style="margin-top:12px"><button class="btn primary catchReportPrint" type="button" data-index="'+idx+'">🧾 IMPRIMIR 80 MM</button></div></div>';
+   return '<div class="catch-report-card"><div class="catch-report-title"><div><div class="muted">RELATÓRIO DE APANHA DE AVES'+(r.op.operation_number?' • Nº '+esc(r.op.operation_number):'')+'</div><h3>'+esc(integrated)+'</h3><div class="muted">'+esc(farmName)+' • '+esc(r.farm.city||r.op.metadata?.city||'Cidade não informada')+'</div></div><span class="pill '+(r.op.metadata?.offline_pending?'warn':(r.op.status==='completed'?'ok':''))+'">'+esc(r.op.metadata?.offline_pending?'OFFLINE • PENDENTE':poSL(r.op.status))+'</span></div><div class="catch-report-meta"><div><span class="muted">Total de aves</span><div class="catch-report-total">'+r.totalBirds.toLocaleString('pt-BR')+'</div></div><div><span class="muted">Caminhões</span><div class="catch-report-total">'+r.trucks.length+'</div></div><div><span class="muted">Horário</span><div><b>'+catchTime(r.actualStart)+' → '+catchTime(r.actualEnd)+'</b><br><span class="muted">Duração '+catchDuration(r.actualStart,r.actualEnd)+'</span></div></div><div><span class="muted">Encarregado</span><div><b>'+esc(r.supervisor.name)+'</b><br><span class="muted">'+esc(r.supervisor.phone)+'</span></div></div></div><div class="toolbar" style="margin-top:12px"><button class="btn primary catchReportPrint" type="button" data-index="'+idx+'">🧾 IMPRIMIR 80 MM</button></div></div>';
   }).join('');
  }catch(e){list.innerHTML='<div class="error">'+esc(e.message||String(e))+'</div>'}
 }
@@ -4073,7 +4074,7 @@ setInterval(()=>{
 },60000);
 if('serviceWorker' in navigator){
  window.addEventListener('load',()=>{
-  navigator.serviceWorker.register('./sw-v6-41.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
+  navigator.serviceWorker.register('./sw-v6-42.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
  });
 }
 
