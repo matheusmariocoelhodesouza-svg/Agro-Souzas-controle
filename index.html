@@ -8,7 +8,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
-<title>Comando 360 • v6.42</title>
+<title>Comando 360 • v6.43</title>
 <link rel="manifest" href="./comando360.webmanifest"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
@@ -353,7 +353,7 @@ header .brand small{color:#718198;font-weight:650}
 <script defer src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
 <script>
 (function(){
-  const BUILD='6.42';
+  const BUILD='6.43';
   try{
     const marker='controla_cache_cleanup_'+BUILD;
     if(!localStorage.getItem(marker)){
@@ -387,7 +387,7 @@ header .brand small{color:#718198;font-weight:650}
 <div class="v2group">INTELIGÊNCIA</div>
 <button class="v2navbtn" data-v2tab="ia">✦   Assistente IA</button>
 </aside>
-<header><div class="brand"><img class="header-brand-icon" src="./comando360-icon.svg" alt="Comando 360"/><div><b>Comando <span class="brand360">360</span></b><div><small id="companyName">Empresa</small></div></div></div><div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.42</span><button class="btn soft" id="themeToggle" type="button">☾</button><button class="btn soft hidden" id="logout">Sair</button></div></header>
+<header><div class="brand"><img class="header-brand-icon" src="./comando360-icon.svg" alt="Comando 360"/><div><b>Comando <span class="brand360">360</span></b><div><small id="companyName">Empresa</small></div></div></div><div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.43</span><button class="btn soft" id="themeToggle" type="button">☾</button><button class="btn soft hidden" id="logout">Sair</button></div></header>
 <main class="wrap">
 <section class="login team-entry" id="login">
 <div class="card" id="deviceSetupCard">
@@ -404,7 +404,7 @@ header .brand small{color:#718198;font-weight:650}
  <label>Senha</label><input autocomplete="current-password" id="password" type="password"/>
  <button class="btn primary" id="loginBtn">Entrar</button>
  <button class="btn soft" id="backDeviceSetup" type="button" style="margin-left:6px">Voltar</button>
- <div class="muted" id="loginMsg" style="margin-top:10px">Comando 360 • v6.42</div><div class="debug" id="debug"></div>
+ <div class="muted" id="loginMsg" style="margin-top:10px">Comando 360 • v6.43</div><div class="debug" id="debug"></div>
 </div>
 </section>
 <section class="hidden" id="app">
@@ -870,8 +870,43 @@ async function fetchTimeout(url,opts={},ms=12000){
  finally{clearTimeout(timer)}
 }
 async function parseResponse(r){const text=await r.text();let data=null;try{data=text?JSON.parse(text):null}catch{data=text}if(!r.ok){const msg=(data&&data.msg)||(data&&data.message)||(data&&data.error_description)||(data&&data.error)||('HTTP '+r.status);throw new Error(msg)}return data}
-async function refreshToken(){const s=session();if(!s?.refresh_token)throw new Error('Sessão expirada. Entre novamente.');const r=await fetch(API_URL+'/auth/v1/token?grant_type=refresh_token',{method:'POST',headers:{'apikey':KEY,'Content-Type':'application/json'},body:JSON.stringify({refresh_token:s.refresh_token})});const data=await parseResponse(r);saveSession(data);return data.access_token}
-async function authFetch(path,opts={},retry=true){let s=session();if(!s?.access_token)throw new Error('Você precisa entrar.');const headers={apikey:KEY,Authorization:'Bearer '+s.access_token,...(opts.headers||{})};let r=await fetchTimeout(API_URL+path,{...opts,headers},12000);if(r.status===401&&retry){const token=await refreshToken();headers.Authorization='Bearer '+token;r=await fetch(API_URL+path,{...opts,headers})}return r}
+let refreshTokenPromise=null;
+function jwtExpSeconds(token){
+ try{
+  const p=String(token||'').split('.')[1];if(!p)return 0;
+  const b=p.replace(/-/g,'+').replace(/_/g,'/');
+  return Number(JSON.parse(decodeURIComponent(Array.prototype.map.call(atob(b),c=>'%'+('00'+c.charCodeAt(0).toString(16)).slice(-2)).join(''))).exp||0);
+ }catch(_){return 0}
+}
+async function refreshToken(){
+ if(refreshTokenPromise)return refreshTokenPromise;
+ refreshTokenPromise=(async()=>{
+  const s=session();if(!s?.refresh_token)throw new Error('Sessão expirada. Entre novamente.');
+  const r=await fetchTimeout(API_URL+'/auth/v1/token?grant_type=refresh_token',{
+   method:'POST',headers:{apikey:KEY,'Content-Type':'application/json'},
+   body:JSON.stringify({refresh_token:s.refresh_token})
+  },12000);
+  const data=await parseResponse(r);saveSession(data);return data.access_token;
+ })();
+ try{return await refreshTokenPromise}finally{refreshTokenPromise=null}
+}
+async function ensureFreshAccessToken(minSeconds=90){
+ const s=session();if(!s?.access_token)throw new Error('Você precisa entrar.');
+ const exp=Number(s.expires_at||jwtExpSeconds(s.access_token)||0);
+ if(exp&&exp-Math.floor(Date.now()/1000)<=minSeconds)return await refreshToken();
+ return s.access_token;
+}
+async function authFetch(path,opts={},retry=true){
+ let token=await ensureFreshAccessToken();
+ const headers={apikey:KEY,Authorization:'Bearer '+token,...(opts.headers||{})};
+ let r=await fetchTimeout(API_URL+path,{...opts,headers},12000);
+ if(r.status===401&&retry){
+  token=await refreshToken();
+  headers.Authorization='Bearer '+token;
+  r=await fetchTimeout(API_URL+path,{...opts,headers},12000);
+ }
+ return r;
+}
 async function login(email,password){
  if(!email||!password)throw new Error('Informe e-mail e senha.');
  const r=await fetchTimeout(API_URL+'/auth/v1/token?grant_type=password',{
@@ -1507,7 +1542,7 @@ async function syncPoultryTruckOfflineItem(item){
   .map(x=>({barn_id:x?.barn_id||null,barn_number:normalizeAviaryNumber(x?.barn_number),birds:poN(x?.birds)}))
   .filter(x=>x.barn_number||x.barn_id);
 
- // Compatibilidade com itens offline criados antes da v6.42.
+ // Compatibilidade com itens offline criados antes da v6.43.
  if(!barnBreakdown.length&&item.barn_id){
   const oldId=String(item.barn_id).startsWith('offline:')?(refs.loading?.metadata?.default_barn_id||null):item.barn_id;
   const oldBarn=poultryBarns.find(b=>b.id===oldId);
@@ -1634,18 +1669,10 @@ async function registerOfflinePointByNumber(matricula){
 }
 
 async function v2Rest(table,query='',method='GET',body=null){
- const ss=session();
- if(!ss||!ss.access_token)throw new Error('Sessão não encontrada. Entre novamente.');
- const url=API_URL+'/rest/v1/'+table+(query?('?'+query):'');
- const headers={
-   apikey:KEY,
-   Authorization:'Bearer '+ss.access_token,
-   'Content-Type':'application/json',
-   Prefer:'return=representation'
- };
- const opts={method:method,headers:headers};
+ const path='/rest/v1/'+table+(query?('?'+query):'');
+ const opts={method,headers:{'Content-Type':'application/json',Prefer:'return=representation'}};
  if(body!==null)opts.body=JSON.stringify(body);
- const r=await fetchTimeout(url,opts,12000);
+ const r=await authFetch(path,opts,true);
  return await parseResponse(r);
 }
 // Compatibilidade global: módulos antigos do sistema chamam rest(...).
@@ -2827,7 +2854,7 @@ async function uploadPoultrySheet(file,token){
  const ext=file.type==='image/png'?'png':file.type==='image/webp'?'webp':'jpg';
  const teamId=deviceAccess?.team_id||deviceTeam?.id||'admin';
  const path=companyId+'/'+teamId+'/'+String(token||Date.now())+'.'+ext;
- const r=await fetch(API_URL+'/storage/v1/object/'+POULTRY_SHEET_BUCKET+'/'+path,{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+s.access_token,'Content-Type':file.type||'image/jpeg','x-upsert':'false'},body:file});
+ const r=await authFetch('/storage/v1/object/'+POULTRY_SHEET_BUCKET+'/'+path,{method:'POST',headers:{'Content-Type':file.type||'image/jpeg','x-upsert':'false'},body:file},true);
  await parseResponse(r);return path;
 }
 function normalizeAviaryNumber(v){return String(v||'').trim()}
@@ -4060,6 +4087,7 @@ function updateNetworkBadge(){
 window.addEventListener('online',()=>{updateNetworkBadge();setTimeout(()=>syncOfflineQueue().catch(e=>console.warn('sync online',e)),400)});
 window.addEventListener('offline',updateNetworkBadge);
 updateNetworkBadge();
+setInterval(()=>{if(navigator.onLine&&session()?.refresh_token)ensureFreshAccessToken(180).catch(e=>console.warn('renovação de sessão',e))},5*60*1000);
 if($('#offlineQueueBadge'))$('#offlineQueueBadge').addEventListener('click',()=>{openOfflineSyncPanel().catch(e=>console.warn(e))});
 if($('#closeOfflineSyncPanel'))$('#closeOfflineSyncPanel').addEventListener('click',()=>$('#offlineSyncPanel').classList.add('hidden'));
 if($('#syncOfflineNow'))$('#syncOfflineNow').addEventListener('click',async()=>{
@@ -4074,7 +4102,7 @@ setInterval(()=>{
 },60000);
 if('serviceWorker' in navigator){
  window.addEventListener('load',()=>{
-  navigator.serviceWorker.register('./sw-v6-42.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
+  navigator.serviceWorker.register('./sw-v6-43.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
  });
 }
 
