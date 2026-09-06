@@ -1,6 +1,21 @@
-Agro Souza's Controle V8.6
+# Comando 360
 
-Nova área: Carregamentos
+Plataforma de gestão operacional multiempresa.
+
+## Módulos atuais
+- Dashboard
+- Ponto e presença
+- Funcionários e equipes
+- Operações / carregamentos
+- Frota e conduções
+- Equipamentos
+- Manutenções
+- Combustível
+- KM rodado
+- Financeiro
+- Relatórios e BI
+
+## Apanha de aves
 - Nome do integrado
 - Cidade
 - Energia 220V / 380V
