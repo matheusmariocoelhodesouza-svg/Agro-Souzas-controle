@@ -8,7 +8,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
-<title>Controla V2 • Beta 6.18 Modo Equipe</title>
+<title>Controla V2 • Beta 6.19 Modo Equipe</title>
 <link rel="manifest" href="./agro-souzas-controle-v7.webmanifest"/>
 <link rel="apple-touch-icon" href="./apple-touch-icon-180.png"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
@@ -132,7 +132,7 @@ body.app-ready .v2sidebar{display:block}
 .po-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
 .pill.warn{background:#fff3cd;color:#7c5700}
 
-/* Beta 6.18 — Modo Equipe */
+/* Beta 6.19 — Modo Equipe */
 .team-entry{max-width:520px;margin:42px auto}
 .team-entry .card{padding:20px}
 .team-entry-title{text-align:center;margin-bottom:18px}
@@ -169,13 +169,19 @@ body.device-mode .admin-only{display:none!important}
  .team-report-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 @media(max-width:420px){.team-home-grid{grid-template-columns:1fr}.team-tile{min-height:112px}}
+.offline-sync-panel{position:fixed;inset:0;background:rgba(15,23,42,.55);z-index:120;display:grid;place-items:center;padding:16px}
+.offline-sync-box{width:min(680px,100%);max-height:86vh;overflow:auto;background:#fff;border-radius:20px;padding:18px;box-shadow:0 24px 70px rgba(0,0,0,.28)}
+.offline-sync-item{border:1px solid #e2e8f0;border-radius:13px;padding:11px;margin-top:8px}
+.offline-sync-item .type{font-weight:900}
+.offline-sync-item .err{color:#b91c1c;font-size:12px;margin-top:5px}
+.darkmode .offline-sync-box{background:#101c2e;color:#e7eef9}.darkmode .offline-sync-item{border-color:#203047}
 
 </style>
 <script defer="" src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
 <script>
 (function(){
-  const BUILD='6.18';
+  const BUILD='6.19';
   try{
     const marker='controla_cache_cleanup_'+BUILD;
     if(!localStorage.getItem(marker)){
@@ -211,7 +217,7 @@ body.device-mode .admin-only{display:none!important}
 <div class="v2group">EM BREVE</div>
 <button class="v2navbtn" type="button">Estoque</button>
 </aside>
-<header><div class="brand"><div class="logo">C</div><div><b>Controla</b><div><small id="companyName">Beta</small></div></div></div><div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.18</span><button class="btn soft" id="themeToggle" type="button">☾</button><button class="btn soft hidden" id="logout">Sair</button></div></header>
+<header><div class="brand"><div class="logo">C</div><div><b>Controla</b><div><small id="companyName">Beta</small></div></div></div><div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.19</span><button class="btn soft" id="themeToggle" type="button">☾</button><button class="btn soft hidden" id="logout">Sair</button></div></header>
 <main class="wrap">
 <section class="login team-entry" id="login">
 <div class="card" id="deviceSetupCard">
@@ -228,12 +234,25 @@ body.device-mode .admin-only{display:none!important}
  <label>Senha</label><input autocomplete="current-password" id="password" type="password"/>
  <button class="btn primary" id="loginBtn">Entrar</button>
  <button class="btn soft" id="backDeviceSetup" type="button" style="margin-left:6px">Voltar</button>
- <div class="muted" id="loginMsg" style="margin-top:10px">Beta 6.18 • Modo Equipe</div><div class="debug" id="debug"></div>
+ <div class="muted" id="loginMsg" style="margin-top:10px">Beta 6.19 • Modo Equipe</div><div class="debug" id="debug"></div>
 </div>
 </section>
 <section class="hidden" id="app">
 <div class="nav" id="nav"><button class="active" data-tab="inicio">Início</button><button data-tab="equipes">Equipes</button><button data-tab="funcionarios">RH &amp; Pessoas</button><button data-tab="documentosrh">Docs RH</button><button data-tab="ponto">Ponto</button><button data-tab="operacoes">Operações / Apanha</button><button data-tab="frota">Frota</button><button data-tab="manutencoes">Manutenções</button><button data-tab="combustivel">Combustível & KM</button><button data-tab="documentosfrota">Documentos</button><button data-tab="financeiro">Financeiro</button><button data-tab="relatorios">Relatórios</button><button data-tab="alertas">Alertas</button><button data-tab="ia">Controla IA</button></div>
 <div class="team-mode-bar hidden" id="deviceModeBar"><div><strong id="deviceModeTeam">Equipe</strong><div class="muted">Acesso restrito a este aparelho</div></div><button class="btn soft" type="button" data-teamtab="equipehome">⌂ Início</button></div>
+<div class="offline-sync-panel hidden" id="offlineSyncPanel">
+ <div class="offline-sync-box">
+  <div class="toolbar" style="justify-content:space-between">
+   <div><h3 style="margin:0">⟳ Central de Sincronização</h3><div class="muted" id="offlineSyncSummary">Carregando...</div></div>
+   <button class="btn soft" id="closeOfflineSyncPanel" type="button">Fechar</button>
+  </div>
+  <div class="toolbar" style="margin-top:12px">
+   <button class="btn primary" id="syncOfflineNow" type="button">SINCRONIZAR AGORA</button>
+   <span class="muted" id="offlineLastSync">Última sincronização: —</span>
+  </div>
+  <div class="list" id="offlineSyncList" style="margin-top:12px"></div>
+ </div>
+</div>
 <div id="screenHost"></div>
 <div class="section" data-screen="equipehome" hidden="" id="equipehome">
  <div class="team-home">
@@ -933,6 +952,7 @@ async function offlineQueueAdd(item){
  const row={attempts:0,last_error:null,...item};
  await offlineStorePut('queue',row);
  await updateOfflineQueueBadge();
+ if($('#offlineSyncPanel')&&!$('#offlineSyncPanel').classList.contains('hidden'))await renderOfflineSyncPanel();
  return row;
 }
 async function offlineQueueList(){
@@ -940,6 +960,33 @@ async function offlineQueueList(){
   const all=await offlineStoreAll('queue');
   return all.filter(x=>!companyId||x.company_id===companyId).sort((a,b)=>String(a.created_at).localeCompare(String(b.created_at)));
  }catch(e){console.warn('offline queue list',e);return []}
+}
+function offlineTypeLabel(type){
+ return ({
+  attendance:'Ponto',
+  fuel:'Abastecimento',
+  poultry_operation:'Apanha',
+  poultry_truck:'Caminhão da apanha',
+  poultry_complete:'Conclusão da apanha'
+ })[type]||type||'Registro';
+}
+async function renderOfflineSyncPanel(){
+ const panel=$('#offlineSyncPanel'),list=$('#offlineSyncList'),sum=$('#offlineSyncSummary'),last=$('#offlineLastSync');
+ if(!panel||!list)return;
+ const q=await offlineQueueList();
+ const lastVal=await offlineCacheGet('last_sync:'+String(companyId||'none'));
+ if(last)last.textContent='Última sincronização: '+(lastVal?new Date(lastVal).toLocaleString('pt-BR'):'—');
+ if(sum)sum.textContent=q.length?q.length+' registro(s) aguardando envio.':'Tudo sincronizado.';
+ list.innerHTML=q.length?q.map(item=>{
+  const when=item.created_at?new Date(item.created_at).toLocaleString('pt-BR'):'—';
+  const attempts=Number(item.attempts||0);
+  return '<div class="offline-sync-item"><div class="toolbar" style="justify-content:space-between"><div class="type">'+esc(offlineTypeLabel(item.type))+'</div><span class="pill '+(item.last_error?'danger':'warn')+'">'+(item.last_error?'ERRO':'PENDENTE')+'</span></div><div class="muted">'+esc(when)+' • tentativa(s): '+attempts+'</div>'+(item.last_error?'<div class="err">'+esc(item.last_error)+'</div>':'')+'</div>';
+ }).join(''):'<div class="item"><strong>✓ Nenhum registro pendente</strong><div class="muted">Os dados deste celular estão sincronizados com o servidor.</div></div>';
+}
+async function openOfflineSyncPanel(){
+ const p=$('#offlineSyncPanel');if(!p)return;
+ p.classList.remove('hidden');
+ await renderOfflineSyncPanel();
 }
 async function updateOfflineQueueBadge(){
  const b=$('#offlineQueueBadge');if(!b)return;
@@ -1169,7 +1216,9 @@ async function syncOfflineQueue(){
     await offlineStorePut('queue',item);
    }
   }
+  await offlineCacheSet('last_sync:'+String(companyId||'none'),new Date().toISOString());
   await updateOfflineQueueBadge();
+  if($('#offlineSyncPanel')&&!$('#offlineSyncPanel').classList.contains('hidden'))await renderOfflineSyncPanel();
   if(deviceMode&&navigator.onLine){
    await warmPointOfflineCache();
    const active=document.querySelector('[data-screen="ponto"].active');
@@ -3069,13 +3118,21 @@ function updateNetworkBadge(){
 window.addEventListener('online',()=>{updateNetworkBadge();setTimeout(()=>syncOfflineQueue().catch(e=>console.warn('sync online',e)),400)});
 window.addEventListener('offline',updateNetworkBadge);
 updateNetworkBadge();
-if($('#offlineQueueBadge'))$('#offlineQueueBadge').addEventListener('click',()=>{
- if(!navigator.onLine)return alert('Sem internet. Os registros continuam seguros neste celular.');
- syncOfflineQueue().catch(e=>alert(e.message||String(e)));
+if($('#offlineQueueBadge'))$('#offlineQueueBadge').addEventListener('click',()=>{openOfflineSyncPanel().catch(e=>console.warn(e))});
+if($('#closeOfflineSyncPanel'))$('#closeOfflineSyncPanel').addEventListener('click',()=>$('#offlineSyncPanel').classList.add('hidden'));
+if($('#syncOfflineNow'))$('#syncOfflineNow').addEventListener('click',async()=>{
+ const b=$('#syncOfflineNow');if(b.disabled)return;
+ if(!navigator.onLine){alert('Sem internet. Os registros continuam guardados neste celular.');return}
+ b.disabled=true;b.textContent='SINCRONIZANDO...';
+ try{await syncOfflineQueue();await renderOfflineSyncPanel()}
+ finally{b.disabled=false;b.textContent='SINCRONIZAR AGORA'}
 });
+setInterval(()=>{
+ if(navigator.onLine&&companyId)offlineQueueList().then(q=>{if(q.length)syncOfflineQueue().catch(()=>{})}).catch(()=>{});
+},60000);
 if('serviceWorker' in navigator){
  window.addEventListener('load',()=>{
-  navigator.serviceWorker.register('./sw-v6-18.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
+  navigator.serviceWorker.register('./sw-v6-19.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
  });
 }
 
