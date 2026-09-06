@@ -8,7 +8,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
-<title>Controla V2 • Beta 6.11 Modo Equipe</title>
+<title>Controla V2 • Beta 6.12 Modo Equipe</title>
 <style>
 :root{--bg:#f3f6fb;--card:#fff;--ink:#0f172a;--muted:#64748b;--line:#e2e8f0;--accent:#0f172a}*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--ink)}header{position:sticky;top:0;z-index:20;background:linear-gradient(135deg,var(--accent),#1e293b);color:#fff;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 8px 24px rgba(15,23,42,.18)}.wrap{max-width:1200px;margin:auto;padding:12px}.card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:12px;box-shadow:0 4px 18px rgba(15,23,42,.045)}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:10px}.kpi{font-size:28px;font-weight:900}.label,.muted{font-size:12px;color:var(--muted)}.nav{display:flex;gap:8px;overflow:auto;padding:12px 0;scrollbar-width:none}.nav::-webkit-scrollbar{display:none}.nav button,.btn{border:0;border-radius:12px;padding:11px 14px;font-weight:800;white-space:nowrap;cursor:pointer}.nav button{background:#fff;border:1px solid var(--line);color:#334155}.nav button.active,.btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}.btn.soft{background:#e2e8f0}.btn.danger{background:#b91c1c;color:#fff}.btn.danger:hover{background:#991b1b}.hidden{display:none!important}.login{max-width:430px;margin:55px auto}.login input,.chat input{width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:10px;margin:6px 0 10px;font:inherit}.section{display:none}.section.active{display:block}.list{display:grid;gap:8px}.item{background:#fff;border:1px solid var(--line);border-radius:13px;padding:12px}.item strong{display:block}.pill{display:inline-block;padding:4px 8px;border-radius:999px;font-size:11px;font-weight:800;background:#e2e8f0}.pill.ok{background:#dcfce7;color:#166534}.pill.warn{background:#fef3c7;color:#92400e}.pill.danger{background:#fee2e2;color:#991b1b}.toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.chatbox{min-height:220px;max-height:52vh;overflow:auto;background:#fff;border:1px solid var(--line);border-radius:14px;padding:10px}.msg{padding:10px 12px;border-radius:12px;margin:8px 0;max-width:88%;white-space:pre-wrap}.msg.user{margin-left:auto;background:#e2e8f0}.msg.ai{background:#fff7ed;border:1px solid #fed7aa}.brand{display:flex;gap:10px;align-items:center}.logo{width:38px;height:38px;border-radius:10px;background:white;color:#0f172a;display:grid;place-items:center;font-weight:900}.error{color:#b91c1c;font-size:13px}.okmsg{color:#166534;font-size:13px}.debug{margin-top:8px;font-size:11px;color:#64748b;word-break:break-word}@media(max-width:640px){.wrap{padding:9px}.kpi{font-size:25px}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}header{padding:12px}.nav{position:sticky;top:66px;z-index:15;background:var(--bg);margin:0 -9px;padding:9px}}
 
@@ -127,7 +127,7 @@ body.app-ready .v2sidebar{display:block}
 .po-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
 .pill.warn{background:#fff3cd;color:#7c5700}
 
-/* Beta 6.11 — Modo Equipe */
+/* Beta 6.12 — Modo Equipe */
 .team-entry{max-width:520px;margin:42px auto}
 .team-entry .card{padding:20px}
 .team-entry-title{text-align:center;margin-bottom:18px}
@@ -170,7 +170,7 @@ body.device-mode .admin-only{display:none!important}
 <script defer src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
 <script>
 (function(){
-  const BUILD='6.11';
+  const BUILD='6.12';
   try{
     const marker='controla_cache_cleanup_'+BUILD;
     if(!localStorage.getItem(marker)){
@@ -211,7 +211,7 @@ body.device-mode .admin-only{display:none!important}
 <div class="v2group">EM BREVE</div>
 <button class="v2navbtn" type="button">Estoque</button>
 </aside>
-<header><div class="brand"><div class="logo">C</div><div><b>Controla</b><div><small id="companyName">Beta</small></div></div></div><div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill" id="buildBadge" title="Versão publicada">v6.11</span><button class="btn soft" id="themeToggle" type="button">☾</button><button class="btn soft hidden" id="logout">Sair</button></div></header>
+<header><div class="brand"><div class="logo">C</div><div><b>Controla</b><div><small id="companyName">Beta</small></div></div></div><div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill" id="buildBadge" title="Versão publicada">v6.12</span><button class="btn soft" id="themeToggle" type="button">☾</button><button class="btn soft hidden" id="logout">Sair</button></div></header>
 <main class="wrap">
 <section class="login team-entry" id="login">
 <div class="card" id="deviceSetupCard">
@@ -228,7 +228,7 @@ body.device-mode .admin-only{display:none!important}
  <label>Senha</label><input autocomplete="current-password" id="password" type="password"/>
  <button class="btn primary" id="loginBtn">Entrar</button>
  <button class="btn soft" id="backDeviceSetup" type="button" style="margin-left:6px">Voltar</button>
- <div class="muted" id="loginMsg" style="margin-top:10px">Beta 6.11 • Modo Equipe</div><div class="debug" id="debug"></div>
+ <div class="muted" id="loginMsg" style="margin-top:10px">Beta 6.12 • Modo Equipe</div><div class="debug" id="debug"></div>
 </div>
 </section>
 <section class="hidden" id="app">
@@ -481,7 +481,12 @@ body.device-mode .admin-only{display:none!important}
 <div class="card" id="fuelEditCard" style="display:none"><div class="toolbar" style="justify-content:space-between"><div><h3 style="margin:0">Novo abastecimento</h3><div class="muted">O KM informado também atualiza a ficha do veículo quando for maior.</div></div><button class="btn soft" id="cancelFuelEdit" type="button">Cancelar</button></div>
 <div class="row" style="margin-top:12px"><div><label>Veículo</label><select id="fuelVehicle"></select></div><div><label>Data e hora</label><input id="fuelDate" type="datetime-local"/></div><div><label>KM atual</label><input id="fuelKm" type="number" min="0" step="1"/></div></div>
 <div class="row"><div><label>Litros</label><input id="fuelLiters" type="number" min="0" step="0.01"/></div><div><label>Valor total (R$)</label><input id="fuelTotal" type="number" min="0" step="0.01"/></div><div><label>Posto</label><input id="fuelStation" placeholder="Nome do posto"/></div></div>
-<div class="row"><div><label>R$/litro</label><input id="fuelPriceLiter" readonly/></div><div style="grid-column:span 2"><label>Observações</label><input id="fuelNotes"/></div></div>
+<div class="row">
+ <div><label>Motorista</label><input id="fuelDriver" placeholder="Nome do motorista"/></div>
+ <div><label>R$/litro</label><input id="fuelPriceLiter" readonly/></div>
+ <div><label>Foto do comprovante / bomba</label><input id="fuelReceiptFile" type="file" accept="image/jpeg,image/png,image/webp" capture="environment"/></div>
+</div>
+<div><label>Observações</label><input id="fuelNotes" placeholder="Ex.: abastecimento da equipe / viagem / observação"/></div>
 <div class="toolbar" style="margin-top:12px"><button class="btn primary" id="saveFuelBtn" type="button">SALVAR ABASTECIMENTO</button></div><div class="muted" id="fuelMsg" style="margin-top:8px"></div></div>
 <div class="card" id="kmEditCard" style="display:none"><div class="toolbar" style="justify-content:space-between"><div><h3 style="margin:0">Registrar quilometragem</h3><div class="muted">Atualize o hodômetro sem precisar registrar abastecimento.</div></div><button class="btn soft" id="cancelKmEdit" type="button">Cancelar</button></div>
 <div class="row" style="margin-top:12px"><div><label>Veículo</label><select id="kmVehicle"></select></div><div><label>Data e hora</label><input id="kmDate" type="datetime-local"/></div><div><label>KM do hodômetro</label><input id="kmValue" type="number" min="0" step="1"/></div></div>
@@ -1879,6 +1884,25 @@ async function saveMaintenance(){const id=$('#editMaintenanceId').value,vehicle_
 
 
 let fuelCache=[],fuelVehicles=[];
+const FUEL_RECEIPT_BUCKET='v2-fuel-receipts';
+async function uploadFuelReceipt(file,vehicleId){
+ if(!file)return null;
+ if(file.size>10*1024*1024)throw new Error('A foto do abastecimento deve ter no máximo 10 MB.');
+ const s=session();if(!s?.access_token)throw new Error('Sessão expirada.');
+ const ext=file.type==='image/png'?'png':file.type==='image/webp'?'webp':'jpg';
+ const path=companyId+'/'+vehicleId+'/'+Date.now()+'-abastecimento.'+ext;
+ const r=await fetch(API_URL+'/storage/v1/object/'+FUEL_RECEIPT_BUCKET+'/'+path,{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+s.access_token,'Content-Type':file.type||'image/jpeg','x-upsert':'false'},body:file});
+ await parseResponse(r);return path;
+}
+async function openFuelReceipt(path){
+ if(!path)return;
+ try{
+  const r=await authFetch('/storage/v1/object/'+FUEL_RECEIPT_BUCKET+'/'+path);
+  const b=await r.blob(),u=URL.createObjectURL(b);
+  window.open(u,'_blank','noopener');
+  setTimeout(()=>URL.revokeObjectURL(u),60000);
+ }catch(e){alert('Não foi possível abrir o comprovante: '+(e.message||String(e)))}
+}
 function localDateTimeInput(d=new Date()){const z=n=>String(n).padStart(2,'0');return `${d.getFullYear()}-${z(d.getMonth()+1)}-${z(d.getDate())}T${z(d.getHours())}:${z(d.getMinutes())}`}
 function fuelCalcPrice(){const l=Number(document.getElementById('fuelLiters')?.value||0),t=Number(document.getElementById('fuelTotal')?.value||0),e=document.getElementById('fuelPriceLiter');if(e)e.value=l?money(t/l):'R$ 0,00'}
 async function loadFuel(){
@@ -1887,31 +1911,70 @@ async function loadFuel(){
   rest('v2_vehicles','select=id,description,plate,model,current_odometer_km,status&company_id=eq.'+companyId+'&order=description.asc')
  ]);
  fuelCache=logs||[];fuelVehicles=vehicles||[];
- const opts='<option value="">Selecione...</option>'+fuelVehicles.map(v=>`<option value="${v.id}">${esc(v.description||v.model||v.plate)} • ${esc(v.plate||'sem placa')}</option>`).join('');
+ const opts='<option value="">Selecione...</option>'+fuelVehicles.map(v=>'<option value="'+esc(v.id)+'">'+esc(v.description||v.model||v.plate)+' • '+esc(v.plate||'sem placa')+'</option>').join('');
  const fs=document.getElementById('fuelVehicle'),ks=document.getElementById('kmVehicle');if(fs)fs.innerHTML=opts;if(ks)ks.innerHTML=opts;
  const month=new Date().toISOString().slice(0,7);
  const ml=fuelCache.filter(x=>String(x.fueled_at||'').slice(0,7)===month);
  const liters=ml.reduce((a,x)=>a+Number(x.liters||0),0),cost=ml.reduce((a,x)=>a+Number(x.total_amount||0),0);
  let kmDriven=0;
  fuelVehicles.forEach(v=>{const a=fuelCache.filter(x=>x.vehicle_id===v.id&&Number(x.odometer_km)>0).sort((x,y)=>Number(x.odometer_km)-Number(y.odometer_km));if(a.length>1)kmDriven+=Math.max(0,Number(a[a.length-1].odometer_km)-Number(a[0].odometer_km))});
- const k=document.getElementById('fuelKpis');if(k)k.innerHTML=`<div class="v2kpi"><span>Gasto no mês</span><strong>${money(cost)}</strong></div><div class="v2kpi"><span>Litros no mês</span><strong>${liters.toLocaleString('pt-BR',{maximumFractionDigits:1})} L</strong></div><div class="v2kpi"><span>Preço médio</span><strong>${liters?money(cost/liters):'R$ 0,00'}/L</strong></div><div class="v2kpi"><span>KM entre abastecimentos</span><strong>${kmDriven.toLocaleString('pt-BR')} km</strong></div>`;
+ const k=document.getElementById('fuelKpis');
+ if(k)k.innerHTML=
+  '<div class="v2kpi"><span>Gasto no mês</span><strong>'+money(cost)+'</strong></div>'+
+  '<div class="v2kpi"><span>Litros no mês</span><strong>'+liters.toLocaleString('pt-BR',{maximumFractionDigits:1})+' L</strong></div>'+
+  '<div class="v2kpi"><span>Preço médio</span><strong>'+(liters?money(cost/liters):'R$ 0,00')+'/L</strong></div>'+
+  '<div class="v2kpi"><span>KM entre abastecimentos</span><strong>'+kmDriven.toLocaleString('pt-BR')+' km</strong></div>';
  const list=document.getElementById('fuelList');if(!list)return;
- list.innerHTML=fuelCache.map((x,i)=>{
-  const v=fuelVehicles.find(z=>z.id===x.vehicle_id);const same=fuelCache.filter(z=>z.vehicle_id===x.vehicle_id&&new Date(z.fueled_at)<new Date(x.fueled_at)).sort((a,b)=>new Date(b.fueled_at)-new Date(a.fueled_at))[0];
+ list.innerHTML=fuelCache.map(x=>{
+  const v=fuelVehicles.find(z=>z.id===x.vehicle_id);
+  const same=fuelCache.filter(z=>z.vehicle_id===x.vehicle_id&&new Date(z.fueled_at)<new Date(x.fueled_at)).sort((a,b)=>new Date(b.fueled_at)-new Date(a.fueled_at))[0];
   const dist=same&&x.odometer_km&&same.odometer_km?Number(x.odometer_km)-Number(same.odometer_km):0;
   const cons=dist>0&&Number(x.liters)>0?dist/Number(x.liters):0;
   const cpk=dist>0?Number(x.total_amount||0)/dist:0;
-  return `<div class="item"><div class="toolbar" style="justify-content:space-between;gap:10px"><div><strong>${esc(v?.description||v?.model||'Veículo')} • ${esc(v?.plate||'sem placa')}</strong><div class="muted">${new Date(x.fueled_at).toLocaleString('pt-BR')} • ${Number(x.odometer_km||0).toLocaleString('pt-BR')} km • ${Number(x.liters||0).toLocaleString('pt-BR',{maximumFractionDigits:2})} L • ${money(x.total_amount||0)}</div><div style="margin-top:6px"><span class="pill">${Number(x.liters)>0?money(Number(x.total_amount||0)/Number(x.liters)):'R$ 0,00'}/L</span>${cons?` <span class="pill ok">${cons.toLocaleString('pt-BR',{maximumFractionDigits:2})} km/L</span> <span class="pill">${money(cpk)}/km</span>`:''}${x.station_name?` <span class="pill">⛽ ${esc(x.station_name)}</span>`:''}</div></div><button class="btn danger deleteFuelBtn" data-id="${x.id}" type="button">Excluir</button></div></div>`
+  let badges='<span class="pill">'+(Number(x.liters)>0?money(Number(x.total_amount||0)/Number(x.liters)):'R$ 0,00')+'/L</span>';
+  if(cons)badges+=' <span class="pill ok">'+cons.toLocaleString('pt-BR',{maximumFractionDigits:2})+' km/L</span> <span class="pill">'+money(cpk)+'/km</span>';
+  if(x.station_name)badges+=' <span class="pill">⛽ '+esc(x.station_name)+'</span>';
+  if(x.metadata&&x.metadata.driver)badges+=' <span class="pill">👤 '+esc(x.metadata.driver)+'</span>';
+  if(x.metadata&&x.metadata.receipt_path)badges+=' <span class="pill ok">📷 Comprovante</span>';
+  const notes=x.metadata&&x.metadata.notes?'<div class="muted" style="margin-top:6px">'+esc(x.metadata.notes)+'</div>':'';
+  const photo=(x.metadata&&x.metadata.receipt_path&&!deviceMode)?'<button class="btn soft viewFuelReceipt" data-path="'+esc(x.metadata.receipt_path)+'" type="button">Ver foto</button>':'';
+  return '<div class="item"><div class="toolbar" style="justify-content:space-between;gap:10px"><div><strong>'+esc(v?.description||v?.model||'Veículo')+' • '+esc(v?.plate||'sem placa')+'</strong><div class="muted">'+new Date(x.fueled_at).toLocaleString('pt-BR')+' • '+Number(x.odometer_km||0).toLocaleString('pt-BR')+' km • '+Number(x.liters||0).toLocaleString('pt-BR',{maximumFractionDigits:2})+' L • '+money(x.total_amount||0)+'</div><div style="margin-top:6px">'+badges+'</div>'+notes+'</div><div class="toolbar">'+photo+'<button class="btn danger deleteFuelBtn" data-id="'+esc(x.id)+'" type="button">Excluir</button></div></div></div>';
  }).join('')||'<div class="muted">Nenhum abastecimento registrado.</div>';
 }
 async function saveFuel(){
- const m=document.getElementById('fuelMsg'),vehicle_id=document.getElementById('fuelVehicle').value,liters=Number(document.getElementById('fuelLiters').value||0),total=Number(document.getElementById('fuelTotal').value||0),km=Number(document.getElementById('fuelKm').value||0);
- if(!vehicle_id){m.textContent='Selecione o veículo.';return}if(liters<=0){m.textContent='Informe a quantidade de litros.';return}
+ const m=document.getElementById('fuelMsg'),
+       vehicle_id=document.getElementById('fuelVehicle').value,
+       liters=Number(document.getElementById('fuelLiters').value||0),
+       total=Number(document.getElementById('fuelTotal').value||0),
+       km=Number(document.getElementById('fuelKm').value||0),
+       driver=document.getElementById('fuelDriver').value.trim(),
+       receipt=document.getElementById('fuelReceiptFile').files?.[0]||null;
+ if(!vehicle_id){m.textContent='Selecione o veículo.';return}
+ if(liters<=0){m.textContent='Informe a quantidade de litros.';return}
+ const btn=document.getElementById('saveFuelBtn');
  try{
-  await rest('v2_fuel_logs','', 'POST',{company_id:companyId,vehicle_id,fueled_at:new Date(document.getElementById('fuelDate').value||Date.now()).toISOString(),odometer_km:km||null,liters,total_amount:total,station_name:document.getElementById('fuelStation').value.trim()||null,metadata:{notes:document.getElementById('fuelNotes').value.trim()}});
-  const v=fuelVehicles.find(x=>x.id===vehicle_id);if(!deviceMode&&km>Number(v?.current_odometer_km||0))await rest('v2_vehicles','id=eq.'+vehicle_id,'PATCH',{current_odometer_km:km});
-  m.textContent='Abastecimento salvo.';document.getElementById('fuelEditCard').style.display='none';await loadFuel();
+  if(btn)btn.disabled=true;
+  m.textContent=receipt?'Enviando foto e salvando abastecimento...':'Salvando abastecimento...';
+  const receiptPath=receipt?await uploadFuelReceipt(receipt,vehicle_id):null;
+  await rest('v2_fuel_logs','', 'POST',{
+   company_id:companyId,vehicle_id,
+   fueled_at:new Date(document.getElementById('fuelDate').value||Date.now()).toISOString(),
+   odometer_km:km||null,liters,total_amount:total,
+   station_name:document.getElementById('fuelStation').value.trim()||null,
+   metadata:{
+    notes:document.getElementById('fuelNotes').value.trim()||null,
+    driver:driver||null,
+    receipt_path:receiptPath,
+    source:deviceMode?'team_device':'admin'
+   }
+  });
+  m.textContent='Abastecimento salvo ✓';
+  document.getElementById('fuelEditCard').style.display='none';
+  document.getElementById('fuelReceiptFile').value='';
+  document.getElementById('fuelDriver').value='';
+  await loadFuel();
  }catch(e){m.textContent=e.message||String(e)}
+ finally{if(btn)btn.disabled=false}
 }
 async function saveKm(){
  const m=document.getElementById('kmMsg'),vehicle_id=document.getElementById('kmVehicle').value,km=Number(document.getElementById('kmValue').value||0);
@@ -2251,13 +2314,30 @@ async function v2Go(tab){
  }catch(e){console.warn('Falha ao carregar tela',tab,e)}
 }
 document.addEventListener('click',async function(e){
-  if(e.target.closest('#newFuelBtn')){e.preventDefault();document.getElementById('fuelEditCard').style.display='block';document.getElementById('fuelDate').value=localDateTimeInput();document.getElementById('fuelMsg').textContent='';return}
+  if(e.target.closest('#newFuelBtn')){
+   e.preventDefault();
+   document.getElementById('fuelEditCard').style.display='block';
+   document.getElementById('fuelDate').value=localDateTimeInput();
+   document.getElementById('fuelMsg').textContent='';
+   document.getElementById('fuelLiters').value='';
+   document.getElementById('fuelTotal').value='';
+   document.getElementById('fuelStation').value='';
+   document.getElementById('fuelNotes').value='';
+   document.getElementById('fuelDriver').value='';
+   document.getElementById('fuelReceiptFile').value='';
+   if(deviceMode&&fuelVehicles.length===1){
+    document.getElementById('fuelVehicle').value=fuelVehicles[0].id;
+    document.getElementById('fuelKm').value=fuelVehicles[0].current_odometer_km||'';
+   }
+   return
+  }
   if(e.target.closest('#cancelFuelEdit')){e.preventDefault();document.getElementById('fuelEditCard').style.display='none';return}
   if(e.target.closest('#saveFuelBtn')){e.preventDefault();await saveFuel();return}
   if(e.target.closest('#newKmBtn')){e.preventDefault();document.getElementById('kmEditCard').style.display='block';document.getElementById('kmDate').value=localDateTimeInput();document.getElementById('kmMsg').textContent='';return}
   if(e.target.closest('#cancelKmEdit')){e.preventDefault();document.getElementById('kmEditCard').style.display='none';return}
   if(e.target.closest('#saveKmBtn')){e.preventDefault();await saveKm();return}
   if(e.target.closest('#refreshFuelBtn')){e.preventDefault();await loadFuel();return}
+  const fuelPhoto=e.target.closest('.viewFuelReceipt');if(fuelPhoto){e.preventDefault();await openFuelReceipt(fuelPhoto.dataset.path);return}
   if(e.target.closest('#importCrlvBtn')){e.preventDefault();document.getElementById('crlvImportFile').click();return}
   if(e.target.closest('#cancelCrlvImport')){e.preventDefault();document.getElementById('crlvPreviewCard').style.display='none';pendingCrlvFile=null;return}
   if(e.target.closest('#confirmCrlvImport')){e.preventDefault();await confirmCrlvImport();return}
