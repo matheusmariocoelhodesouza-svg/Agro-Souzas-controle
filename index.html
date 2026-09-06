@@ -8,7 +8,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
-<title>Agro Souza's Controle • v6.26</title>
+<title>Agro Souza's Controle • v6.27</title>
 <link rel="manifest" href="./agro-souzas-controle-v7.webmanifest"/>
 <link rel="apple-touch-icon" href="./apple-touch-icon-180.png"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
@@ -132,7 +132,7 @@ body.app-ready .v2sidebar{display:block}
 .po-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
 .pill.warn{background:#fff3cd;color:#7c5700}
 
-/* 6.26 — Modo Equipe */
+/* 6.27 — Modo Equipe */
 .team-entry{max-width:520px;margin:42px auto}
 .team-entry .card{padding:20px}
 .team-entry-title{text-align:center;margin-bottom:18px}
@@ -190,7 +190,7 @@ body.device-mode .admin-only{display:none!important}
 <script defer src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
 <script>
 (function(){
-  const BUILD='6.26';
+  const BUILD='6.27';
   try{
     const marker='controla_cache_cleanup_'+BUILD;
     if(!localStorage.getItem(marker)){
@@ -207,7 +207,7 @@ body.device-mode .admin-only{display:none!important}
 <aside class="v2sidebar" id="v2sidebar">
 <div class="v2logo"><div class="v2mark">AS</div><div><strong>AGRO SOUZA'S</strong><small>Controle & Gestão</small></div></div>
 <div class="v2group">OPERAÇÃO</div>
-<button class="v2navbtn active" data-v2tab="inicio">▦   Dashboard Apanha</button>
+<button class="v2navbtn active" data-v2tab="inicio">▦   Dashboard Geral</button>
 <button class="v2navbtn" data-v2tab="operacoes">▣   Apanhas</button>
 <button class="v2navbtn" data-v2tab="equipes">👥   Equipes</button>
 <div class="v2group">GESTÃO</div>
@@ -224,7 +224,7 @@ body.device-mode .admin-only{display:none!important}
 <div class="v2group">INTELIGÊNCIA</div>
 <button class="v2navbtn" data-v2tab="ia">✦   Assistente IA</button>
 </aside>
-<header><div class="brand"><div class="logo">AS</div><div><b>Agro Souza's Controle</b><div><small id="companyName">Administrador</small></div></div></div><div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.26</span><button class="btn soft" id="themeToggle" type="button">☾</button><button class="btn soft hidden" id="logout">Sair</button></div></header>
+<header><div class="brand"><div class="logo">AS</div><div><b>Agro Souza's Controle</b><div><small id="companyName">Administrador</small></div></div></div><div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.27</span><button class="btn soft" id="themeToggle" type="button">☾</button><button class="btn soft hidden" id="logout">Sair</button></div></header>
 <main class="wrap">
 <section class="login team-entry" id="login">
 <div class="card" id="deviceSetupCard">
@@ -241,7 +241,7 @@ body.device-mode .admin-only{display:none!important}
  <label>Senha</label><input autocomplete="current-password" id="password" type="password"/>
  <button class="btn primary" id="loginBtn">Entrar</button>
  <button class="btn soft" id="backDeviceSetup" type="button" style="margin-left:6px">Voltar</button>
- <div class="muted" id="loginMsg" style="margin-top:10px">Agro Souza's Controle • v6.26</div><div class="debug" id="debug"></div>
+ <div class="muted" id="loginMsg" style="margin-top:10px">Agro Souza's Controle • v6.27</div><div class="debug" id="debug"></div>
 </div>
 </section>
 <section class="hidden" id="app">
@@ -268,7 +268,7 @@ body.device-mode .admin-only{display:none!important}
    <button class="team-tile" type="button" data-teamtab="operacoes"><span class="ico">🐔</span><strong>Apanha</strong><small>Apanhas da sua equipe e carregamento caminhão por caminhão.</small></button>
    <button class="team-tile" type="button" data-teamtab="ponto"><span class="ico">⏱️</span><strong>Ponto</strong><small>Bater ponto e conferir presença dos funcionários da equipe.</small></button>
    <button class="team-tile" type="button" data-teamtab="combustivel"><span class="ico">⛽</span><strong>Abastecimento</strong><small>Registrar combustível da condução vinculada à equipe.</small></button>
-   <button class="team-tile" type="button" data-teamtab="equipereport"><span class="ico">📊</span><strong>Relatório</strong><small>Resumo de apanha, ponto e abastecimento da própria equipe.</small></button>
+   <button class="team-tile" type="button" data-teamtab="equipereport"><span class="ico">📊</span><strong>Relatório</strong><small>Relatório da apanha em 80 mm para entregar ao granjeiro.</small></button>
   </div>
  </div>
 </div>
@@ -339,7 +339,7 @@ body.device-mode .admin-only{display:none!important}
   <div class="v2panel">
    <h3 style="margin-top:0">Acessos rápidos</h3>
    <div class="toolbar" style="gap:8px;flex-wrap:wrap">
-    <button class="btn primary" data-jump="operacoes" type="button">🐔 Nova apanha</button>
+    <button class="btn primary" data-jump="operacoes" type="button">🐔 Apanhas</button>
     <button class="btn soft" data-jump="funcionarios" type="button">👥 Funcionários</button>
     <button class="btn soft" data-jump="frota" type="button">🚌 Frota</button>
     <button class="btn soft" data-jump="manutencoes" type="button">🔧 Manutenção</button>
@@ -3275,12 +3275,13 @@ function alertRank(a){return a.level==='danger'?0:a.level==='warn'?1:2}
 async function loadSmartAlerts(){
  const alerts=[];
  try{
-  const [docs,plans,vehicles,employees,employeeDocs]=await Promise.all([
+  const [docs,plans,vehicles,employees,employeeDocs,teams]=await Promise.all([
    rest('v2_vehicle_documents','select=id,vehicle_id,document_type,expires_at,status&company_id=eq.'+companyId),
    rest('v2_maintenance_plans','select=id,vehicle_id,name,next_due_at,next_due_odometer_km,active&company_id=eq.'+companyId+'&active=eq.true'),
-   rest('v2_vehicles','select=id,description,plate,model,current_odometer_km,status,renavam&company_id=eq.'+companyId),
-   rest('v2_employees','select=id,full_name,job_title,status,metadata&company_id=eq.'+companyId+'&status=eq.active'),
-   rest('v2_employee_documents','select=id,employee_id,document_type,expires_at,status&company_id=eq.'+companyId)
+   rest('v2_vehicles','select=id,description,plate,model,current_odometer_km,status,renavam,metadata&company_id=eq.'+companyId),
+   rest('v2_employees','select=id,full_name,job_title,status,phone,metadata&company_id=eq.'+companyId+'&status=eq.active'),
+   rest('v2_employee_documents','select=id,employee_id,document_type,expires_at,status&company_id=eq.'+companyId),
+   rest('v2_teams','select=id,name,supervisor_employee_id,status,metadata&company_id=eq.'+companyId+'&status=eq.active')
   ]);
   const vm=Object.fromEntries((vehicles||[]).map(v=>[v.id,v]));
   for(const d of docs||[]){const n=daysUntil(d.expires_at),v=vm[d.vehicle_id];if(n===null)continue;if(n<0)alerts.push({level:'danger',title:d.document_type+' vencido',text:`${v?.description||v?.plate||'Veículo'} • há ${Math.abs(n)} dia(s)`,tab:'documentosfrota'});else if(n<=30)alerts.push({level:'warn',title:d.document_type+' vence em breve',text:`${v?.description||v?.plate||'Veículo'} • ${n} dia(s)`,tab:'documentosfrota'})}
@@ -3288,6 +3289,19 @@ async function loadSmartAlerts(){
   for(const v of vehicles||[]){if(v.status==='maintenance')alerts.push({level:'warn',title:'Veículo em manutenção',text:`${v.description||v.model||v.plate}`,tab:'frota'});if(!v.renavam)alerts.push({level:'warn',title:'RENAVAM não informado',text:`${v.description||v.model||v.plate}`,tab:'frota'})}
   for(const d of employeeDocs||[]){const n=daysUntil(d.expires_at),e=(employees||[]).find(x=>x.id===d.employee_id);if(n===null)continue;if(n<0)alerts.push({level:'danger',title:(d.document_type||'Documento')+' vencido',text:`${e?.full_name||'Funcionário'} • há ${Math.abs(n)} dia(s)`,tab:'documentosrh'});else if(n<=30)alerts.push({level:'warn',title:(d.document_type||'Documento')+' vence em breve',text:`${e?.full_name||'Funcionário'} • ${n} dia(s)`,tab:'documentosrh'})}
   for(const e of employees||[]){if((e.job_title||'').toLowerCase().includes('motorista')){const md=e.metadata||{},exp=md.cnh_expires_at||md.cnh_expiry||null;if(exp){const n=daysUntil(exp);if(n<0)alerts.push({level:'danger',title:'CNH vencida',text:`${e.full_name} • há ${Math.abs(n)} dia(s)`,tab:'funcionarios'});else if(n<=30)alerts.push({level:'warn',title:'CNH vence em breve',text:`${e.full_name} • ${n} dia(s)`,tab:'funcionarios'})}}}
+
+  if(!companyProfile?.tax_id)alerts.push({level:'warn',title:'CNPJ / CPF do empregador não informado',text:'Complete os dados da empresa para relatórios, recibos e espelhos.',tab:'funcionarios'});
+  for(const t of teams||[]){
+   const sup=(employees||[]).find(e=>e.id===t.supervisor_employee_id);
+   if(!t.supervisor_employee_id)alerts.push({level:'warn',title:'Equipe sem encarregado',text:t.name||'Equipe',tab:'equipes'});
+   else if(!(t.metadata?.supervisor_phone||sup?.phone))alerts.push({level:'warn',title:'Telefone do encarregado não cadastrado',text:(t.name||'Equipe')+' • '+(sup?.full_name||'Encarregado'),tab:'equipes'});
+   if(!t.metadata?.primary_vehicle_id)alerts.push({level:'warn',title:'Equipe sem condução vinculada',text:t.name||'Equipe',tab:'equipes'});
+  }
+  for(const v of vehicles||[]){
+   const plate=String(v.plate||'').replace(/[^A-Z0-9]/gi,'').toUpperCase();
+   if(v.metadata?.beta===true)alerts.push({level:'warn',title:'Cadastro de veículo marcado como teste',text:(v.description||v.model||'Veículo')+(v.plate?' • '+v.plate:''),tab:'frota'});
+   if(plate&&plate.length!==7)alerts.push({level:'warn',title:'Placa de veículo parece incompleta',text:(v.description||v.model||'Veículo')+' • '+v.plate,tab:'frota'});
+  }
  }catch(e){console.warn(e)}
  smartAlertsCache=alerts.sort((a,b)=>alertRank(a)-alertRank(b));
  renderSmartAlerts();
@@ -3606,7 +3620,7 @@ setInterval(()=>{
 },60000);
 if('serviceWorker' in navigator){
  window.addEventListener('load',()=>{
-  navigator.serviceWorker.register('./sw-v6-26.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
+  navigator.serviceWorker.register('./sw-v6-27.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
  });
 }
 
