@@ -8,7 +8,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
-<title>Comando 360 • v6.33</title>
+<title>Comando 360 • v6.34</title>
 <link rel="manifest" href="./comando360.webmanifest"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
@@ -351,7 +351,7 @@ header .brand small{color:#718198;font-weight:650}
 <script defer src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
 <script>
 (function(){
-  const BUILD='6.33';
+  const BUILD='6.34';
   try{
     const marker='controla_cache_cleanup_'+BUILD;
     if(!localStorage.getItem(marker)){
@@ -385,11 +385,11 @@ header .brand small{color:#718198;font-weight:650}
 <div class="v2group">INTELIGÊNCIA</div>
 <button class="v2navbtn" data-v2tab="ia">✦   Assistente IA</button>
 </aside>
-<header><div class="brand"><img class="header-brand-icon" src="./comando360-icon.svg" alt="Comando 360"/><div><b>Comando <span class="brand360">360</span></b><div><small id="companyName">Empresa</small></div></div></div><div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.33</span><button class="btn soft" id="themeToggle" type="button">☾</button><button class="btn soft hidden" id="logout">Sair</button></div></header>
+<header><div class="brand"><img class="header-brand-icon" src="./comando360-icon.svg" alt="Comando 360"/><div><b>Comando <span class="brand360">360</span></b><div><small id="companyName">Empresa</small></div></div></div><div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.34</span><button class="btn soft" id="themeToggle" type="button">☾</button><button class="btn soft hidden" id="logout">Sair</button></div></header>
 <main class="wrap">
 <section class="login team-entry" id="login">
 <div class="card" id="deviceSetupCard">
- <div class="team-entry-title"><img class="login-brand-icon" src="./comando360-icon.svg" alt="Comando 360"/><h2>Configurar celular da equipe</h2><div class="muted">Digite uma única vez o código gerado pelo administrador. Depois este aparelho abre direto, sem login e senha.</div></div>
+ <div class="team-entry-title"><img class="login-brand-icon" src="./comando360-icon.svg" alt="Comando 360"/><h2>Configurar celular da equipe</h2><div class="muted">Digite uma única vez o código gerado pelo administrador. O aparelho ficará vinculado à equipe e abrirá direto, sem login e senha.</div></div>
  <label>Código de ativação</label>
  <input class="team-code-input" id="deviceCode" inputmode="text" maxlength="12" placeholder="AB12CD34"/>
  <button class="btn primary" id="deviceActivateBtn" style="width:100%;padding:14px">ATIVAR CELULAR</button>
@@ -402,7 +402,7 @@ header .brand small{color:#718198;font-weight:650}
  <label>Senha</label><input autocomplete="current-password" id="password" type="password"/>
  <button class="btn primary" id="loginBtn">Entrar</button>
  <button class="btn soft" id="backDeviceSetup" type="button" style="margin-left:6px">Voltar</button>
- <div class="muted" id="loginMsg" style="margin-top:10px">Comando 360 • v6.33</div><div class="debug" id="debug"></div>
+ <div class="muted" id="loginMsg" style="margin-top:10px">Comando 360 • v6.34</div><div class="debug" id="debug"></div>
 </div>
 </section>
 <section class="hidden" id="app">
@@ -878,6 +878,14 @@ async function login(email,password){
 function isAnonymousUser(user){
  return !!(user&&(user.is_anonymous===true||(!user.email&&Array.isArray(user.identities)&&user.identities.length===0)));
 }
+function isDeviceUser(user){
+ return !!(user&&(
+   isAnonymousUser(user)||
+   user.app_metadata?.comando360_device===true||
+   user.user_metadata?.comando360_device===true||
+   user.user_metadata?.controla_device===true
+ ));
+}
 async function anonymousLogin(){
  const r=await fetchTimeout(API_URL+'/auth/v1/signup',{
    method:'POST',
@@ -971,10 +979,24 @@ async function enterDeviceApp(authUser){
 }
 async function activateDevice(code){
  if(!code||code.trim().length<4)throw new Error('Digite o código de ativação.');
- let ss=session();
- if(!ss||!ss.access_token||!isAnonymousUser(ss.user)){clearSession();ss=await anonymousLogin()}
- await rpc('v2_pair_device',{p_code:code.trim().toUpperCase(),p_device_name:'Celular '+(navigator.platform||'equipe')});
- await enterDeviceApp((session()||{}).user||null);
+ clearSession();
+ const pairingCode=code.trim().toUpperCase();
+ const r=await fetchTimeout(API_URL+'/functions/v1/comando360-device-activate',{
+   method:'POST',
+   headers:{
+     apikey:KEY,
+     Authorization:'Bearer '+KEY,
+     'Content-Type':'application/json'
+   },
+   body:JSON.stringify({
+     code:pairingCode,
+     device_name:'Tablet/Celular '+(navigator.platform||'equipe')
+   })
+ },18000);
+ const data=await parseResponse(r);
+ if(!data?.session?.access_token)throw new Error('A ativação não retornou uma sessão válida.');
+ saveSession(data.session);
+ await enterDeviceApp(data.session.user||null);
 }
 
 
@@ -1597,7 +1619,7 @@ async function restInsert(table,payload){
 async function enterApp(authUser){
   const user=authUser||await getUser();
   if(!user||!user.id)throw new Error('Não foi possível identificar o usuário.');
-  if(isAnonymousUser(user))return await enterDeviceApp(user);
+  if(isDeviceUser(user))return await enterDeviceApp(user);
   deviceMode=false;deviceAccess=null;deviceTeam=null;document.body.classList.remove('device-mode');
   debug('Login confirmado. Carregando empresa...');
   const members=await v2Rest('v2_company_members','select=company_id,role_id&user_id=eq.'+encodeURIComponent(user.id)+'&status=eq.active');
@@ -3847,7 +3869,7 @@ setInterval(()=>{
 },60000);
 if('serviceWorker' in navigator){
  window.addEventListener('load',()=>{
-  navigator.serviceWorker.register('./sw-v6-33.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
+  navigator.serviceWorker.register('./sw-v6-34.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
  });
 }
 
@@ -3876,7 +3898,7 @@ window.addEventListener('error',e=>{if(!$('#app').classList.contains('hidden'))r
  const ss=session();
  if(ss&&ss.access_token){
    const u=ss.user||await getUser();
-   if(isAnonymousUser(u)){
+   if(isDeviceUser(u)){
      try{await enterDeviceApp(u);return}
      catch(e){
        if(e&&e.code==='DEVICE_UNPAIRED'){
