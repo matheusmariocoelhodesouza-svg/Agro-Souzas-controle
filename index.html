@@ -8,7 +8,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
-<title>Comando 360 • v6.39</title>
+<title>Comando 360 • v6.40</title>
 <link rel="manifest" href="./comando360.webmanifest"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
@@ -353,7 +353,7 @@ header .brand small{color:#718198;font-weight:650}
 <script defer src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
 <script>
 (function(){
-  const BUILD='6.39';
+  const BUILD='6.40';
   try{
     const marker='controla_cache_cleanup_'+BUILD;
     if(!localStorage.getItem(marker)){
@@ -387,7 +387,7 @@ header .brand small{color:#718198;font-weight:650}
 <div class="v2group">INTELIGÊNCIA</div>
 <button class="v2navbtn" data-v2tab="ia">✦   Assistente IA</button>
 </aside>
-<header><div class="brand"><img class="header-brand-icon" src="./comando360-icon.svg" alt="Comando 360"/><div><b>Comando <span class="brand360">360</span></b><div><small id="companyName">Empresa</small></div></div></div><div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.39</span><button class="btn soft" id="themeToggle" type="button">☾</button><button class="btn soft hidden" id="logout">Sair</button></div></header>
+<header><div class="brand"><img class="header-brand-icon" src="./comando360-icon.svg" alt="Comando 360"/><div><b>Comando <span class="brand360">360</span></b><div><small id="companyName">Empresa</small></div></div></div><div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.40</span><button class="btn soft" id="themeToggle" type="button">☾</button><button class="btn soft hidden" id="logout">Sair</button></div></header>
 <main class="wrap">
 <section class="login team-entry" id="login">
 <div class="card" id="deviceSetupCard">
@@ -404,7 +404,7 @@ header .brand small{color:#718198;font-weight:650}
  <label>Senha</label><input autocomplete="current-password" id="password" type="password"/>
  <button class="btn primary" id="loginBtn">Entrar</button>
  <button class="btn soft" id="backDeviceSetup" type="button" style="margin-left:6px">Voltar</button>
- <div class="muted" id="loginMsg" style="margin-top:10px">Comando 360 • v6.39</div><div class="debug" id="debug"></div>
+ <div class="muted" id="loginMsg" style="margin-top:10px">Comando 360 • v6.40</div><div class="debug" id="debug"></div>
 </div>
 </section>
 <section class="hidden" id="app">
@@ -2650,8 +2650,13 @@ async function savePoultryOperation(){
   try{
    $('#poMsg').textContent='Salvando apanha neste celular...';
    const id=makeOfflineId('apanha');
+   const savedBarnId=$('#poSavedAviary')?.value||'';
+   const savedBarn=poultryBarns.find(b=>b.id===savedBarnId)||null;
+   const savedFarm=savedBarn?poultryFarms.find(f=>f.id===savedBarn.farm_id):null;
    const form={
     integrated,city,farm_name:farmName||null,aviary,
+    source_farm_id:savedFarm?.id||null,
+    source_barn_id:savedBarn?.id||null,
     outlet_type:$('#poOutletType').value.trim()||null,
     energy_type:$('#poEnergyType').value.trim()||null,
     scheduled_start:new Date($('#poStart').value).toISOString(),
@@ -2663,7 +2668,7 @@ async function savePoultryOperation(){
    await loadDevicePoultryContext();
    await loadPoultryOps();
    openNextTruckForm({
-    operationId:'offline:'+id,loadingId:'offline:'+id,farmId:'offline-farm:'+id,
+    operationId:'offline:'+id,loadingId:'offline:'+id,farmId:form.source_farm_id||('offline-farm:'+id),
     name:integrated,sequence:1
    });
    $('#poTruckMsg').className='okmsg';
@@ -2721,7 +2726,11 @@ async function loadPoultryOps(){
   if(deviceMode){
    const queue=await offlineQueueList();
    for(const item of queue.filter(x=>x.type==='poultry_operation')){
-    const f=item.form||{},opId='offline:'+item.id,loadingId='offline:'+item.id,farmId='offline-farm:'+item.id,barnId='offline-barn:'+item.id;
+    const f=item.form||{},opId='offline:'+item.id,loadingId='offline:'+item.id;
+    const syntheticFarmId='offline-farm:'+item.id,syntheticBarnId='offline-barn:'+item.id;
+    const farmId=f.source_farm_id||syntheticFarmId,barnId=f.source_barn_id||syntheticBarnId;
+    if(!f.source_farm_id&&!poultryFarms.some(x=>x.id===syntheticFarmId))poultryFarms.unshift({id:syntheticFarmId,producer_name:f.integrated,farm_name:f.farm_name||f.integrated,city:f.city,address:{city:f.city},status:'active',metadata:{offline_pending:true}});
+    if(!f.source_barn_id&&!poultryBarns.some(x=>x.id===syntheticBarnId))poultryBarns.unshift({id:syntheticBarnId,farm_id:farmId,barn_number:f.aviary,outlet_type:f.outlet_type||null,energy_type:f.energy_type||null,status:'active',offline_pending:true});
     if(!ops.some(o=>o.id===opId))ops.unshift({
      id:opId,operation_number:null,title:'Apanha - '+f.integrated,customer_name:f.integrated,location_name:(f.city||'')+' • '+(f.integrated||'')+' • '+(f.aviary||''),
      team_id:item.team_id,scheduled_start:f.scheduled_start,scheduled_end:f.scheduled_end,status:'planned',notes:f.notes||null,
@@ -2736,7 +2745,7 @@ async function loadPoultryOps(){
      id:'offline-truck:'+item.id,loading_id:loadingId,truck_sequence:item.payload?.truck_sequence,
      truck_plate:item.payload?.truck_plate,driver_name:item.payload?.driver_name,birds:item.payload?.birds,
      started_at:item.payload?.started_at,completed_at:item.payload?.completed_at,is_cata:!!item.payload?.is_cata,
-     external_reference:item.id,metadata:{barn_id:item.barn_id,notes:item.payload?.notes,...(item.payload?.sheet||{}),sheet_photo_path:item.sheet_blob?'local-pending':null,offline_pending:true}
+     external_reference:item.id,metadata:{barn_id:item.barn_id,barn_ids:item.barn_ids||[item.barn_id].filter(Boolean),notes:item.payload?.notes,...(item.payload?.sheet||{}),sheet_photo_path:item.sheet_blob?'local-pending':null,offline_pending:true}
     });
    }
 
@@ -3233,7 +3242,7 @@ function printCatchReport(index){
  const groups={};
  r.trucks.forEach(t=>{
   const tb=poultryBarns.find(b=>b.id===t.metadata?.barn_id)||barn;
-  const aviary=tb?.barn_number||t.metadata?.sheet_aviaries||'Não informado';
+  const aviary=(t.is_cata&&t.metadata?.sheet_aviaries)?t.metadata.sheet_aviaries:(tb?.barn_number||t.metadata?.sheet_aviaries||'Não informado');
   (groups[aviary]??=[]).push(t);
  });
  const aviarySections=Object.entries(groups).map(([aviary,trucks])=>{
@@ -4008,7 +4017,7 @@ setInterval(()=>{
 },60000);
 if('serviceWorker' in navigator){
  window.addEventListener('load',()=>{
-  navigator.serviceWorker.register('./sw-v6-39.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
+  navigator.serviceWorker.register('./sw-v6-40.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
  });
 }
 
