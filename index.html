@@ -8,7 +8,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
-<title>Agro Souza's Controle • v6.27</title>
+<title>Agro Souza's Controle • v6.28</title>
 <link rel="manifest" href="./agro-souzas-controle-v7.webmanifest"/>
 <link rel="apple-touch-icon" href="./apple-touch-icon-180.png"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
@@ -190,7 +190,7 @@ body.device-mode .admin-only{display:none!important}
 <script defer src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
 <script>
 (function(){
-  const BUILD='6.27';
+  const BUILD='6.28';
   try{
     const marker='controla_cache_cleanup_'+BUILD;
     if(!localStorage.getItem(marker)){
@@ -224,7 +224,7 @@ body.device-mode .admin-only{display:none!important}
 <div class="v2group">INTELIGÊNCIA</div>
 <button class="v2navbtn" data-v2tab="ia">✦   Assistente IA</button>
 </aside>
-<header><div class="brand"><div class="logo">AS</div><div><b>Agro Souza's Controle</b><div><small id="companyName">Administrador</small></div></div></div><div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.27</span><button class="btn soft" id="themeToggle" type="button">☾</button><button class="btn soft hidden" id="logout">Sair</button></div></header>
+<header><div class="brand"><div class="logo">AS</div><div><b>Agro Souza's Controle</b><div><small id="companyName">Administrador</small></div></div></div><div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.28</span><button class="btn soft" id="themeToggle" type="button">☾</button><button class="btn soft hidden" id="logout">Sair</button></div></header>
 <main class="wrap">
 <section class="login team-entry" id="login">
 <div class="card" id="deviceSetupCard">
@@ -241,7 +241,7 @@ body.device-mode .admin-only{display:none!important}
  <label>Senha</label><input autocomplete="current-password" id="password" type="password"/>
  <button class="btn primary" id="loginBtn">Entrar</button>
  <button class="btn soft" id="backDeviceSetup" type="button" style="margin-left:6px">Voltar</button>
- <div class="muted" id="loginMsg" style="margin-top:10px">Agro Souza's Controle • v6.27</div><div class="debug" id="debug"></div>
+ <div class="muted" id="loginMsg" style="margin-top:10px">Agro Souza's Controle • v6.28</div><div class="debug" id="debug"></div>
 </div>
 </section>
 <section class="hidden" id="app">
@@ -370,7 +370,7 @@ body.device-mode .admin-only{display:none!important}
 <div style="margin-top:16px"><div class="toolbar" style="justify-content:space-between"><div><label style="font-size:15px">Funcionários da equipe</label><div class="muted">Marque para adicionar. Desmarque para retirar. Se o funcionário estiver em outra equipe, ele será transferido.</div></div><span class="pill" id="teamMembersCount">0 selecionado(s)</span></div><div id="teamMembersList" class="list" style="margin-top:10px;max-height:360px;overflow:auto"></div></div><div class="toolbar" style="margin-top:12px"><button class="btn primary" id="saveTeamEdit" type="button">SALVAR EQUIPE</button><button class="btn soft" id="archiveTeamBtn" type="button">ARQUIVAR EQUIPE</button><button class="btn danger" id="deleteTeamBtn" type="button">EXCLUIR EQUIPE</button></div><div class="muted" id="teamEditMsg" style="margin-top:8px"></div></div>
 </div>
 <div class="section" data-screen="funcionarios" hidden="" id="funcionarios"><div class="card"><div class="toolbar"><div><strong>Dados do empregador</strong><div class="muted">Usados nos documentos e comprovantes do ponto.</div></div></div><div class="row"><div><label>Razão social</label><input id="companyLegalName"/></div><div><label>Nome fantasia</label><input id="companyTradeName"/></div><div><label>CNPJ / CPF</label><input id="companyTaxId" inputmode="numeric" placeholder="00.000.000/0000-00"/></div></div><button class="btn primary" id="saveCompanyProfile" style="margin-top:10px">Salvar empregador</button><div class="muted" id="companyProfileMsg"></div></div><div class="card"><strong>Dados profissionais do trabalhador</strong><div class="muted">Cargo/função e data de admissão passam a integrar o cadastro profissional e o espelho de ponto.</div><div class="row" style="margin-top:10px"><div><label>Funcionário</label><select id="profEmployee"></select></div><div><label>Cargo / função</label><input id="profJobTitle" placeholder="Ex.: Apanhador de aves"/></div><div><label>Data de admissão</label><input id="profAdmissionDate" type="date"/></div></div><button class="btn primary" id="saveProfessional" style="margin-top:10px">Salvar dados profissionais</button><div class="muted" id="profMsg"></div></div>
-<div class="card" id="employeeEditCard" style="display:none"><div class="toolbar"><div><h3 style="margin:0">Editar funcionário</h3><div class="muted" id="employeeEditSubtitle">Atualize o cadastro sem perder o histórico.</div></div><button class="btn soft" id="cancelEmployeeEdit" type="button">Cancelar</button></div><input id="editEmployeeId" type="hidden"/><div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin:12px 0 16px"><img id="editEmployeePhotoPreview" alt="Foto do funcionário" style="width:112px;height:112px;object-fit:cover;border-radius:18px;border:1px solid #cbd5e1;background:#f8fafc"/><div><div style="font-weight:800;margin-bottom:8px">Foto de perfil</div><div class="toolbar"><button class="btn primary" id="takeEmployeePhoto" type="button">📷 TIRAR FOTO</button><button class="btn soft" id="chooseEmployeePhoto" type="button">🖼️ GALERIA</button><button class="btn soft" id="removeEmployeePhoto" type="button">REMOVER</button></div><input accept="image/jpeg,image/png,image/webp" capture="environment" class="hidden" id="employeePhotoCamera" type="file"/><input accept="image/jpeg,image/png,image/webp" class="hidden" id="employeePhotoGallery" type="file"/><div class="muted" style="margin-top:7px">Foto para identificação visual no RH. Não altera a biometria facial do Ponto 2.0.</div></div></div><div class="row"><div><label>Nome completo</label><input id="editEmployeeName"/></div><div><label>Matrícula</label><input id="editEmployeeNumber" inputmode="numeric"/></div><div><label>CPF</label><input id="editEmployeeCpf" inputmode="numeric"/></div></div><div class="row"><div><label>RG</label><input id="editEmployeeRg"/></div><div><label>Data de nascimento</label><input id="editEmployeeBirth" type="date"/></div><div><label>Telefone</label><input id="editEmployeePhone"/></div></div><div class="row"><div><label>Cargo / função</label><input id="editEmployeeJob"/></div><div><label>Equipe</label><input id="editEmployeeTeam" placeholder="Ex.: Equipe 1"/></div><div><label>Data de admissão</label><input id="editEmployeeAdmission" type="date"/></div></div><div><label>Endereço</label><input id="editEmployeeAddress" placeholder="Rua, número, bairro, cidade..."/></div><div class="row" style="margin-top:12px"><button class="btn primary" id="saveEmployeeEdit" type="button">SALVAR ALTERAÇÕES</button><button class="btn soft" id="archiveEmployee" type="button">ARQUIVAR FUNCIONÁRIO</button><button class="btn danger" id="deleteEmployee" type="button">EXCLUIR DEFINITIVAMENTE</button></div><div class="muted" id="employeeEditMsg" style="margin-top:8px"></div></div>
+<div class="card" id="employeeEditCard" style="display:none"><div class="toolbar"><div><h3 style="margin:0">Editar funcionário</h3><div class="muted" id="employeeEditSubtitle">Atualize o cadastro sem perder o histórico.</div></div><button class="btn soft" id="cancelEmployeeEdit" type="button">Cancelar</button></div><input id="editEmployeeId" type="hidden"/><div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin:12px 0 16px"><img id="editEmployeePhotoPreview" alt="Foto do funcionário" style="width:112px;height:112px;object-fit:cover;border-radius:18px;border:1px solid #cbd5e1;background:#f8fafc"/><div><div style="font-weight:800;margin-bottom:8px">Foto de perfil</div><div class="toolbar"><button class="btn primary" id="takeEmployeePhoto" type="button">📷 TIRAR FOTO</button><button class="btn soft" id="chooseEmployeePhoto" type="button">🖼️ GALERIA</button><button class="btn soft" id="removeEmployeePhoto" type="button">REMOVER</button></div><input accept="image/jpeg,image/png,image/webp" capture="environment" class="hidden" id="employeePhotoCamera" type="file"/><input accept="image/jpeg,image/png,image/webp" class="hidden" id="employeePhotoGallery" type="file"/><div class="muted" style="margin-top:7px"><b>Foto oficial do colaborador.</b> Ao salvar uma nova foto, o app também usa esta mesma imagem como referência do reconhecimento facial do Ponto 2.0.</div></div></div><div class="row"><div><label>Nome completo</label><input id="editEmployeeName"/></div><div><label>Matrícula</label><input id="editEmployeeNumber" inputmode="numeric"/></div><div><label>CPF</label><input id="editEmployeeCpf" inputmode="numeric"/></div></div><div class="row"><div><label>RG</label><input id="editEmployeeRg"/></div><div><label>Data de nascimento</label><input id="editEmployeeBirth" type="date"/></div><div><label>Telefone</label><input id="editEmployeePhone"/></div></div><div class="row"><div><label>Cargo / função</label><input id="editEmployeeJob"/></div><div><label>Equipe</label><input id="editEmployeeTeam" placeholder="Ex.: Equipe 1"/></div><div><label>Data de admissão</label><input id="editEmployeeAdmission" type="date"/></div></div><div><label>Endereço</label><input id="editEmployeeAddress" placeholder="Rua, número, bairro, cidade..."/></div><div class="row" style="margin-top:12px"><button class="btn primary" id="saveEmployeeEdit" type="button">SALVAR ALTERAÇÕES</button><button class="btn soft" id="archiveEmployee" type="button">ARQUIVAR FUNCIONÁRIO</button><button class="btn danger" id="deleteEmployee" type="button">EXCLUIR DEFINITIVAMENTE</button></div><div class="muted" id="employeeEditMsg" style="margin-top:8px"></div></div>
 <div class="grid">
 <div class="card"><div class="kpi" id="rhActive">0</div><div class="label">Funcionários ativos</div></div>
 <div class="card"><div class="kpi" id="rhWorking">0</div><div class="label">Com ponto hoje</div></div>
@@ -390,7 +390,7 @@ body.device-mode .admin-only{display:none!important}
 </div>
 <div class="toolbar" style="margin-top:12px"><button class="btn primary" id="saveSchedule">SALVAR JORNADA</button></div>
 <div class="muted" id="scheduleMsg" style="margin-top:8px"></div>
-</div><div class="card"><h3>Cadastro facial</h3><div class="muted">Cadastre a foto frontal de referência do funcionário.</div><label>Funcionário</label><select id="faceEmployee" style="width:100%;padding:12px;margin:6px 0 10px;border:1px solid #cbd5e1;border-radius:10px"></select><label>Foto facial</label><input accept="image/*" capture="user" id="faceReference" style="width:100%;padding:10px;margin:6px 0 10px" type="file"/><button class="btn primary" id="saveFaceReference">CADASTRAR BIOMETRIA FACIAL</button><div class="muted" id="faceEnrollMsg" style="margin-top:10px"></div><div class="list" id="faceEnrollmentList" style="margin-top:12px"></div></div>
+</div><div class="card"><h3>Biometria facial</h3><div class="muted">A foto de perfil é a referência facial padrão. Use esta área para ativar uma foto de perfil antiga ou recadastrar manualmente quando necessário.</div><label>Funcionário</label><select id="faceEmployee" style="width:100%;padding:12px;margin:6px 0 10px;border:1px solid #cbd5e1;border-radius:10px"></select><div class="toolbar" style="margin:8px 0 12px"><button class="btn primary" id="useProfileFace" type="button">USAR FOTO DE PERFIL</button></div><label>Ou tire uma nova foto somente para recadastro facial</label><input accept="image/*" capture="user" id="faceReference" style="width:100%;padding:10px;margin:6px 0 10px" type="file"/><button class="btn soft" id="saveFaceReference">RECADASTRAR COM ESTA FOTO</button><div class="muted" id="faceEnrollMsg" style="margin-top:10px"></div><div class="list" id="faceEnrollmentList" style="margin-top:12px"></div></div>
 <div class="card"><h3>Férias e vencimentos</h3><div class="list" id="vacationList"></div></div>
 </div>
 <div class="section" data-screen="ponto" hidden="" id="ponto">
@@ -817,7 +817,7 @@ async function activateDevice(code){
 }
 
 
-async function uploadFaceReference(file,employeeId){const s=session();const ext=file.type==='image/png'?'png':'jpg';const path=companyId+'/'+employeeId+'/reference-'+Date.now()+'.'+ext;const r=await fetch(API_URL+'/storage/v1/object/biometric-selfies/'+path,{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+s.access_token,'Content-Type':file.type||'image/jpeg','x-upsert':'false'},body:file});await parseResponse(r);return path}
+async function uploadFaceReference(file,employeeId){const s=session();const ext=file.type==='image/png'?'png':file.type==='image/webp'?'webp':'jpg';const path=companyId+'/'+employeeId+'/reference-'+Date.now()+'.'+ext;const r=await fetch(API_URL+'/storage/v1/object/biometric-selfies/'+path,{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+s.access_token,'Content-Type':file.type||'image/jpeg','x-upsert':'false'},body:file});await parseResponse(r);return path}
 async function uploadSelfie(file,employeeId){
  const s=session();if(!s?.access_token)throw new Error('Sessão expirada.');
  const ext=file.type==='image/png'?'png':file.type==='image/webp'?'webp':'jpg';
@@ -839,6 +839,29 @@ async function ensureFaceModels(){
 }
 async function imageFromFile(file){return new Promise((resolve,reject)=>{const u=URL.createObjectURL(file),im=new Image();im.onload=()=>{URL.revokeObjectURL(u);resolve(im)};im.onerror=()=>{URL.revokeObjectURL(u);reject(new Error('Não foi possível abrir a foto.'))};im.src=u})}
 async function faceDescriptorFromFile(file){await ensureFaceModels();const img=await imageFromFile(file);const r=await faceapi.detectSingleFace(img,new faceapi.TinyFaceDetectorOptions({inputSize:320,scoreThreshold:.55})).withFaceLandmarks().withFaceDescriptor();if(!r)throw new Error('Rosto não identificado. Tire outra foto de frente e com boa iluminação.');return Array.from(r.descriptor)}
+async function enrollEmployeeFaceFromFile(file,employeeId,descriptor=null){
+ if(!file||!employeeId)throw new Error('Foto e funcionário são obrigatórios para a biometria.');
+ const faceDescriptor=descriptor||await faceDescriptorFromFile(file);
+ const facePath=await uploadFaceReference(file,employeeId);
+ const u=await getUser();
+ try{await rpc('enroll_employee_face',{p_employee_id:employeeId,p_photo_storage_path:facePath})}catch(e){console.warn('enroll_employee_face',e)}
+ await rpc('v2_save_employee_face_descriptor',{p_employee_id:employeeId,p_descriptor:faceDescriptor});
+ try{
+  await restUpsert('v2_employee_face_enrollments',{
+   company_id:companyId,employee_id:employeeId,reference_photo_path:facePath,status:'active',
+   enrolled_at:new Date().toISOString(),enrolled_by:u.id,revoked_at:null
+  },'company_id,employee_id');
+ }catch(e){console.warn('face enrollment status',e)}
+ return {facePath};
+}
+async function profilePhotoAsFile(employee){
+ if(!employee?.photo_path)throw new Error('Este funcionário ainda não possui foto de perfil.');
+ const r=await authFetch('/storage/v1/object/employee-documents/'+employee.photo_path);
+ if(!r.ok)throw new Error('Não foi possível abrir a foto de perfil.');
+ const blob=await r.blob();
+ const ext=blob.type==='image/png'?'png':blob.type==='image/webp'?'webp':'jpg';
+ return new File([blob],'perfil-'+employee.id+'.'+ext,{type:blob.type||'image/jpeg'});
+}
 async function getUser(){const r=await authFetch('/auth/v1/user');return parseResponse(r)}
 
 const pointLabels={in:'Entrada',break_start:'Saída para intervalo',break_end:'Retorno do intervalo',out:'Saída final',finished:'Jornada encerrada'};
@@ -2034,7 +2057,32 @@ function getGPS(){
  });
 }
 
-$('#saveFaceReference').addEventListener('click',async()=>{const b=$('#saveFaceReference'),m=$('#faceEnrollMsg'),eid=$('#faceEmployee').value,f=$('#faceReference').files?.[0];if(!eid){m.className='error';m.textContent='Selecione o funcionário.';return}if(!f){m.className='error';m.textContent='Capture a foto facial.';return}b.disabled=true;m.className='muted';m.textContent='Processando rosto...';try{const descriptor=await faceDescriptorFromFile(f);const p=await uploadFaceReference(f,eid),u=await getUser();try{await rpc('enroll_employee_face',{p_employee_id:eid,p_photo_storage_path:p})}catch(e){console.warn(e)}await rpc('v2_save_employee_face_descriptor',{p_employee_id:eid,p_descriptor:descriptor});try{await restUpsert('v2_employee_face_enrollments',{company_id:companyId,employee_id:eid,reference_photo_path:p,status:'active',enrolled_at:new Date().toISOString(),enrolled_by:u.id,revoked_at:null},'company_id,employee_id')}catch(e){console.warn(e)}m.className='okmsg';m.textContent='Biometria facial cadastrada e pronta para reconhecimento automático.';$('#faceReference').value='';await loadEmployees()}catch(e){m.className='error';m.textContent=e.message||String(e)}finally{b.disabled=false}});
+$('#saveFaceReference').addEventListener('click',async()=>{
+ const b=$('#saveFaceReference'),m=$('#faceEnrollMsg'),eid=$('#faceEmployee').value,f=$('#faceReference').files?.[0];
+ if(!eid){m.className='error';m.textContent='Selecione o funcionário.';return}
+ if(!f){m.className='error';m.textContent='Capture a foto facial.';return}
+ b.disabled=true;m.className='muted';m.textContent='Validando rosto e atualizando biometria...';
+ try{
+  await enrollEmployeeFaceFromFile(f,eid);
+  m.className='okmsg';m.textContent='Biometria facial atualizada ✓';
+  $('#faceReference').value='';await loadEmployees();
+ }catch(e){m.className='error';m.textContent=e.message||String(e)}
+ finally{b.disabled=false}
+});
+if($('#useProfileFace'))$('#useProfileFace').addEventListener('click',async()=>{
+ const b=$('#useProfileFace'),m=$('#faceEnrollMsg'),eid=$('#faceEmployee').value;
+ if(!eid){m.className='error';m.textContent='Selecione o funcionário.';return}
+ const emp=(window.__rhEmployees||[]).find(x=>x.id===eid);
+ if(!emp?.photo_path){m.className='error';m.textContent='Este funcionário ainda não possui foto de perfil.';return}
+ b.disabled=true;m.className='muted';m.textContent='Lendo a foto de perfil e cadastrando o rosto...';
+ try{
+  const f=await profilePhotoAsFile(emp);
+  await enrollEmployeeFaceFromFile(f,eid);
+  m.className='okmsg';m.textContent='Foto de perfil ativada como referência facial ✓';
+  await loadEmployees();
+ }catch(e){m.className='error';m.textContent=e.message||String(e)}
+ finally{b.disabled=false}
+});
 $('#pointMatricula').addEventListener('input',()=>{clearTimeout(window.__pt);window.__pt=setTimeout(previewNextPoint,250)});
 $('#pointMatricula').addEventListener('blur',previewNextPoint);
 
@@ -3620,7 +3668,7 @@ setInterval(()=>{
 },60000);
 if('serviceWorker' in navigator){
  window.addEventListener('load',()=>{
-  navigator.serviceWorker.register('./sw-v6-27.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
+  navigator.serviceWorker.register('./sw-v6-28.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
  });
 }
 
@@ -3675,7 +3723,51 @@ if(document.getElementById('employeePhotoCamera'))document.getElementById('emplo
 if(document.getElementById('employeePhotoGallery'))document.getElementById('employeePhotoGallery').addEventListener('change',()=>previewEmployeePhotoInput($('#employeePhotoGallery')));
 if(document.getElementById('removeEmployeePhoto'))document.getElementById('removeEmployeePhoto').addEventListener('click',()=>{window.__employeePhotoFile=null;window.__removeEmployeePhoto=true;const e=(window.__rhEmployees||[]).find(x=>x.id===$('#editEmployeeId').value);$('#editEmployeePhotoPreview').src=employeePlaceholder(e?.full_name||'')});
 if(document.getElementById('cancelEmployeeEdit'))document.getElementById('cancelEmployeeEdit').addEventListener('click',()=>{$('#employeeEditCard').style.display='none'});
-if(document.getElementById('saveEmployeeEdit'))document.getElementById('saveEmployeeEdit').addEventListener('click',async()=>{const id=$('#editEmployeeId').value,m=$('#employeeEditMsg');if(!id)return;const name=$('#editEmployeeName').value.trim(),num=$('#editEmployeeNumber').value.trim(),cpf=$('#editEmployeeCpf').value.replace(/\D/g,'');if(!name||!num){m.textContent='Nome e matrícula são obrigatórios.';return}try{const dup=await rest('v2_employees','select=id,employee_number,cpf&company_id=eq.'+companyId+'&or=(employee_number.eq.'+encodeURIComponent(num)+(cpf?',cpf.eq.'+encodeURIComponent(cpf):'')+')');if((dup||[]).some(x=>x.id!==id)){m.textContent='Já existe outro funcionário com esta matrícula ou CPF.';return}const addr=$('#editEmployeeAddress').value.trim();let photoPath=(window.__rhEmployees||[]).find(x=>x.id===id)?.photo_path||null;if(window.__removeEmployeePhoto)photoPath=null;if(window.__employeePhotoFile)photoPath=await uploadEmployeeProfilePhoto(window.__employeePhotoFile,id);await rest('v2_employees','id=eq.'+id,'PATCH',{full_name:name,employee_number:num,cpf:cpf||null,rg:$('#editEmployeeRg').value.trim()||null,birth_date:$('#editEmployeeBirth').value||null,phone:$('#editEmployeePhone').value.trim()||null,address:addr?{formatted:addr}:{},job_title:$('#editEmployeeJob').value.trim()||null,primary_team:$('#editEmployeeTeam').value.trim()||null,admission_date:$('#editEmployeeAdmission').value||null,photo_path:photoPath});window.__employeePhotoFile=null;window.__removeEmployeePhoto=false;m.textContent='Funcionário atualizado com sucesso.';await loadEmployees();await loadProfessionalProfile()}catch(e){m.textContent=e.message}});
+if(document.getElementById('saveEmployeeEdit'))document.getElementById('saveEmployeeEdit').addEventListener('click',async()=>{
+ const id=$('#editEmployeeId').value,m=$('#employeeEditMsg');if(!id)return;
+ const name=$('#editEmployeeName').value.trim(),num=$('#editEmployeeNumber').value.trim(),cpf=$('#editEmployeeCpf').value.replace(/\D/g,'');
+ if(!name||!num){m.textContent='Nome e matrícula são obrigatórios.';return}
+ const newPhoto=window.__employeePhotoFile||null;
+ try{
+  const dup=await rest('v2_employees','select=id,employee_number,cpf&company_id=eq.'+companyId+'&or=(employee_number.eq.'+encodeURIComponent(num)+(cpf?',cpf.eq.'+encodeURIComponent(cpf):'')+')');
+  if((dup||[]).some(x=>x.id!==id)){m.textContent='Já existe outro funcionário com esta matrícula ou CPF.';return}
+
+  let faceDescriptor=null;
+  if(newPhoto){
+   m.className='muted';m.textContent='Validando a foto de perfil para reconhecimento facial...';
+   try{faceDescriptor=await faceDescriptorFromFile(newPhoto)}
+   catch(e){m.className='error';m.textContent='A foto não serve para reconhecimento facial: '+(e.message||String(e))+' Escolha uma foto de frente, bem iluminada.';return}
+  }
+
+  const addr=$('#editEmployeeAddress').value.trim();
+  let photoPath=(window.__rhEmployees||[]).find(x=>x.id===id)?.photo_path||null;
+  if(window.__removeEmployeePhoto)photoPath=null;
+  if(newPhoto){
+   m.className='muted';m.textContent='Salvando foto de perfil...';
+   photoPath=await uploadEmployeeProfilePhoto(newPhoto,id);
+  }
+
+  await rest('v2_employees','id=eq.'+id,'PATCH',{
+   full_name:name,employee_number:num,cpf:cpf||null,rg:$('#editEmployeeRg').value.trim()||null,
+   birth_date:$('#editEmployeeBirth').value||null,phone:$('#editEmployeePhone').value.trim()||null,
+   address:addr?{formatted:addr}:{},job_title:$('#editEmployeeJob').value.trim()||null,
+   primary_team:$('#editEmployeeTeam').value.trim()||null,admission_date:$('#editEmployeeAdmission').value||null,
+   photo_path:photoPath
+  });
+
+  let biometricOk=false;
+  if(newPhoto&&faceDescriptor){
+   m.className='muted';m.textContent='Foto salva. Cadastrando reconhecimento facial...';
+   await enrollEmployeeFaceFromFile(newPhoto,id,faceDescriptor);
+   biometricOk=true;
+  }
+
+  window.__employeePhotoFile=null;window.__removeEmployeePhoto=false;
+  m.className='okmsg';
+  m.textContent=biometricOk?'Funcionário atualizado ✓ Foto de perfil e biometria facial prontas.':'Funcionário atualizado com sucesso.';
+  await loadEmployees();await loadProfessionalProfile();
+ }catch(e){m.className='error';m.textContent=e.message||String(e)}
+});
 if(document.getElementById('archiveEmployee'))document.getElementById('archiveEmployee').addEventListener('click',async()=>{const id=$('#editEmployeeId').value,m=$('#employeeEditMsg');if(!id)return;if(!confirm('Arquivar este funcionário? O histórico de ponto será preservado.'))return;try{await rest('v2_employees','id=eq.'+id,'PATCH',{status:'archived',archived_at:new Date().toISOString()});m.textContent='Funcionário arquivado. Histórico preservado.';await loadEmployees();await loadProfessionalProfile()}catch(e){m.textContent=e.message}});
 
 if(document.getElementById('refreshTeams'))document.getElementById('refreshTeams').addEventListener('click',loadTeams);
