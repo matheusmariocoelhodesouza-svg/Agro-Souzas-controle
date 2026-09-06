@@ -8,7 +8,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
-<title>Comando 360 • v6.31</title>
+<title>Comando 360 • v6.32</title>
 <link rel="manifest" href="./comando360.webmanifest"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
@@ -185,12 +185,125 @@ body.device-mode .admin-only{display:none!important}
 .darkmode .offline-sync-box{background:#101c2e;color:#e7eef9}.darkmode .offline-sync-item{border-color:#203047}
 .bi-row{padding:10px 0;border-bottom:1px solid #edf1f5}.bi-row:last-child{border-bottom:0}.bi-line{display:flex;justify-content:space-between;gap:12px;align-items:center}.bi-bar{height:7px;background:#e2e8f0;border-radius:999px;overflow:hidden;margin-top:6px}.bi-fill{height:100%;background:currentColor;border-radius:999px;opacity:.7}.bi-value{font-weight:900;white-space:nowrap}
 
+/* 6.32 — Identidade Comando 360 + Dashboard Premium */
+:root{
+  --c360-navy:#071a33;
+  --c360-navy-2:#0c2748;
+  --c360-blue:#087cf0;
+  --c360-blue-2:#28a5ff;
+  --c360-sky:#eaf5ff;
+  --c360-bg:#f4f7fb;
+  --c360-card:#ffffff;
+  --c360-text:#10203b;
+  --c360-muted:#6f819a;
+  --c360-border:#e6edf5;
+}
+body{background:var(--c360-bg);color:var(--c360-text)}
+.v2sidebar{
+  background:
+    radial-gradient(circle at 18% 0%,rgba(37,146,255,.20),transparent 26%),
+    linear-gradient(180deg,#071a33 0%,#0a213f 52%,#071a33 100%);
+  border-right:1px solid rgba(255,255,255,.05);
+  box-shadow:12px 0 30px rgba(3,19,38,.08);
+}
+.v2logo{gap:12px;padding:4px 8px 18px}
+.v2brandicon{width:46px;height:46px;border-radius:14px;flex:0 0 auto;filter:drop-shadow(0 7px 12px rgba(0,0,0,.2))}
+.v2logo strong{font-size:17px;letter-spacing:.2px;font-weight:900}
+.v2logo strong span,.brand360,.admin-brand h2 span{color:#34a8ff}
+.v2logo small{display:block;color:#8ea9c7;font-size:8.5px;font-weight:800;letter-spacing:.55px;margin-top:3px;white-space:nowrap}
+.v2group{color:#6785a8;font-size:9px;letter-spacing:1.55px;padding-top:16px}
+.v2navbtn{
+  color:#d7e4f3;border:1px solid transparent;border-radius:11px;
+  padding:11px 12px;font-weight:720;transition:.16s ease;
+}
+.v2navbtn:hover{background:rgba(255,255,255,.06);color:#fff;transform:translateX(2px)}
+.v2navbtn.active{
+  background:linear-gradient(135deg,#087cf0,#0b67cf);
+  border-color:rgba(100,190,255,.28);
+  color:#fff;box-shadow:0 8px 20px rgba(0,103,217,.28);
+}
+header{
+  min-height:66px;background:rgba(255,255,255,.94);backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--c360-border);box-shadow:0 4px 18px rgba(15,38,70,.035);
+}
+.header-brand-icon{width:38px;height:38px;border-radius:11px;margin-right:2px}
+header .brand{gap:10px}
+header .brand b{font-size:16px;color:#10203b}
+header .brand small{color:#718198;font-weight:650}
+.wrap{padding:22px 26px 30px}
+.v2hero{align-items:center;margin-bottom:18px}
+.dashboard-eyebrow{font-size:9px;font-weight:950;letter-spacing:1.6px;color:#1684eb;margin-bottom:4px}
+.v2hero h1{font-size:28px;line-height:1.1;color:#0d2140;letter-spacing:-.7px}
+.v2hero p{font-size:13px;color:#75859b}
+#dashboardLastUpdate{margin-top:5px;font-size:10px}
+.btn.v2new{
+  background:linear-gradient(135deg,#087cf0,#066bd5)!important;
+  border:0!important;border-radius:11px;box-shadow:0 8px 18px rgba(8,124,240,.20);
+  letter-spacing:.15px;
+}
+.v2-kpis{gap:14px;margin-bottom:16px}
+.v2kpi{
+  min-height:124px;border:1px solid var(--c360-border);border-radius:16px;
+  padding:16px 17px;background:linear-gradient(180deg,#fff,#fcfdff);
+  box-shadow:0 5px 18px rgba(24,51,83,.045);overflow:hidden;
+}
+.v2kpi:before{
+  content:"";position:absolute;left:0;right:0;top:0;height:3px;
+  background:linear-gradient(90deg,#087cf0,#6ec9ff);
+}
+.v2kpi .v{font-size:29px;color:#0b1e3c;letter-spacing:-.8px}
+.v2kpi .t{font-size:10px;color:#667990;letter-spacing:.65px}
+.v2kpi .s{color:#7f8fa3}
+.v2ico{width:40px;height:40px;border-radius:12px;background:linear-gradient(145deg,#edf7ff,#ddecff);box-shadow:inset 0 0 0 1px rgba(8,124,240,.05)}
+.v2panel{
+  border:1px solid var(--c360-border);border-radius:17px;padding:17px;
+  box-shadow:0 5px 18px rgba(24,51,83,.045);background:#fff;
+}
+.v2panel h3{color:#10213d;font-size:15px;letter-spacing:-.15px}
+.v2panelhead{margin-bottom:12px}
+.v2panelhead .btn.soft{background:#f1f6fc;color:#246cae;border:1px solid #e2edf7}
+.v2status{background:#e8f6ff;color:#0871d4}
+.v2mini{background:#f8fbfe;border:1px solid #edf2f7;border-radius:12px;padding:12px}
+.v2mini b{color:#10213d}
+.item{border-color:#e7edf4;box-shadow:0 2px 8px rgba(18,46,78,.025)}
+#poultryDashboardPanel{
+  background:
+    radial-gradient(circle at 100% 0%,rgba(31,155,255,.07),transparent 30%),
+    #fff;
+}
+.login-brand-icon{width:70px;height:70px;border-radius:20px;display:block;margin:0 auto 12px;box-shadow:0 12px 28px rgba(6,74,139,.18)}
+.admin-brand{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.admin-brand img{width:50px;height:50px;border-radius:15px}
+.admin-brand h2{margin:0;color:#0d2140}
+.team-entry .card{border-color:var(--c360-border);box-shadow:0 18px 55px rgba(19,48,82,.10)}
+.team-code-input:focus{border-color:#1684eb;outline:3px solid rgba(22,132,235,.10)}
+.darkmode .header-brand-icon,.darkmode .login-brand-icon,.darkmode .admin-brand img{box-shadow:none}
+@media(min-width:901px){
+  .v2sidebar{width:242px}
+  header{margin-left:242px;width:calc(100% - 242px)}
+  #app{padding-left:242px}
+  .wrap{max-width:1680px;margin:0 auto}
+}
+@media(min-width:901px) and (max-width:1180px){
+  .v2sidebar{width:208px}
+  header{margin-left:208px;width:calc(100% - 208px)}
+  #app{padding-left:208px}
+  .v2brandicon{width:39px;height:39px}
+  .v2logo strong{font-size:14px}.v2logo small{display:none}
+}
+@media(max-width:900px){
+  .wrap{padding:12px}
+  .v2hero h1{font-size:24px}
+  .v2-kpis{gap:10px}
+  .v2kpi{min-height:112px;padding:14px}
+}
+
 </style>
 <script defer="" src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
 <script>
 (function(){
-  const BUILD='6.31';
+  const BUILD='6.32';
   try{
     const marker='controla_cache_cleanup_'+BUILD;
     if(!localStorage.getItem(marker)){
@@ -205,7 +318,7 @@ body.device-mode .admin-only{display:none!important}
 </head>
 <body>
 <aside class="v2sidebar" id="v2sidebar">
-<div class="v2logo"><div class="v2mark">C</div><div><strong>COMANDO 360</strong><small>Gestão completa • Controle total</small></div></div>
+<div class="v2logo"><img class="v2brandicon" src="./comando360-icon.svg" alt="Comando 360"/><div><strong>COMANDO <span>360</span></strong><small>VISIBILIDADE • CONTROLE • PROGRESSO</small></div></div>
 <div class="v2group">OPERAÇÃO</div>
 <button class="v2navbtn active" data-v2tab="inicio">▦   Dashboard Geral</button>
 <button class="v2navbtn" data-v2tab="operacoes">▣   Apanhas</button>
@@ -224,11 +337,11 @@ body.device-mode .admin-only{display:none!important}
 <div class="v2group">INTELIGÊNCIA</div>
 <button class="v2navbtn" data-v2tab="ia">✦   Assistente IA</button>
 </aside>
-<header><div class="brand"><div class="logo">C</div><div><b>Comando 360</b><div><small id="companyName">Empresa</small></div></div></div><div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.31</span><button class="btn soft" id="themeToggle" type="button">☾</button><button class="btn soft hidden" id="logout">Sair</button></div></header>
+<header><div class="brand"><img class="header-brand-icon" src="./comando360-icon.svg" alt="Comando 360"/><div><b>Comando <span class="brand360">360</span></b><div><small id="companyName">Empresa</small></div></div></div><div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.32</span><button class="btn soft" id="themeToggle" type="button">☾</button><button class="btn soft hidden" id="logout">Sair</button></div></header>
 <main class="wrap">
 <section class="login team-entry" id="login">
 <div class="card" id="deviceSetupCard">
- <div class="team-entry-title"><div style="font-size:38px">📱</div><h2>Configurar celular da equipe</h2><div class="muted">Digite uma única vez o código gerado pelo administrador. Depois este aparelho abre direto, sem login e senha.</div></div>
+ <div class="team-entry-title"><img class="login-brand-icon" src="./comando360-icon.svg" alt="Comando 360"/><h2>Configurar celular da equipe</h2><div class="muted">Digite uma única vez o código gerado pelo administrador. Depois este aparelho abre direto, sem login e senha.</div></div>
  <label>Código de ativação</label>
  <input class="team-code-input" id="deviceCode" inputmode="text" maxlength="12" placeholder="AB12CD34"/>
  <button class="btn primary" id="deviceActivateBtn" style="width:100%;padding:14px">ATIVAR CELULAR</button>
@@ -236,12 +349,12 @@ body.device-mode .admin-only{display:none!important}
  <button class="btn soft" id="showAdminLogin" type="button" style="width:100%;margin-top:14px">Acesso do administrador</button>
 </div>
 <div class="card hidden" id="adminLoginCard">
- <h2>Administrador</h2><div class="muted">Acesso administrativo completo ao Comando 360.</div>
+ <div class="admin-brand"><img src="./comando360-icon.svg" alt="Comando 360"/><div><h2>Comando <span>360</span></h2><div class="muted">Acesso administrativo completo</div></div></div>
  <label>E-mail</label><input autocomplete="username" id="email" type="email"/>
  <label>Senha</label><input autocomplete="current-password" id="password" type="password"/>
  <button class="btn primary" id="loginBtn">Entrar</button>
  <button class="btn soft" id="backDeviceSetup" type="button" style="margin-left:6px">Voltar</button>
- <div class="muted" id="loginMsg" style="margin-top:10px">Comando 360 • v6.31</div><div class="debug" id="debug"></div>
+ <div class="muted" id="loginMsg" style="margin-top:10px">Comando 360 • v6.32</div><div class="debug" id="debug"></div>
 </div>
 </section>
 <section class="hidden" id="app">
@@ -285,7 +398,7 @@ body.device-mode .admin-only{display:none!important}
 </div>
 <div class="section active" data-screen="inicio" id="inicio">
 <div class="v2hero">
- <div><h1 id="dashboardTitle">Dashboard</h1><p>Operação, equipes, frota, ponto e financeiro em uma única visão.</p><div class="muted" id="dashboardLastUpdate">Carregando dados...</div></div>
+ <div><div class="dashboard-eyebrow">CENTRAL DE GESTÃO</div><h1 id="dashboardTitle">Painel Geral</h1><p>Operação, equipes, frota, ponto e financeiro em uma única visão.</p><div class="muted" id="dashboardLastUpdate">Carregando dados...</div></div>
  <div class="toolbar"><button class="btn v2new" id="refreshBtn" type="button">↻ ATUALIZAR PAINEL</button></div>
 </div>
 
@@ -3670,7 +3783,7 @@ setInterval(()=>{
 },60000);
 if('serviceWorker' in navigator){
  window.addEventListener('load',()=>{
-  navigator.serviceWorker.register('./sw-v6-31.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
+  navigator.serviceWorker.register('./sw-v6-32.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
  });
 }
 
