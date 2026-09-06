@@ -8,7 +8,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
-<title>Comando 360 • v6.48</title>
+<title>Comando 360 • v6.49</title>
 <link rel="manifest" href="./comando360.webmanifest"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
@@ -369,13 +369,54 @@ header .brand small{color:#718198;font-weight:650}
 @media(max-width:560px){.dash-health{grid-template-columns:1fr 1fr}.dash-health-card{min-height:78px;padding:10px 30px 10px 11px}.dash-health-card strong{font-size:16px}.dash-health-arrow{right:9px}}
 @media(max-width:390px){.dash-health{grid-template-columns:1fr}}
 
+/* 6.49 — Frota responsiva */
+#vehicleEditCard{overflow:hidden}
+#vehicleEditCard>.toolbar:first-child{align-items:flex-start}
+#vehicleEditCard .row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:12px}
+#vehicleEditCard .row>div{min-width:0}
+#vehicleEditCard .row label{display:block;font-size:11px;font-weight:850;color:#64748b;margin:0 0 6px}
+#vehicleEditCard .row input,#vehicleEditCard .row select{display:block;width:100%;min-width:0;box-sizing:border-box;border:1px solid #cbd5e1;border-radius:10px;padding:11px 12px;background:#fff;color:#172033;font:inherit}
+#vehicleEditCard .row input:focus,#vehicleEditCard .row select:focus{outline:3px solid rgba(8,124,240,.10);border-color:#1684eb}
+.vehicle-photo-edit{display:flex;align-items:center;gap:14px;margin-top:14px;padding:12px;border:1px solid #e5edf6;border-radius:14px;background:#f8fbfe}
+.vehicle-photo-edit #editVehiclePhotoPreview{width:128px;height:96px;object-fit:cover;border-radius:13px;border:1px solid #cbd5e1;background:#eef2f7;flex:0 0 auto}
+.vehicle-photo-tools{min-width:0;flex:1}.vehicle-photo-tools>.muted{margin-top:7px}
+.vehicle-edit-actions{margin-top:16px;padding-top:14px;border-top:1px solid #e7edf4}
+.darkmode #vehicleEditCard .row label{color:#9eb0c6}
+.darkmode #vehicleEditCard .row input,.darkmode #vehicleEditCard .row select{background:#0b1727;color:#e7eef9;border-color:#314158}
+.darkmode .vehicle-photo-edit{background:#0b1727;border-color:#203047}
+.darkmode .vehicle-edit-actions{border-color:#203047}
+@media(max-width:720px){
+ #vehicleEditCard{padding:15px}
+ #vehicleEditCard>.toolbar:first-child{gap:10px}
+ #vehicleEditCard>.toolbar:first-child #cancelVehicleEdit{margin-left:auto}
+ #vehicleEditCard .row{grid-template-columns:1fr;gap:11px;margin-top:12px}
+ #vehicleEditCard .row label{font-size:12px;margin-bottom:5px}
+ #vehicleEditCard .row input,#vehicleEditCard .row select{font-size:16px;padding:12px;min-height:46px}
+ .vehicle-photo-edit{align-items:flex-start}
+ .vehicle-photo-edit #editVehiclePhotoPreview{width:112px;height:92px}
+ .vehicle-photo-tools .toolbar{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%}
+ .vehicle-photo-tools .toolbar .btn,.vehicle-photo-tools .toolbar label{width:100%;text-align:center;padding:10px 8px}
+ .vehicle-photo-tools #removeVehiclePhoto{grid-column:1/-1}
+ .vehicle-edit-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;width:100%}
+ .vehicle-edit-actions .btn{width:100%}
+ .vehicle-edit-actions #deleteVehicleBtn{grid-column:1/-1}
+}
+@media(max-width:430px){
+ .vehicle-photo-edit{display:grid;grid-template-columns:96px minmax(0,1fr);gap:11px}
+ .vehicle-photo-edit #editVehiclePhotoPreview{width:96px;height:88px}
+ .vehicle-photo-tools .toolbar{grid-template-columns:1fr}
+ .vehicle-photo-tools #removeVehiclePhoto{grid-column:auto}
+ .vehicle-edit-actions{grid-template-columns:1fr}
+ .vehicle-edit-actions #deleteVehicleBtn{grid-column:auto}
+}
+
 .truck-barn-checks{display:grid;gap:7px;margin-top:5px}.truck-cata-row{display:grid;grid-template-columns:minmax(90px,1fr) minmax(110px,1fr) auto;gap:7px;align-items:center;padding:8px;border:1px solid #dbe4ee;border-radius:10px;background:#fff}.truck-cata-row input{margin:0!important;min-width:0}.truck-cata-remove{padding:7px 10px!important;min-width:38px}@media(max-width:520px){.truck-cata-row{grid-template-columns:1fr 1fr auto}}
 </style>
 <script defer="" src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
 <script>
 (function(){
-  const BUILD='6.48';
+  const BUILD='6.49';
   try{
     const marker='controla_cache_cleanup_'+BUILD;
     if(!localStorage.getItem(marker)){
@@ -409,7 +450,7 @@ header .brand small{color:#718198;font-weight:650}
 <div class="v2group">INTELIGÊNCIA</div>
 <button class="v2navbtn" data-v2tab="ia">✦   Assistente IA</button>
 </aside>
-<header><div class="brand"><img class="header-brand-icon" src="./comando360-icon.svg" alt="Comando 360"/><div><b>Comando <span class="brand360">360</span></b><div><small id="companyName">Empresa</small></div></div></div><div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.48</span><button class="btn soft" id="themeToggle" type="button">☾</button><button class="btn soft hidden" id="logout">Sair</button></div></header>
+<header><div class="brand"><img class="header-brand-icon" src="./comando360-icon.svg" alt="Comando 360"/><div><b>Comando <span class="brand360">360</span></b><div><small id="companyName">Empresa</small></div></div></div><div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.49</span><button class="btn soft" id="themeToggle" type="button">☾</button><button class="btn soft hidden" id="logout">Sair</button></div></header>
 <main class="wrap">
 <section class="login team-entry" id="login">
 <div class="card" id="deviceSetupCard">
@@ -426,7 +467,7 @@ header .brand small{color:#718198;font-weight:650}
  <label>Senha</label><input autocomplete="current-password" id="password" type="password"/>
  <button class="btn primary" id="loginBtn">Entrar</button>
  <button class="btn soft" id="backDeviceSetup" type="button" style="margin-left:6px">Voltar</button>
- <div class="muted" id="loginMsg" style="margin-top:10px">Comando 360 • v6.48</div><div class="debug" id="debug"></div>
+ <div class="muted" id="loginMsg" style="margin-top:10px">Comando 360 • v6.49</div><div class="debug" id="debug"></div>
 </div>
 </section>
 <section class="hidden" id="app">
@@ -774,11 +815,11 @@ header .brand small{color:#718198;font-weight:650}
 <div class="card"><div class="toolbar" style="justify-content:space-between"><div><h3 style="margin:0">Frota</h3><div class="muted">Cadastre e gerencie ônibus, vans e demais conduções.</div></div><button class="btn primary" id="newVehicleBtn" type="button">+ NOVO VEÍCULO</button></div><div class="list" id="vehiclesList" style="margin-top:12px"></div></div>
 <div class="card" id="vehicleEditCard" style="display:none"><div class="toolbar" style="justify-content:space-between"><div><h3 id="vehicleEditTitle" style="margin:0">Editar veículo</h3><div class="muted">Dados gerais da condução e vínculo operacional.</div></div><button class="btn soft" id="cancelVehicleEdit" type="button">Cancelar</button></div>
 <input id="editVehicleId" type="hidden"/>
-<div style="display:flex;align-items:center;gap:14px;margin-top:14px"><img id="editVehiclePhotoPreview" alt="Foto do veículo" style="width:110px;height:82px;object-fit:cover;border-radius:14px;border:1px solid #cbd5e1;background:#f8fafc"/><div><div class="toolbar"><label class="btn soft" style="cursor:pointer">📷 Tirar foto<input id="vehiclePhotoCamera" type="file" accept="image/jpeg,image/png,image/webp" capture="environment" hidden/></label><label class="btn soft" style="cursor:pointer">🖼️ Galeria<input id="vehiclePhotoGallery" type="file" accept="image/jpeg,image/png,image/webp" hidden/></label><button class="btn soft" id="removeVehiclePhoto" type="button">Remover foto</button></div><div class="muted" style="margin-top:6px">Foto apenas para identificação da frota.</div></div></div>
+<div class="vehicle-photo-edit"><img id="editVehiclePhotoPreview" alt="Foto do veículo"/><div class="vehicle-photo-tools"><div class="toolbar"><label class="btn soft" style="cursor:pointer">📷 Tirar foto<input id="vehiclePhotoCamera" type="file" accept="image/jpeg,image/png,image/webp" capture="environment" hidden/></label><label class="btn soft" style="cursor:pointer">🖼️ Galeria<input id="vehiclePhotoGallery" type="file" accept="image/jpeg,image/png,image/webp" hidden/></label><button class="btn soft" id="removeVehiclePhoto" type="button">Remover foto</button></div><div class="muted">Foto apenas para identificação da frota.</div></div></div>
 <div class="row" style="margin-top:14px"><div><label>Apelido / identificação</label><input id="editVehicleDescription" placeholder="Ex.: Ônibus 2501"/></div><div><label>Placa</label><input id="editVehiclePlate" placeholder="ABC1D23"/></div><div><label>Status</label><select id="editVehicleStatus"><option value="active">Ativo</option><option value="maintenance">Em manutenção</option><option value="inactive">Inativo</option></select></div></div>
 <div class="row"><div><label>Marca</label><input id="editVehicleMake" placeholder="Ex.: Mercedes-Benz"/></div><div><label>Modelo</label><input id="editVehicleModel" placeholder="Ex.: Sprinter 313 CDI"/></div><div><label>Ano</label><input id="editVehicleYear" type="number" min="1950" max="2100"/></div></div>
 <div class="row"><div><label>RENAVAM</label><input id="editVehicleRenavam" inputmode="numeric"/></div><div><label>KM atual</label><input id="editVehicleKm" type="number" min="0" step="1"/></div><div><label>Equipe vinculada</label><select id="editVehicleTeam"><option value="">Sem equipe vinculada</option></select><div class="muted" id="editVehicleContractor" style="margin-top:5px"></div></div></div>
-<div class="toolbar" style="margin-top:14px"><button class="btn primary" id="saveVehicleEdit" type="button">SALVAR VEÍCULO</button><button class="btn soft" id="archiveVehicleBtn" type="button">ARQUIVAR VEÍCULO</button><button class="btn danger" id="deleteVehicleBtn" type="button">EXCLUIR VEÍCULO</button></div><div class="muted" id="vehicleEditMsg" style="margin-top:8px"></div></div>
+<div class="toolbar vehicle-edit-actions"><button class="btn primary" id="saveVehicleEdit" type="button">SALVAR VEÍCULO</button><button class="btn soft" id="archiveVehicleBtn" type="button">ARQUIVAR VEÍCULO</button><button class="btn danger" id="deleteVehicleBtn" type="button">EXCLUIR VEÍCULO</button></div><div class="muted" id="vehicleEditMsg" style="margin-top:8px"></div></div>
 </div>
 <div class="section" data-screen="manutencoes" hidden="" id="manutencoes">
 <div class="card"><div class="toolbar" style="justify-content:space-between"><div><h3 style="margin:0">🔧 Manutenção da Frota</h3><div class="muted">Controle preventivo por data e quilometragem.</div></div><button class="btn primary" id="newMaintenanceBtn" type="button">+ NOVA MANUTENÇÃO</button></div><div class="v2-kpis" id="maintenanceKpis" style="margin-top:14px"></div><div class="list" id="maintenanceList" style="margin-top:12px"></div></div>
@@ -1565,7 +1606,7 @@ async function syncPoultryTruckOfflineItem(item){
   .map(x=>({barn_id:x?.barn_id||null,barn_number:normalizeAviaryNumber(x?.barn_number),birds:poN(x?.birds)}))
   .filter(x=>x.barn_number||x.barn_id);
 
- // Compatibilidade com itens offline criados antes da v6.48.
+ // Compatibilidade com itens offline criados antes da v6.49.
  if(!barnBreakdown.length&&item.barn_id){
   const oldId=String(item.barn_id).startsWith('offline:')?(refs.loading?.metadata?.default_barn_id||null):item.barn_id;
   const oldBarn=poultryBarns.find(b=>b.id===oldId);
@@ -4168,7 +4209,7 @@ setInterval(()=>{
 },60000);
 if('serviceWorker' in navigator){
  window.addEventListener('load',()=>{
-  navigator.serviceWorker.register('./sw-v6-48.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
+  navigator.serviceWorker.register('./sw-v6-49.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
  });
 }
 
