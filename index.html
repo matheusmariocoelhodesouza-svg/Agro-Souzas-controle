@@ -8,7 +8,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
-<title>Comando 360 • v6.36</title>
+<title>Comando 360 • v6.37</title>
 <link rel="manifest" href="./comando360.webmanifest"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
@@ -351,7 +351,7 @@ header .brand small{color:#718198;font-weight:650}
 <script defer src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
 <script>
 (function(){
-  const BUILD='6.36';
+  const BUILD='6.37';
   try{
     const marker='controla_cache_cleanup_'+BUILD;
     if(!localStorage.getItem(marker)){
@@ -385,7 +385,7 @@ header .brand small{color:#718198;font-weight:650}
 <div class="v2group">INTELIGÊNCIA</div>
 <button class="v2navbtn" data-v2tab="ia">✦   Assistente IA</button>
 </aside>
-<header><div class="brand"><img class="header-brand-icon" src="./comando360-icon.svg" alt="Comando 360"/><div><b>Comando <span class="brand360">360</span></b><div><small id="companyName">Empresa</small></div></div></div><div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.36</span><button class="btn soft" id="themeToggle" type="button">☾</button><button class="btn soft hidden" id="logout">Sair</button></div></header>
+<header><div class="brand"><img class="header-brand-icon" src="./comando360-icon.svg" alt="Comando 360"/><div><b>Comando <span class="brand360">360</span></b><div><small id="companyName">Empresa</small></div></div></div><div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.37</span><button class="btn soft" id="themeToggle" type="button">☾</button><button class="btn soft hidden" id="logout">Sair</button></div></header>
 <main class="wrap">
 <section class="login team-entry" id="login">
 <div class="card" id="deviceSetupCard">
@@ -402,7 +402,7 @@ header .brand small{color:#718198;font-weight:650}
  <label>Senha</label><input autocomplete="current-password" id="password" type="password"/>
  <button class="btn primary" id="loginBtn">Entrar</button>
  <button class="btn soft" id="backDeviceSetup" type="button" style="margin-left:6px">Voltar</button>
- <div class="muted" id="loginMsg" style="margin-top:10px">Comando 360 • v6.36</div><div class="debug" id="debug"></div>
+ <div class="muted" id="loginMsg" style="margin-top:10px">Comando 360 • v6.37</div><div class="debug" id="debug"></div>
 </div>
 </section>
 <section class="hidden" id="app">
@@ -2171,7 +2171,7 @@ async function loadTeamPoint(){
     const p=$('#presenceList');if(p)p.innerHTML='<div class="error">Ainda não há funcionários salvos para uso offline. Conecte este celular à internet uma vez.</div>';
    }
 
-   const map=Object.fromEntries(employees.map(e=>[e.id,e])),by={};
+   const activeEmployeeIds=new Set(employees.map(e=>e.id));events=events.filter(ev=>activeEmployeeIds.has(ev.employee_id));const map=Object.fromEntries(employees.map(e=>[e.id,e])),by={};
    for(const ev of events)(by[ev.employee_id]??=[]).push(ev);
    let total=0,extra=0,withEvents=0;const metrics={};
    for(const e of employees){const mt=computeDayMetrics(by[e.id]||[],{live:true,expectedMinutes:expectedMinutesFor(e.id)});metrics[e.id]=mt;if((by[e.id]||[]).length)withEvents++;total+=mt.worked;extra+=mt.overtime}
@@ -2190,6 +2190,7 @@ async function loadRHPoint(){
    const bounds=saoPauloDayUtcBounds(today);
    const days=await rest('v2_attendance_days','select=employee_id,status,worked_minutes,late_minutes,absence_minutes,work_date&company_id=eq.'+companyId+'&work_date=eq.'+today);
    const events=await rest('v2_attendance_events','select=id,employee_id,occurred_at,event_type,method,accuracy_m,nsr,integrity_hash&company_id=eq.'+companyId+'&occurred_at=gte.'+encodeURIComponent(bounds.start)+'&occurred_at=lt.'+encodeURIComponent(bounds.end)+'&order=occurred_at.asc&limit=500');
+   const activeEmployeeIds=new Set(employees.map(e=>e.id));events=events.filter(ev=>activeEmployeeIds.has(ev.employee_id));
    const map=Object.fromEntries(employees.map(e=>[e.id,e]));
    const byEmployee={};
    for(const ev of events)(byEmployee[ev.employee_id]??=[]).push(ev);
@@ -3882,7 +3883,7 @@ setInterval(()=>{
 },60000);
 if('serviceWorker' in navigator){
  window.addEventListener('load',()=>{
-  navigator.serviceWorker.register('./sw-v6-36.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
+  navigator.serviceWorker.register('./sw-v6-37.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
  });
 }
 
