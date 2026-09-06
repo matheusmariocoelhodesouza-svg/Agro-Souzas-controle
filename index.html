@@ -2884,7 +2884,7 @@ function printCatchReport(index){
  if(!r)return alert('Relatório não encontrado. Atualize a tela e tente novamente.');
 
  const op=r.op,farm=r.farm,barn=r.defaultBarn,team=r.team,sup=r.supervisor;
- const companyName=companyProfile?.trade_name||companyProfile?.legal_name||"Agro Souza's";
+ const companyName=companyProfile?.trade_name||companyProfile?.legal_name||"Empresa";
  const legalName=companyProfile?.legal_name||companyName;
  const tax=formatCompanyTaxId(companyProfile?.tax_id);
  const farmName=farm.farm_name||farm.producer_name||op.customer_name||'Não informado';
