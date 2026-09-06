@@ -8,7 +8,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
-<title>Comando 360 • v6.49</title>
+<title>Comando 360 • v6.50</title>
 <link rel="manifest" href="./comando360.webmanifest"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
@@ -410,13 +410,48 @@ header .brand small{color:#718198;font-weight:650}
  .vehicle-edit-actions #deleteVehicleBtn{grid-column:auto}
 }
 
+/* 6.50 — Documentos integrados à Frota */
+.vehicle-docs-inline{margin-top:18px;padding-top:16px;border-top:1px solid #e4ebf3}
+.vehicle-docs-head{margin-bottom:10px}
+.vehicle-doc-kpis{display:flex;gap:7px;flex-wrap:wrap;margin:8px 0 10px}
+.vehicle-doc-edit{margin-top:12px;padding:14px;border:1px solid #dce6f0;border-radius:14px;background:#f8fbfe}
+.vehicle-doc-file{margin-top:12px}
+.vehicle-doc-file>label{display:block;font-size:11px;font-weight:850;color:#64748b;margin-bottom:6px}
+.vehicle-doc-file input{display:block;width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:10px;background:#fff;color:#172033}
+.vehicle-doc-file .muted{margin-top:5px}
+.vehicle-doc-row .toolbar{min-width:0}
+.vehicle-doc-empty{padding:10px 2px}
+#crlvPreviewCard .row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:12px}
+#crlvPreviewCard .row>div{min-width:0}
+#crlvPreviewCard .row label{display:block;font-size:11px;font-weight:850;color:#64748b;margin-bottom:6px}
+#crlvPreviewCard .row input{width:100%;min-width:0;padding:11px 12px;border:1px solid #cbd5e1;border-radius:10px;background:#fff;color:#172033;font:inherit}
+.darkmode .vehicle-docs-inline{border-color:#203047}.darkmode .vehicle-doc-edit{background:#0b1727;border-color:#203047}
+.darkmode .vehicle-doc-file input,.darkmode #crlvPreviewCard .row input{background:#0b1727;color:#e7eef9;border-color:#314158}
+.darkmode .vehicle-doc-file>label,.darkmode #crlvPreviewCard .row label{color:#9eb0c6}
+@media(max-width:720px){
+ #frota>.card:first-child>.toolbar{align-items:flex-start}
+ #frota>.card:first-child>.toolbar>.toolbar{width:100%;display:grid;grid-template-columns:1fr 1fr}
+ #frota>.card:first-child>.toolbar>.toolbar .btn{width:100%}
+ #crlvPreviewCard .row{grid-template-columns:1fr}
+ .vehicle-docs-head{display:block}
+ .vehicle-docs-head #newVehicleDocBtn{width:100%;margin-top:10px}
+ .vehicle-doc-row>.toolbar{display:block}
+ .vehicle-doc-row>.toolbar>div:last-child{margin-top:10px}
+ .vehicle-doc-row>.toolbar>div:last-child .btn{flex:1}
+ .vehicle-doc-edit .row{grid-template-columns:1fr!important}
+}
+@media(max-width:430px){
+ #frota>.card:first-child>.toolbar>.toolbar{grid-template-columns:1fr}
+ .vehicle-doc-row>.toolbar>div:last-child{display:grid;grid-template-columns:1fr}
+}
+
 .truck-barn-checks{display:grid;gap:7px;margin-top:5px}.truck-cata-row{display:grid;grid-template-columns:minmax(90px,1fr) minmax(110px,1fr) auto;gap:7px;align-items:center;padding:8px;border:1px solid #dbe4ee;border-radius:10px;background:#fff}.truck-cata-row input{margin:0!important;min-width:0}.truck-cata-remove{padding:7px 10px!important;min-width:38px}@media(max-width:520px){.truck-cata-row{grid-template-columns:1fr 1fr auto}}
 </style>
 <script defer="" src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
 <script>
 (function(){
-  const BUILD='6.49';
+  const BUILD='6.50';
   try{
     const marker='controla_cache_cleanup_'+BUILD;
     if(!localStorage.getItem(marker)){
@@ -443,14 +478,13 @@ header .brand small{color:#718198;font-weight:650}
 <button class="v2navbtn" data-v2tab="frota">▰   Frota</button>
 <button class="v2navbtn" data-v2tab="manutencoes">🔧   Manutenções</button>
 <button class="v2navbtn" data-v2tab="combustivel">⛽   Combustível & KM</button>
-<button class="v2navbtn" data-v2tab="documentosfrota">📄   Documentos da Frota</button>
 <button class="v2navbtn" data-v2tab="financeiro">💰   Financeiro</button>
 <button class="v2navbtn" data-v2tab="relatorios">📊   Relatórios & BI</button>
 <button class="v2navbtn" data-v2tab="alertas">⚠   Alertas</button>
 <div class="v2group">INTELIGÊNCIA</div>
 <button class="v2navbtn" data-v2tab="ia">✦   Assistente IA</button>
 </aside>
-<header><div class="brand"><img class="header-brand-icon" src="./comando360-icon.svg" alt="Comando 360"/><div><b>Comando <span class="brand360">360</span></b><div><small id="companyName">Empresa</small></div></div></div><div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.49</span><button class="btn soft" id="themeToggle" type="button">☾</button><button class="btn soft hidden" id="logout">Sair</button></div></header>
+<header><div class="brand"><img class="header-brand-icon" src="./comando360-icon.svg" alt="Comando 360"/><div><b>Comando <span class="brand360">360</span></b><div><small id="companyName">Empresa</small></div></div></div><div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.50</span><button class="btn soft" id="themeToggle" type="button">☾</button><button class="btn soft hidden" id="logout">Sair</button></div></header>
 <main class="wrap">
 <section class="login team-entry" id="login">
 <div class="card" id="deviceSetupCard">
@@ -467,11 +501,11 @@ header .brand small{color:#718198;font-weight:650}
  <label>Senha</label><input autocomplete="current-password" id="password" type="password"/>
  <button class="btn primary" id="loginBtn">Entrar</button>
  <button class="btn soft" id="backDeviceSetup" type="button" style="margin-left:6px">Voltar</button>
- <div class="muted" id="loginMsg" style="margin-top:10px">Comando 360 • v6.49</div><div class="debug" id="debug"></div>
+ <div class="muted" id="loginMsg" style="margin-top:10px">Comando 360 • v6.50</div><div class="debug" id="debug"></div>
 </div>
 </section>
 <section class="hidden" id="app">
-<div class="nav" id="nav"><button class="active" data-tab="inicio">Início</button><button data-tab="equipes">Equipes</button><button data-tab="funcionarios">RH &amp; Pessoas</button><button data-tab="documentosrh">Docs RH</button><button data-tab="ponto">Ponto</button><button data-tab="operacoes">Operações / Apanha</button><button data-tab="frota">Frota</button><button data-tab="manutencoes">Manutenções</button><button data-tab="combustivel">Combustível & KM</button><button data-tab="documentosfrota">Documentos</button><button data-tab="financeiro">Financeiro</button><button data-tab="relatorios">Relatórios</button><button data-tab="alertas">Alertas</button><button data-tab="ia">Assistente IA</button></div>
+<div class="nav" id="nav"><button class="active" data-tab="inicio">Início</button><button data-tab="equipes">Equipes</button><button data-tab="funcionarios">RH &amp; Pessoas</button><button data-tab="documentosrh">Docs RH</button><button data-tab="ponto">Ponto</button><button data-tab="operacoes">Operações / Apanha</button><button data-tab="frota">Frota</button><button data-tab="manutencoes">Manutenções</button><button data-tab="combustivel">Combustível & KM</button><button data-tab="financeiro">Financeiro</button><button data-tab="relatorios">Relatórios</button><button data-tab="alertas">Alertas</button><button data-tab="ia">Assistente IA</button></div>
 <div class="team-mode-bar hidden" id="deviceModeBar"><div><strong id="deviceModeTeam">Equipe</strong><div class="muted">Acesso restrito a este aparelho</div></div><button class="btn soft" type="button" data-teamtab="equipehome">⌂ Início</button></div>
 <div class="offline-sync-panel hidden" id="offlineSyncPanel">
  <div class="offline-sync-box">
@@ -812,14 +846,60 @@ header .brand small{color:#718198;font-weight:650}
 <div class="v2panel"><div class="v2panelhead"><div><h3>Apanhas cadastradas</h3><div class="muted">Registre cada caminhão conforme for sendo carregado.</div></div><button class="btn soft" id="refreshPoultry">Atualizar</button></div><div class="list" id="poultryList"></div></div>
 </div>
 <div class="section" data-screen="frota" hidden="" id="frota">
-<div class="card"><div class="toolbar" style="justify-content:space-between"><div><h3 style="margin:0">Frota</h3><div class="muted">Cadastre e gerencie ônibus, vans e demais conduções.</div></div><button class="btn primary" id="newVehicleBtn" type="button">+ NOVO VEÍCULO</button></div><div class="list" id="vehiclesList" style="margin-top:12px"></div></div>
-<div class="card" id="vehicleEditCard" style="display:none"><div class="toolbar" style="justify-content:space-between"><div><h3 id="vehicleEditTitle" style="margin:0">Editar veículo</h3><div class="muted">Dados gerais da condução e vínculo operacional.</div></div><button class="btn soft" id="cancelVehicleEdit" type="button">Cancelar</button></div>
-<input id="editVehicleId" type="hidden"/>
-<div class="vehicle-photo-edit"><img id="editVehiclePhotoPreview" alt="Foto do veículo"/><div class="vehicle-photo-tools"><div class="toolbar"><label class="btn soft" style="cursor:pointer">📷 Tirar foto<input id="vehiclePhotoCamera" type="file" accept="image/jpeg,image/png,image/webp" capture="environment" hidden/></label><label class="btn soft" style="cursor:pointer">🖼️ Galeria<input id="vehiclePhotoGallery" type="file" accept="image/jpeg,image/png,image/webp" hidden/></label><button class="btn soft" id="removeVehiclePhoto" type="button">Remover foto</button></div><div class="muted">Foto apenas para identificação da frota.</div></div></div>
-<div class="row" style="margin-top:14px"><div><label>Apelido / identificação</label><input id="editVehicleDescription" placeholder="Ex.: Ônibus 2501"/></div><div><label>Placa</label><input id="editVehiclePlate" placeholder="ABC1D23"/></div><div><label>Status</label><select id="editVehicleStatus"><option value="active">Ativo</option><option value="maintenance">Em manutenção</option><option value="inactive">Inativo</option></select></div></div>
-<div class="row"><div><label>Marca</label><input id="editVehicleMake" placeholder="Ex.: Mercedes-Benz"/></div><div><label>Modelo</label><input id="editVehicleModel" placeholder="Ex.: Sprinter 313 CDI"/></div><div><label>Ano</label><input id="editVehicleYear" type="number" min="1950" max="2100"/></div></div>
-<div class="row"><div><label>RENAVAM</label><input id="editVehicleRenavam" inputmode="numeric"/></div><div><label>KM atual</label><input id="editVehicleKm" type="number" min="0" step="1"/></div><div><label>Equipe vinculada</label><select id="editVehicleTeam"><option value="">Sem equipe vinculada</option></select><div class="muted" id="editVehicleContractor" style="margin-top:5px"></div></div></div>
-<div class="toolbar vehicle-edit-actions"><button class="btn primary" id="saveVehicleEdit" type="button">SALVAR VEÍCULO</button><button class="btn soft" id="archiveVehicleBtn" type="button">ARQUIVAR VEÍCULO</button><button class="btn danger" id="deleteVehicleBtn" type="button">EXCLUIR VEÍCULO</button></div><div class="muted" id="vehicleEditMsg" style="margin-top:8px"></div></div>
+<div class="card">
+ <div class="toolbar" style="justify-content:space-between;align-items:flex-start">
+  <div><h3 style="margin:0">Frota</h3><div class="muted">Cadastre e gerencie ônibus, vans e demais conduções.</div></div>
+  <div class="toolbar">
+   <button class="btn primary" id="newVehicleBtn" type="button">+ NOVO VEÍCULO</button>
+   <button class="btn soft" id="importCrlvBtn" type="button">✨ LER CRLV</button>
+  </div>
+ </div>
+ <input id="crlvImportFile" type="file" accept="application/pdf,image/jpeg,image/png,image/webp" hidden/>
+ <div class="list" id="vehiclesList" style="margin-top:12px"></div>
+</div>
+
+<div class="card" id="crlvPreviewCard" style="display:none;border:2px solid #1976d2">
+ <div class="toolbar" style="justify-content:space-between">
+  <div><h3 style="margin:0">✨ Dados encontrados no CRLV</h3><div class="muted">Confira antes de cadastrar ou atualizar a condução.</div></div>
+  <button class="btn soft" id="cancelCrlvImport" type="button">Cancelar</button>
+ </div>
+ <div class="row" style="margin-top:12px"><div><label>Placa</label><input id="crlvPlate"/></div><div><label>RENAVAM</label><input id="crlvRenavam"/></div><div><label>Marca / Modelo</label><input id="crlvMakeModel"/></div></div>
+ <div class="row"><div><label>Ano fabricação</label><input id="crlvYearFab" type="number"/></div><div><label>Ano modelo</label><input id="crlvYearModel" type="number"/></div><div><label>Chassi</label><input id="crlvChassis"/></div></div>
+ <div class="row"><div><label>Proprietário</label><input id="crlvOwner"/></div><div><label>Cor</label><input id="crlvColor"/></div><div><label>Combustível</label><input id="crlvFuel"/></div></div>
+ <div class="toolbar"><button class="btn primary" id="confirmCrlvImport" type="button">CONFIRMAR E SALVAR</button><span class="muted" id="crlvImportMsg"></span></div>
+ <div class="muted" style="margin-top:8px">O Comando 360 nunca grava os dados lidos sem esta confirmação. PDFs digitalizados como imagem podem precisar de preenchimento manual.</div>
+</div>
+
+<div class="card" id="vehicleEditCard" style="display:none">
+ <div class="toolbar" style="justify-content:space-between"><div><h3 id="vehicleEditTitle" style="margin:0">Editar veículo</h3><div class="muted">Dados gerais, vínculo operacional e documentos da condução.</div></div><button class="btn soft" id="cancelVehicleEdit" type="button">Cancelar</button></div>
+ <input id="editVehicleId" type="hidden"/>
+ <div class="vehicle-photo-edit"><img id="editVehiclePhotoPreview" alt="Foto do veículo"/><div class="vehicle-photo-tools"><div class="toolbar"><label class="btn soft" style="cursor:pointer">📷 Tirar foto<input id="vehiclePhotoCamera" type="file" accept="image/jpeg,image/png,image/webp" capture="environment" hidden/></label><label class="btn soft" style="cursor:pointer">🖼️ Galeria<input id="vehiclePhotoGallery" type="file" accept="image/jpeg,image/png,image/webp" hidden/></label><button class="btn soft" id="removeVehiclePhoto" type="button">Remover foto</button></div><div class="muted">Foto apenas para identificação da frota.</div></div></div>
+ <div class="row" style="margin-top:14px"><div><label>Apelido / identificação</label><input id="editVehicleDescription" placeholder="Ex.: Ônibus 2501"/></div><div><label>Placa</label><input id="editVehiclePlate" placeholder="ABC1D23"/></div><div><label>Status</label><select id="editVehicleStatus"><option value="active">Ativo</option><option value="maintenance">Em manutenção</option><option value="inactive">Inativo</option></select></div></div>
+ <div class="row"><div><label>Marca</label><input id="editVehicleMake" placeholder="Ex.: Mercedes-Benz"/></div><div><label>Modelo</label><input id="editVehicleModel" placeholder="Ex.: Sprinter 313 CDI"/></div><div><label>Ano</label><input id="editVehicleYear" type="number" min="1950" max="2100"/></div></div>
+ <div class="row"><div><label>RENAVAM</label><input id="editVehicleRenavam" inputmode="numeric"/></div><div><label>KM atual</label><input id="editVehicleKm" type="number" min="0" step="1"/></div><div><label>Equipe vinculada</label><select id="editVehicleTeam"><option value="">Sem equipe vinculada</option></select><div class="muted" id="editVehicleContractor" style="margin-top:5px"></div></div></div>
+
+ <div class="vehicle-docs-inline">
+  <div class="toolbar vehicle-docs-head" style="justify-content:space-between;align-items:flex-start">
+   <div><h3 style="margin:0">📄 Documentos da condução</h3><div class="muted">CRLV, seguro, ANTT, inspeções, tacógrafo e outros documentos ficam nesta ficha.</div></div>
+   <button class="btn soft" id="newVehicleDocBtn" type="button">+ DOCUMENTO</button>
+  </div>
+  <input id="vehicleDocVehicle" type="hidden"/>
+  <div class="vehicle-doc-kpis" id="vehicleDocKpis"></div>
+  <div class="list" id="vehicleDocsList"></div>
+
+  <div class="vehicle-doc-edit" id="vehicleDocEditCard" style="display:none">
+   <div class="toolbar" style="justify-content:space-between"><div><h3 id="vehicleDocTitle" style="margin:0">Novo documento</h3><div class="muted">O arquivo ficará ligado somente a esta condução.</div></div><button class="btn soft" id="cancelVehicleDoc" type="button">Cancelar</button></div>
+   <input id="vehicleDocId" type="hidden"/>
+   <div class="row" style="margin-top:12px"><div><label>Tipo</label><select id="vehicleDocType"><option>Licenciamento / CRLV</option><option>Seguro</option><option>Inspeção veicular</option><option>ANTT</option><option>Tacógrafo</option><option>Extintor / inspeção</option><option>Outro</option></select></div><div><label>Vencimento</label><input id="vehicleDocExpires" type="date"/></div></div>
+   <div class="vehicle-doc-file"><label>PDF / Foto do documento</label><input id="vehicleDocFile" type="file" accept="application/pdf,image/jpeg,image/png,image/webp"/><div class="muted" id="vehicleDocFileCurrent">Nenhum arquivo selecionado.</div></div>
+   <div class="toolbar" style="margin-top:12px"><button class="btn primary" id="saveVehicleDoc" type="button">SALVAR DOCUMENTO</button><button class="btn danger" id="deleteVehicleDoc" type="button" style="display:none">EXCLUIR</button></div>
+   <div class="muted" id="vehicleDocMsg" style="margin-top:8px"></div>
+  </div>
+ </div>
+
+ <div class="toolbar vehicle-edit-actions"><button class="btn primary" id="saveVehicleEdit" type="button">SALVAR VEÍCULO</button><button class="btn soft" id="archiveVehicleBtn" type="button">ARQUIVAR VEÍCULO</button><button class="btn danger" id="deleteVehicleBtn" type="button">EXCLUIR VEÍCULO</button></div>
+ <div class="muted" id="vehicleEditMsg" style="margin-top:8px"></div>
+</div>
 </div>
 <div class="section" data-screen="manutencoes" hidden="" id="manutencoes">
 <div class="card"><div class="toolbar" style="justify-content:space-between"><div><h3 style="margin:0">🔧 Manutenção da Frota</h3><div class="muted">Controle preventivo por data e quilometragem.</div></div><button class="btn primary" id="newMaintenanceBtn" type="button">+ NOVA MANUTENÇÃO</button></div><div class="v2-kpis" id="maintenanceKpis" style="margin-top:14px"></div><div class="list" id="maintenanceList" style="margin-top:12px"></div></div>
@@ -848,24 +928,6 @@ header .brand small{color:#718198;font-weight:650}
 <div class="toolbar" style="margin-top:12px"><button class="btn primary" id="saveKmBtn" type="button">SALVAR KM</button></div><div class="muted" id="kmMsg" style="margin-top:8px"></div></div>
 <div class="card"><div class="toolbar" style="justify-content:space-between"><div><h3 style="margin:0">Histórico de abastecimentos</h3><div class="muted" id="fuelHistorySubtitle">Consumo é calculado entre abastecimentos consecutivos do mesmo veículo.</div></div><button class="btn soft" id="refreshFuelBtn" type="button">Atualizar</button></div><div class="list" id="fuelList" style="margin-top:12px"></div></div>
 </div>
-<div class="section" data-screen="documentosfrota" hidden="" id="documentosfrota">
-<div class="card"><div class="toolbar" style="justify-content:space-between"><div><h3 style="margin:0">📄 Documentos da Frota</h3><div class="muted">Guarde o PDF do veículo e use o CRLV para preencher a condução automaticamente.</div></div><div class="toolbar"><button class="btn primary" id="importCrlvBtn" type="button">✨ LER CRLV / CADASTRAR CONDUÇÃO</button><button class="btn soft" id="newVehicleDocBtn" type="button">+ DOCUMENTO MANUAL</button></div></div><input id="crlvImportFile" type="file" accept="application/pdf,image/jpeg,image/png,image/webp" hidden/><div class="v2-kpis" id="vehicleDocKpis" style="margin-top:14px"></div></div>
-
-<div class="card" id="crlvPreviewCard" style="display:none;border:2px solid #1976d2">
-<div class="toolbar" style="justify-content:space-between"><div><h3 style="margin:0">✨ Dados encontrados no CRLV</h3><div class="muted">Confira antes de cadastrar ou atualizar a condução.</div></div><button class="btn soft" id="cancelCrlvImport" type="button">Cancelar</button></div>
-<div class="row" style="margin-top:12px"><div><label>Placa</label><input id="crlvPlate"/></div><div><label>RENAVAM</label><input id="crlvRenavam"/></div><div><label>Marca / Modelo</label><input id="crlvMakeModel"/></div></div>
-<div class="row"><div><label>Ano fabricação</label><input id="crlvYearFab" type="number"/></div><div><label>Ano modelo</label><input id="crlvYearModel" type="number"/></div><div><label>Chassi</label><input id="crlvChassis"/></div></div>
-<div class="row"><div><label>Proprietário</label><input id="crlvOwner"/></div><div><label>Cor</label><input id="crlvColor"/></div><div><label>Combustível</label><input id="crlvFuel"/></div></div>
-<div class="toolbar"><button class="btn primary" id="confirmCrlvImport" type="button">CONFIRMAR E SALVAR</button><span class="muted" id="crlvImportMsg"></span></div>
-<div class="muted" style="margin-top:8px">O Comando 360 nunca grava os dados lidos sem esta confirmação. PDFs digitalizados como imagem podem precisar de preenchimento manual.</div>
-</div>
-
-<div class="card" id="vehicleDocEditCard" style="display:none"><div class="toolbar" style="justify-content:space-between"><div><h3 id="vehicleDocTitle" style="margin:0">Novo documento</h3><div class="muted">O arquivo fica guardado junto ao veículo para visualizar ou baixar quando precisar.</div></div><button class="btn soft" id="cancelVehicleDoc" type="button">Cancelar</button></div><input id="vehicleDocId" type="hidden"/>
-<div class="row" style="margin-top:12px"><div><label>Veículo</label><select id="vehicleDocVehicle"></select></div><div><label>Tipo</label><select id="vehicleDocType"><option>Licenciamento / CRLV</option><option>Seguro</option><option>Inspeção veicular</option><option>ANTT</option><option>Tacógrafo</option><option>Extintor / inspeção</option><option>Outro</option></select></div><div><label>Vencimento</label><input id="vehicleDocExpires" type="date"/></div></div>
-<div><label>PDF / Foto do documento</label><input id="vehicleDocFile" type="file" accept="application/pdf,image/jpeg,image/png,image/webp" style="width:100%;padding:10px;margin-top:6px;border:1px solid #cbd5e1;border-radius:10px"/><div class="muted" id="vehicleDocFileCurrent" style="margin-top:5px">Nenhum arquivo selecionado.</div></div>
-<div class="toolbar" style="margin-top:12px"><button class="btn primary" id="saveVehicleDoc" type="button">SALVAR DOCUMENTO</button><button class="btn danger" id="deleteVehicleDoc" type="button" style="display:none">EXCLUIR</button></div><div class="muted" id="vehicleDocMsg" style="margin-top:8px"></div></div>
-
-<div class="card"><div class="toolbar" style="justify-content:space-between"><div><h3 style="margin:0">Documentos salvos</h3><div class="muted">Vermelho = vencido • amarelo = vence em até 30 dias.</div></div><button class="btn soft" id="refreshVehicleDocs" type="button">Atualizar</button></div><div class="list" id="vehicleDocsList" style="margin-top:12px"></div></div></div>
 <div class="section" data-screen="documentosrh" hidden="" id="documentosrh">
 <div class="card"><div class="toolbar" style="justify-content:space-between"><div><h3 style="margin:0">📁 Documentos dos Funcionários</h3><div class="muted">CNH, ASO, treinamentos, certificados e documentos com vencimento.</div></div><button class="btn primary" id="newEmpDocBtn" type="button">+ NOVO DOCUMENTO</button></div><div class="v2-kpis" id="empDocKpis" style="margin-top:14px"></div></div>
 <div class="card" id="empDocEditCard" style="display:none"><div class="toolbar" style="justify-content:space-between"><h3 id="empDocTitle" style="margin:0">Novo documento</h3><button class="btn soft" id="cancelEmpDoc" type="button">Cancelar</button></div><input id="empDocId" type="hidden"/>
@@ -1606,7 +1668,7 @@ async function syncPoultryTruckOfflineItem(item){
   .map(x=>({barn_id:x?.barn_id||null,barn_number:normalizeAviaryNumber(x?.barn_number),birds:poN(x?.birds)}))
   .filter(x=>x.barn_number||x.barn_id);
 
- // Compatibilidade com itens offline criados antes da v6.49.
+ // Compatibilidade com itens offline criados antes da v6.50.
  if(!barnBreakdown.length&&item.barn_id){
   const oldId=String(item.barn_id).startsWith('offline:')?(refs.loading?.metadata?.default_barn_id||null):item.barn_id;
   const oldBarn=poultryBarns.find(b=>b.id===oldId);
@@ -2098,7 +2160,7 @@ async function hydrateVehiclePhotos(){for(const v of (window.__fleetVehicles||[]
 async function loadVehicles(){try{const [r,t]=await Promise.all([rest('v2_vehicles','select=id,description,plate,make,model,model_year,renavam,current_odometer_km,status,metadata&company_id=eq.'+companyId+'&order=description.asc'),rest('v2_teams','select=id,name,status,metadata,supervisor_employee_id&company_id=eq.'+companyId+'&order=name.asc')]);window.__fleetVehicles=r;window.__fleetTeams=t;const list=$('#vehiclesList');if(!list)return;list.innerHTML=r.map(x=>{const team=t.find(z=>z.metadata?.primary_vehicle_id===x.id);const contractor=team?.metadata?.contractor_name||'';const st=x.status==='active'?'Ativo':x.status==='maintenance'?'Em manutenção':'Inativo';return `<div class="item"><div class="toolbar" style="justify-content:space-between;gap:10px"><div style="display:flex;align-items:center;gap:12px"><img data-vehicle-photo="${x.id}" style="width:78px;height:58px;object-fit:cover;border-radius:12px;border:1px solid #cbd5e1"/><div><strong>${esc(x.description||x.model||'Veículo')}</strong> <span class="pill ${x.status==='active'?'ok':'warn'}">${esc(st)}</span><div class="muted">${esc(x.plate||'Sem placa')} • ${esc([x.make,x.model,x.model_year].filter(Boolean).join(' ')||'Modelo não informado')} • ${Number(x.current_odometer_km||0).toLocaleString('pt-BR')} km</div>${team?`<div style="margin-top:5px"><span class="pill">👥 ${esc(team.name)}</span>${contractor?` <span class="pill">🏭 ${esc(contractor)}</span>`:''}</div>`:''}</div></div><button class="btn soft" type="button" onclick="openVehicleEdit('${x.id}')">Editar</button></div></div>`}).join('')||'<div class="muted">Sem conduções. Toque em + Novo veículo para cadastrar.</div>';hydrateVehiclePhotos()}catch(e){const l=$('#vehiclesList');if(l)l.innerHTML='<div class="error">'+esc(e.message)+'</div>'}}
 function fillVehicleTeamSelect(vehicleId=''){const sel=$('#editVehicleTeam');if(!sel)return;const teams=(window.__fleetTeams||[]).filter(t=>t.status==='active'||t.metadata?.primary_vehicle_id===vehicleId);sel.innerHTML='<option value="">Sem equipe vinculada</option>'+teams.map(t=>`<option value="${t.id}">${esc(t.name)}</option>`).join('');const linked=teams.find(t=>t.metadata?.primary_vehicle_id===vehicleId);sel.value=linked?.id||'';updateVehicleContractor()}
 function updateVehicleContractor(){const t=(window.__fleetTeams||[]).find(x=>x.id===$('#editVehicleTeam')?.value);const el=$('#editVehicleContractor');if(el)el.textContent=t?.metadata?.contractor_name?'Contratante: '+t.metadata.contractor_name:''}
-window.openVehicleEdit=async function(id=''){const v=(window.__fleetVehicles||[]).find(x=>x.id===id)||{};$('#editVehicleId').value=v.id||'';$('#vehicleEditTitle').textContent=v.id?'Editar veículo':'Novo veículo';$('#editVehicleDescription').value=v.description||'';$('#editVehiclePlate').value=v.plate||'';$('#editVehicleMake').value=v.make||'';$('#editVehicleModel').value=v.model||'';$('#editVehicleYear').value=v.model_year||'';$('#editVehicleRenavam').value=v.renavam||'';$('#editVehicleKm').value=v.current_odometer_km||'';$('#editVehicleStatus').value=v.status||'active';window.__vehiclePhotoFile=null;window.__removeVehiclePhoto=false;const pp=$('#editVehiclePhotoPreview');pp.src=vehiclePlaceholder(v.description);const p=v.metadata?.vehicle_photo_path;if(p){const u=await vehiclePhotoObjectUrl(p);if(u)pp.src=u}fillVehicleTeamSelect(v.id||'');$('#archiveVehicleBtn').style.display=v.id?'':'none';$('#deleteVehicleBtn').style.display=v.id?'':'none';$('#vehicleEditMsg').textContent='';$('#vehicleEditCard').style.display='block';$('#vehicleEditCard').scrollIntoView({behavior:'smooth',block:'start'})}
+window.openVehicleEdit=async function(id=''){const v=(window.__fleetVehicles||[]).find(x=>x.id===id)||{};$('#editVehicleId').value=v.id||'';$('#vehicleEditTitle').textContent=v.id?'Editar veículo':'Novo veículo';$('#editVehicleDescription').value=v.description||'';$('#editVehiclePlate').value=v.plate||'';$('#editVehicleMake').value=v.make||'';$('#editVehicleModel').value=v.model||'';$('#editVehicleYear').value=v.model_year||'';$('#editVehicleRenavam').value=v.renavam||'';$('#editVehicleKm').value=v.current_odometer_km||'';$('#editVehicleStatus').value=v.status||'active';window.__vehiclePhotoFile=null;window.__removeVehiclePhoto=false;const pp=$('#editVehiclePhotoPreview');pp.src=vehiclePlaceholder(v.description);const p=v.metadata?.vehicle_photo_path;if(p){const u=await vehiclePhotoObjectUrl(p);if(u)pp.src=u}fillVehicleTeamSelect(v.id||'');$('#archiveVehicleBtn').style.display=v.id?'':'none';$('#deleteVehicleBtn').style.display=v.id?'':'none';$('#vehicleEditMsg').textContent='';$('#vehicleEditCard').style.display='block';$('#vehicleDocEditCard').style.display='none';await loadVehicleDocs(v.id||'');$('#vehicleEditCard').scrollIntoView({behavior:'smooth',block:'start'})}
 
 async function loadAlerts(){try{const r=await rest('v2_alerts','select=title,message,severity,status,created_at&company_id=eq.'+companyId+'&status=in.(open,seen)&order=created_at.desc&limit=50');$('#alertsList').innerHTML=r.map(x=>`<div class="item"><strong>${esc(x.title)}</strong><span class="pill ${x.severity==='critical'?'danger':x.severity==='warning'?'warn':'ok'}">${esc(x.severity)}</span><div class="muted">${esc(x.message||'')}</div></div>`).join('')||'<div class="muted">Nenhum alerta aberto.</div>'}catch(e){$('#alertsList').innerHTML='<div class="error">'+esc(e.message)+'</div>'}}
 
@@ -3754,7 +3816,7 @@ async function uploadVehicleDocumentFile(file,vehicleId){
  const r=await fetch(`${API_URL}/storage/v1/object/${VEHICLE_DOC_BUCKET}/${path}`,{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+s.access_token,'Content-Type':file.type||'application/octet-stream','x-upsert':'false'},body:file});
  await parseResponse(r);
  const u=await getUser();
- const rows=await rest('v2_files','','POST',{company_id:companyId,storage_bucket:VEHICLE_DOC_BUCKET,storage_path:path,original_name:file.name,mime_type:file.type||null,size_bytes:file.size,category:'vehicle_document',entity_type:'vehicle',entity_id:vehicleId,metadata:{source:'controla_beta_549'},uploaded_by:u?.id||null});
+ const rows=await rest('v2_files','','POST',{company_id:companyId,storage_bucket:VEHICLE_DOC_BUCKET,storage_path:path,original_name:file.name,mime_type:file.type||null,size_bytes:file.size,category:'vehicle_document',entity_type:'vehicle',entity_id:vehicleId,metadata:{source:'comando360_v650'},uploaded_by:u?.id||null});
  return rows?.[0]||null;
 }
 async function downloadVehicleDoc(fileId,download=false){
@@ -3768,21 +3830,42 @@ async function downloadVehicleDoc(fileId,download=false){
   setTimeout(()=>URL.revokeObjectURL(url),60000);
  }catch(e){alert(e.message)}
 }
-async function loadVehicleDocs(){
+async function loadVehicleDocs(vehicleId=''){
  const [docs,vs,files]=await Promise.all([
   rest('v2_vehicle_documents','select=*&company_id=eq.'+companyId+'&order=expires_at.asc.nullslast,created_at.desc'),
   rest('v2_vehicles','select=id,description,plate,model,make,model_year,renavam,status,metadata&company_id=eq.'+companyId+'&order=description.asc'),
   rest('v2_files','select=id,storage_bucket,storage_path,original_name,mime_type,size_bytes&company_id=eq.'+companyId+'&category=eq.vehicle_document&archived_at=is.null&order=created_at.desc')
  ]);
  vehicleDocsCache=docs||[];vehicleDocsVehicles=vs||[];vehicleDocFiles=Object.fromEntries((files||[]).map(f=>[f.id,f]));
- const s=document.getElementById('vehicleDocVehicle');if(s)s.innerHTML='<option value="">Selecione...</option>'+vehicleDocsVehicles.map(v=>`<option value="${v.id}">${esc(v.description||v.model||v.plate)} • ${esc(v.plate||'sem placa')}</option>`).join('');
- let x=0,p=0,o=0;vehicleDocsCache.forEach(d=>{const z=vehicleDocStatus(d.expires_at);if(z.cls==='danger')x++;else if(z.cls==='warn')p++;else if(z.cls==='ok')o++});
- const k=document.getElementById('vehicleDocKpis');if(k)k.innerHTML=`<div class="v2kpi"><span>Documentos</span><strong>${vehicleDocsCache.length}</strong></div><div class="v2kpi"><span>Em dia</span><strong>${o}</strong></div><div class="v2kpi"><span>Próximos</span><strong>${p}</strong></div><div class="v2kpi"><span>Vencidos</span><strong>${x}</strong></div>`;
- const l=document.getElementById('vehicleDocsList');if(l)l.innerHTML=vehicleDocsCache.map(d=>{const v=vehicleDocsVehicles.find(q=>q.id===d.vehicle_id),z=vehicleDocStatus(d.expires_at),f=vehicleDocFiles[d.file_id];return `<div class="item"><div class="toolbar" style="justify-content:space-between;align-items:flex-start"><div><strong>${esc(d.document_type)} • ${esc(v?.description||v?.model||'Veículo')}</strong><div class="muted">${esc(v?.plate||'sem placa')} • RENAVAM ${esc(v?.renavam||'não informado')} • ${d.expires_at?new Date(d.expires_at+'T00:00:00').toLocaleDateString('pt-BR'):'sem vencimento'}</div><div style="margin-top:6px"><span class="pill ${z.cls}">${z.label}</span>${f?` <span class="pill ok">📎 ${esc(f.original_name||'arquivo')}</span>`:' <span class="pill">Sem arquivo</span>'}</div></div><div class="toolbar">${f?`<button class="btn soft vehicleDocView" data-file="${f.id}" type="button">👁️ Abrir</button><button class="btn soft vehicleDocDownload" data-file="${f.id}" type="button">⬇️ Baixar</button>`:''}<button class="btn soft editVehicleDocBtn" data-id="${d.id}" type="button">Editar</button></div></div></div>`}).join('')||'<div class="muted">Nenhum documento cadastrado.</div>';
+ const currentId=vehicleId||document.getElementById('editVehicleId')?.value||'';
+ const s=document.getElementById('vehicleDocVehicle');if(s)s.value=currentId;
+ const shown=currentId?vehicleDocsCache.filter(d=>d.vehicle_id===currentId):[];
+ const btn=document.getElementById('newVehicleDocBtn');if(btn){btn.disabled=!currentId;btn.title=currentId?'Adicionar documento nesta condução':'Salve o veículo antes de adicionar documentos.'}
+ let x=0,p=0,o=0;shown.forEach(d=>{const z=vehicleDocStatus(d.expires_at);if(z.cls==='danger')x++;else if(z.cls==='warn')p++;else o++});
+ const k=document.getElementById('vehicleDocKpis');
+ if(k)k.innerHTML=currentId?
+  '<span class="pill">'+shown.length+' documento(s)</span> <span class="pill ok">'+o+' em dia/sem vencimento</span> <span class="pill warn">'+p+' próximo(s)</span> <span class="pill danger">'+x+' vencido(s)</span>':
+  '<span class="muted">Salve o veículo para liberar os documentos desta condução.</span>';
+ const l=document.getElementById('vehicleDocsList');if(!l)return;
+ if(!currentId){l.innerHTML='';return}
+ const v=vehicleDocsVehicles.find(q=>q.id===currentId);
+ l.innerHTML=shown.map(d=>{const z=vehicleDocStatus(d.expires_at),f=vehicleDocFiles[d.file_id];return '<div class="item vehicle-doc-row"><div class="toolbar" style="justify-content:space-between;align-items:flex-start"><div><strong>'+esc(d.document_type)+'</strong><div class="muted">'+(d.expires_at?'Vencimento '+new Date(d.expires_at+'T00:00:00').toLocaleDateString('pt-BR'):'Sem vencimento')+(v?.renavam?' • RENAVAM '+esc(v.renavam):'')+'</div><div style="margin-top:6px"><span class="pill '+z.cls+'">'+z.label+'</span>'+(f?' <span class="pill ok">📎 '+esc(f.original_name||'arquivo')+'</span>':' <span class="pill">Sem arquivo</span>')+'</div></div><div class="toolbar">'+(f?'<button class="btn soft vehicleDocView" data-file="'+f.id+'" type="button">👁️ Abrir</button><button class="btn soft vehicleDocDownload" data-file="'+f.id+'" type="button">⬇️ Baixar</button>':'')+'<button class="btn soft editVehicleDocBtn" data-id="'+d.id+'" type="button">Editar</button></div></div></div>'}).join('')||'<div class="muted vehicle-doc-empty">Nenhum documento cadastrado nesta condução.</div>';
 }
 function openVehicleDoc(id=''){
  const d=vehicleDocsCache.find(x=>x.id===id),f=d?.file_id?vehicleDocFiles[d.file_id]:null;
- document.getElementById('vehicleDocId').value=d?.id||'';document.getElementById('vehicleDocTitle').textContent=d?'Editar documento':'Novo documento';document.getElementById('vehicleDocVehicle').value=d?.vehicle_id||'';document.getElementById('vehicleDocType').value=d?.document_type||'Licenciamento / CRLV';document.getElementById('vehicleDocExpires').value=d?.expires_at||'';document.getElementById('vehicleDocFile').value='';document.getElementById('vehicleDocFileCurrent').textContent=f?'Arquivo atual: '+f.original_name:'Nenhum arquivo salvo.';document.getElementById('deleteVehicleDoc').style.display=d?'inline-flex':'none';document.getElementById('vehicleDocMsg').textContent='';document.getElementById('vehicleDocEditCard').style.display='block';
+ const vehicleId=d?.vehicle_id||document.getElementById('editVehicleId')?.value||'';
+ if(!vehicleId){alert('Salve o veículo antes de adicionar documentos.');return}
+ document.getElementById('vehicleDocId').value=d?.id||'';
+ document.getElementById('vehicleDocTitle').textContent=d?'Editar documento':'Novo documento';
+ document.getElementById('vehicleDocVehicle').value=vehicleId;
+ document.getElementById('vehicleDocType').value=d?.document_type||'Licenciamento / CRLV';
+ document.getElementById('vehicleDocExpires').value=d?.expires_at||'';
+ document.getElementById('vehicleDocFile').value='';
+ document.getElementById('vehicleDocFileCurrent').textContent=f?'Arquivo atual: '+f.original_name:'Nenhum arquivo salvo.';
+ document.getElementById('deleteVehicleDoc').style.display=d?'inline-flex':'none';
+ document.getElementById('vehicleDocMsg').textContent='';
+ document.getElementById('vehicleDocEditCard').style.display='block';
+ document.getElementById('vehicleDocEditCard').scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 async function saveVehicleDocument(){
  const m=document.getElementById('vehicleDocMsg'),id=document.getElementById('vehicleDocId').value,vehicle_id=document.getElementById('vehicleDocVehicle').value,file=document.getElementById('vehicleDocFile').files?.[0];
@@ -3793,12 +3876,12 @@ async function saveVehicleDocument(){
   if(file){const fr=await uploadVehicleDocumentFile(file,vehicle_id);file_id=fr?.id||file_id}
   const b={company_id:companyId,vehicle_id,document_type:document.getElementById('vehicleDocType').value,expires_at:document.getElementById('vehicleDocExpires').value||null,status:'active',file_id};
   if(id)await rest('v2_vehicle_documents','id=eq.'+id,'PATCH',b);else await rest('v2_vehicle_documents','','POST',b);
-  document.getElementById('vehicleDocEditCard').style.display='none';await loadVehicleDocs();
+  document.getElementById('vehicleDocEditCard').style.display='none';await loadVehicleDocs(vehicle_id);
  }catch(e){m.textContent=e.message||String(e)}
 }
 async function deleteVehicleDocument(){
  const id=document.getElementById('vehicleDocId').value;if(!id||!confirm('Excluir este documento definitivamente?'))return;
- try{const d=vehicleDocsCache.find(x=>x.id===id);await rest('v2_vehicle_documents','id=eq.'+id,'DELETE');if(d?.file_id)try{await rest('v2_files','id=eq.'+d.file_id,'PATCH',{archived_at:new Date().toISOString()})}catch{}document.getElementById('vehicleDocEditCard').style.display='none';await loadVehicleDocs()}catch(e){alert(e.message)}
+ try{const d=vehicleDocsCache.find(x=>x.id===id);await rest('v2_vehicle_documents','id=eq.'+id,'DELETE');if(d?.file_id)try{await rest('v2_files','id=eq.'+d.file_id,'PATCH',{archived_at:new Date().toISOString()})}catch{}document.getElementById('vehicleDocEditCard').style.display='none';await loadVehicleDocs(d?.vehicle_id||document.getElementById('editVehicleId')?.value||'')}catch(e){alert(e.message)}
 }
 async function extractPdfText(file){
  if(!window.pdfjsLib)throw new Error('Leitor de PDF ainda carregando. Aguarde alguns segundos.');
@@ -3851,8 +3934,8 @@ async function confirmCrlvImport(){
   if(!v?.id)throw new Error('Não foi possível obter o veículo cadastrado.');
   msg.textContent='Salvando o documento...';const fr=pendingCrlvFile?await uploadVehicleDocumentFile(pendingCrlvFile,v.id):null;
   await rest('v2_vehicle_documents','','POST',{company_id:companyId,vehicle_id:v.id,document_type:'Licenciamento / CRLV',expires_at:null,status:'active',file_id:fr?.id||null});
-  document.getElementById('crlvPreviewCard').style.display='none';pendingCrlvFile=null;pendingCrlvData=null;await loadVehicleDocs();try{await loadVehicles()}catch{}
-  alert('CRLV salvo e condução cadastrada/atualizada com sucesso.');
+  document.getElementById('crlvPreviewCard').style.display='none';pendingCrlvFile=null;pendingCrlvData=null;try{await loadVehicles();await openVehicleEdit(v.id)}catch{}
+  alert('CRLV salvo e vinculado à condução com sucesso.');
  }catch(e){msg.textContent=e.message||String(e)}
 }
 
@@ -3872,7 +3955,7 @@ async function loadSmartAlerts(){
    rest('v2_teams','select=id,name,supervisor_employee_id,status,metadata&company_id=eq.'+companyId+'&status=eq.active')
   ]);
   const vm=Object.fromEntries((vehicles||[]).map(v=>[v.id,v]));
-  for(const d of docs||[]){const n=daysUntil(d.expires_at),v=vm[d.vehicle_id];if(n===null)continue;if(n<0)alerts.push({level:'danger',title:d.document_type+' vencido',text:`${v?.description||v?.plate||'Veículo'} • há ${Math.abs(n)} dia(s)`,tab:'documentosfrota'});else if(n<=30)alerts.push({level:'warn',title:d.document_type+' vence em breve',text:`${v?.description||v?.plate||'Veículo'} • ${n} dia(s)`,tab:'documentosfrota'})}
+  for(const d of docs||[]){const n=daysUntil(d.expires_at),v=vm[d.vehicle_id];if(n===null)continue;if(n<0)alerts.push({level:'danger',title:d.document_type+' vencido',text:`${v?.description||v?.plate||'Veículo'} • há ${Math.abs(n)} dia(s)`,tab:'frota'});else if(n<=30)alerts.push({level:'warn',title:d.document_type+' vence em breve',text:`${v?.description||v?.plate||'Veículo'} • ${n} dia(s)`,tab:'frota'})}
   for(const p of plans||[]){const v=vm[p.vehicle_id],cur=Number(v?.current_odometer_km||0),due=Number(p.next_due_odometer_km||0),n=daysUntil(p.next_due_at);if(due&&cur>=due)alerts.push({level:'danger',title:'Manutenção vencida por KM',text:`${v?.description||v?.plate||'Veículo'} • ${p.name||'Plano'}`,tab:'manutencoes'});else if(due&&due-cur<=1000)alerts.push({level:'warn',title:'Manutenção próxima por KM',text:`${v?.description||v?.plate||'Veículo'} • faltam ${(due-cur).toLocaleString('pt-BR')} km`,tab:'manutencoes'});if(n!==null&&n<0)alerts.push({level:'danger',title:'Manutenção vencida por data',text:`${v?.description||v?.plate||'Veículo'} • ${Math.abs(n)} dia(s)`,tab:'manutencoes'});else if(n!==null&&n<=30)alerts.push({level:'warn',title:'Manutenção próxima por data',text:`${v?.description||v?.plate||'Veículo'} • ${n} dia(s)`,tab:'manutencoes'})}
   for(const v of vehicles||[]){if(v.status==='maintenance')alerts.push({level:'warn',title:'Veículo em manutenção',text:`${v.description||v.model||v.plate}`,tab:'frota'});if(!v.renavam)alerts.push({level:'warn',title:'RENAVAM não informado',text:`${v.description||v.model||v.plate}`,tab:'frota'})}
   for(const d of employeeDocs||[]){const n=daysUntil(d.expires_at),e=(employees||[]).find(x=>x.id===d.employee_id);if(n===null)continue;if(n<0)alerts.push({level:'danger',title:(d.document_type||'Documento')+' vencido',text:`${e?.full_name||'Funcionário'} • há ${Math.abs(n)} dia(s)`,tab:'documentosrh'});else if(n<=30)alerts.push({level:'warn',title:(d.document_type||'Documento')+' vence em breve',text:`${e?.full_name||'Funcionário'} • ${n} dia(s)`,tab:'documentosrh'})}
@@ -4053,6 +4136,7 @@ function printAdminReports(){
 }
 
 async function v2Go(tab){
+ if(tab==='documentosfrota')tab='frota';
  if(deviceMode&&!['equipehome','operacoes','ponto','combustivel','equipereport'].includes(tab))tab='equipehome';
  const host=document.getElementById('screenHost');
  const target=v2ScreenStore[tab];
@@ -4083,7 +4167,6 @@ async function v2Go(tab){
    else if(tab==='frota') await loadVehicles();
    else if(tab==='manutencoes') await loadMaintenances();
    else if(tab==='combustivel'){await loadFuel();if(deviceMode&&fuelVehicles.length===1){const s=$('#fuelVehicle');if(s)s.value=fuelVehicles[0].id}}
-   else if(tab==='documentosfrota') await loadVehicleDocs();
    else if(tab==='documentosrh') await loadEmpDocs();
    else if(tab==='financeiro') await loadFinance();
    else if(tab==='relatorios') await loadReports();
@@ -4123,7 +4206,7 @@ document.addEventListener('click',async function(e){
   if(e.target.closest('#cancelVehicleDoc')){e.preventDefault();document.getElementById('vehicleDocEditCard').style.display='none';return}
   if(e.target.closest('#saveVehicleDoc')){e.preventDefault();await saveVehicleDocument();return}
   if(e.target.closest('#deleteVehicleDoc')){e.preventDefault();await deleteVehicleDocument();return}
-  if(e.target.closest('#refreshVehicleDocs')){e.preventDefault();await loadVehicleDocs();return}
+  if(e.target.closest('#refreshVehicleDocs')){e.preventDefault();await loadVehicleDocs(document.getElementById('editVehicleId')?.value||'');return}
   if(e.target.closest('#refreshAlerts')){e.preventDefault();await loadSmartAlerts();return}
   if(e.target.closest('#newEmpDocBtn')){e.preventDefault();openEmpDoc();return}
   if(e.target.closest('#cancelEmpDoc')){e.preventDefault();document.getElementById('empDocEditCard').style.display='none';return}
@@ -4209,7 +4292,7 @@ setInterval(()=>{
 },60000);
 if('serviceWorker' in navigator){
  window.addEventListener('load',()=>{
-  navigator.serviceWorker.register('./sw-v6-49.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
+  navigator.serviceWorker.register('./sw-v6-50.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
  });
 }
 
@@ -4327,7 +4410,7 @@ function previewVehiclePhotoFile(f){if(!f)return;window.__vehiclePhotoFile=f;win
 if(document.getElementById('vehiclePhotoCamera'))document.getElementById('vehiclePhotoCamera').addEventListener('change',e=>previewVehiclePhotoFile(e.target.files?.[0]));
 if(document.getElementById('vehiclePhotoGallery'))document.getElementById('vehiclePhotoGallery').addEventListener('change',e=>previewVehiclePhotoFile(e.target.files?.[0]));
 if(document.getElementById('removeVehiclePhoto'))document.getElementById('removeVehiclePhoto').addEventListener('click',()=>{window.__vehiclePhotoFile=null;window.__removeVehiclePhoto=true;$('#editVehiclePhotoPreview').src=vehiclePlaceholder($('#editVehicleDescription').value)});
-if(document.getElementById('saveVehicleEdit'))document.getElementById('saveVehicleEdit').addEventListener('click',async()=>{const m=$('#vehicleEditMsg');let id=$('#editVehicleId').value;const desc=$('#editVehicleDescription').value.trim(),plate=$('#editVehiclePlate').value.trim().toUpperCase().replace(/[^A-Z0-9]/g,'');if(!desc){m.textContent='Informe o apelido/identificação do veículo.';return}if(!plate){m.textContent='Informe a placa do veículo.';return}try{const dup=await rest('v2_vehicles','select=id,plate&company_id=eq.'+companyId+'&plate=eq.'+encodeURIComponent(plate));if((dup||[]).some(x=>x.id!==id)){m.textContent='Já existe outro veículo com esta placa.';return}let v=(window.__fleetVehicles||[]).find(x=>x.id===id);let metadata={...(v?.metadata||{})};const body={description:desc,plate,make:$('#editVehicleMake').value.trim()||null,model:$('#editVehicleModel').value.trim()||null,model_year:$('#editVehicleYear').value?Number($('#editVehicleYear').value):null,renavam:$('#editVehicleRenavam').value.trim()||null,current_odometer_km:$('#editVehicleKm').value?Number($('#editVehicleKm').value):0,status:$('#editVehicleStatus').value,metadata};if(id){await rest('v2_vehicles','id=eq.'+id,'PATCH',body)}else{const created=await rest('v2_vehicles','','POST',{company_id:companyId,...body});id=created?.[0]?.id||'';if(!id)throw new Error('Não foi possível obter o veículo criado.')}if(window.__removeVehiclePhoto){delete metadata.vehicle_photo_path;await rest('v2_vehicles','id=eq.'+id,'PATCH',{metadata})}if(window.__vehiclePhotoFile){metadata.vehicle_photo_path=await uploadVehiclePhoto(window.__vehiclePhotoFile,id);await rest('v2_vehicles','id=eq.'+id,'PATCH',{metadata})}const teamId=$('#editVehicleTeam').value;const teams=window.__fleetTeams||[];for(const t of teams){if(t.metadata?.primary_vehicle_id===id&&t.id!==teamId){const md={...(t.metadata||{})};delete md.primary_vehicle_id;await rest('v2_teams','id=eq.'+t.id,'PATCH',{metadata:md})}}if(teamId){const t=teams.find(x=>x.id===teamId);if(t){await rest('v2_teams','id=eq.'+teamId,'PATCH',{metadata:{...(t.metadata||{}),primary_vehicle_id:id}})}}window.__vehiclePhotoFile=null;window.__removeVehiclePhoto=false;m.textContent='Veículo salvo com sucesso.';await loadVehicles();await loadTeams()}catch(e){m.textContent=e.message||String(e)}});
+if(document.getElementById('saveVehicleEdit'))document.getElementById('saveVehicleEdit').addEventListener('click',async()=>{const m=$('#vehicleEditMsg');let id=$('#editVehicleId').value;const desc=$('#editVehicleDescription').value.trim(),plate=$('#editVehiclePlate').value.trim().toUpperCase().replace(/[^A-Z0-9]/g,'');if(!desc){m.textContent='Informe o apelido/identificação do veículo.';return}if(!plate){m.textContent='Informe a placa do veículo.';return}try{const dup=await rest('v2_vehicles','select=id,plate&company_id=eq.'+companyId+'&plate=eq.'+encodeURIComponent(plate));if((dup||[]).some(x=>x.id!==id)){m.textContent='Já existe outro veículo com esta placa.';return}let v=(window.__fleetVehicles||[]).find(x=>x.id===id);let metadata={...(v?.metadata||{})};const body={description:desc,plate,make:$('#editVehicleMake').value.trim()||null,model:$('#editVehicleModel').value.trim()||null,model_year:$('#editVehicleYear').value?Number($('#editVehicleYear').value):null,renavam:$('#editVehicleRenavam').value.trim()||null,current_odometer_km:$('#editVehicleKm').value?Number($('#editVehicleKm').value):0,status:$('#editVehicleStatus').value,metadata};if(id){await rest('v2_vehicles','id=eq.'+id,'PATCH',body)}else{const created=await rest('v2_vehicles','','POST',{company_id:companyId,...body});id=created?.[0]?.id||'';if(!id)throw new Error('Não foi possível obter o veículo criado.');$('#editVehicleId').value=id;$('#archiveVehicleBtn').style.display='';$('#deleteVehicleBtn').style.display=''}if(window.__removeVehiclePhoto){delete metadata.vehicle_photo_path;await rest('v2_vehicles','id=eq.'+id,'PATCH',{metadata})}if(window.__vehiclePhotoFile){metadata.vehicle_photo_path=await uploadVehiclePhoto(window.__vehiclePhotoFile,id);await rest('v2_vehicles','id=eq.'+id,'PATCH',{metadata})}const teamId=$('#editVehicleTeam').value;const teams=window.__fleetTeams||[];for(const t of teams){if(t.metadata?.primary_vehicle_id===id&&t.id!==teamId){const md={...(t.metadata||{})};delete md.primary_vehicle_id;await rest('v2_teams','id=eq.'+t.id,'PATCH',{metadata:md})}}if(teamId){const t=teams.find(x=>x.id===teamId);if(t){await rest('v2_teams','id=eq.'+teamId,'PATCH',{metadata:{...(t.metadata||{}),primary_vehicle_id:id}})}}window.__vehiclePhotoFile=null;window.__removeVehiclePhoto=false;m.textContent='Veículo salvo com sucesso.';await loadVehicles();await loadTeams();await loadVehicleDocs(id)}catch(e){m.textContent=e.message||String(e)}});
 if(document.getElementById('archiveVehicleBtn'))document.getElementById('archiveVehicleBtn').addEventListener('click',async()=>{const id=$('#editVehicleId').value,m=$('#vehicleEditMsg');if(!id)return;if(!confirm('Arquivar este veículo? O histórico será preservado.'))return;try{await rest('v2_vehicles','id=eq.'+id,'PATCH',{status:'inactive'});m.textContent='Veículo arquivado.';await loadVehicles();await loadTeams()}catch(e){m.textContent=e.message||String(e)}});
 if(document.getElementById('saveTeamEdit'))document.getElementById('saveTeamEdit').addEventListener('click',async()=>{const id=$('#editTeamId').value,m=$('#teamEditMsg');const t=(window.__teams||[]).find(x=>x.id===id);const oldName=(t?.name||'').trim();const name=$('#editTeamName').value.trim(),contractor=$('#editTeamContractor').value.trim();if(!name){m.textContent='Informe o nome da equipe.';return}if(!contractor){m.textContent='Informe a empresa contratante / onde a equipe presta serviço.';return}try{const metadata={...(t?.metadata||{}),contractor_name:contractor};const supervisorPhone=$('#editTeamSupervisorPhone')?.value.trim()||'';if(supervisorPhone)metadata.supervisor_phone=supervisorPhone;else delete metadata.supervisor_phone;const vehicleId=$('#editTeamVehicle').value;if(vehicleId)metadata.primary_vehicle_id=vehicleId;else delete metadata.primary_vehicle_id;const body={name,code:$('#editTeamCode').value.trim()||null,status:$('#editTeamStatus').value,supervisor_employee_id:$('#editTeamSupervisor').value||null,metadata};let teamId=id;if(id){await rest('v2_teams','id=eq.'+id,'PATCH',body)}else{const created=await rest('v2_teams','','POST',{company_id:companyId,...body});teamId=created?.[0]?.id||''}
 const selected=new Set([...document.querySelectorAll('#teamMembersList .team-member-check:checked')].map(x=>x.value));const emps=window.__teamEmployees||[];for(const e of emps){const current=(e.primary_team||'').trim();const wasMember=oldName&&current.toLowerCase()===oldName.toLowerCase();const shouldMember=selected.has(e.id);if(shouldMember&&current!==name){await rest('v2_employees','id=eq.'+e.id,'PATCH',{primary_team:name})}else if(!shouldMember&&wasMember){await rest('v2_employees','id=eq.'+e.id,'PATCH',{primary_team:null})}}
