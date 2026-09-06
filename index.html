@@ -8,13 +8,13 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
-<title>Operza • v6.30</title>
-<link rel="manifest" href="./operza.webmanifest"/>
-<link rel="apple-touch-icon" href="./operza-180.png"/>
+<title>Comando 360 • v6.31</title>
+<link rel="manifest" href="./comando360.webmanifest"/>
+<link rel="apple-touch-icon" href="./comando360-180.png"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
-<meta name="apple-mobile-web-app-title" content="Operza"/>
-<link rel="icon" type="image/png" sizes="192x192" href="./operza-192.png"/>
+<meta name="apple-mobile-web-app-title" content="Comando 360"/>
+<link rel="icon" type="image/png" sizes="192x192" href="./comando360-192.png"/>
 <style>
 :root{--bg:#f3f6fb;--card:#fff;--ink:#0f172a;--muted:#64748b;--line:#e2e8f0;--accent:#0f172a}*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--ink)}header{position:sticky;top:0;z-index:20;background:linear-gradient(135deg,var(--accent),#1e293b);color:#fff;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 8px 24px rgba(15,23,42,.18)}.wrap{max-width:1200px;margin:auto;padding:12px}.card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:12px;box-shadow:0 4px 18px rgba(15,23,42,.045)}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:10px}.kpi{font-size:28px;font-weight:900}.label,.muted{font-size:12px;color:var(--muted)}.nav{display:flex;gap:8px;overflow:auto;padding:12px 0;scrollbar-width:none}.nav::-webkit-scrollbar{display:none}.nav button,.btn{border:0;border-radius:12px;padding:11px 14px;font-weight:800;white-space:nowrap;cursor:pointer}.nav button{background:#fff;border:1px solid var(--line);color:#334155}.nav button.active,.btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}.btn.soft{background:#e2e8f0}.btn.danger{background:#b91c1c;color:#fff}.btn.danger:hover{background:#991b1b}.hidden{display:none!important}.login{max-width:430px;margin:55px auto}.login input,.chat input{width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:10px;margin:6px 0 10px;font:inherit}.section{display:none}.section.active{display:block}.list{display:grid;gap:8px}.item{background:#fff;border:1px solid var(--line);border-radius:13px;padding:12px}.item strong{display:block}.pill{display:inline-block;padding:4px 8px;border-radius:999px;font-size:11px;font-weight:800;background:#e2e8f0}.pill.ok{background:#dcfce7;color:#166534}.pill.warn{background:#fef3c7;color:#92400e}.pill.danger{background:#fee2e2;color:#991b1b}#networkBadge.online{background:#dcfce7;color:#166534}#networkBadge.offline{background:#fee2e2;color:#991b1b}.toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.chatbox{min-height:220px;max-height:52vh;overflow:auto;background:#fff;border:1px solid var(--line);border-radius:14px;padding:10px}.msg{padding:10px 12px;border-radius:12px;margin:8px 0;max-width:88%;white-space:pre-wrap}.msg.user{margin-left:auto;background:#e2e8f0}.msg.ai{background:#fff7ed;border:1px solid #fed7aa}.brand{display:flex;gap:10px;align-items:center}.logo{width:38px;height:38px;border-radius:10px;background:white;color:#0f172a;display:grid;place-items:center;font-weight:900}.error{color:#b91c1c;font-size:13px}.okmsg{color:#166534;font-size:13px}.debug{margin-top:8px;font-size:11px;color:#64748b;word-break:break-word}@media(max-width:640px){.wrap{padding:9px}.kpi{font-size:25px}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}header{padding:12px}.nav{position:sticky;top:66px;z-index:15;background:var(--bg);margin:0 -9px;padding:9px}}
 
@@ -191,7 +191,7 @@ body.device-mode .admin-only{display:none!important}
 <script defer src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
 <script>
 (function(){
-  const BUILD='6.30';
+  const BUILD='6.31';
   try{
     const marker='controla_cache_cleanup_'+BUILD;
     if(!localStorage.getItem(marker)){
@@ -206,7 +206,7 @@ body.device-mode .admin-only{display:none!important}
 </head>
 <body>
 <aside class="v2sidebar" id="v2sidebar">
-<div class="v2logo"><div class="v2mark">O</div><div><strong>OPERZA</strong><small>Gestão & Operações</small></div></div>
+<div class="v2logo"><div class="v2mark">C</div><div><strong>COMANDO 360</strong><small>Gestão completa • Controle total</small></div></div>
 <div class="v2group">OPERAÇÃO</div>
 <button class="v2navbtn active" data-v2tab="inicio">▦   Dashboard Geral</button>
 <button class="v2navbtn" data-v2tab="operacoes">▣   Apanhas</button>
@@ -225,7 +225,7 @@ body.device-mode .admin-only{display:none!important}
 <div class="v2group">INTELIGÊNCIA</div>
 <button class="v2navbtn" data-v2tab="ia">✦   Assistente IA</button>
 </aside>
-<header><div class="brand"><div class="logo">O</div><div><b>Operza</b><div><small id="companyName">Empresa</small></div></div></div><div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.30</span><button class="btn soft" id="themeToggle" type="button">☾</button><button class="btn soft hidden" id="logout">Sair</button></div></header>
+<header><div class="brand"><div class="logo">C</div><div><b>Comando 360</b><div><small id="companyName">Empresa</small></div></div></div><div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.31</span><button class="btn soft" id="themeToggle" type="button">☾</button><button class="btn soft hidden" id="logout">Sair</button></div></header>
 <main class="wrap">
 <section class="login team-entry" id="login">
 <div class="card" id="deviceSetupCard">
@@ -237,12 +237,12 @@ body.device-mode .admin-only{display:none!important}
  <button class="btn soft" id="showAdminLogin" type="button" style="width:100%;margin-top:14px">Acesso do administrador</button>
 </div>
 <div class="card hidden" id="adminLoginCard">
- <h2>Administrador</h2><div class="muted">Acesso administrativo completo ao Operza.</div>
+ <h2>Administrador</h2><div class="muted">Acesso administrativo completo ao Comando 360.</div>
  <label>E-mail</label><input autocomplete="username" id="email" type="email"/>
  <label>Senha</label><input autocomplete="current-password" id="password" type="password"/>
  <button class="btn primary" id="loginBtn">Entrar</button>
  <button class="btn soft" id="backDeviceSetup" type="button" style="margin-left:6px">Voltar</button>
- <div class="muted" id="loginMsg" style="margin-top:10px">Operza • v6.30</div><div class="debug" id="debug"></div>
+ <div class="muted" id="loginMsg" style="margin-top:10px">Comando 360 • v6.31</div><div class="debug" id="debug"></div>
 </div>
 </section>
 <section class="hidden" id="app">
@@ -264,7 +264,7 @@ body.device-mode .admin-only{display:none!important}
 <div id="screenHost"></div>
 <div class="section" data-screen="equipehome" hidden="" id="equipehome">
  <div class="team-home">
-  <div class="team-home-head"><div style="font-size:12px;opacity:.8;font-weight:800">OPERZA</div><h1 id="teamHomeName">Equipe</h1><div id="teamHomeVehicle">Celular de campo</div></div>
+  <div class="team-home-head"><div style="font-size:12px;opacity:.8;font-weight:800">COMANDO 360</div><h1 id="teamHomeName">Equipe</h1><div id="teamHomeVehicle">Celular de campo</div></div>
   <div class="team-home-grid">
    <button class="team-tile" type="button" data-teamtab="operacoes"><span class="ico">🐔</span><strong>Apanha</strong><small>Apanhas da sua equipe e carregamento caminhão por caminhão.</small></button>
    <button class="team-tile" type="button" data-teamtab="ponto"><span class="ico">⏱️</span><strong>Ponto</strong><small>Bater ponto e conferir presença dos funcionários da equipe.</small></button>
@@ -625,7 +625,7 @@ body.device-mode .admin-only{display:none!important}
 <div class="row"><div><label>Ano fabricação</label><input id="crlvYearFab" type="number"/></div><div><label>Ano modelo</label><input id="crlvYearModel" type="number"/></div><div><label>Chassi</label><input id="crlvChassis"/></div></div>
 <div class="row"><div><label>Proprietário</label><input id="crlvOwner"/></div><div><label>Cor</label><input id="crlvColor"/></div><div><label>Combustível</label><input id="crlvFuel"/></div></div>
 <div class="toolbar"><button class="btn primary" id="confirmCrlvImport" type="button">CONFIRMAR E SALVAR</button><span class="muted" id="crlvImportMsg"></span></div>
-<div class="muted" style="margin-top:8px">O Operza nunca grava os dados lidos sem esta confirmação. PDFs digitalizados como imagem podem precisar de preenchimento manual.</div>
+<div class="muted" style="margin-top:8px">O Comando 360 nunca grava os dados lidos sem esta confirmação. PDFs digitalizados como imagem podem precisar de preenchimento manual.</div>
 </div>
 
 <div class="card" id="vehicleDocEditCard" style="display:none"><div class="toolbar" style="justify-content:space-between"><div><h3 id="vehicleDocTitle" style="margin:0">Novo documento</h3><div class="muted">O arquivo fica guardado junto ao veículo para visualizar ou baixar quando precisar.</div></div><button class="btn soft" id="cancelVehicleDoc" type="button">Cancelar</button></div><input id="vehicleDocId" type="hidden"/>
@@ -1917,7 +1917,7 @@ function printMonthlyMirror(){
   .legal{margin-top:14px;padding:10px;border:1px solid #bbb;background:#fafafa}.footer{margin-top:16px;border-top:1px solid #bbb;padding-top:8px;font-size:10px;color:#555}
   @media print{body{padding:0}@page{size:A4;margin:12mm}}
   </style></head><body>
-  <div class="head"><h1>ESPELHO DE PONTO ELETRÔNICO</h1><div class="muted">Documento gerado pelo Operza • ID ${esc(docId)}</div></div>
+  <div class="head"><h1>ESPELHO DE PONTO ELETRÔNICO</h1><div class="muted">Documento gerado pelo Comando 360 • ID ${esc(docId)}</div></div>
   <div class="meta">
     <div><b>Empregador:</b> ${esc(employer)}</div><div><b>CNPJ:</b> ${esc(cnpj||'Não informado')}</div>
     <div><b>Trabalhador:</b> ${esc(empName)}</div><div><b>Período:</b> ${esc(month)}</div>
@@ -2937,7 +2937,7 @@ function printCatchReport(index){
  aviarySections+
  '<div class="totals"><div class="total-label">TOTAL DO INTEGRADO</div><div class="total-big">'+r.totalBirds.toLocaleString('pt-BR')+' AVES</div><div class="totals-small"><div>Aviários<br><b>'+Object.keys(groups).length+'</b></div><div>Caminhões<br><b>'+r.trucks.length+'</b></div><div>Caixas<br><b>'+totalBoxes.toLocaleString('pt-BR')+'</b></div><div>Caixas vazias<br><b>'+totalEmpty.toLocaleString('pt-BR')+'</b></div><div>Catas<br><b>'+r.catas+'</b></div><div>Mortes carregamento<br><b>'+totalDeaths.toLocaleString('pt-BR')+'</b></div></div></div>'+
  '<div class="label">OBSERVAÇÕES</div><div class="obs">'+esc(notes)+'</div><div class="sign">'+esc(sup.name)+'<br>Encarregado da equipe</div><div class="sign">Responsável pela granja / integrado<br>Nome e assinatura</div>'+
- '<div class="footer">Emitido pelo Operza<br>'+new Date().toLocaleString('pt-BR')+'<br><br>*** FIM DO RELATÓRIO ***</div><script>window.onload=function(){setTimeout(function(){window.print()},250)}<\/script></body></html>');
+ '<div class="footer">Emitido pelo Comando 360<br>'+new Date().toLocaleString('pt-BR')+'<br><br>*** FIM DO RELATÓRIO ***</div><script>window.onload=function(){setTimeout(function(){window.print()},250)}<\/script></body></html>');
  w.document.close();
 }
 document.addEventListener('click',function(e){
@@ -3491,7 +3491,7 @@ async function loadReports(){
 }
 function exportAdminReportsCsv(){
  const r=adminReportCache;if(!r)return alert('Gere o relatório primeiro.');
- const lines=[['Relatório Operza',r.label],['Empresa',r.company],[],['Indicador','Valor'],['Aves',r.birds],['Apanhas',r.loadings],['Caminhões',r.trucks],['Faturamento',r.revenue],['Custos',r.cost],['Resultado',r.result],[],['Produção por equipe','Aves']];
+ const lines=[['Relatório Comando 360',r.label],['Empresa',r.company],[],['Indicador','Valor'],['Aves',r.birds],['Apanhas',r.loadings],['Caminhões',r.trucks],['Faturamento',r.revenue],['Custos',r.cost],['Resultado',r.result],[],['Produção por equipe','Aves']];
  r.byTeam.forEach(x=>lines.push([x.name,x.birds]));
  lines.push([],['Produção por integrado','Aves']);r.byCustomer.forEach(x=>lines.push([x.name,x.birds]));
  lines.push([],['Combustível por condução','Litros','Custo']);r.fuels.forEach(x=>lines.push([x.name,x.liters,x.cost]));
@@ -3511,7 +3511,7 @@ function printAdminReports(){
  '<h2>Produção por integrado</h2><table><tr><th>Integrado</th><th>Apanhas</th><th>Aves</th></tr>'+cust+'</table>'+
  '<h2>Combustível por condução</h2><table><tr><th>Condução</th><th>Litros</th><th>Custo</th></tr>'+fuel+'</table>'+
  '<h2>Ponto</h2><p>Funcionários com movimento: <b>'+Number(r.attendance.employees||0)+'</b> • Horas trabalhadas: <b>'+fmtMinutes(r.attendance.worked_minutes||0)+'</b> • Atrasos: <b>'+fmtMinutes(r.attendance.late_minutes||0)+'</b> • Ausências: <b>'+fmtMinutes(r.attendance.absence_minutes||0)+'</b></p>'+
- '<div class="footer">Operza • relatório gerencial baseado nos registros existentes no sistema.</div><script>window.onload=()=>window.print();<\/script></body></html>');
+ '<div class="footer">Comando 360 • relatório gerencial baseado nos registros existentes no sistema.</div><script>window.onload=()=>window.print();<\/script></body></html>');
  w.document.close();
 }
 
@@ -3671,7 +3671,7 @@ setInterval(()=>{
 },60000);
 if('serviceWorker' in navigator){
  window.addEventListener('load',()=>{
-  navigator.serviceWorker.register('./sw-v6-30.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
+  navigator.serviceWorker.register('./sw-v6-31.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
  });
 }
 
