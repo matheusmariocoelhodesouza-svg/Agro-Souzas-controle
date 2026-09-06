@@ -8,7 +8,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
-<title>Controla V2 • Beta 6.19 Modo Equipe</title>
+<title>Controla V2 • Beta 6.20 Modo Equipe</title>
 <link rel="manifest" href="./agro-souzas-controle-v7.webmanifest"/>
 <link rel="apple-touch-icon" href="./apple-touch-icon-180.png"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
@@ -132,7 +132,7 @@ body.app-ready .v2sidebar{display:block}
 .po-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
 .pill.warn{background:#fff3cd;color:#7c5700}
 
-/* Beta 6.19 — Modo Equipe */
+/* Beta 6.20 — Modo Equipe */
 .team-entry{max-width:520px;margin:42px auto}
 .team-entry .card{padding:20px}
 .team-entry-title{text-align:center;margin-bottom:18px}
@@ -174,6 +174,14 @@ body.device-mode .admin-only{display:none!important}
 .offline-sync-item{border:1px solid #e2e8f0;border-radius:13px;padding:11px;margin-top:8px}
 .offline-sync-item .type{font-weight:900}
 .offline-sync-item .err{color:#b91c1c;font-size:12px;margin-top:5px}
+.catch-report-card{border:1px solid #dbe3ef;border-radius:18px;padding:16px;background:#fff;box-shadow:0 4px 16px rgba(15,23,42,.05)}
+.catch-report-card+.catch-report-card{margin-top:12px}
+.catch-report-title{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.catch-report-title h3{margin:0;font-size:19px}
+.catch-report-meta{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:12px}
+.catch-report-meta>div{background:#f8fafc;border-radius:11px;padding:9px}
+.catch-report-total{font-size:26px;font-weight:950;margin-top:3px}
+@media(max-width:520px){.catch-report-meta{grid-template-columns:1fr}.catch-report-card .btn{width:100%}}
 .darkmode .offline-sync-box{background:#101c2e;color:#e7eef9}.darkmode .offline-sync-item{border-color:#203047}
 
 </style>
@@ -181,7 +189,7 @@ body.device-mode .admin-only{display:none!important}
 <script defer src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
 <script>
 (function(){
-  const BUILD='6.19';
+  const BUILD='6.20';
   try{
     const marker='controla_cache_cleanup_'+BUILD;
     if(!localStorage.getItem(marker)){
@@ -217,7 +225,7 @@ body.device-mode .admin-only{display:none!important}
 <div class="v2group">EM BREVE</div>
 <button class="v2navbtn" type="button">Estoque</button>
 </aside>
-<header><div class="brand"><div class="logo">C</div><div><b>Controla</b><div><small id="companyName">Beta</small></div></div></div><div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.19</span><button class="btn soft" id="themeToggle" type="button">☾</button><button class="btn soft hidden" id="logout">Sair</button></div></header>
+<header><div class="brand"><div class="logo">C</div><div><b>Controla</b><div><small id="companyName">Beta</small></div></div></div><div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.20</span><button class="btn soft" id="themeToggle" type="button">☾</button><button class="btn soft hidden" id="logout">Sair</button></div></header>
 <main class="wrap">
 <section class="login team-entry" id="login">
 <div class="card" id="deviceSetupCard">
@@ -234,7 +242,7 @@ body.device-mode .admin-only{display:none!important}
  <label>Senha</label><input autocomplete="current-password" id="password" type="password"/>
  <button class="btn primary" id="loginBtn">Entrar</button>
  <button class="btn soft" id="backDeviceSetup" type="button" style="margin-left:6px">Voltar</button>
- <div class="muted" id="loginMsg" style="margin-top:10px">Beta 6.19 • Modo Equipe</div><div class="debug" id="debug"></div>
+ <div class="muted" id="loginMsg" style="margin-top:10px">Beta 6.20 • Modo Equipe</div><div class="debug" id="debug"></div>
 </div>
 </section>
 <section class="hidden" id="app">
@@ -267,11 +275,14 @@ body.device-mode .admin-only{display:none!important}
 </div>
 <div class="section" data-screen="equipereport" hidden="" id="equipereport">
  <div class="v2hero">
-  <div><h1>Relatório da Equipe</h1><p id="teamReportSubtitle">Resumo operacional</p></div>
-  <div class="toolbar"><input id="teamReportDate" type="date"/><button class="btn soft" id="refreshTeamReport" type="button">↻ Atualizar</button><button class="btn primary" id="printTeamReport" type="button">IMPRIMIR / PDF</button></div>
+  <div><h1>Relatório de Apanha</h1><p id="teamReportSubtitle">Documento para entregar ao responsável da granja</p></div>
+  <div class="toolbar"><input id="teamReportDate" type="date"/><button class="btn soft" id="refreshTeamReport" type="button">↻ Atualizar</button></div>
  </div>
- <div class="team-report-grid" id="teamReportKpis"></div>
- <div class="card"><h3>Resumo do dia</h3><div class="list" id="teamReportToday"></div></div>
+ <div class="card" style="margin-bottom:12px">
+  <strong>🐔 Relatórios da apanha do dia</strong>
+  <div class="muted" style="margin-top:5px">Cada apanha gera um relatório separado com dados da empresa, encarregado, granja, aviário, caminhões e total de aves.</div>
+ </div>
+ <div id="teamReportToday"></div>
 </div>
 <div class="section active" data-screen="inicio" id="inicio"><div class="v2panel" id="poultryDashboardPanel"><div class="v2panelhead"><div><h3>Operação de Apanha — Hoje</h3><div class="muted">Produção real das equipes no dia.</div></div></div><div class="v2-kpis" id="poultryDashKpis"></div><div id="poultryDashTeams" class="list"><div class="v2-empty">Carregando produção...</div></div></div>
 <div class="v2hero"><div><h1>Dashboard Apanha de Aves</h1><p>Visão geral das operações de hoje • dados reais do Controla</p></div><button class="btn v2new" id="refreshBtn">↻ Atualizar painel</button></div>
@@ -302,7 +313,9 @@ body.device-mode .admin-only{display:none!important}
 <div class="toolbar" style="justify-content:center;margin-bottom:8px"><button class="btn primary" id="copyTeamDeviceCode" type="button">COPIAR CÓDIGO</button></div>
 <div class="muted" style="text-align:center">Digite este código uma única vez no celular da equipe. O código expira e só pode ser usado uma vez.</div>
 </div>
-<div class="card" id="teamEditCard" style="display:none"><div class="toolbar" style="justify-content:space-between"><div><h3 id="teamEditTitle" style="margin:0">Editar equipe</h3><div class="muted">Cadastre onde a equipe presta serviço, a condução e os funcionários vinculados.</div></div><button class="btn soft" id="cancelTeamEdit" type="button">Cancelar</button></div><input id="editTeamId" type="hidden"/><div class="row" style="margin-top:12px"><div><label>Nome da equipe</label><input id="editTeamName"/></div><div><label>Empresa contratante / terceirização</label><input id="editTeamContractor" list="teamContractors" placeholder="Ex.: Zanchetta ou Roseira"/><datalist id="teamContractors"></datalist></div><div><label>Código</label><input id="editTeamCode"/></div></div><div class="row"><div><label>Status</label><select id="editTeamStatus"><option value="active">Ativa</option><option value="inactive">Inativa</option></select></div><div><label>Veículo principal</label><select id="editTeamVehicle"><option value="">Sem veículo vinculado</option></select><div class="muted" style="margin-top:5px">Escolhido a partir da Frota cadastrada.</div></div><div><label>Responsável / encarregado</label><select id="editTeamSupervisor"><option value="">Não informado</option></select></div></div><div style="margin-top:16px"><div class="toolbar" style="justify-content:space-between"><div><label style="font-size:15px">Funcionários da equipe</label><div class="muted">Marque para adicionar. Desmarque para retirar. Se o funcionário estiver em outra equipe, ele será transferido.</div></div><span class="pill" id="teamMembersCount">0 selecionado(s)</span></div><div id="teamMembersList" class="list" style="margin-top:10px;max-height:360px;overflow:auto"></div></div><div class="toolbar" style="margin-top:12px"><button class="btn primary" id="saveTeamEdit" type="button">SALVAR EQUIPE</button><button class="btn soft" id="archiveTeamBtn" type="button">ARQUIVAR EQUIPE</button><button class="btn danger" id="deleteTeamBtn" type="button">EXCLUIR EQUIPE</button></div><div class="muted" id="teamEditMsg" style="margin-top:8px"></div></div>
+<div class="card" id="teamEditCard" style="display:none"><div class="toolbar" style="justify-content:space-between"><div><h3 id="teamEditTitle" style="margin:0">Editar equipe</h3><div class="muted">Cadastre onde a equipe presta serviço, a condução e os funcionários vinculados.</div></div><button class="btn soft" id="cancelTeamEdit" type="button">Cancelar</button></div><input id="editTeamId" type="hidden"/><div class="row" style="margin-top:12px"><div><label>Nome da equipe</label><input id="editTeamName"/></div><div><label>Empresa contratante / terceirização</label><input id="editTeamContractor" list="teamContractors" placeholder="Ex.: Zanchetta ou Roseira"/><datalist id="teamContractors"></datalist></div><div><label>Código</label><input id="editTeamCode"/></div></div><div class="row"><div><label>Status</label><select id="editTeamStatus"><option value="active">Ativa</option><option value="inactive">Inativa</option></select></div><div><label>Veículo principal</label><select id="editTeamVehicle"><option value="">Sem veículo vinculado</option></select><div class="muted" style="margin-top:5px">Escolhido a partir da Frota cadastrada.</div></div><div><label>Responsável / encarregado</label><select id="editTeamSupervisor"><option value="">Não informado</option></select></div></div>
+<div class="row"><div><label>Telefone do encarregado</label><input id="editTeamSupervisorPhone" inputmode="tel" placeholder="Ex.: (15) 99999-9999"/><div class="muted" style="margin-top:5px">Este número sairá automaticamente no relatório entregue ao granjeiro.</div></div></div>
+<div style="margin-top:16px"><div class="toolbar" style="justify-content:space-between"><div><label style="font-size:15px">Funcionários da equipe</label><div class="muted">Marque para adicionar. Desmarque para retirar. Se o funcionário estiver em outra equipe, ele será transferido.</div></div><span class="pill" id="teamMembersCount">0 selecionado(s)</span></div><div id="teamMembersList" class="list" style="margin-top:10px;max-height:360px;overflow:auto"></div></div><div class="toolbar" style="margin-top:12px"><button class="btn primary" id="saveTeamEdit" type="button">SALVAR EQUIPE</button><button class="btn soft" id="archiveTeamBtn" type="button">ARQUIVAR EQUIPE</button><button class="btn danger" id="deleteTeamBtn" type="button">EXCLUIR EQUIPE</button></div><div class="muted" id="teamEditMsg" style="margin-top:8px"></div></div>
 </div>
 <div class="section" data-screen="funcionarios" hidden="" id="funcionarios"><div class="card"><div class="toolbar"><div><strong>Dados do empregador</strong><div class="muted">Usados nos documentos e comprovantes do ponto.</div></div></div><div class="row"><div><label>Razão social</label><input id="companyLegalName"/></div><div><label>Nome fantasia</label><input id="companyTradeName"/></div><div><label>CNPJ / CPF</label><input id="companyTaxId" inputmode="numeric" placeholder="00.000.000/0000-00"/></div></div><button class="btn primary" id="saveCompanyProfile" style="margin-top:10px">Salvar empregador</button><div class="muted" id="companyProfileMsg"></div></div><div class="card"><strong>Dados profissionais do trabalhador</strong><div class="muted">Cargo/função e data de admissão passam a integrar o cadastro profissional e o espelho de ponto.</div><div class="row" style="margin-top:10px"><div><label>Funcionário</label><select id="profEmployee"></select></div><div><label>Cargo / função</label><input id="profJobTitle" placeholder="Ex.: Apanhador de aves"/></div><div><label>Data de admissão</label><input id="profAdmissionDate" type="date"/></div></div><button class="btn primary" id="saveProfessional" style="margin-top:10px">Salvar dados profissionais</button><div class="muted" id="profMsg"></div></div>
 <div class="card" id="employeeEditCard" style="display:none"><div class="toolbar"><div><h3 style="margin:0">Editar funcionário</h3><div class="muted" id="employeeEditSubtitle">Atualize o cadastro sem perder o histórico.</div></div><button class="btn soft" id="cancelEmployeeEdit" type="button">Cancelar</button></div><input id="editEmployeeId" type="hidden"/><div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin:12px 0 16px"><img id="editEmployeePhotoPreview" alt="Foto do funcionário" style="width:112px;height:112px;object-fit:cover;border-radius:18px;border:1px solid #cbd5e1;background:#f8fafc"/><div><div style="font-weight:800;margin-bottom:8px">Foto de perfil</div><div class="toolbar"><button class="btn primary" id="takeEmployeePhoto" type="button">📷 TIRAR FOTO</button><button class="btn soft" id="chooseEmployeePhoto" type="button">🖼️ GALERIA</button><button class="btn soft" id="removeEmployeePhoto" type="button">REMOVER</button></div><input accept="image/jpeg,image/png,image/webp" capture="environment" class="hidden" id="employeePhotoCamera" type="file"/><input accept="image/jpeg,image/png,image/webp" class="hidden" id="employeePhotoGallery" type="file"/><div class="muted" style="margin-top:7px">Foto para identificação visual no RH. Não altera a biometria facial do Ponto 2.0.</div></div></div><div class="row"><div><label>Nome completo</label><input id="editEmployeeName"/></div><div><label>Matrícula</label><input id="editEmployeeNumber" inputmode="numeric"/></div><div><label>CPF</label><input id="editEmployeeCpf" inputmode="numeric"/></div></div><div class="row"><div><label>RG</label><input id="editEmployeeRg"/></div><div><label>Data de nascimento</label><input id="editEmployeeBirth" type="date"/></div><div><label>Telefone</label><input id="editEmployeePhone"/></div></div><div class="row"><div><label>Cargo / função</label><input id="editEmployeeJob"/></div><div><label>Equipe</label><input id="editEmployeeTeam" placeholder="Ex.: Equipe 1"/></div><div><label>Data de admissão</label><input id="editEmployeeAdmission" type="date"/></div></div><div><label>Endereço</label><input id="editEmployeeAddress" placeholder="Rua, número, bairro, cidade..."/></div><div class="row" style="margin-top:12px"><button class="btn primary" id="saveEmployeeEdit" type="button">SALVAR ALTERAÇÕES</button><button class="btn soft" id="archiveEmployee" type="button">ARQUIVAR FUNCIONÁRIO</button><button class="btn danger" id="deleteEmployee" type="button">EXCLUIR DEFINITIVAMENTE</button></div><div class="muted" id="employeeEditMsg" style="margin-top:8px"></div></div>
@@ -621,7 +634,7 @@ async function enterDeviceApp(authUser){
  const user=authUser||await getUser();
  if(!user||!user.id)throw new Error('Sessão do aparelho não encontrada.');
 
- let access=null,cachedIdentity=null,vehicleInfo=null;
+ let access=null,cachedIdentity=null,vehicleInfo=null,supervisorInfo=null;
  try{cachedIdentity=await offlineCacheGet('device_identity:'+user.id)}catch(_){}
 
  if(navigator.onLine){
@@ -645,7 +658,7 @@ async function enterDeviceApp(authUser){
    companyProfile=companies&&companies[0]?companies[0]:(cachedIdentity?.companyProfile||{id:companyId,trade_name:"Agro Souza's"});
   }catch(_){companyProfile=cachedIdentity?.companyProfile||{id:companyId,trade_name:"Agro Souza's"}}
   try{
-   const teams=await v2Rest('v2_teams','select=id,name,code,metadata,status&id=eq.'+encodeURIComponent(access.team_id)+'&limit=1');
+   const teams=await v2Rest('v2_teams','select=id,name,code,metadata,status,supervisor_employee_id&id=eq.'+encodeURIComponent(access.team_id)+'&limit=1');
    deviceTeam=teams&&teams[0]?teams[0]:(cachedIdentity?.deviceTeam||{id:access.team_id,name:'Equipe'});
   }catch(_){deviceTeam=cachedIdentity?.deviceTeam||{id:access.team_id,name:'Equipe'}}
   try{
@@ -655,11 +668,19 @@ async function enterDeviceApp(authUser){
     vehicleInfo=vs?.[0]||cachedIdentity?.vehicleInfo||null;
    }
   }catch(_){vehicleInfo=cachedIdentity?.vehicleInfo||null}
-  await offlineCacheSet('device_identity:'+user.id,{access,companyProfile,deviceTeam,vehicleInfo,cached_at:new Date().toISOString()});
+  try{
+   const supervisorId=deviceTeam?.supervisor_employee_id||null;
+   if(supervisorId){
+    const es=await v2Rest('v2_employees','select=id,full_name,phone&id=eq.'+encodeURIComponent(supervisorId)+'&limit=1');
+    supervisorInfo=es?.[0]||cachedIdentity?.supervisorInfo||null;
+   }
+  }catch(_){supervisorInfo=cachedIdentity?.supervisorInfo||null}
+  await offlineCacheSet('device_identity:'+user.id,{access,companyProfile,deviceTeam,vehicleInfo,supervisorInfo,cached_at:new Date().toISOString()});
  }else{
   companyProfile=cachedIdentity?.companyProfile||{id:companyId,trade_name:"Agro Souza's"};
   deviceTeam=cachedIdentity?.deviceTeam||{id:access.team_id,name:'Equipe'};
   vehicleInfo=cachedIdentity?.vehicleInfo||null;
+  supervisorInfo=cachedIdentity?.supervisorInfo||null;
  }
 
  const companyLabel=document.getElementById('companyName');if(companyLabel)companyLabel.textContent=deviceTeam.name||"Agro Souza's";
@@ -1015,7 +1036,7 @@ async function warmPoultryOfflineCache(){
  if(!deviceMode||!navigator.onLine||!companyId)return;
  const teamId=deviceAccess?.team_id;
  if(!teamId)return;
- const teams=await rest('v2_teams','select=id,name,status,metadata&company_id=eq.'+companyId+'&id=eq.'+encodeURIComponent(teamId))||[];
+ const teams=await rest('v2_teams','select=id,name,status,metadata,supervisor_employee_id&company_id=eq.'+companyId+'&id=eq.'+encodeURIComponent(teamId))||[];
  const loadings=await rest('v2_poultry_loadings','select=id,farm_id,operation_id,metadata,team_id,status&company_id=eq.'+companyId+'&team_id=eq.'+encodeURIComponent(teamId)+'&order=created_at.desc&limit=200')||[];
  const farmIds=[...new Set(loadings.map(x=>x.farm_id).filter(Boolean))];
  let farms=[],barns=[];
@@ -1026,7 +1047,7 @@ async function warmPoultryOfflineCache(){
  }
  await offlineCacheSet(offlineTeamKey('poultry_context'),{teams:teams.length?teams:(deviceTeam?[deviceTeam]:[]),farms,barns,loadings});
  const [ops,trucks]=await Promise.all([
-  rest('v2_operations','select=id,title,customer_name,location_name,team_id,scheduled_start,scheduled_end,actual_start,actual_end,status,planned_birds,actual_birds,price_per_thousand,price_per_bird,actual_revenue,offline_event_id,metadata&company_id=eq.'+companyId+'&operation_type=eq.poultry_catching&order=scheduled_start.desc&limit=100'),
+  rest('v2_operations','select=id,operation_number,title,customer_name,location_name,team_id,scheduled_start,scheduled_end,actual_start,actual_end,status,planned_birds,actual_birds,price_per_thousand,price_per_bird,actual_revenue,notes,offline_event_id,metadata&company_id=eq.'+companyId+'&operation_type=eq.poultry_catching&order=scheduled_start.desc&limit=100'),
   rest('v2_poultry_truck_loads','select=id,loading_id,truck_sequence,truck_plate,driver_name,birds,started_at,completed_at,is_cata,external_reference,metadata&company_id=eq.'+companyId+'&order=created_at.asc')
  ]);
  await offlineCacheSet(offlineTeamKey('poultry_ops'),{ops,loadings,trucks});
@@ -1411,7 +1432,7 @@ async function loadTeams(){
   const [r,v,e,d]=await Promise.all([
    rest('v2_teams','select=id,name,code,status,supervisor_employee_id,metadata&company_id=eq.'+companyId+'&order=name.asc'),
    rest('v2_vehicles','select=id,description,plate,status&company_id=eq.'+companyId+'&order=description.asc'),
-   rest('v2_employees','select=id,full_name,employee_number,primary_team,status&company_id=eq.'+companyId+'&status=eq.active&order=full_name.asc'),
+   rest('v2_employees','select=id,full_name,employee_number,phone,primary_team,status&company_id=eq.'+companyId+'&status=eq.active&order=full_name.asc'),
    rest('v2_device_access','select=id,team_id,device_name,active,paired_at,last_seen_at,permissions&company_id=eq.'+companyId+'&order=paired_at.desc')
   ]);
   window.__teams=r||[];window.__teamVehicles=v||[];window.__teamEmployees=e||[];window.__teamDevices=d||[];
@@ -1464,9 +1485,19 @@ async function createDevicePairingCode(teamId,teamName){
 }
 function renderTeamMembers(t={}){const list=$('#teamMembersList');if(!list)return;const emps=window.__teamEmployees||[];const teamName=(t.name||'').trim().toLowerCase();list.innerHTML=emps.map(e=>{const current=(e.primary_team||'').trim();const checked=teamName&&current.toLowerCase()===teamName;const other=current&&(!checked);return `<label class="item" style="display:flex;align-items:center;gap:10px;cursor:pointer"><input class="team-member-check" type="checkbox" value="${e.id}" ${checked?'checked':''} style="width:20px;height:20px"/><div style="flex:1"><strong>${esc(e.full_name)}</strong><div class="muted">Matrícula ${esc(e.employee_number||'')} • ${other?'Equipe atual: '+esc(current):checked?'Nesta equipe':'Sem equipe'}</div></div></label>`}).join('')||'<div class="muted">Nenhum funcionário ativo cadastrado.</div>';updateTeamMembersCount()}
 function updateTeamMembersCount(){const n=document.querySelectorAll('#teamMembersList .team-member-check:checked').length;const el=$('#teamMembersCount');if(el)el.textContent=n+' selecionado(s)'}
-function fillTeamEditSelectors(t={}){const vehicles=(window.__teamVehicles||[]).filter(v=>v.status==='active'||v.id===t.metadata?.primary_vehicle_id);$('#editTeamVehicle').innerHTML='<option value="">Sem veículo vinculado</option>'+vehicles.map(v=>`<option value="${v.id}">${esc(v.description)}${v.plate?' • '+esc(v.plate):''}</option>`).join('');$('#editTeamVehicle').value=t.metadata?.primary_vehicle_id||'';const emps=window.__teamEmployees||[];$('#editTeamSupervisor').innerHTML='<option value="">Não informado</option>'+emps.map(e=>`<option value="${e.id}">${esc(e.full_name)} • ${esc(e.employee_number||'')}</option>`).join('');$('#editTeamSupervisor').value=t.supervisor_employee_id||'';renderTeamMembers(t)}
+function fillTeamEditSelectors(t={}){
+ const vehicles=(window.__teamVehicles||[]).filter(v=>v.status==='active'||v.id===t.metadata?.primary_vehicle_id);
+ $('#editTeamVehicle').innerHTML='<option value="">Sem veículo vinculado</option>'+vehicles.map(v=>`<option value="${v.id}">${esc(v.description)}${v.plate?' • '+esc(v.plate):''}</option>`).join('');
+ $('#editTeamVehicle').value=t.metadata?.primary_vehicle_id||'';
+ const emps=window.__teamEmployees||[];
+ $('#editTeamSupervisor').innerHTML='<option value="">Não informado</option>'+emps.map(e=>`<option value="${e.id}">${esc(e.full_name)} • ${esc(e.employee_number||'')}</option>`).join('');
+ $('#editTeamSupervisor').value=t.supervisor_employee_id||'';
+ const sup=emps.find(e=>e.id===t.supervisor_employee_id);
+ if($('#editTeamSupervisorPhone'))$('#editTeamSupervisorPhone').value=t.metadata?.supervisor_phone||sup?.phone||'';
+ renderTeamMembers(t)
+}
 window.openTeamEdit=function(id){const t=(window.__teams||[]).find(x=>x.id===id);if(!t)return;$('#teamEditTitle').textContent='Editar equipe';$('#editTeamId').value=t.id;$('#editTeamName').value=t.name||'';$('#editTeamContractor').value=t.metadata?.contractor_name||'';$('#editTeamCode').value=t.code||'';$('#editTeamStatus').value=t.status||'active';fillTeamEditSelectors(t);$('#archiveTeamBtn').style.display='inline-flex';$('#deleteTeamBtn').style.display='inline-flex';$('#teamEditMsg').textContent='';$('#teamEditCard').style.display='block';$('#teamEditCard').scrollIntoView({behavior:'smooth',block:'start'})}
-function openNewTeam(){ $('#teamEditTitle').textContent='Nova equipe';$('#editTeamId').value='';$('#editTeamName').value='';$('#editTeamContractor').value='';$('#editTeamCode').value='';$('#editTeamStatus').value='active';fillTeamEditSelectors({name:''});$('#archiveTeamBtn').style.display='none';$('#deleteTeamBtn').style.display='none';$('#teamEditMsg').textContent='';$('#teamEditCard').style.display='block';$('#teamEditCard').scrollIntoView({behavior:'smooth',block:'start'})}
+function openNewTeam(){ $('#teamEditTitle').textContent='Nova equipe';$('#editTeamId').value='';$('#editTeamName').value='';$('#editTeamContractor').value='';$('#editTeamCode').value='';$('#editTeamStatus').value='active';fillTeamEditSelectors({name:''});if($('#editTeamSupervisorPhone'))$('#editTeamSupervisorPhone').value='';$('#archiveTeamBtn').style.display='none';$('#deleteTeamBtn').style.display='none';$('#teamEditMsg').textContent='';$('#teamEditCard').style.display='block';$('#teamEditCard').scrollIntoView({behavior:'smooth',block:'start'})}
 
 const employeePhotoUrls={};
 async function employeePhotoObjectUrl(path){
@@ -1492,7 +1523,7 @@ function vehiclePlaceholder(name='Veículo'){const t=(name||'V').trim().slice(0,
 async function vehiclePhotoObjectUrl(path){if(!path)return '';if(vehiclePhotoUrls[path])return vehiclePhotoUrls[path];try{const r=await authFetch('/storage/v1/object/employee-documents/'+path);if(!r.ok)throw new Error('Foto indisponível');const b=await r.blob();const u=URL.createObjectURL(b);vehiclePhotoUrls[path]=u;return u}catch(e){console.warn('vehicle photo',e);return ''}}
 async function uploadVehiclePhoto(file,vehicleId){const sess=session();const ext=file.type==='image/png'?'png':file.type==='image/webp'?'webp':'jpg';const path=companyId+'/vehicles/'+vehicleId+'/profile-'+Date.now()+'.'+ext;const r=await fetch(API_URL+'/storage/v1/object/employee-documents/'+path,{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+sess.access_token,'Content-Type':file.type||'image/jpeg','x-upsert':'false'},body:file});await parseResponse(r);return path}
 async function hydrateVehiclePhotos(){for(const v of (window.__fleetVehicles||[])){const img=document.querySelector(`[data-vehicle-photo="${v.id}"]`);if(!img)continue;img.src=vehiclePlaceholder(v.description);const p=v.metadata?.vehicle_photo_path;if(p){const u=await vehiclePhotoObjectUrl(p);if(u)img.src=u}}}
-async function loadVehicles(){try{const [r,t]=await Promise.all([rest('v2_vehicles','select=id,description,plate,make,model,model_year,renavam,current_odometer_km,status,metadata&company_id=eq.'+companyId+'&order=description.asc'),rest('v2_teams','select=id,name,status,metadata&company_id=eq.'+companyId+'&order=name.asc')]);window.__fleetVehicles=r;window.__fleetTeams=t;const list=$('#vehiclesList');if(!list)return;list.innerHTML=r.map(x=>{const team=t.find(z=>z.metadata?.primary_vehicle_id===x.id);const contractor=team?.metadata?.contractor_name||'';const st=x.status==='active'?'Ativo':x.status==='maintenance'?'Em manutenção':'Inativo';return `<div class="item"><div class="toolbar" style="justify-content:space-between;gap:10px"><div style="display:flex;align-items:center;gap:12px"><img data-vehicle-photo="${x.id}" style="width:78px;height:58px;object-fit:cover;border-radius:12px;border:1px solid #cbd5e1"/><div><strong>${esc(x.description||x.model||'Veículo')}</strong> <span class="pill ${x.status==='active'?'ok':'warn'}">${esc(st)}</span><div class="muted">${esc(x.plate||'Sem placa')} • ${esc([x.make,x.model,x.model_year].filter(Boolean).join(' ')||'Modelo não informado')} • ${Number(x.current_odometer_km||0).toLocaleString('pt-BR')} km</div>${team?`<div style="margin-top:5px"><span class="pill">👥 ${esc(team.name)}</span>${contractor?` <span class="pill">🏭 ${esc(contractor)}</span>`:''}</div>`:''}</div></div><button class="btn soft" type="button" onclick="openVehicleEdit('${x.id}')">Editar</button></div></div>`}).join('')||'<div class="muted">Sem conduções. Toque em + Novo veículo para cadastrar.</div>';hydrateVehiclePhotos()}catch(e){const l=$('#vehiclesList');if(l)l.innerHTML='<div class="error">'+esc(e.message)+'</div>'}}
+async function loadVehicles(){try{const [r,t]=await Promise.all([rest('v2_vehicles','select=id,description,plate,make,model,model_year,renavam,current_odometer_km,status,metadata&company_id=eq.'+companyId+'&order=description.asc'),rest('v2_teams','select=id,name,status,metadata,supervisor_employee_id&company_id=eq.'+companyId+'&order=name.asc')]);window.__fleetVehicles=r;window.__fleetTeams=t;const list=$('#vehiclesList');if(!list)return;list.innerHTML=r.map(x=>{const team=t.find(z=>z.metadata?.primary_vehicle_id===x.id);const contractor=team?.metadata?.contractor_name||'';const st=x.status==='active'?'Ativo':x.status==='maintenance'?'Em manutenção':'Inativo';return `<div class="item"><div class="toolbar" style="justify-content:space-between;gap:10px"><div style="display:flex;align-items:center;gap:12px"><img data-vehicle-photo="${x.id}" style="width:78px;height:58px;object-fit:cover;border-radius:12px;border:1px solid #cbd5e1"/><div><strong>${esc(x.description||x.model||'Veículo')}</strong> <span class="pill ${x.status==='active'?'ok':'warn'}">${esc(st)}</span><div class="muted">${esc(x.plate||'Sem placa')} • ${esc([x.make,x.model,x.model_year].filter(Boolean).join(' ')||'Modelo não informado')} • ${Number(x.current_odometer_km||0).toLocaleString('pt-BR')} km</div>${team?`<div style="margin-top:5px"><span class="pill">👥 ${esc(team.name)}</span>${contractor?` <span class="pill">🏭 ${esc(contractor)}</span>`:''}</div>`:''}</div></div><button class="btn soft" type="button" onclick="openVehicleEdit('${x.id}')">Editar</button></div></div>`}).join('')||'<div class="muted">Sem conduções. Toque em + Novo veículo para cadastrar.</div>';hydrateVehiclePhotos()}catch(e){const l=$('#vehiclesList');if(l)l.innerHTML='<div class="error">'+esc(e.message)+'</div>'}}
 function fillVehicleTeamSelect(vehicleId=''){const sel=$('#editVehicleTeam');if(!sel)return;const teams=(window.__fleetTeams||[]).filter(t=>t.status==='active'||t.metadata?.primary_vehicle_id===vehicleId);sel.innerHTML='<option value="">Sem equipe vinculada</option>'+teams.map(t=>`<option value="${t.id}">${esc(t.name)}</option>`).join('');const linked=teams.find(t=>t.metadata?.primary_vehicle_id===vehicleId);sel.value=linked?.id||'';updateVehicleContractor()}
 function updateVehicleContractor(){const t=(window.__fleetTeams||[]).find(x=>x.id===$('#editVehicleTeam')?.value);const el=$('#editVehicleContractor');if(el)el.textContent=t?.metadata?.contractor_name?'Contratante: '+t.metadata.contractor_name:''}
 window.openVehicleEdit=async function(id=''){const v=(window.__fleetVehicles||[]).find(x=>x.id===id)||{};$('#editVehicleId').value=v.id||'';$('#vehicleEditTitle').textContent=v.id?'Editar veículo':'Novo veículo';$('#editVehicleDescription').value=v.description||'';$('#editVehiclePlate').value=v.plate||'';$('#editVehicleMake').value=v.make||'';$('#editVehicleModel').value=v.model||'';$('#editVehicleYear').value=v.model_year||'';$('#editVehicleRenavam').value=v.renavam||'';$('#editVehicleKm').value=v.current_odometer_km||'';$('#editVehicleStatus').value=v.status||'active';window.__vehiclePhotoFile=null;window.__removeVehiclePhoto=false;const pp=$('#editVehiclePhotoPreview');pp.src=vehiclePlaceholder(v.description);const p=v.metadata?.vehicle_photo_path;if(p){const u=await vehiclePhotoObjectUrl(p);if(u)pp.src=u}fillVehicleTeamSelect(v.id||'');$('#archiveVehicleBtn').style.display=v.id?'':'none';$('#deleteVehicleBtn').style.display=v.id?'':'none';$('#vehicleEditMsg').textContent='';$('#vehicleEditCard').style.display='block';$('#vehicleEditCard').scrollIntoView({behavior:'smooth',block:'start'})}
@@ -1937,7 +1968,7 @@ if($('#exportAEJ')) $('#exportAEJ').addEventListener('click',()=>{const mo=$('#m
 
 
 
-let poultryTeams=[],poultryFarms=[],poultryBarns=[],poultryLoadings=[],poultryTruckLoads=[];
+let poultryTeams=[],poultryFarms=[],poultryBarns=[],poultryLoadings=[],poultryTruckLoads=[],poultryOpsCache=[];
 function poN(v){return Number(v)||0}
 function poSL(v){return ({planned:'Programada',in_progress:'Em andamento',completed:'Concluída',cancelled:'Cancelada'})[v]||v||'—'}
 function poLocalInputDate(d=new Date()){const x=new Date(d);x.setMinutes(x.getMinutes()-x.getTimezoneOffset());return x.toISOString().slice(0,16)}
@@ -1958,7 +1989,7 @@ async function loadDevicePoultryContext(){
    poultryLoadings=cached.loadings||[];
    if(!poultryTeams.length&&deviceTeam)poultryTeams=[deviceTeam];
   }else{
-   poultryTeams=await rest('v2_teams','select=id,name,status,metadata&company_id=eq.'+companyId+'&id=eq.'+encodeURIComponent(deviceAccess.team_id))||[];
+   poultryTeams=await rest('v2_teams','select=id,name,status,metadata,supervisor_employee_id&company_id=eq.'+companyId+'&id=eq.'+encodeURIComponent(deviceAccess.team_id))||[];
    if(!poultryTeams.length&&deviceTeam)poultryTeams=[deviceTeam];
    const loadings=await rest('v2_poultry_loadings','select=id,farm_id,operation_id,metadata,team_id,status&company_id=eq.'+companyId+'&team_id=eq.'+encodeURIComponent(deviceAccess.team_id)+'&order=created_at.desc&limit=200')||[];
    const farmIds=[...new Set(loadings.map(x=>x.farm_id).filter(Boolean))];
@@ -2179,7 +2210,7 @@ async function loadPoultryOps(){
    ops=cached.ops||[];loadings=cached.loadings||[];trucks=cached.trucks||[];
   }else{
    [ops,loadings,trucks]=await Promise.all([
-    rest('v2_operations','select=id,title,customer_name,location_name,team_id,scheduled_start,scheduled_end,actual_start,actual_end,status,planned_birds,actual_birds,price_per_thousand,price_per_bird,actual_revenue,offline_event_id,metadata&company_id=eq.'+companyId+'&operation_type=eq.poultry_catching&order=scheduled_start.desc&limit=100'),
+    rest('v2_operations','select=id,operation_number,title,customer_name,location_name,team_id,scheduled_start,scheduled_end,actual_start,actual_end,status,planned_birds,actual_birds,price_per_thousand,price_per_bird,actual_revenue,notes,offline_event_id,metadata&company_id=eq.'+companyId+'&operation_type=eq.poultry_catching&order=scheduled_start.desc&limit=100'),
     rest('v2_poultry_loadings','select=id,operation_id,farm_id,status,reported_birds,reported_trucks,metadata,team_id&company_id=eq.'+companyId+'&order=created_at.desc'),
     rest('v2_poultry_truck_loads','select=id,loading_id,truck_sequence,truck_plate,driver_name,birds,started_at,completed_at,is_cata,external_reference,metadata&company_id=eq.'+companyId+'&order=created_at.asc')
    ]);
@@ -2191,8 +2222,8 @@ async function loadPoultryOps(){
    for(const item of queue.filter(x=>x.type==='poultry_operation')){
     const f=item.form||{},opId='offline:'+item.id,loadingId='offline:'+item.id,farmId='offline-farm:'+item.id,barnId='offline-barn:'+item.id;
     if(!ops.some(o=>o.id===opId))ops.unshift({
-     id:opId,title:'Apanha - '+f.integrated,customer_name:f.integrated,location_name:(f.city||'')+' • '+(f.integrated||'')+' • '+(f.aviary||''),
-     team_id:item.team_id,scheduled_start:f.scheduled_start,scheduled_end:f.scheduled_end,status:'planned',
+     id:opId,operation_number:null,title:'Apanha - '+f.integrated,customer_name:f.integrated,location_name:(f.city||'')+' • '+(f.integrated||'')+' • '+(f.aviary||''),
+     team_id:item.team_id,scheduled_start:f.scheduled_start,scheduled_end:f.scheduled_end,status:'planned',notes:f.notes||null,
      offline_event_id:item.id,metadata:{farm_id:farmId,barn_id:barnId,city:f.city,integrated_name:f.integrated,offline_pending:true}
     });
     if(!loadings.some(l=>l.id===loadingId))loadings.unshift({id:loadingId,operation_id:opId,farm_id:farmId,status:'planned',reported_birds:0,reported_trucks:0,team_id:item.team_id,metadata:{default_barn_id:barnId,offline_pending:true}});
@@ -2216,7 +2247,7 @@ async function loadPoultryOps(){
    }
   }
 
-  poultryLoadings=loadings;poultryTruckLoads=trucks;
+  poultryOpsCache=ops;poultryLoadings=loadings;poultryTruckLoads=trucks;
   const today=ops.filter(o=>o.scheduled_start&&saoPauloDateKey(o.scheduled_start)===localDateBR());
   const todayTrucks=trucks.filter(tr=>today.some(o=>loadings.find(l=>l.operation_id===o.id)?.id===tr.loading_id));
   const birdsToday=todayTrucks.reduce((a,t)=>a+poN(t.birds),0);
@@ -2439,71 +2470,110 @@ document.addEventListener('click',async e=>{
  const f=e.target.closest('.poFinance');if(f&&isAdminGeneral){$('#poFinanceOperationId').value=f.dataset.op;$('#poFinanceName').textContent=f.dataset.name||'';$('#poFinancePricePerBird').value=f.dataset.price||'';$('#poFinanceMsg').textContent='';$('#poFinanceCard').classList.remove('hidden')}
 });
 async function loadTeamHome(){if(!deviceMode)return}
+let teamCatchReports=[];
+
+function formatCompanyTaxId(v){
+ const d=String(v||'').replace(/\D/g,'');
+ if(d.length===14)return d.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/,'$1.$2.$3/$4-$5');
+ if(d.length===11)return d.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/,'$1.$2.$3-$4');
+ return v||'Não informado';
+}
+function catchTime(v){return v?new Date(v).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',timeZone:'America/Sao_Paulo'}):'—'}
+function catchDate(v){return v?new Date(v).toLocaleDateString('pt-BR',{timeZone:'America/Sao_Paulo'}):'—'}
+function catchDuration(start,end){
+ if(!start||!end)return '—';
+ const m=Math.max(0,Math.round((new Date(end)-new Date(start))/60000));
+ return Math.floor(m/60)+'h '+String(m%60).padStart(2,'0')+'min';
+}
+async function getDeviceSupervisorReportInfo(){
+ const ss=session(),uid=ss?.user?.id||null;
+ const cached=uid?await offlineCacheGet('device_identity:'+uid):null;
+ let name=cached?.supervisorInfo?.full_name||'';
+ let phone=deviceTeam?.metadata?.supervisor_phone||cached?.supervisorInfo?.phone||'';
+ if(navigator.onLine&&deviceTeam?.supervisor_employee_id){
+  try{
+   const rows=await rest('v2_employees','select=id,full_name,phone&id=eq.'+encodeURIComponent(deviceTeam.supervisor_employee_id)+'&limit=1');
+   if(rows?.[0]){name=rows[0].full_name||name;phone=deviceTeam?.metadata?.supervisor_phone||rows[0].phone||phone}
+  }catch(_){}
+ }
+ return {name:name||'Não informado',phone:phone||'Não cadastrado'};
+}
+async function buildCatchReportsForDay(day){
+ await loadDevicePoultryContext();
+ await loadPoultryOps();
+ const supervisor=await getDeviceSupervisorReportInfo();
+ const team=deviceTeam||poultryTeams.find(x=>x.id===deviceAccess?.team_id)||{};
+ const contractor=team.metadata?.contractor_name||'Não informada';
+ const ops=(poultryOpsCache||[]).filter(o=>o.team_id===deviceAccess?.team_id&&o.scheduled_start&&saoPauloDateKey(o.scheduled_start)===day);
+ return ops.map(op=>{
+  const loading=poultryLoadings.find(l=>l.operation_id===op.id);
+  const trucks=loading?poultryTruckLoads.filter(t=>t.loading_id===loading.id).sort((a,b)=>Number(a.truck_sequence||0)-Number(b.truck_sequence||0)):[];
+  const farm=poultryFarms.find(f=>f.id===(loading?.farm_id||op.metadata?.farm_id))||{};
+  const defaultBarn=poultryBarns.find(b=>b.id===(op.metadata?.barn_id||loading?.metadata?.default_barn_id))||{};
+  const totalBirds=trucks.reduce((a,t)=>a+poN(t.birds),0);
+  const starts=trucks.map(t=>t.started_at).filter(Boolean).sort();
+  const ends=trucks.map(t=>t.completed_at).filter(Boolean).sort();
+  return {op,loading,trucks,farm,defaultBarn,team,supervisor,contractor,totalBirds,catas:trucks.filter(t=>t.is_cata).length,actualStart:starts[0]||op.actual_start||null,actualEnd:ends[ends.length-1]||op.actual_end||null};
+ });
+}
 async function loadTeamReport(){
  if(!deviceMode)return;
  const dateEl=$('#teamReportDate');
  if(dateEl&&!dateEl.value)dateEl.value=localDateBR();
- const day=dateEl?.value||localDateBR();
- const k=$('#teamReportKpis'),list=$('#teamReportToday'),sub=$('#teamReportSubtitle');
+ const day=dateEl?.value||localDateBR(),list=$('#teamReportToday'),sub=$('#teamReportSubtitle');
  const dayLabel=new Date(day+'T12:00:00').toLocaleDateString('pt-BR');
- if(sub)sub.textContent=(deviceTeam?.name||'Equipe')+' • '+dayLabel;
+ if(sub)sub.textContent=(deviceTeam?.name||'Equipe')+' • '+dayLabel+' • relatório para a granja';
  try{
-  const bounds=saoPauloDayUtcBounds(day);
-  const [ops,loadings,trucks,events,fuel,emps]=await Promise.all([
-   rest('v2_operations','select=id,title,customer_name,location_name,status,scheduled_start,actual_birds&company_id=eq.'+companyId+'&operation_type=eq.poultry_catching&scheduled_start=gte.'+encodeURIComponent(bounds.start)+'&scheduled_start=lt.'+encodeURIComponent(bounds.end)+'&order=scheduled_start.asc'),
-   rest('v2_poultry_loadings','select=id,operation_id,reported_birds&company_id=eq.'+companyId+'&team_id=eq.'+encodeURIComponent(deviceAccess.team_id)),
-   rest('v2_poultry_truck_loads','select=id,loading_id,birds,is_cata,truck_plate,driver_name,started_at,completed_at&company_id=eq.'+companyId),
-   rest('v2_attendance_events','select=employee_id,event_type,occurred_at&company_id=eq.'+companyId+'&occurred_at=gte.'+encodeURIComponent(bounds.start)+'&occurred_at=lt.'+encodeURIComponent(bounds.end)+'&order=occurred_at.asc'),
-   rest('v2_fuel_logs','select=liters,total_amount,fueled_at,station_name,odometer_km,metadata&company_id=eq.'+companyId+'&fueled_at=gte.'+encodeURIComponent(bounds.start)+'&fueled_at=lt.'+encodeURIComponent(bounds.end)+'&order=fueled_at.asc'),
-   rest('v2_employees','select=id,full_name,status&company_id=eq.'+companyId+'&status=eq.active&order=full_name.asc')
-  ]);
-  const opIds=new Set((ops||[]).map(o=>o.id));
-  const dayLoadings=(loadings||[]).filter(x=>opIds.has(x.operation_id));
-  const loadingIds=new Set(dayLoadings.map(x=>x.id));
-  const dayTrucks=(trucks||[]).filter(x=>loadingIds.has(x.loading_id));
-  const birds=dayTrucks.reduce((a,x)=>a+Number(x.birds||0),0);
-  const presentIds=[...new Set((events||[]).map(x=>x.employee_id))];
-  const present=presentIds.length;
-  const liters=(fuel||[]).reduce((a,x)=>a+Number(x.liters||0),0);
-  const fuelCost=(fuel||[]).reduce((a,x)=>a+Number(x.total_amount||0),0);
-  const catas=dayTrucks.filter(x=>x.is_cata).length;
-  if(k)k.innerHTML=[
-   ['Apanhas',ops.length],
-   ['Caminhões',dayTrucks.length],
-   ['Aves',birds.toLocaleString('pt-BR')],
-   ['Funcionários com ponto',present+'/'+emps.length],
-   ['Litros',liters.toLocaleString('pt-BR',{maximumFractionDigits:1})+' L'],
-   ['Combustível',money(fuelCost)]
-  ].map(x=>'<div class="team-report-kpi"><span class="muted">'+x[0]+'</span><b>'+x[1]+'</b></div>').join('');
-
-  let html='';
-  if(ops.length){
-   html+='<div class="item"><strong>🐔 Apanhas</strong><div class="muted">'+ops.length+' operação(ões) • '+dayTrucks.length+' caminhão(ões) • '+birds.toLocaleString('pt-BR')+' aves • '+catas+' cata(s)</div>';
-   html+='<div style="margin-top:8px">'+ops.map(o=>{
-    const l=dayLoadings.find(x=>x.operation_id===o.id),ts=l?dayTrucks.filter(x=>x.loading_id===l.id):[],b=ts.reduce((a,x)=>a+Number(x.birds||0),0);
-    return '<div class="muted" style="padding:4px 0"><b>'+esc(o.customer_name||o.title||'Apanha')+'</b> • '+esc(o.location_name||'')+' • '+ts.length+' caminhão(ões) • '+b.toLocaleString('pt-BR')+' aves • '+esc(poSL(o.status))+'</div>';
-   }).join('')+'</div></div>';
-  }else html+='<div class="item"><strong>🐔 Apanhas</strong><div class="muted">Nenhuma apanha registrada nesta data.</div></div>';
-
-  const presentNames=presentIds.map(id=>emps.find(e=>e.id===id)?.full_name).filter(Boolean);
-  html+='<div class="item"><strong>⏱️ Ponto</strong><div class="muted">'+present+' de '+emps.length+' funcionário(s) com registro • '+events.length+' batida(s)</div>'+(presentNames.length?'<div class="muted" style="margin-top:6px">'+esc(presentNames.join(', '))+'</div>':'')+'</div>';
-
-  if(fuel.length){
-   html+='<div class="item"><strong>⛽ Abastecimento</strong><div class="muted">'+liters.toLocaleString('pt-BR',{maximumFractionDigits:1})+' litros • '+money(fuelCost)+'</div><div style="margin-top:8px">'+fuel.map(x=>'<div class="muted" style="padding:4px 0">'+new Date(x.fueled_at).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})+' • '+Number(x.liters||0).toLocaleString('pt-BR',{maximumFractionDigits:2})+' L • '+money(x.total_amount||0)+(x.station_name?' • '+esc(x.station_name):'')+(x.metadata?.driver?' • '+esc(x.metadata.driver):'')+(x.odometer_km?' • '+Number(x.odometer_km).toLocaleString('pt-BR')+' km':'')+'</div>').join('')+'</div></div>';
-  }else html+='<div class="item"><strong>⛽ Abastecimento</strong><div class="muted">Nenhum abastecimento registrado nesta data.</div></div>';
-
-  if(list)list.innerHTML=html;
- }catch(e){if(list)list.innerHTML='<div class="error">'+esc(e.message)+'</div>'}
+  teamCatchReports=await buildCatchReportsForDay(day);
+  if(!teamCatchReports.length){
+   list.innerHTML='<div class="card"><strong>Nenhuma apanha nesta data</strong><div class="muted" style="margin-top:5px">Selecione outro dia ou registre a apanha primeiro.</div></div>';
+   return;
+  }
+  list.innerHTML=teamCatchReports.map((r,idx)=>{
+   const farmName=r.farm.farm_name||r.farm.producer_name||r.op.customer_name||r.op.title||'Granja';
+   const integrated=r.farm.producer_name||r.op.customer_name||'Não informado';
+   const barn=r.defaultBarn.barn_number||'Não informado';
+   return '<div class="catch-report-card"><div class="catch-report-title"><div><div class="muted">RELATÓRIO DE APANHA DE AVES'+(r.op.operation_number?' • Nº '+esc(r.op.operation_number):'')+'</div><h3>'+esc(integrated)+'</h3><div class="muted">'+esc(farmName)+' • '+esc(r.farm.city||r.op.metadata?.city||'Cidade não informada')+' • Aviário '+esc(barn)+'</div></div><span class="pill '+(r.op.metadata?.offline_pending?'warn':(r.op.status==='completed'?'ok':''))+'">'+esc(r.op.metadata?.offline_pending?'OFFLINE • PENDENTE':poSL(r.op.status))+'</span></div><div class="catch-report-meta"><div><span class="muted">Total de aves</span><div class="catch-report-total">'+r.totalBirds.toLocaleString('pt-BR')+'</div></div><div><span class="muted">Caminhões</span><div class="catch-report-total">'+r.trucks.length+'</div></div><div><span class="muted">Horário</span><div><b>'+catchTime(r.actualStart)+' → '+catchTime(r.actualEnd)+'</b><br><span class="muted">Duração '+catchDuration(r.actualStart,r.actualEnd)+'</span></div></div><div><span class="muted">Encarregado</span><div><b>'+esc(r.supervisor.name)+'</b><br><span class="muted">'+esc(r.supervisor.phone)+'</span></div></div></div><div class="toolbar" style="margin-top:12px"><button class="btn primary catchReportPrint" type="button" data-index="'+idx+'">📄 VISUALIZAR / PDF / IMPRIMIR</button></div></div>';
+  }).join('');
+ }catch(e){list.innerHTML='<div class="error">'+esc(e.message||String(e))+'</div>'}
 }
-function printTeamReport(){
- const date=$('#teamReportDate')?.value||localDateBR(),team=deviceTeam?.name||'Equipe';
- const dayLabel=new Date(date+'T12:00:00').toLocaleDateString('pt-BR');
- const k=$('#teamReportKpis')?.innerHTML||'',body=$('#teamReportToday')?.innerHTML||'';
+function printCatchReport(index){
+ const r=teamCatchReports[Number(index)];
+ if(!r)return alert('Relatório não encontrado. Atualize a tela e tente novamente.');
+ const op=r.op,farm=r.farm,barn=r.defaultBarn,team=r.team,sup=r.supervisor;
+ const companyName=companyProfile?.trade_name||companyProfile?.legal_name||"Agro Souza's";
+ const legalName=companyProfile?.legal_name||companyName;
+ const tax=formatCompanyTaxId(companyProfile?.tax_id);
+ const farmName=farm.farm_name||farm.producer_name||op.customer_name||'Não informado';
+ const integrated=farm.producer_name||op.customer_name||'Não informado';
+ const city=farm.city||op.metadata?.city||'Não informada';
+ const aviary=barn.barn_number||'Não informado';
+ const outlet=barn.outlet_type||op.metadata?.outlet_type||'Não informada';
+ const energy=barn.energy_type||op.metadata?.energy_type||'Não informada';
+ const reportNo=op.operation_number?'Nº '+op.operation_number:'Registro '+catchDate(op.scheduled_start);
+ const truckRows=r.trucks.length?r.trucks.map(t=>{
+  const tb=poultryBarns.find(b=>b.id===t.metadata?.barn_id)||barn;
+  return '<tr><td>'+esc(t.truck_sequence||'')+'</td><td>'+esc(t.truck_plate||'—')+'</td><td>'+esc(t.driver_name||'—')+'</td><td>'+esc(tb?.barn_number||aviary)+'</td><td>'+catchTime(t.started_at)+'</td><td>'+catchTime(t.completed_at)+'</td><td class="num">'+poN(t.birds).toLocaleString('pt-BR')+'</td><td>'+(t.is_cata?'SIM':'NÃO')+'</td></tr>';
+ }).join(''):'<tr><td colspan="8">Nenhum caminhão registrado.</td></tr>';
+ const truckNotes=r.trucks.filter(t=>t.metadata?.notes).map(t=>'Caminhão '+(t.truck_sequence||'')+': '+t.metadata.notes);
+ const notes=[op.notes,...truckNotes].filter(Boolean).join(' • ')||'Sem observações.';
  const w=window.open('','_blank');
- if(!w)return alert('O navegador bloqueou a janela de impressão.');
- w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>Relatório '+esc(team)+' - '+esc(dayLabel)+'</title><style>body{font-family:Arial,sans-serif;color:#111;padding:28px}h1{margin:0 0 4px}.sub{color:#555;margin-bottom:20px}.team-report-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px}.team-report-kpi,.item{border:1px solid #ddd;border-radius:10px;padding:12px}.team-report-kpi b{display:block;font-size:22px;margin-top:5px}.muted{color:#555;font-size:12px}.list{display:grid;gap:10px}.pill{display:inline-block;border:1px solid #ccc;border-radius:999px;padding:3px 7px;font-size:11px}@media print{button{display:none}}</style></head><body><h1>Relatório da Equipe</h1><div class="sub">'+esc(team)+' • '+esc(dayLabel)+'</div><div class="team-report-grid">'+k+'</div><div class="list">'+body+'</div><script>window.onload=function(){window.print()}<\/script></body></html>');
+ if(!w)return alert('O navegador bloqueou a janela do relatório.');
+ w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>Relatório de Apanha - '+esc(integrated)+'</title><style>@page{size:A4;margin:12mm}*{box-sizing:border-box}body{font-family:Arial,sans-serif;color:#111;margin:0;font-size:11px}.head{border-bottom:3px solid #111;padding-bottom:10px;margin-bottom:12px;display:flex;justify-content:space-between;gap:20px}.brand{font-size:23px;font-weight:900;letter-spacing:.3px}.doc-title{text-align:right}.doc-title h1{font-size:17px;margin:0 0 4px}.muted{color:#555}.section{border:1px solid #cfcfcf;border-radius:8px;margin:9px 0;overflow:hidden}.section h2{font-size:11px;text-transform:uppercase;letter-spacing:.5px;background:#f0f0f0;margin:0;padding:7px 9px}.grid{display:grid;grid-template-columns:repeat(2,1fr)}.field{padding:7px 9px;border-top:1px solid #e5e5e5}.field:nth-child(odd){border-right:1px solid #e5e5e5}.field b{display:block;margin-top:2px;font-size:12px}table{width:100%;border-collapse:collapse}th,td{border:1px solid #ccc;padding:6px 5px;text-align:left}th{background:#f0f0f0;font-size:9px;text-transform:uppercase}.num{text-align:right;font-weight:700}.totals{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin:10px 0}.total{border:1px solid #bbb;border-radius:7px;padding:8px;text-align:center}.total strong{display:block;font-size:16px;margin-top:3px}.obs{border:1px solid #ccc;border-radius:8px;padding:9px;min-height:50px}.signatures{display:grid;grid-template-columns:1fr 1fr;gap:36px;margin-top:46px}.sig{border-top:1px solid #111;text-align:center;padding-top:5px}.footer{margin-top:18px;border-top:1px solid #ddd;padding-top:7px;color:#555;font-size:9px;text-align:center}</style></head><body>'+
+ '<div class="head"><div><div class="brand">'+esc(companyName)+'</div><div>'+esc(legalName)+'</div><div class="muted">CNPJ/CPF: '+esc(tax)+'</div></div><div class="doc-title"><h1>RELATÓRIO DE APANHA DE AVES</h1><div>'+esc(reportNo)+'</div><div class="muted">Data: '+catchDate(op.scheduled_start)+'</div></div></div>'+
+ '<div class="section"><h2>Prestadora e equipe</h2><div class="grid"><div class="field">Empresa prestadora<b>'+esc(companyName)+'</b></div><div class="field">Equipe<b>'+esc(team.name||'Não informada')+'</b></div><div class="field">Empresa contratante<b>'+esc(r.contractor)+'</b></div><div class="field">Encarregado<b>'+esc(sup.name)+'</b></div><div class="field">Telefone do encarregado<b>'+esc(sup.phone)+'</b></div><div class="field">Situação<b>'+esc(poSL(op.status))+'</b></div></div></div>'+
+ '<div class="section"><h2>Dados da granja / aviário</h2><div class="grid"><div class="field">Integrado / responsável<b>'+esc(integrated)+'</b></div><div class="field">Granja<b>'+esc(farmName)+'</b></div><div class="field">Cidade<b>'+esc(city)+'</b></div><div class="field">Aviário<b>'+esc(aviary)+'</b></div><div class="field">Tomada / padrão elétrico<b>'+esc(outlet)+'</b></div><div class="field">Energia<b>'+esc(energy)+'</b></div><div class="field">Início da apanha<b>'+catchTime(r.actualStart)+'</b></div><div class="field">Término da apanha<b>'+catchTime(r.actualEnd)+'</b></div></div></div>'+
+ '<div class="section"><h2>Carregamento caminhão por caminhão</h2><table><thead><tr><th>#</th><th>Placa</th><th>Motorista</th><th>Aviário</th><th>Início</th><th>Término</th><th>Aves</th><th>Cata</th></tr></thead><tbody>'+truckRows+'</tbody></table></div>'+
+ '<div class="totals"><div class="total">Caminhões<strong>'+r.trucks.length+'</strong></div><div class="total">Total de aves<strong>'+r.totalBirds.toLocaleString('pt-BR')+'</strong></div><div class="total">Catas<strong>'+r.catas+'</strong></div><div class="total">Duração<strong>'+catchDuration(r.actualStart,r.actualEnd)+'</strong></div></div>'+
+ '<div><b>Observações</b><div class="obs">'+esc(notes)+'</div></div>'+
+ '<div class="signatures"><div class="sig">'+esc(sup.name)+'<br><span class="muted">Encarregado / responsável da equipe</span></div><div class="sig">Responsável pela granja / integrado<br><span class="muted">Nome e assinatura</span></div></div>'+
+ '<div class="footer">Relatório operacional emitido pelo Agro Souza\'s Controle • '+new Date().toLocaleString('pt-BR')+'</div><script>window.onload=function(){setTimeout(function(){window.print()},200)}<\/script></body></html>');
  w.document.close();
 }
+document.addEventListener('click',function(e){
+ const b=e.target.closest('.catchReportPrint');
+ if(b){e.preventDefault();printCatchReport(b.dataset.index)}
+});
 function renderDeviceModeBar(tab){const bar=$('#deviceModeBar');if(bar)bar.classList.toggle('hidden',!deviceMode||tab==='equipehome')}
 // Navegação resiliente: um único listener delegado atende desktop e mobile.
 document.addEventListener('click',function(e){
@@ -3132,7 +3202,7 @@ setInterval(()=>{
 },60000);
 if('serviceWorker' in navigator){
  window.addEventListener('load',()=>{
-  navigator.serviceWorker.register('./sw-v6-19.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
+  navigator.serviceWorker.register('./sw-v6-20.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
  });
 }
 
@@ -3149,7 +3219,6 @@ if($('#copyTeamDeviceCode'))$('#copyTeamDeviceCode').addEventListener('click',as
 if($('#refreshTeamDevices'))$('#refreshTeamDevices').addEventListener('click',loadTeams);
 if($('#refreshTeamReport'))$('#refreshTeamReport').addEventListener('click',loadTeamReport);
 if($('#teamReportDate'))$('#teamReportDate').addEventListener('change',loadTeamReport);
-if($('#printTeamReport'))$('#printTeamReport').addEventListener('click',printTeamReport);
 $('#refreshRH').addEventListener('click',async()=>{await loadEmployees();await loadRHPoint()});
 
 $('#refreshBtn').addEventListener('click',loadDashboard);
@@ -3195,6 +3264,11 @@ if(document.getElementById('refreshTeams'))document.getElementById('refreshTeams
 if(document.getElementById('newTeamBtn'))document.getElementById('newTeamBtn').addEventListener('click',openNewTeam);
 if(document.getElementById('cancelTeamEdit'))document.getElementById('cancelTeamEdit').addEventListener('click',()=>{$('#teamEditCard').style.display='none'});
 if(document.getElementById('teamMembersList'))document.getElementById('teamMembersList').addEventListener('change',e=>{if(e.target.classList.contains('team-member-check'))updateTeamMembersCount()});
+if(document.getElementById('editTeamSupervisor'))document.getElementById('editTeamSupervisor').addEventListener('change',e=>{
+ const emp=(window.__teamEmployees||[]).find(x=>x.id===e.target.value);
+ const phone=$('#editTeamSupervisorPhone');
+ if(phone&&emp?.phone)phone.value=emp.phone;
+});
 if(document.getElementById('newVehicleBtn'))document.getElementById('newVehicleBtn').addEventListener('click',()=>openVehicleEdit(''));
 if(document.getElementById('cancelVehicleEdit'))document.getElementById('cancelVehicleEdit').addEventListener('click',()=>{$('#vehicleEditCard').style.display='none'});
 if(document.getElementById('editVehicleTeam'))document.getElementById('editVehicleTeam').addEventListener('change',updateVehicleContractor);
@@ -3204,7 +3278,7 @@ if(document.getElementById('vehiclePhotoGallery'))document.getElementById('vehic
 if(document.getElementById('removeVehiclePhoto'))document.getElementById('removeVehiclePhoto').addEventListener('click',()=>{window.__vehiclePhotoFile=null;window.__removeVehiclePhoto=true;$('#editVehiclePhotoPreview').src=vehiclePlaceholder($('#editVehicleDescription').value)});
 if(document.getElementById('saveVehicleEdit'))document.getElementById('saveVehicleEdit').addEventListener('click',async()=>{const m=$('#vehicleEditMsg');let id=$('#editVehicleId').value;const desc=$('#editVehicleDescription').value.trim(),plate=$('#editVehiclePlate').value.trim().toUpperCase().replace(/[^A-Z0-9]/g,'');if(!desc){m.textContent='Informe o apelido/identificação do veículo.';return}if(!plate){m.textContent='Informe a placa do veículo.';return}try{const dup=await rest('v2_vehicles','select=id,plate&company_id=eq.'+companyId+'&plate=eq.'+encodeURIComponent(plate));if((dup||[]).some(x=>x.id!==id)){m.textContent='Já existe outro veículo com esta placa.';return}let v=(window.__fleetVehicles||[]).find(x=>x.id===id);let metadata={...(v?.metadata||{})};const body={description:desc,plate,make:$('#editVehicleMake').value.trim()||null,model:$('#editVehicleModel').value.trim()||null,model_year:$('#editVehicleYear').value?Number($('#editVehicleYear').value):null,renavam:$('#editVehicleRenavam').value.trim()||null,current_odometer_km:$('#editVehicleKm').value?Number($('#editVehicleKm').value):0,status:$('#editVehicleStatus').value,metadata};if(id){await rest('v2_vehicles','id=eq.'+id,'PATCH',body)}else{const created=await rest('v2_vehicles','','POST',{company_id:companyId,...body});id=created?.[0]?.id||'';if(!id)throw new Error('Não foi possível obter o veículo criado.')}if(window.__removeVehiclePhoto){delete metadata.vehicle_photo_path;await rest('v2_vehicles','id=eq.'+id,'PATCH',{metadata})}if(window.__vehiclePhotoFile){metadata.vehicle_photo_path=await uploadVehiclePhoto(window.__vehiclePhotoFile,id);await rest('v2_vehicles','id=eq.'+id,'PATCH',{metadata})}const teamId=$('#editVehicleTeam').value;const teams=window.__fleetTeams||[];for(const t of teams){if(t.metadata?.primary_vehicle_id===id&&t.id!==teamId){const md={...(t.metadata||{})};delete md.primary_vehicle_id;await rest('v2_teams','id=eq.'+t.id,'PATCH',{metadata:md})}}if(teamId){const t=teams.find(x=>x.id===teamId);if(t){await rest('v2_teams','id=eq.'+teamId,'PATCH',{metadata:{...(t.metadata||{}),primary_vehicle_id:id}})}}window.__vehiclePhotoFile=null;window.__removeVehiclePhoto=false;m.textContent='Veículo salvo com sucesso.';await loadVehicles();await loadTeams()}catch(e){m.textContent=e.message||String(e)}});
 if(document.getElementById('archiveVehicleBtn'))document.getElementById('archiveVehicleBtn').addEventListener('click',async()=>{const id=$('#editVehicleId').value,m=$('#vehicleEditMsg');if(!id)return;if(!confirm('Arquivar este veículo? O histórico será preservado.'))return;try{await rest('v2_vehicles','id=eq.'+id,'PATCH',{status:'inactive'});m.textContent='Veículo arquivado.';await loadVehicles();await loadTeams()}catch(e){m.textContent=e.message||String(e)}});
-if(document.getElementById('saveTeamEdit'))document.getElementById('saveTeamEdit').addEventListener('click',async()=>{const id=$('#editTeamId').value,m=$('#teamEditMsg');const t=(window.__teams||[]).find(x=>x.id===id);const oldName=(t?.name||'').trim();const name=$('#editTeamName').value.trim(),contractor=$('#editTeamContractor').value.trim();if(!name){m.textContent='Informe o nome da equipe.';return}if(!contractor){m.textContent='Informe a empresa contratante / onde a equipe presta serviço.';return}try{const metadata={...(t?.metadata||{}),contractor_name:contractor};const vehicleId=$('#editTeamVehicle').value;if(vehicleId)metadata.primary_vehicle_id=vehicleId;else delete metadata.primary_vehicle_id;const body={name,code:$('#editTeamCode').value.trim()||null,status:$('#editTeamStatus').value,supervisor_employee_id:$('#editTeamSupervisor').value||null,metadata};let teamId=id;if(id){await rest('v2_teams','id=eq.'+id,'PATCH',body)}else{const created=await rest('v2_teams','','POST',{company_id:companyId,...body});teamId=created?.[0]?.id||''}
+if(document.getElementById('saveTeamEdit'))document.getElementById('saveTeamEdit').addEventListener('click',async()=>{const id=$('#editTeamId').value,m=$('#teamEditMsg');const t=(window.__teams||[]).find(x=>x.id===id);const oldName=(t?.name||'').trim();const name=$('#editTeamName').value.trim(),contractor=$('#editTeamContractor').value.trim();if(!name){m.textContent='Informe o nome da equipe.';return}if(!contractor){m.textContent='Informe a empresa contratante / onde a equipe presta serviço.';return}try{const metadata={...(t?.metadata||{}),contractor_name:contractor};const supervisorPhone=$('#editTeamSupervisorPhone')?.value.trim()||'';if(supervisorPhone)metadata.supervisor_phone=supervisorPhone;else delete metadata.supervisor_phone;const vehicleId=$('#editTeamVehicle').value;if(vehicleId)metadata.primary_vehicle_id=vehicleId;else delete metadata.primary_vehicle_id;const body={name,code:$('#editTeamCode').value.trim()||null,status:$('#editTeamStatus').value,supervisor_employee_id:$('#editTeamSupervisor').value||null,metadata};let teamId=id;if(id){await rest('v2_teams','id=eq.'+id,'PATCH',body)}else{const created=await rest('v2_teams','','POST',{company_id:companyId,...body});teamId=created?.[0]?.id||''}
 const selected=new Set([...document.querySelectorAll('#teamMembersList .team-member-check:checked')].map(x=>x.value));const emps=window.__teamEmployees||[];for(const e of emps){const current=(e.primary_team||'').trim();const wasMember=oldName&&current.toLowerCase()===oldName.toLowerCase();const shouldMember=selected.has(e.id);if(shouldMember&&current!==name){await rest('v2_employees','id=eq.'+e.id,'PATCH',{primary_team:name})}else if(!shouldMember&&wasMember){await rest('v2_employees','id=eq.'+e.id,'PATCH',{primary_team:null})}}
 m.textContent=id?'Equipe e funcionários atualizados com sucesso.':'Nova equipe criada com os funcionários selecionados.';await loadTeams();await loadEmployees();await loadPoultrySelectors();setTimeout(()=>{$('#teamEditCard').style.display='none'},650)}catch(e){m.textContent=e.message}});
 if(document.getElementById('archiveTeamBtn'))document.getElementById('archiveTeamBtn').addEventListener('click',async()=>{const id=$('#editTeamId').value,m=$('#teamEditMsg');if(!id)return;if(!confirm('Arquivar esta equipe? Os históricos existentes serão preservados.'))return;try{await rest('v2_teams','id=eq.'+id,'PATCH',{status:'inactive'});m.textContent='Equipe arquivada. Histórico preservado.';await loadTeams();await loadPoultrySelectors();setTimeout(()=>{$('#teamEditCard').style.display='none'},500)}catch(e){m.textContent=e.message}});
