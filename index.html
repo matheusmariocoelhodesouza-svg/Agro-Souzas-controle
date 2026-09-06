@@ -8,7 +8,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
-<title>Controla V2 • Beta 6.17 Modo Equipe</title>
+<title>Controla V2 • Beta 6.18 Modo Equipe</title>
 <link rel="manifest" href="./agro-souzas-controle-v7.webmanifest"/>
 <link rel="apple-touch-icon" href="./apple-touch-icon-180.png"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
@@ -132,7 +132,7 @@ body.app-ready .v2sidebar{display:block}
 .po-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
 .pill.warn{background:#fff3cd;color:#7c5700}
 
-/* Beta 6.17 — Modo Equipe */
+/* Beta 6.18 — Modo Equipe */
 .team-entry{max-width:520px;margin:42px auto}
 .team-entry .card{padding:20px}
 .team-entry-title{text-align:center;margin-bottom:18px}
@@ -175,7 +175,7 @@ body.device-mode .admin-only{display:none!important}
 <script defer src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
 <script>
 (function(){
-  const BUILD='6.17';
+  const BUILD='6.18';
   try{
     const marker='controla_cache_cleanup_'+BUILD;
     if(!localStorage.getItem(marker)){
@@ -211,7 +211,7 @@ body.device-mode .admin-only{display:none!important}
 <div class="v2group">EM BREVE</div>
 <button class="v2navbtn" type="button">Estoque</button>
 </aside>
-<header><div class="brand"><div class="logo">C</div><div><b>Controla</b><div><small id="companyName">Beta</small></div></div></div><div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.17</span><button class="btn soft" id="themeToggle" type="button">☾</button><button class="btn soft hidden" id="logout">Sair</button></div></header>
+<header><div class="brand"><div class="logo">C</div><div><b>Controla</b><div><small id="companyName">Beta</small></div></div></div><div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.18</span><button class="btn soft" id="themeToggle" type="button">☾</button><button class="btn soft hidden" id="logout">Sair</button></div></header>
 <main class="wrap">
 <section class="login team-entry" id="login">
 <div class="card" id="deviceSetupCard">
@@ -228,7 +228,7 @@ body.device-mode .admin-only{display:none!important}
  <label>Senha</label><input autocomplete="current-password" id="password" type="password"/>
  <button class="btn primary" id="loginBtn">Entrar</button>
  <button class="btn soft" id="backDeviceSetup" type="button" style="margin-left:6px">Voltar</button>
- <div class="muted" id="loginMsg" style="margin-top:10px">Beta 6.17 • Modo Equipe</div><div class="debug" id="debug"></div>
+ <div class="muted" id="loginMsg" style="margin-top:10px">Beta 6.18 • Modo Equipe</div><div class="debug" id="debug"></div>
 </div>
 </section>
 <section class="hidden" id="app">
@@ -601,35 +601,63 @@ function applyDeviceUi(){
 async function enterDeviceApp(authUser){
  const user=authUser||await getUser();
  if(!user||!user.id)throw new Error('Sessão do aparelho não encontrada.');
- const access=await loadDeviceAccess(user.id);
- if(!access){const er=new Error('Este celular ainda não foi ativado. Digite o código da equipe.');er.code='DEVICE_UNPAIRED';throw er}
- try{await rpc('v2_touch_device',{})}catch(e){console.warn('Não foi possível atualizar último acesso do aparelho',e)}
+
+ let access=null,cachedIdentity=null,vehicleInfo=null;
+ try{cachedIdentity=await offlineCacheGet('device_identity:'+user.id)}catch(_){}
+
+ if(navigator.onLine){
+  try{access=await loadDeviceAccess(user.id)}
+  catch(e){console.warn('Falha ao consultar vínculo do aparelho',e);access=cachedIdentity?.access||null}
+ }else{
+  access=cachedIdentity?.access||null;
+ }
+
+ if(!access){
+  const er=new Error(navigator.onLine?'Este celular ainda não foi ativado. Digite o código da equipe.':'Este celular ainda não possui dados offline. Conecte à internet pelo menos uma vez após a ativação.');
+  er.code='DEVICE_UNPAIRED';throw er;
+ }
+
  deviceMode=true;deviceAccess=access;companyId=access.company_id;currentRoleCode='device';isAdminGeneral=false;
- const companies=await v2Rest('v2_companies','select=id,legal_name,trade_name,tax_id,timezone&id=eq.'+encodeURIComponent(companyId)+'&limit=1');
- companyProfile=companies&&companies[0]?companies[0]:{id:companyId,trade_name:"Agro Souza's"};
- const teams=await v2Rest('v2_teams','select=id,name,code,metadata,status&id=eq.'+encodeURIComponent(access.team_id)+'&limit=1');
- deviceTeam=teams&&teams[0]?teams[0]:{id:access.team_id,name:'Equipe'};
+
+ if(navigator.onLine){
+  try{await rpc('v2_touch_device',{})}catch(e){console.warn('Não foi possível atualizar último acesso do aparelho',e)}
+  try{
+   const companies=await v2Rest('v2_companies','select=id,legal_name,trade_name,tax_id,timezone&id=eq.'+encodeURIComponent(companyId)+'&limit=1');
+   companyProfile=companies&&companies[0]?companies[0]:(cachedIdentity?.companyProfile||{id:companyId,trade_name:"Agro Souza's"});
+  }catch(_){companyProfile=cachedIdentity?.companyProfile||{id:companyId,trade_name:"Agro Souza's"}}
+  try{
+   const teams=await v2Rest('v2_teams','select=id,name,code,metadata,status&id=eq.'+encodeURIComponent(access.team_id)+'&limit=1');
+   deviceTeam=teams&&teams[0]?teams[0]:(cachedIdentity?.deviceTeam||{id:access.team_id,name:'Equipe'});
+  }catch(_){deviceTeam=cachedIdentity?.deviceTeam||{id:access.team_id,name:'Equipe'}}
+  try{
+   const vehicleId=deviceTeam?.metadata?.primary_vehicle_id||null;
+   if(vehicleId){
+    const vs=await v2Rest('v2_vehicles','select=id,description,plate,model,current_odometer_km&id=eq.'+encodeURIComponent(vehicleId)+'&limit=1');
+    vehicleInfo=vs?.[0]||cachedIdentity?.vehicleInfo||null;
+   }
+  }catch(_){vehicleInfo=cachedIdentity?.vehicleInfo||null}
+  await offlineCacheSet('device_identity:'+user.id,{access,companyProfile,deviceTeam,vehicleInfo,cached_at:new Date().toISOString()});
+ }else{
+  companyProfile=cachedIdentity?.companyProfile||{id:companyId,trade_name:"Agro Souza's"};
+  deviceTeam=cachedIdentity?.deviceTeam||{id:access.team_id,name:'Equipe'};
+  vehicleInfo=cachedIdentity?.vehicleInfo||null;
+ }
+
  const companyLabel=document.getElementById('companyName');if(companyLabel)companyLabel.textContent=deviceTeam.name||"Agro Souza's";
  const teamName=document.getElementById('teamHomeName');if(teamName)teamName.textContent=deviceTeam.name||'Equipe';
  const barName=document.getElementById('deviceModeTeam');if(barName)barName.textContent=deviceTeam.name||'Equipe';
  const vehicleText=document.getElementById('teamHomeVehicle');
- if(vehicleText){
-   let txt='Celular de campo';
-   try{
-     const vehicleId=deviceTeam.metadata&&deviceTeam.metadata.primary_vehicle_id?deviceTeam.metadata.primary_vehicle_id:'00000000-0000-0000-0000-000000000000';
-     const vs=await v2Rest('v2_vehicles','select=id,description,plate,model&id=eq.'+encodeURIComponent(vehicleId)+'&limit=1');
-     if(vs&&vs[0])txt=(vs[0].description||vs[0].model||'Condução')+(vs[0].plate?' • '+vs[0].plate:'');
-   }catch(_){}
-   vehicleText.textContent=txt;
- }
+ if(vehicleText)vehicleText.textContent=vehicleInfo?(vehicleInfo.description||vehicleInfo.model||'Condução')+(vehicleInfo.plate?' • '+vehicleInfo.plate:''):'Celular de campo';
+
  document.getElementById('login').classList.add('hidden');
  document.getElementById('app').classList.remove('hidden');
  document.body.classList.add('app-ready');
  applyDeviceUi();initScreenRouter();await v2Go('equipehome');
  await updateOfflineQueueBadge();
+
  if(navigator.onLine){
-   await warmPointOfflineCache();
-   syncOfflineQueue().catch(e=>console.warn('sync offline',e));
+  warmDeviceOfflineData().catch(e=>console.warn('pré-carga offline',e));
+  syncOfflineQueue().catch(e=>console.warn('sync offline',e));
  }
 }
 async function activateDevice(code){
@@ -686,6 +714,10 @@ function durationToMinutes(v){
 function eventLocalMinutes(iso){const p=new Intl.DateTimeFormat('en-GB',{timeZone:'America/Sao_Paulo',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(new Date(iso));return timeToMinutes(p)}
 async function loadSchedules(){
   if(!companyId){scheduleCache={};return}
+  if(deviceMode&&!navigator.onLine){
+    scheduleCache=await offlineCacheGet(offlineTeamKey('point_schedules'))||{};
+    return;
+  }
   try{
     const rows=await rest('v2_employee_schedules','select=employee_id,start_time,break_start_time,break_end_time,end_time,daily_minutes,tolerance_minutes,days_of_week&company_id=eq.'+companyId);
     scheduleCache=Object.fromEntries((rows||[]).map(r=>[r.employee_id,{
@@ -697,9 +729,10 @@ async function loadSchedules(){
       tolerance:Number(r.tolerance_minutes||0),
       days_of_week:r.days_of_week||[1,2,3,4,5]
     }]));
+    if(deviceMode)await offlineCacheSet(offlineTeamKey('point_schedules'),scheduleCache);
   }catch(e){
     console.warn('Falha ao carregar jornadas',e);
-    scheduleCache={};
+    scheduleCache=deviceMode?(await offlineCacheGet(offlineTeamKey('point_schedules'))||{}):{};
   }
 }
 
@@ -931,6 +964,45 @@ async function warmPointOfflineCache(){
   await cachePointContext(employees,events);
  }catch(e){console.warn('warm point offline cache',e)}
 }
+async function warmPoultryOfflineCache(){
+ if(!deviceMode||!navigator.onLine||!companyId)return;
+ const teamId=deviceAccess?.team_id;
+ if(!teamId)return;
+ const teams=await rest('v2_teams','select=id,name,status,metadata&company_id=eq.'+companyId+'&id=eq.'+encodeURIComponent(teamId))||[];
+ const loadings=await rest('v2_poultry_loadings','select=id,farm_id,operation_id,metadata,team_id,status&company_id=eq.'+companyId+'&team_id=eq.'+encodeURIComponent(teamId)+'&order=created_at.desc&limit=200')||[];
+ const farmIds=[...new Set(loadings.map(x=>x.farm_id).filter(Boolean))];
+ let farms=[],barns=[];
+ if(farmIds.length){
+  const q=farmIds.join(',');
+  farms=await rest('v2_poultry_farms','select=id,integrator_id,producer_name,farm_name,city,address,status,metadata&company_id=eq.'+companyId+'&id=in.('+q+')')||[];
+  barns=await rest('v2_poultry_barns','select=id,farm_id,barn_number,outlet_type,energy_type,status&company_id=eq.'+companyId+'&farm_id=in.('+q+')')||[];
+ }
+ await offlineCacheSet(offlineTeamKey('poultry_context'),{teams:teams.length?teams:(deviceTeam?[deviceTeam]:[]),farms,barns,loadings});
+ const [ops,trucks]=await Promise.all([
+  rest('v2_operations','select=id,title,customer_name,location_name,team_id,scheduled_start,scheduled_end,actual_start,actual_end,status,planned_birds,actual_birds,price_per_thousand,price_per_bird,actual_revenue,offline_event_id,metadata&company_id=eq.'+companyId+'&operation_type=eq.poultry_catching&order=scheduled_start.desc&limit=100'),
+  rest('v2_poultry_truck_loads','select=id,loading_id,truck_sequence,truck_plate,driver_name,birds,started_at,completed_at,is_cata,external_reference,metadata&company_id=eq.'+companyId+'&order=created_at.asc')
+ ]);
+ await offlineCacheSet(offlineTeamKey('poultry_ops'),{ops,loadings,trucks});
+}
+async function warmFuelOfflineCache(){
+ if(!deviceMode||!navigator.onLine||!companyId)return;
+ const [logs,vehicles]=await Promise.all([
+  rest('v2_fuel_logs','select=*&company_id=eq.'+companyId+'&order=fueled_at.desc&limit=200'),
+  rest('v2_vehicles','select=id,description,plate,model,current_odometer_km,status&company_id=eq.'+companyId+'&order=description.asc')
+ ]);
+ await offlineCacheSet(offlineTeamKey('fuel_logs'),logs||[]);
+ await offlineCacheSet(offlineTeamKey('fuel_vehicles'),vehicles||[]);
+}
+async function warmDeviceOfflineData(){
+ if(!deviceMode||!navigator.onLine)return;
+ await Promise.allSettled([
+  warmPointOfflineCache(),
+  loadSchedules(),
+  warmPoultryOfflineCache(),
+  warmFuelOfflineCache()
+ ]);
+ await updateOfflineQueueBadge();
+}
 async function offlineFindEmployeeByNumber(number){
  const employees=await offlineCacheGet(offlineTeamKey('point_employees'))||[];
  return employees.find(e=>String(e.employee_number||'').trim().toLowerCase()===String(number||'').trim().toLowerCase())||null;
@@ -1106,6 +1178,7 @@ async function syncOfflineQueue(){
    if(fuelActive)await loadFuel();
    const poultryActive=document.querySelector('[data-screen="operacoes"].active');
    if(poultryActive){await loadDevicePoultryContext();await loadPoultryOps()}
+   warmDeviceOfflineData().catch(e=>console.warn('refresh offline cache',e));
   }
  }finally{offlineSyncRunning=false}
 }
@@ -1552,19 +1625,37 @@ function setHtmlSafe(id,value){const el=document.getElementById(id);if(el)el.inn
 async function loadTeamPoint(){
  if(!companyId)return;
  try{
-   const employees=await rest('v2_employees','select=id,employee_number,full_name,primary_team,status&company_id=eq.'+companyId+'&status=eq.active&order=full_name.asc');
-   const bounds=saoPauloDayUtcBounds(localDateBR());
-   const events=await rest('v2_attendance_events','select=id,employee_id,occurred_at,event_type,method,accuracy_m&company_id=eq.'+companyId+'&occurred_at=gte.'+encodeURIComponent(bounds.start)+'&occurred_at=lt.'+encodeURIComponent(bounds.end)+'&order=occurred_at.asc&limit=500');
-   await cachePointContext(employees,events);
+   let employees=[],events=[];
+   const day=localDateBR();
+   if(deviceMode&&!navigator.onLine){
+    employees=await offlineCacheGet(offlineTeamKey('point_employees'))||[];
+    events=await offlineCacheGet(offlineTeamKey('point_events',day))||[];
+    const pending=(await offlineQueueList()).filter(x=>x.type==='attendance'&&saoPauloDateKey(x.payload?.occurred_at)===day).map(x=>({
+      id:null,employee_id:x.payload.employee_id,occurred_at:x.payload.occurred_at,event_type:x.payload.event_type,
+      method:x.payload.method,accuracy_m:x.payload.accuracy_m,offline_event_id:x.payload.offline_event_id,offline_pending:true
+    }));
+    const seen=new Set(events.map(x=>x.offline_event_id).filter(Boolean));
+    events=events.concat(pending.filter(x=>!seen.has(x.offline_event_id)));
+   }else{
+    employees=await rest('v2_employees','select=id,employee_number,full_name,primary_team,status&company_id=eq.'+companyId+'&status=eq.active&order=full_name.asc');
+    const bounds=saoPauloDayUtcBounds(day);
+    events=await rest('v2_attendance_events','select=id,employee_id,occurred_at,event_type,method,accuracy_m,offline_event_id&company_id=eq.'+companyId+'&occurred_at=gte.'+encodeURIComponent(bounds.start)+'&occurred_at=lt.'+encodeURIComponent(bounds.end)+'&order=occurred_at.asc&limit=500');
+    await cachePointContext(employees,events);
+   }
+
+   if(!employees.length&&deviceMode&&!navigator.onLine){
+    const p=$('#presenceList');if(p)p.innerHTML='<div class="error">Ainda não há funcionários salvos para uso offline. Conecte este celular à internet uma vez.</div>';
+   }
+
    const map=Object.fromEntries(employees.map(e=>[e.id,e])),by={};
    for(const ev of events)(by[ev.employee_id]??=[]).push(ev);
    let total=0,extra=0,withEvents=0;const metrics={};
    for(const e of employees){const mt=computeDayMetrics(by[e.id]||[],{live:true,expectedMinutes:expectedMinutesFor(e.id)});metrics[e.id]=mt;if((by[e.id]||[]).length)withEvents++;total+=mt.worked;extra+=mt.overtime}
    setTextSafe('pointToday',withEvents);setTextSafe('pointEvents',events.length);setTextSafe('pointWorked',fmtMinutes(total));setTextSafe('pointOvertime',fmtMinutes(extra));
    const presence=$('#presenceList');if(presence)presence.innerHTML=employees.map(e=>{const mt=metrics[e.id],has=(by[e.id]||[]).length>0,st=has?mt.status:'none';return '<div class="item"><strong>'+esc(e.full_name)+'</strong><span class="pill '+(st==='none'?'warn':(statusClass[st]||''))+'">'+esc(st==='none'?'Sem registro hoje':(statusLabels[st]||st))+'</span><div class="muted">'+esc(e.primary_team||'Equipe')+(has?' • '+fmtMinutes(mt.worked):'')+'</div></div>'}).join('')||'<div class="muted">Sem funcionários ativos.</div>';
-   const list=$('#pointList');if(list)list.innerHTML=[...events].reverse().slice(0,80).map(x=>{const e=map[x.employee_id]||{};return '<div class="item"><strong>'+esc(e.full_name||'Funcionário')+'</strong><span class="pill">'+esc(pointLabels[x.event_type]||x.event_type)+'</span><div class="muted">'+esc(new Date(x.occurred_at).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo'}))+' • '+esc(x.method||'matrícula')+'</div></div>'}).join('')||'<div class="muted">Nenhuma batida registrada hoje.</div>';
+   const list=$('#pointList');if(list)list.innerHTML=[...events].reverse().slice(0,80).map(x=>{const e=map[x.employee_id]||{};return '<div class="item"><strong>'+esc(e.full_name||'Funcionário')+'</strong><span class="pill '+(x.offline_pending?'warn':'')+'">'+esc(pointLabels[x.event_type]||x.event_type)+(x.offline_pending?' • OFFLINE':'')+'</span><div class="muted">'+esc(new Date(x.occurred_at).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo'}))+' • '+esc(x.method||'matrícula')+'</div></div>'}).join('')||'<div class="muted">Nenhuma batida registrada hoje.</div>';
    const mirror=$('#timeMirrorList');if(mirror)mirror.innerHTML=employees.map(e=>{const evs=by[e.id]||[];if(!evs.length)return '';const mt=metrics[e.id];return '<div class="item"><strong>'+esc(e.full_name)+'</strong><div class="muted">Trabalhado: <b>'+fmtMinutes(mt.worked)+'</b> • Intervalo: '+fmtMinutes(mt.breakMinutes)+' • Extra: <b>'+fmtMinutes(mt.overtime)+'</b></div></div>'}).join('')||'<div class="muted">Nenhum registro hoje.</div>';
- }catch(e){['presenceList','pointList','timeMirrorList'].forEach(id=>{const el=$('#'+id);if(el)el.innerHTML='<div class="error">'+esc(e.message)+'</div>'})}
+ }catch(e){['presenceList','pointList','timeMirrorList'].forEach(id=>{const el=$('#'+id);if(el)el.innerHTML='<div class="error">'+esc(e.message||String(e))+'</div>'})}
 }
 async function loadRHPoint(){
  if(!companyId)return;
@@ -2984,7 +3075,7 @@ if($('#offlineQueueBadge'))$('#offlineQueueBadge').addEventListener('click',()=>
 });
 if('serviceWorker' in navigator){
  window.addEventListener('load',()=>{
-  navigator.serviceWorker.register('./sw-v6-17.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
+  navigator.serviceWorker.register('./sw-v6-18.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
  });
 }
 
