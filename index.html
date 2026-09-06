@@ -8,7 +8,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
-<title>Controla V2 • Beta 6.08 Modo Equipe</title>
+<title>Controla V2 • Beta 6.09 Modo Equipe</title>
 <style>
 :root{--bg:#f3f6fb;--card:#fff;--ink:#0f172a;--muted:#64748b;--line:#e2e8f0;--accent:#0f172a}*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--ink)}header{position:sticky;top:0;z-index:20;background:linear-gradient(135deg,var(--accent),#1e293b);color:#fff;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 8px 24px rgba(15,23,42,.18)}.wrap{max-width:1200px;margin:auto;padding:12px}.card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:12px;box-shadow:0 4px 18px rgba(15,23,42,.045)}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:10px}.kpi{font-size:28px;font-weight:900}.label,.muted{font-size:12px;color:var(--muted)}.nav{display:flex;gap:8px;overflow:auto;padding:12px 0;scrollbar-width:none}.nav::-webkit-scrollbar{display:none}.nav button,.btn{border:0;border-radius:12px;padding:11px 14px;font-weight:800;white-space:nowrap;cursor:pointer}.nav button{background:#fff;border:1px solid var(--line);color:#334155}.nav button.active,.btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}.btn.soft{background:#e2e8f0}.btn.danger{background:#b91c1c;color:#fff}.btn.danger:hover{background:#991b1b}.hidden{display:none!important}.login{max-width:430px;margin:55px auto}.login input,.chat input{width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:10px;margin:6px 0 10px;font:inherit}.section{display:none}.section.active{display:block}.list{display:grid;gap:8px}.item{background:#fff;border:1px solid var(--line);border-radius:13px;padding:12px}.item strong{display:block}.pill{display:inline-block;padding:4px 8px;border-radius:999px;font-size:11px;font-weight:800;background:#e2e8f0}.pill.ok{background:#dcfce7;color:#166534}.pill.warn{background:#fef3c7;color:#92400e}.pill.danger{background:#fee2e2;color:#991b1b}.toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.chatbox{min-height:220px;max-height:52vh;overflow:auto;background:#fff;border:1px solid var(--line);border-radius:14px;padding:10px}.msg{padding:10px 12px;border-radius:12px;margin:8px 0;max-width:88%;white-space:pre-wrap}.msg.user{margin-left:auto;background:#e2e8f0}.msg.ai{background:#fff7ed;border:1px solid #fed7aa}.brand{display:flex;gap:10px;align-items:center}.logo{width:38px;height:38px;border-radius:10px;background:white;color:#0f172a;display:grid;place-items:center;font-weight:900}.error{color:#b91c1c;font-size:13px}.okmsg{color:#166534;font-size:13px}.debug{margin-top:8px;font-size:11px;color:#64748b;word-break:break-word}@media(max-width:640px){.wrap{padding:9px}.kpi{font-size:25px}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}header{padding:12px}.nav{position:sticky;top:66px;z-index:15;background:var(--bg);margin:0 -9px;padding:9px}}
 
@@ -127,7 +127,7 @@ body.app-ready .v2sidebar{display:block}
 .po-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
 .pill.warn{background:#fff3cd;color:#7c5700}
 
-/* Beta 6.08 — Modo Equipe */
+/* Beta 6.09 — Modo Equipe */
 .team-entry{max-width:520px;margin:42px auto}
 .team-entry .card{padding:20px}
 .team-entry-title{text-align:center;margin-bottom:18px}
@@ -172,7 +172,7 @@ body.device-mode .admin-only{display:none!important}
 <script defer src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
 <script>
 (function(){
-  const BUILD='6.08';
+  const BUILD='6.09';
   try{
     const marker='controla_cache_cleanup_'+BUILD;
     if(!localStorage.getItem(marker)){
@@ -213,7 +213,7 @@ body.device-mode .admin-only{display:none!important}
 <div class="v2group">EM BREVE</div>
 <button class="v2navbtn" type="button">Estoque</button>
 </aside>
-<header><div class="brand"><div class="logo">C</div><div><b>Controla</b><div><small id="companyName">Beta</small></div></div></div><div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill" id="buildBadge" title="Versão publicada">v6.08</span><button class="btn soft" id="themeToggle" type="button">☾</button><button class="btn soft hidden" id="logout">Sair</button></div></header>
+<header><div class="brand"><div class="logo">C</div><div><b>Controla</b><div><small id="companyName">Beta</small></div></div></div><div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill" id="buildBadge" title="Versão publicada">v6.09</span><button class="btn soft" id="themeToggle" type="button">☾</button><button class="btn soft hidden" id="logout">Sair</button></div></header>
 <main class="wrap">
 <section class="login team-entry" id="login">
 <div class="card" id="deviceSetupCard">
@@ -230,7 +230,7 @@ body.device-mode .admin-only{display:none!important}
  <label>Senha</label><input autocomplete="current-password" id="password" type="password"/>
  <button class="btn primary" id="loginBtn">Entrar</button>
  <button class="btn soft" id="backDeviceSetup" type="button" style="margin-left:6px">Voltar</button>
- <div class="muted" id="loginMsg" style="margin-top:10px">Beta 6.08 • Modo Equipe</div><div class="debug" id="debug"></div>
+ <div class="muted" id="loginMsg" style="margin-top:10px">Beta 6.09 • Modo Equipe</div><div class="debug" id="debug"></div>
 </div>
 </section>
 <section class="hidden" id="app">
@@ -269,9 +269,17 @@ body.device-mode .admin-only{display:none!important}
 </div></div>
 <div class="section" data-screen="equipes" hidden="" id="equipes">
 <div class="card"><div class="toolbar" style="justify-content:space-between"><div><h3 style="margin:0">Equipes</h3><div class="muted">Organize equipes, contratantes e conduções.</div></div><div class="toolbar"><button class="btn primary" id="newTeamBtn" type="button">+ NOVA EQUIPE</button><button class="btn soft" id="refreshTeams" type="button">Atualizar</button></div></div><div class="list" id="teamsList" style="margin-top:12px"></div></div>
+<div class="card" id="teamDevicesCard">
+<div class="toolbar" style="justify-content:space-between">
+ <div><h3 style="margin:0">📱 Celulares das equipes</h3><div class="muted">Veja quais aparelhos estão vinculados, quando acessaram pela última vez e revogue um aparelho quando precisar trocar.</div></div>
+ <button class="btn soft" id="refreshTeamDevices" type="button">Atualizar</button>
+</div>
+<div class="list" id="teamDevicesList" style="margin-top:12px"><div class="muted">Carregando celulares...</div></div>
+</div>
 <div class="card" id="teamDeviceCodeCard" style="display:none;border:2px solid #1976d2">
 <div class="toolbar" style="justify-content:space-between"><div><h3 style="margin:0">📱 Código do celular</h3><div class="muted" id="teamDeviceCodeName">Equipe</div></div><button class="btn soft" id="closeTeamDeviceCode" type="button">Fechar</button></div>
 <div id="teamDeviceCode" style="font-size:36px;font-weight:950;letter-spacing:5px;text-align:center;padding:18px 8px">--------</div>
+<div class="toolbar" style="justify-content:center;margin-bottom:8px"><button class="btn primary" id="copyTeamDeviceCode" type="button">COPIAR CÓDIGO</button></div>
 <div class="muted" style="text-align:center">Digite este código uma única vez no celular da equipe. O código expira e só pode ser usado uma vez.</div>
 </div>
 <div class="card" id="teamEditCard" style="display:none"><div class="toolbar" style="justify-content:space-between"><div><h3 id="teamEditTitle" style="margin:0">Editar equipe</h3><div class="muted">Cadastre onde a equipe presta serviço, a condução e os funcionários vinculados.</div></div><button class="btn soft" id="cancelTeamEdit" type="button">Cancelar</button></div><input id="editTeamId" type="hidden"/><div class="row" style="margin-top:12px"><div><label>Nome da equipe</label><input id="editTeamName"/></div><div><label>Empresa contratante / terceirização</label><input id="editTeamContractor" list="teamContractors" placeholder="Ex.: Zanchetta ou Roseira"/><datalist id="teamContractors"></datalist></div><div><label>Código</label><input id="editTeamCode"/></div></div><div class="row"><div><label>Status</label><select id="editTeamStatus"><option value="active">Ativa</option><option value="inactive">Inativa</option></select></div><div><label>Veículo principal</label><select id="editTeamVehicle"><option value="">Sem veículo vinculado</option></select><div class="muted" style="margin-top:5px">Escolhido a partir da Frota cadastrada.</div></div><div><label>Responsável / encarregado</label><select id="editTeamSupervisor"><option value="">Não informado</option></select></div></div><div style="margin-top:16px"><div class="toolbar" style="justify-content:space-between"><div><label style="font-size:15px">Funcionários da equipe</label><div class="muted">Marque para adicionar. Desmarque para retirar. Se o funcionário estiver em outra equipe, ele será transferido.</div></div><span class="pill" id="teamMembersCount">0 selecionado(s)</span></div><div id="teamMembersList" class="list" style="margin-top:10px;max-height:360px;overflow:auto"></div></div><div class="toolbar" style="margin-top:12px"><button class="btn primary" id="saveTeamEdit" type="button">SALVAR EQUIPE</button><button class="btn soft" id="archiveTeamBtn" type="button">ARQUIVAR EQUIPE</button><button class="btn danger" id="deleteTeamBtn" type="button">EXCLUIR EQUIPE</button></div><div class="muted" id="teamEditMsg" style="margin-top:8px"></div></div>
@@ -591,6 +599,7 @@ async function enterDeviceApp(authUser){
  if(!user||!user.id)throw new Error('Sessão do aparelho não encontrada.');
  const access=await loadDeviceAccess(user.id);
  if(!access){const er=new Error('Este celular ainda não foi ativado. Digite o código da equipe.');er.code='DEVICE_UNPAIRED';throw er}
+ try{await rpc('v2_touch_device',{})}catch(e){console.warn('Não foi possível atualizar último acesso do aparelho',e)}
  deviceMode=true;deviceAccess=access;companyId=access.company_id;currentRoleCode='device';isAdminGeneral=false;
  const companies=await v2Rest('v2_companies','select=id,legal_name,trade_name,tax_id,timezone&id=eq.'+encodeURIComponent(companyId)+'&limit=1');
  companyProfile=companies&&companies[0]?companies[0]:{id:companyId,trade_name:"Agro Souza's"};
@@ -929,14 +938,58 @@ async function loadDashboard(){try{
  $('#v2PeopleSummary').innerHTML=[['Ativos',d.active_employees||0],['Frota',d.active_vehicles||0],['Despesas mês',money(d.month_expense)]].map(x=>`<div class="v2mini"><span class="muted">${x[0]}</span><b>${esc(x[1])}</b></div>`).join('');
  try{const a=await dashRest('v2_alerts','select=title,severity,status,created_at&company_id=eq.'+companyId+'&status=eq.open&order=created_at.desc&limit=5');$('#v2Alerts').innerHTML=a.length?a.map(x=>`<div class="v2alert"><b>${esc(x.title||'Alerta')}</b><div class="muted">${esc(x.severity||'atenção')}</div></div>`).join(''):'<div class="v2-empty">Nenhum alerta aberto.</div>'}catch(_){$('#v2Alerts').innerHTML='<div class="v2-empty">Alertas disponíveis na aba Alertas.</div>'}
 }catch(e){$('#todayList').innerHTML='<div class="error">'+esc(e.message)+'</div>'}}
-async function loadTeams(){try{const [r,v,e]=await Promise.all([rest('v2_teams','select=id,name,code,status,supervisor_employee_id,metadata&company_id=eq.'+companyId+'&order=name.asc'),rest('v2_vehicles','select=id,description,plate,status&company_id=eq.'+companyId+'&order=description.asc'),rest('v2_employees','select=id,full_name,employee_number,primary_team,status&company_id=eq.'+companyId+'&status=eq.active&order=full_name.asc')]);window.__teams=r;window.__teamVehicles=v;window.__teamEmployees=e;const contractors=[...new Set(r.map(x=>(x.metadata?.contractor_name||'').trim()).filter(Boolean))].sort();const dl=$('#teamContractors');if(dl)dl.innerHTML=contractors.map(n=>`<option value="${esc(n)}"></option>`).join('');const list=$('#teamsList');if(!list)return;list.innerHTML=r.map(x=>{const vid=x.metadata?.primary_vehicle_id||'';const veh=v.find(z=>z.id===vid);const sup=e.find(z=>z.id===x.supervisor_employee_id);const members=e.filter(z=>(z.primary_team||'').trim().toLowerCase()===(x.name||'').trim().toLowerCase());const contractor=x.metadata?.contractor_name||'Contratante não informada';return `<div class="item"><div class="toolbar" style="justify-content:space-between;gap:10px"><div><strong>${esc(x.name)}</strong> <span class="pill ${x.status==='active'?'ok':'warn'}">${x.status==='active'?'Ativa':'Inativa'}</span><div style="margin-top:5px"><span class="pill">🏭 ${esc(contractor)}</span></div><div class="muted" style="margin-top:5px">${esc(x.code||'Sem código')} • ${members.length} funcionário(s)</div><div style="margin-top:7px"><b>🚌 ${esc(veh?(veh.description+(veh.plate?' • '+veh.plate:'')):'Sem veículo vinculado')}</b>${sup?`<div class="muted">Responsável: ${esc(sup.full_name)}</div>`:''}</div></div><div class="toolbar"><button class="btn primary createDeviceCode" type="button" data-team="${x.id}" data-name="${esc(x.name)}">📱 Celular</button><button class="btn soft" type="button" onclick="openTeamEdit('${x.id}')">Editar</button></div></div></div>`}).join('')||'<div class="muted">Sem equipes. Toque em + Nova equipe para cadastrar.</div>'}catch(e){const list=$('#teamsList');if(list)list.innerHTML='<div class="error">'+esc(e.message)+'</div>'}}
+async function loadTeams(){
+ try{
+  const [r,v,e,d]=await Promise.all([
+   rest('v2_teams','select=id,name,code,status,supervisor_employee_id,metadata&company_id=eq.'+companyId+'&order=name.asc'),
+   rest('v2_vehicles','select=id,description,plate,status&company_id=eq.'+companyId+'&order=description.asc'),
+   rest('v2_employees','select=id,full_name,employee_number,primary_team,status&company_id=eq.'+companyId+'&status=eq.active&order=full_name.asc'),
+   rest('v2_device_access','select=id,team_id,device_name,active,paired_at,last_seen_at,permissions&company_id=eq.'+companyId+'&order=paired_at.desc')
+  ]);
+  window.__teams=r||[];window.__teamVehicles=v||[];window.__teamEmployees=e||[];window.__teamDevices=d||[];
+  const contractors=[...new Set((r||[]).map(x=>(x.metadata?.contractor_name||'').trim()).filter(Boolean))].sort();
+  const dl=$('#teamContractors');if(dl)dl.innerHTML=contractors.map(n=>`<option value="${esc(n)}"></option>`).join('');
+  const list=$('#teamsList');
+  if(list){
+   list.innerHTML=(r||[]).map(x=>{
+    const vid=x.metadata?.primary_vehicle_id||'',veh=(v||[]).find(z=>z.id===vid),sup=(e||[]).find(z=>z.id===x.supervisor_employee_id);
+    const members=(e||[]).filter(z=>(z.primary_team||'').trim().toLowerCase()===(x.name||'').trim().toLowerCase());
+    const contractor=x.metadata?.contractor_name||'Contratante não informada';
+    const devices=(d||[]).filter(z=>z.team_id===x.id&&z.active);
+    return `<div class="item"><div class="toolbar" style="justify-content:space-between;gap:10px"><div><strong>${esc(x.name)}</strong> <span class="pill ${x.status==='active'?'ok':'warn'}">${x.status==='active'?'Ativa':'Inativa'}</span> <span class="pill ${devices.length?'ok':''}">📱 ${devices.length} celular(es)</span><div style="margin-top:5px"><span class="pill">🏭 ${esc(contractor)}</span></div><div class="muted" style="margin-top:5px">${esc(x.code||'Sem código')} • ${members.length} funcionário(s)</div><div style="margin-top:7px"><b>🚌 ${esc(veh?(veh.description+(veh.plate?' • '+veh.plate:'')):'Sem veículo vinculado')}</b>${sup?`<div class="muted">Responsável: ${esc(sup.full_name)}</div>`:''}</div></div><div class="toolbar"><button class="btn primary createDeviceCode" type="button" data-team="${x.id}" data-name="${esc(x.name)}">📱 Ativar celular</button><button class="btn soft" type="button" onclick="openTeamEdit('${x.id}')">Editar</button></div></div></div>`;
+   }).join('')||'<div class="muted">Sem equipes. Toque em + Nova equipe para cadastrar.</div>';
+  }
+  renderTeamDevices(d||[],r||[]);
+ }catch(e){
+  const list=$('#teamsList');if(list)list.innerHTML='<div class="error">'+esc(e.message)+'</div>';
+  const dev=$('#teamDevicesList');if(dev)dev.innerHTML='<div class="error">'+esc(e.message)+'</div>';
+ }
+}
+function deviceTimeLabel(v){
+ if(!v)return 'Nunca acessou';
+ try{return new Date(v).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo'})}catch(_){return String(v)}
+}
+function renderTeamDevices(devices,teams){
+ const list=$('#teamDevicesList');if(!list)return;
+ if(!devices.length){list.innerHTML='<div class="muted">Nenhum celular vinculado ainda. Amanhã, ao ativar os aparelhos, eles aparecerão aqui.</div>';return}
+ list.innerHTML=devices.map(d=>{
+  const team=teams.find(t=>t.id===d.team_id),active=!!d.active;
+  return `<div class="item"><div class="toolbar" style="justify-content:space-between;gap:12px"><div><strong>${esc(d.device_name||'Celular da equipe')}</strong><div style="margin-top:5px"><span class="pill ${active?'ok':'warn'}">${active?'ATIVO':'REVOGADO'}</span> <span class="pill">${esc(team?.name||'Equipe')}</span></div><div class="muted" style="margin-top:7px">Vinculado em: ${esc(deviceTimeLabel(d.paired_at))}<br>Último acesso: ${esc(deviceTimeLabel(d.last_seen_at))}</div></div>${active?`<button class="btn danger revokeTeamDevice" type="button" data-id="${d.id}" data-name="${esc(d.device_name||team?.name||'celular')}">REVOGAR</button>`:''}</div></div>`;
+ }).join('');
+}
+async function revokeTeamDevice(id,name){
+ if(!id)return;
+ if(!confirm('Revogar o acesso de '+(name||'este celular')+'? O aparelho deixará de acessar a equipe e precisará de um novo código para ser ativado novamente.'))return;
+ try{await rest('v2_device_access','id=eq.'+encodeURIComponent(id),'PATCH',{active:false});await loadTeams()}
+ catch(e){alert('Não foi possível revogar o celular: '+(e.message||String(e)))}
+}
 async function createDevicePairingCode(teamId,teamName){
  const card=$('#teamDeviceCodeCard'),codeEl=$('#teamDeviceCode'),nameEl=$('#teamDeviceCodeName');
  if(card)card.style.display='block';if(codeEl)codeEl.textContent='GERANDO...';if(nameEl)nameEl.textContent=teamName||'Equipe';
  try{
   const r=await rpc('v2_create_device_pairing_code',{p_company_id:companyId,p_team_id:teamId,p_device_name:'Celular '+(teamName||'Equipe'),p_valid_minutes:60});
   const row=Array.isArray(r)?r[0]:r;if(!row||!row.pairing_code)throw new Error('Código não retornado.');
-  if(codeEl)codeEl.textContent=row.pairing_code;
+  if(codeEl){codeEl.textContent=row.pairing_code;codeEl.dataset.code=row.pairing_code}
   if(nameEl)nameEl.textContent=(row.team_name||teamName||'Equipe')+' • válido por até 60 minutos';
   if(card)card.scrollIntoView({behavior:'smooth',block:'center'});
  }catch(e){if(codeEl)codeEl.textContent='ERRO';if(nameEl)nameEl.textContent=e.message||String(e)}
@@ -1729,6 +1782,7 @@ function renderDeviceModeBar(tab){const bar=$('#deviceModeBar');if(bar)bar.class
 document.addEventListener('click',function(e){
   const team=e.target.closest('[data-teamtab]');if(team){e.preventDefault();v2Go(team.dataset.teamtab);return}
   const code=e.target.closest('.createDeviceCode');if(code){e.preventDefault();createDevicePairingCode(code.dataset.team,code.dataset.name||'Equipe');return}
+  const revoke=e.target.closest('.revokeTeamDevice');if(revoke){e.preventDefault();revokeTeamDevice(revoke.dataset.id,revoke.dataset.name||'celular');return}
   const side=e.target.closest('.v2navbtn[data-v2tab]');
   if(side){ e.preventDefault(); v2Go(side.dataset.v2tab); return; }
   const mobile=e.target.closest('#nav button[data-tab]');
@@ -2208,6 +2262,16 @@ if(localStorage.getItem('controla_theme')==='dark'){document.body.classList.add(
 (()=>{const d=new Date();$('#v2Today').textContent='Hoje, '+d.toLocaleDateString('pt-BR');$('#v2Weekday').textContent=d.toLocaleDateString('pt-BR',{weekday:'long'})})();
 
 if($('#closeTeamDeviceCode'))$('#closeTeamDeviceCode').addEventListener('click',()=>{$('#teamDeviceCodeCard').style.display='none'});
+if($('#copyTeamDeviceCode'))$('#copyTeamDeviceCode').addEventListener('click',async()=>{
+ const el=$('#teamDeviceCode'),code=el?.dataset?.code||el?.textContent?.trim();
+ if(!code||code==='--------'||code==='GERANDO...'||code==='ERRO')return;
+ try{
+  if(navigator.clipboard&&navigator.clipboard.writeText)await navigator.clipboard.writeText(code);
+  else{const t=document.createElement('textarea');t.value=code;document.body.appendChild(t);t.select();document.execCommand('copy');t.remove()}
+  const b=$('#copyTeamDeviceCode');const old=b.textContent;b.textContent='COPIADO ✓';setTimeout(()=>b.textContent=old,1400);
+ }catch(e){alert('Código: '+code)}
+});
+if($('#refreshTeamDevices'))$('#refreshTeamDevices').addEventListener('click',loadTeams);
 if($('#refreshTeamReport'))$('#refreshTeamReport').addEventListener('click',loadTeamReport);
 $('#refreshRH').addEventListener('click',async()=>{await loadEmployees();await loadRHPoint()});
 
