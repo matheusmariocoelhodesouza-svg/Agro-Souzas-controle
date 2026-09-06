@@ -8,7 +8,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
-<title>Comando 360 • v6.35</title>
+<title>Comando 360 • v6.36</title>
 <link rel="manifest" href="./comando360.webmanifest"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
@@ -351,7 +351,7 @@ header .brand small{color:#718198;font-weight:650}
 <script defer src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
 <script>
 (function(){
-  const BUILD='6.35';
+  const BUILD='6.36';
   try{
     const marker='controla_cache_cleanup_'+BUILD;
     if(!localStorage.getItem(marker)){
@@ -385,7 +385,7 @@ header .brand small{color:#718198;font-weight:650}
 <div class="v2group">INTELIGÊNCIA</div>
 <button class="v2navbtn" data-v2tab="ia">✦   Assistente IA</button>
 </aside>
-<header><div class="brand"><img class="header-brand-icon" src="./comando360-icon.svg" alt="Comando 360"/><div><b>Comando <span class="brand360">360</span></b><div><small id="companyName">Empresa</small></div></div></div><div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.35</span><button class="btn soft" id="themeToggle" type="button">☾</button><button class="btn soft hidden" id="logout">Sair</button></div></header>
+<header><div class="brand"><img class="header-brand-icon" src="./comando360-icon.svg" alt="Comando 360"/><div><b>Comando <span class="brand360">360</span></b><div><small id="companyName">Empresa</small></div></div></div><div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.36</span><button class="btn soft" id="themeToggle" type="button">☾</button><button class="btn soft hidden" id="logout">Sair</button></div></header>
 <main class="wrap">
 <section class="login team-entry" id="login">
 <div class="card" id="deviceSetupCard">
@@ -402,7 +402,7 @@ header .brand small{color:#718198;font-weight:650}
  <label>Senha</label><input autocomplete="current-password" id="password" type="password"/>
  <button class="btn primary" id="loginBtn">Entrar</button>
  <button class="btn soft" id="backDeviceSetup" type="button" style="margin-left:6px">Voltar</button>
- <div class="muted" id="loginMsg" style="margin-top:10px">Comando 360 • v6.35</div><div class="debug" id="debug"></div>
+ <div class="muted" id="loginMsg" style="margin-top:10px">Comando 360 • v6.36</div><div class="debug" id="debug"></div>
 </div>
 </section>
 <section class="hidden" id="app">
@@ -1027,14 +1027,27 @@ async function enrollEmployeeFaceFromFile(file,employeeId,descriptor=null){
  const faceDescriptor=descriptor||await faceDescriptorFromFile(file);
  const facePath=await uploadFaceReference(file,employeeId);
  const u=await getUser();
- try{await rpc('enroll_employee_face',{p_employee_id:employeeId,p_photo_storage_path:facePath})}catch(e){console.warn('enroll_employee_face',e)}
- await rpc('v2_save_employee_face_descriptor',{p_employee_id:employeeId,p_descriptor:faceDescriptor});
- try{
-  await restUpsert('v2_employee_face_enrollments',{
-   company_id:companyId,employee_id:employeeId,reference_photo_path:facePath,status:'active',
-   enrolled_at:new Date().toISOString(),enrolled_by:u.id,revoked_at:null
-  },'company_id,employee_id');
- }catch(e){console.warn('face enrollment status',e)}
+
+ // Primeiro garante que o cadastro V2 exista; depois grava o descriptor facial.
+ await restUpsert('v2_employee_face_enrollments',{
+  company_id:companyId,
+  employee_id:employeeId,
+  reference_photo_path:facePath,
+  status:'active',
+  enrolled_at:new Date().toISOString(),
+  enrolled_by:u.id,
+  revoked_at:null
+ },'company_id,employee_id');
+
+ await rpc('v2_save_employee_face_descriptor',{
+  p_employee_id:employeeId,
+  p_descriptor:faceDescriptor
+ });
+
+ // Compatibilidade com o cadastro facial legado; falha aqui não bloqueia a Biometria V2.
+ try{await rpc('enroll_employee_face',{p_employee_id:employeeId,p_photo_storage_path:facePath})}
+ catch(e){console.warn('enroll_employee_face legado',e)}
+
  return {facePath};
 }
 async function profilePhotoAsFile(employee){
@@ -3869,7 +3882,7 @@ setInterval(()=>{
 },60000);
 if('serviceWorker' in navigator){
  window.addEventListener('load',()=>{
-  navigator.serviceWorker.register('./sw-v6-35.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
+  navigator.serviceWorker.register('./sw-v6-36.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
  });
 }
 
