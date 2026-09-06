@@ -8,7 +8,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
-<title>Controla V2 • Beta 6.09 Modo Equipe</title>
+<title>Controla V2 • Beta 6.10 Modo Equipe</title>
 <style>
 :root{--bg:#f3f6fb;--card:#fff;--ink:#0f172a;--muted:#64748b;--line:#e2e8f0;--accent:#0f172a}*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--ink)}header{position:sticky;top:0;z-index:20;background:linear-gradient(135deg,var(--accent),#1e293b);color:#fff;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 8px 24px rgba(15,23,42,.18)}.wrap{max-width:1200px;margin:auto;padding:12px}.card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:12px;box-shadow:0 4px 18px rgba(15,23,42,.045)}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:10px}.kpi{font-size:28px;font-weight:900}.label,.muted{font-size:12px;color:var(--muted)}.nav{display:flex;gap:8px;overflow:auto;padding:12px 0;scrollbar-width:none}.nav::-webkit-scrollbar{display:none}.nav button,.btn{border:0;border-radius:12px;padding:11px 14px;font-weight:800;white-space:nowrap;cursor:pointer}.nav button{background:#fff;border:1px solid var(--line);color:#334155}.nav button.active,.btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}.btn.soft{background:#e2e8f0}.btn.danger{background:#b91c1c;color:#fff}.btn.danger:hover{background:#991b1b}.hidden{display:none!important}.login{max-width:430px;margin:55px auto}.login input,.chat input{width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:10px;margin:6px 0 10px;font:inherit}.section{display:none}.section.active{display:block}.list{display:grid;gap:8px}.item{background:#fff;border:1px solid var(--line);border-radius:13px;padding:12px}.item strong{display:block}.pill{display:inline-block;padding:4px 8px;border-radius:999px;font-size:11px;font-weight:800;background:#e2e8f0}.pill.ok{background:#dcfce7;color:#166534}.pill.warn{background:#fef3c7;color:#92400e}.pill.danger{background:#fee2e2;color:#991b1b}.toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.chatbox{min-height:220px;max-height:52vh;overflow:auto;background:#fff;border:1px solid var(--line);border-radius:14px;padding:10px}.msg{padding:10px 12px;border-radius:12px;margin:8px 0;max-width:88%;white-space:pre-wrap}.msg.user{margin-left:auto;background:#e2e8f0}.msg.ai{background:#fff7ed;border:1px solid #fed7aa}.brand{display:flex;gap:10px;align-items:center}.logo{width:38px;height:38px;border-radius:10px;background:white;color:#0f172a;display:grid;place-items:center;font-weight:900}.error{color:#b91c1c;font-size:13px}.okmsg{color:#166534;font-size:13px}.debug{margin-top:8px;font-size:11px;color:#64748b;word-break:break-word}@media(max-width:640px){.wrap{padding:9px}.kpi{font-size:25px}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}header{padding:12px}.nav{position:sticky;top:66px;z-index:15;background:var(--bg);margin:0 -9px;padding:9px}}
 
@@ -127,7 +127,7 @@ body.app-ready .v2sidebar{display:block}
 .po-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
 .pill.warn{background:#fff3cd;color:#7c5700}
 
-/* Beta 6.09 — Modo Equipe */
+/* Beta 6.10 — Modo Equipe */
 .team-entry{max-width:520px;margin:42px auto}
 .team-entry .card{padding:20px}
 .team-entry-title{text-align:center;margin-bottom:18px}
@@ -149,13 +149,12 @@ body.device-mode .v2sidebar,body.device-mode #nav{display:none!important}
 body.device-mode header{margin-left:0!important;width:100%!important}
 body.device-mode #app{padding-left:0!important;width:100%!important}
 body.device-mode .wrap{max-width:980px;margin:0 auto}
-body.device-mode #newPoultryOp,
 body.device-mode #quickTeamCard,
+body.device-mode #quickTeamBtn,
 body.device-mode #poAdminPlanning,
 body.device-mode #poFinanceCard,
 body.device-mode #newKmBtn,
 body.device-mode #methodFace{display:none!important}
-body.device-mode #poultryForm{display:none!important}
 body.device-mode .deleteFuelBtn{display:none!important}
 body.device-mode .admin-only{display:none!important}
 @media(max-width:640px){
@@ -172,7 +171,7 @@ body.device-mode .admin-only{display:none!important}
 <script defer src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
 <script>
 (function(){
-  const BUILD='6.09';
+  const BUILD='6.10';
   try{
     const marker='controla_cache_cleanup_'+BUILD;
     if(!localStorage.getItem(marker)){
@@ -213,7 +212,7 @@ body.device-mode .admin-only{display:none!important}
 <div class="v2group">EM BREVE</div>
 <button class="v2navbtn" type="button">Estoque</button>
 </aside>
-<header><div class="brand"><div class="logo">C</div><div><b>Controla</b><div><small id="companyName">Beta</small></div></div></div><div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill" id="buildBadge" title="Versão publicada">v6.09</span><button class="btn soft" id="themeToggle" type="button">☾</button><button class="btn soft hidden" id="logout">Sair</button></div></header>
+<header><div class="brand"><div class="logo">C</div><div><b>Controla</b><div><small id="companyName">Beta</small></div></div></div><div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill" id="buildBadge" title="Versão publicada">v6.10</span><button class="btn soft" id="themeToggle" type="button">☾</button><button class="btn soft hidden" id="logout">Sair</button></div></header>
 <main class="wrap">
 <section class="login team-entry" id="login">
 <div class="card" id="deviceSetupCard">
@@ -230,7 +229,7 @@ body.device-mode .admin-only{display:none!important}
  <label>Senha</label><input autocomplete="current-password" id="password" type="password"/>
  <button class="btn primary" id="loginBtn">Entrar</button>
  <button class="btn soft" id="backDeviceSetup" type="button" style="margin-left:6px">Voltar</button>
- <div class="muted" id="loginMsg" style="margin-top:10px">Beta 6.09 • Modo Equipe</div><div class="debug" id="debug"></div>
+ <div class="muted" id="loginMsg" style="margin-top:10px">Beta 6.10 • Modo Equipe</div><div class="debug" id="debug"></div>
 </div>
 </section>
 <section class="hidden" id="app">
@@ -591,7 +590,6 @@ function applyDeviceUi(){
  const face=document.getElementById('methodFace');if(face)face.classList.add('hidden');
  if(typeof setPointMethod==='function')setPointMethod('employee_number');
  const monthly=document.getElementById('monthlyEmployee');if(monthly&&monthly.closest('.card'))monthly.closest('.card').style.display='none';
- const newP=document.getElementById('newPoultryOp');if(newP)newP.style.display='none';
  const km=document.getElementById('newKmBtn');if(km)km.style.display='none';
 }
 async function enterDeviceApp(authUser){
@@ -1448,6 +1446,7 @@ function applyPoultryRoleUI(){
 async function loadDevicePoultryContext(){
  try{
   poultryTeams=await rest('v2_teams','select=id,name,status,metadata&company_id=eq.'+companyId+'&id=eq.'+encodeURIComponent(deviceAccess.team_id))||[];
+  if(!poultryTeams.length&&deviceTeam)poultryTeams=[deviceTeam];
   const loadings=await rest('v2_poultry_loadings','select=id,farm_id,operation_id&company_id=eq.'+companyId+'&team_id=eq.'+encodeURIComponent(deviceAccess.team_id)+'&order=created_at.desc&limit=200')||[];
   const farmIds=[...new Set(loadings.map(x=>x.farm_id).filter(Boolean))];
   poultryFarms=[];poultryBarns=[];
@@ -1456,7 +1455,26 @@ async function loadDevicePoultryContext(){
     poultryFarms=await rest('v2_poultry_farms','select=id,integrator_id,producer_name,farm_name,city,address,status,metadata&company_id=eq.'+companyId+'&id=in.('+q+')')||[];
     poultryBarns=await rest('v2_poultry_barns','select=id,farm_id,barn_number,outlet_type,energy_type,status&company_id=eq.'+companyId+'&farm_id=in.('+q+')')||[];
   }
- }catch(e){console.warn('Contexto da equipe',e);poultryTeams=deviceTeam?[deviceTeam]:[];poultryFarms=[];poultryBarns=[]}
+  const team=$('#poTeam');
+  if(team){
+    const t=poultryTeams[0]||deviceTeam;
+    team.innerHTML=t?'<option value="'+esc(t.id)+'">'+esc(t.name||'Equipe')+'</option>':'<option value="">Equipe do aparelho</option>';
+    if(t)team.value=t.id;
+    team.disabled=true;
+  }
+  const saved=$('#poSavedAviary');
+  if(saved){
+    saved.innerHTML='<option value="">Novo / selecione...</option>'+poultryBarns.map(b=>{
+      const f=poultryFarms.find(x=>x.id===b.farm_id);
+      return '<option value="'+esc(b.id)+'">'+esc(f?.producer_name||'Integrado')+' • '+esc(f?.city||f?.address?.city||'Cidade')+' • '+esc(b.barn_number)+'</option>';
+    }).join('');
+  }
+  applyPoultryRoleUI();
+ }catch(e){
+  console.warn('Contexto da equipe',e);
+  poultryTeams=deviceTeam?[deviceTeam]:[];poultryFarms=[];poultryBarns=[];
+  const team=$('#poTeam');if(team&&deviceTeam){team.innerHTML='<option value="'+esc(deviceTeam.id)+'">'+esc(deviceTeam.name||'Equipe')+'</option>';team.value=deviceTeam.id;team.disabled=true}
+ }
 }
 async function loadPoultrySelectors(){
  const team=$('#poTeam');
@@ -1522,6 +1540,24 @@ async function ensurePoultryIntegrator(name){
 async function ensureAviaryProfile(){
  const integrated=$('#poIntegratedName').value.trim(),city=$('#poCity').value.trim(),farmName=$('#poFarmName').value.trim(),aviary=$('#poAviaryName').value.trim();
  if(!integrated||!city||!aviary)throw new Error('Preencha nome do integrado, cidade e aviário.');
+ if(deviceMode){
+  const res=await rpc('v2_device_ensure_aviary',{
+   p_company_id:companyId,
+   p_integrated:integrated,
+   p_city:city,
+   p_farm_name:farmName||null,
+   p_aviary:aviary,
+   p_outlet_type:$('#poOutletType').value.trim()||null,
+   p_energy_type:$('#poEnergyType').value.trim()||null
+  });
+  const row=Array.isArray(res)?res[0]:res;
+  if(!row?.farm_id||!row?.barn_id)throw new Error('Não foi possível salvar o aviário para esta equipe.');
+  const farm={id:row.farm_id,integrator_id:row.integrator_id,producer_name:row.producer_name,farm_name:row.farm_name,city:row.city,address:{city:row.city},status:'active',metadata:{}};
+  const barn={id:row.barn_id,farm_id:row.farm_id,barn_number:row.barn_number,outlet_type:row.outlet_type,energy_type:row.energy_type,status:'active'};
+  poultryFarms=[farm,...poultryFarms.filter(x=>x.id!==farm.id)];
+  poultryBarns=[barn,...poultryBarns.filter(x=>x.id!==barn.id)];
+  return {farm,barn};
+ }
  let farm=poultryFarms.find(f=>String(f.producer_name||'').toLowerCase()===integrated.toLowerCase()&&String(f.city||f.address?.city||'').toLowerCase()===city.toLowerCase()&&String(f.farm_name||'').toLowerCase()===farmName.toLowerCase());
  const integrator=await ensurePoultryIntegrator(integrated);
  if(!farm){
@@ -1574,6 +1610,7 @@ async function savePoultryOperation(){
   if(!loading?.id)throw new Error('Apanha criada, mas o carregamento não foi vinculado.');
   $('#poMsg').textContent='Apanha salva ✓ Agora registre o Caminhão 1.';
   $('#poultryForm').classList.add('hidden');
+  if(deviceMode)await loadDevicePoultryContext();
   await loadPoultryOps();
   openNextTruckForm({
     operationId:op.id,
@@ -1720,7 +1757,21 @@ async function saveOperationFinance(){
  }catch(e){$('#poFinanceMsg').textContent=e.message}
 }
 
-if($('#newPoultryOp'))$('#newPoultryOp').addEventListener('click',async()=>{$('#poultryForm').classList.remove('hidden');$('#poStart').value=poLocalInputDate();await loadPoultrySelectors();applyPoultryRoleUI()});
+if($('#newPoultryOp'))$('#newPoultryOp').addEventListener('click',async()=>{
+ $('#poultryForm').classList.remove('hidden');
+ $('#poStart').value=poLocalInputDate();
+ $('#poEnd').value='';
+ $('#poNotes').value='';
+ $('#poMsg').textContent='';
+ if(deviceMode){
+   await loadDevicePoultryContext();
+   const team=$('#poTeam');if(team&&deviceAccess){team.value=deviceAccess.team_id;team.disabled=true}
+ }else{
+   const team=$('#poTeam');if(team)team.disabled=false;
+   await loadPoultrySelectors();
+ }
+ applyPoultryRoleUI();
+});
 if($('#closePoultryForm'))$('#closePoultryForm').addEventListener('click',()=>$('#poultryForm').classList.add('hidden'));
 if($('#savePoultryOp'))$('#savePoultryOp').addEventListener('click',savePoultryOperation);
 if($('#refreshPoultry'))$('#refreshPoultry').addEventListener('click',loadPoultryOps);
@@ -1731,7 +1782,7 @@ if($('#poTruckSave'))$('#poTruckSave').addEventListener('click',()=>saveTruckLoa
 if($('#poTruckSaveClose'))$('#poTruckSaveClose').addEventListener('click',()=>saveTruckLoad(true));
 if($('#poFinanceClose'))$('#poFinanceClose').addEventListener('click',()=>$('#poFinanceCard').classList.add('hidden'));
 if($('#poFinanceSave'))$('#poFinanceSave').addEventListener('click',saveOperationFinance);
-if($('#quickTeamBtn'))$('#quickTeamBtn').addEventListener('click',()=>{$('#quickTeamCard').classList.remove('hidden');$('#quickTeamName').focus()});
+if($('#quickTeamBtn'))$('#quickTeamBtn').addEventListener('click',()=>{if(deviceMode)return;$('#quickTeamCard').classList.remove('hidden');$('#quickTeamName').focus()});
 if($('#quickTeamClose'))$('#quickTeamClose').addEventListener('click',()=>$('#quickTeamCard').classList.add('hidden'));
 if($('#quickTeamSave'))$('#quickTeamSave').addEventListener('click',async()=>{
  const name=$('#quickTeamName').value.trim();if(!name)return $('#quickTeamMsg').textContent='Informe o nome da equipe.';
