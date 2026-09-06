@@ -8,7 +8,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
-<title>Controla V2 • Beta 6.16 Modo Equipe</title>
+<title>Controla V2 • Beta 6.17 Modo Equipe</title>
 <link rel="manifest" href="./agro-souzas-controle-v7.webmanifest"/>
 <link rel="apple-touch-icon" href="./apple-touch-icon-180.png"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
@@ -132,7 +132,7 @@ body.app-ready .v2sidebar{display:block}
 .po-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
 .pill.warn{background:#fff3cd;color:#7c5700}
 
-/* Beta 6.16 — Modo Equipe */
+/* Beta 6.17 — Modo Equipe */
 .team-entry{max-width:520px;margin:42px auto}
 .team-entry .card{padding:20px}
 .team-entry-title{text-align:center;margin-bottom:18px}
@@ -175,7 +175,7 @@ body.device-mode .admin-only{display:none!important}
 <script defer src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
 <script>
 (function(){
-  const BUILD='6.16';
+  const BUILD='6.17';
   try{
     const marker='controla_cache_cleanup_'+BUILD;
     if(!localStorage.getItem(marker)){
@@ -211,7 +211,7 @@ body.device-mode .admin-only{display:none!important}
 <div class="v2group">EM BREVE</div>
 <button class="v2navbtn" type="button">Estoque</button>
 </aside>
-<header><div class="brand"><div class="logo">C</div><div><b>Controla</b><div><small id="companyName">Beta</small></div></div></div><div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.16</span><button class="btn soft" id="themeToggle" type="button">☾</button><button class="btn soft hidden" id="logout">Sair</button></div></header>
+<header><div class="brand"><div class="logo">C</div><div><b>Controla</b><div><small id="companyName">Beta</small></div></div></div><div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.17</span><button class="btn soft" id="themeToggle" type="button">☾</button><button class="btn soft hidden" id="logout">Sair</button></div></header>
 <main class="wrap">
 <section class="login team-entry" id="login">
 <div class="card" id="deviceSetupCard">
@@ -228,7 +228,7 @@ body.device-mode .admin-only{display:none!important}
  <label>Senha</label><input autocomplete="current-password" id="password" type="password"/>
  <button class="btn primary" id="loginBtn">Entrar</button>
  <button class="btn soft" id="backDeviceSetup" type="button" style="margin-left:6px">Voltar</button>
- <div class="muted" id="loginMsg" style="margin-top:10px">Beta 6.16 • Modo Equipe</div><div class="debug" id="debug"></div>
+ <div class="muted" id="loginMsg" style="margin-top:10px">Beta 6.17 • Modo Equipe</div><div class="debug" id="debug"></div>
 </div>
 </section>
 <section class="hidden" id="app">
@@ -983,6 +983,97 @@ async function syncFuelOfflineItem(item){
  await rest('v2_fuel_logs','','POST',p);
  return true;
 }
+
+async function syncPoultryOperationOfflineItem(item){
+ const f=item.form||{};
+ const res=await rpc('v2_device_sync_poultry_operation',{
+  p_company_id:item.company_id,
+  p_offline_event_id:item.id,
+  p_integrated:f.integrated,
+  p_city:f.city,
+  p_farm_name:f.farm_name||null,
+  p_aviary:f.aviary,
+  p_outlet_type:f.outlet_type||null,
+  p_energy_type:f.energy_type||null,
+  p_scheduled_start:f.scheduled_start,
+  p_scheduled_end:f.scheduled_end||null,
+  p_notes:f.notes||null
+ });
+ const row=Array.isArray(res)?res[0]:res;
+ if(!row?.operation_id||!row?.loading_id)throw new Error('Apanha offline não retornou os IDs do servidor.');
+ return row;
+}
+async function resolvePoultryOfflineRefs(item){
+ let operationId=item.operation_id||null,loadingId=item.loading_id||null,loading=null;
+ if(item.operation_offline_id){
+  const ops=await rest('v2_operations','select=id,offline_event_id&company_id=eq.'+encodeURIComponent(item.company_id)+'&offline_event_id=eq.'+encodeURIComponent(item.operation_offline_id)+'&limit=1');
+  if(!ops?.length)throw new Error('A apanha ainda não foi sincronizada.');
+  operationId=ops[0].id;
+ }
+ if(!loadingId||String(loadingId).startsWith('offline:')){
+  if(!operationId)throw new Error('Operação da apanha não encontrada.');
+  const rows=await rest('v2_poultry_loadings','select=id,operation_id,farm_id,metadata&company_id=eq.'+encodeURIComponent(item.company_id)+'&operation_id=eq.'+encodeURIComponent(operationId)+'&limit=1');
+  if(!rows?.length)throw new Error('Carregamento da apanha ainda não foi criado.');
+  loading=rows[0];loadingId=loading.id;
+ }else{
+  const rows=await rest('v2_poultry_loadings','select=id,operation_id,farm_id,metadata&company_id=eq.'+encodeURIComponent(item.company_id)+'&id=eq.'+encodeURIComponent(loadingId)+'&limit=1');
+  loading=rows?.[0]||null;
+  operationId=operationId||loading?.operation_id||null;
+ }
+ return {operationId,loadingId,loading};
+}
+async function syncPoultryTruckOfflineItem(item){
+ const refs=await resolvePoultryOfflineRefs(item);
+ const p=item.payload||{};
+ const existing=await rest('v2_poultry_truck_loads','select=id,loading_id,external_reference&company_id=eq.'+encodeURIComponent(item.company_id)+'&external_reference=eq.'+encodeURIComponent(item.id)+'&limit=1');
+ let truck=existing?.[0]||null;
+ const defaultBarn=refs.loading?.metadata?.default_barn_id||null;
+ const barnId=(!item.barn_id||String(item.barn_id).startsWith('offline:'))?defaultBarn:item.barn_id;
+ if(!barnId)throw new Error('Aviário do caminhão não foi encontrado.');
+
+ if(!truck){
+  const rows=await rest('v2_poultry_truck_loads','','POST',{
+   company_id:item.company_id,
+   loading_id:refs.loadingId,
+   truck_sequence:p.truck_sequence,
+   truck_plate:p.truck_plate||null,
+   driver_name:p.driver_name||null,
+   birds:p.birds||0,
+   started_at:p.started_at||null,
+   completed_at:p.completed_at||null,
+   is_cata:!!p.is_cata,
+   external_reference:item.id,
+   metadata:{barn_id:barnId,notes:p.notes||null,source:'team_device_offline_sync'}
+  });
+  truck=rows?.[0]||null;
+ }
+ if(!truck?.id)throw new Error('Caminhão offline não foi salvo.');
+
+ const barnLinks=await rest('v2_poultry_truck_barns','select=id&company_id=eq.'+encodeURIComponent(item.company_id)+'&truck_load_id=eq.'+encodeURIComponent(truck.id)+'&limit=1');
+ if(!barnLinks?.length){
+  await rest('v2_poultry_truck_barns','','POST',{
+   company_id:item.company_id,truck_load_id:truck.id,barn_id:barnId,sequence_no:1,
+   birds:p.birds||0,started_at:p.started_at||null,completed_at:p.completed_at||null,notes:p.notes||null
+  });
+ }
+ if(refs.operationId)await refreshOperationBirdTotals(refs.operationId,refs.loadingId);
+ return true;
+}
+async function syncPoultryCompleteOfflineItem(item){
+ const refs=await resolvePoultryOfflineRefs(item);
+ const trucks=await rest('v2_poultry_truck_loads','select=birds,started_at,completed_at&company_id=eq.'+encodeURIComponent(item.company_id)+'&loading_id=eq.'+encodeURIComponent(refs.loadingId));
+ if(!trucks?.length)throw new Error('Aguardando sincronização dos caminhões desta apanha.');
+ const total=trucks.reduce((a,t)=>a+poN(t.birds),0);
+ const starts=trucks.map(t=>t.started_at).filter(Boolean).sort();
+ const ends=trucks.map(t=>t.completed_at).filter(Boolean).sort();
+ await rest('v2_poultry_loadings','id=eq.'+encodeURIComponent(refs.loadingId),'PATCH',{
+  reported_birds:total,reported_trucks:trucks.length,status:'completed'
+ });
+ await rest('v2_operations','id=eq.'+encodeURIComponent(refs.operationId),'PATCH',{
+  actual_birds:total,status:'completed',actual_start:starts[0]||null,actual_end:ends[ends.length-1]||new Date().toISOString()
+ });
+ return true;
+}
 async function syncOfflineQueue(){
  if(offlineSyncRunning||!navigator.onLine||!companyId||!session()?.access_token)return;
  offlineSyncRunning=true;
@@ -994,6 +1085,9 @@ async function syncOfflineQueue(){
    try{
     if(item.type==='attendance')await syncAttendanceOfflineItem(item);
     else if(item.type==='fuel')await syncFuelOfflineItem(item);
+    else if(item.type==='poultry_operation')await syncPoultryOperationOfflineItem(item);
+    else if(item.type==='poultry_truck')await syncPoultryTruckOfflineItem(item);
+    else if(item.type==='poultry_complete')await syncPoultryCompleteOfflineItem(item);
     else continue;
     await offlineStoreDelete('queue',item.id);
    }catch(e){
@@ -1010,6 +1104,8 @@ async function syncOfflineQueue(){
    if(active)await loadTeamPoint();
    const fuelActive=document.querySelector('[data-screen="combustivel"].active');
    if(fuelActive)await loadFuel();
+   const poultryActive=document.querySelector('[data-screen="operacoes"].active');
+   if(poultryActive){await loadDevicePoultryContext();await loadPoultryOps()}
   }
  }finally{offlineSyncRunning=false}
 }
@@ -1714,34 +1810,56 @@ function applyPoultryRoleUI(){
 }
 async function loadDevicePoultryContext(){
  try{
-  poultryTeams=await rest('v2_teams','select=id,name,status,metadata&company_id=eq.'+companyId+'&id=eq.'+encodeURIComponent(deviceAccess.team_id))||[];
-  if(!poultryTeams.length&&deviceTeam)poultryTeams=[deviceTeam];
-  const loadings=await rest('v2_poultry_loadings','select=id,farm_id,operation_id&company_id=eq.'+companyId+'&team_id=eq.'+encodeURIComponent(deviceAccess.team_id)+'&order=created_at.desc&limit=200')||[];
-  const farmIds=[...new Set(loadings.map(x=>x.farm_id).filter(Boolean))];
-  poultryFarms=[];poultryBarns=[];
-  if(farmIds.length){
+  if(deviceMode&&!navigator.onLine){
+   const cached=await offlineCacheGet(offlineTeamKey('poultry_context'))||{};
+   poultryTeams=cached.teams||[];
+   poultryFarms=cached.farms||[];
+   poultryBarns=cached.barns||[];
+   poultryLoadings=cached.loadings||[];
+   if(!poultryTeams.length&&deviceTeam)poultryTeams=[deviceTeam];
+  }else{
+   poultryTeams=await rest('v2_teams','select=id,name,status,metadata&company_id=eq.'+companyId+'&id=eq.'+encodeURIComponent(deviceAccess.team_id))||[];
+   if(!poultryTeams.length&&deviceTeam)poultryTeams=[deviceTeam];
+   const loadings=await rest('v2_poultry_loadings','select=id,farm_id,operation_id,metadata,team_id,status&company_id=eq.'+companyId+'&team_id=eq.'+encodeURIComponent(deviceAccess.team_id)+'&order=created_at.desc&limit=200')||[];
+   const farmIds=[...new Set(loadings.map(x=>x.farm_id).filter(Boolean))];
+   poultryFarms=[];poultryBarns=[];poultryLoadings=loadings;
+   if(farmIds.length){
     const q=farmIds.join(',');
     poultryFarms=await rest('v2_poultry_farms','select=id,integrator_id,producer_name,farm_name,city,address,status,metadata&company_id=eq.'+companyId+'&id=in.('+q+')')||[];
     poultryBarns=await rest('v2_poultry_barns','select=id,farm_id,barn_number,outlet_type,energy_type,status&company_id=eq.'+companyId+'&farm_id=in.('+q+')')||[];
+   }
+   if(deviceMode)await offlineCacheSet(offlineTeamKey('poultry_context'),{teams:poultryTeams,farms:poultryFarms,barns:poultryBarns,loadings:poultryLoadings});
   }
+
+  if(deviceMode){
+   const pending=(await offlineQueueList()).filter(x=>x.type==='poultry_operation');
+   for(const item of pending){
+    const f=item.form||{},farmId='offline-farm:'+item.id,barnId='offline-barn:'+item.id;
+    if(!poultryFarms.some(x=>x.id===farmId))poultryFarms.unshift({id:farmId,producer_name:f.integrated,farm_name:f.farm_name||f.integrated,city:f.city,address:{city:f.city},status:'active',metadata:{offline_pending:true}});
+    if(!poultryBarns.some(x=>x.id===barnId))poultryBarns.unshift({id:barnId,farm_id:farmId,barn_number:f.aviary,outlet_type:f.outlet_type||null,energy_type:f.energy_type||null,status:'active',offline_pending:true});
+    const loadingId='offline:'+item.id;
+    if(!poultryLoadings.some(x=>x.id===loadingId))poultryLoadings.unshift({id:loadingId,operation_id:'offline:'+item.id,farm_id:farmId,team_id:item.team_id,status:'planned',metadata:{default_barn_id:barnId,offline_pending:true}});
+   }
+  }
+
   const team=$('#poTeam');
   if(team){
-    const t=poultryTeams[0]||deviceTeam;
-    team.innerHTML=t?'<option value="'+esc(t.id)+'">'+esc(t.name||'Equipe')+'</option>':'<option value="">Equipe do aparelho</option>';
-    if(t)team.value=t.id;
-    team.disabled=true;
+   const t=poultryTeams[0]||deviceTeam;
+   team.innerHTML=t?'<option value="'+esc(t.id)+'">'+esc(t.name||'Equipe')+'</option>':'<option value="">Equipe do aparelho</option>';
+   if(t)team.value=t.id;
+   team.disabled=true;
   }
   const saved=$('#poSavedAviary');
   if(saved){
-    saved.innerHTML='<option value="">Novo / selecione...</option>'+poultryBarns.map(b=>{
-      const f=poultryFarms.find(x=>x.id===b.farm_id);
-      return '<option value="'+esc(b.id)+'">'+esc(f?.producer_name||'Integrado')+' • '+esc(f?.city||f?.address?.city||'Cidade')+' • '+esc(b.barn_number)+'</option>';
-    }).join('');
+   saved.innerHTML='<option value="">Novo / selecione...</option>'+poultryBarns.map(b=>{
+    const f=poultryFarms.find(x=>x.id===b.farm_id);
+    return '<option value="'+esc(b.id)+'">'+esc(f?.producer_name||'Integrado')+' • '+esc(f?.city||f?.address?.city||'Cidade')+' • '+esc(b.barn_number)+(b.offline_pending?' • OFFLINE':'')+'</option>';
+   }).join('');
   }
   applyPoultryRoleUI();
  }catch(e){
   console.warn('Contexto da equipe',e);
-  poultryTeams=deviceTeam?[deviceTeam]:[];poultryFarms=[];poultryBarns=[];
+  poultryTeams=deviceTeam?[deviceTeam]:[];poultryFarms=[];poultryBarns=[];poultryLoadings=[];
   const team=$('#poTeam');if(team&&deviceTeam){team.innerHTML='<option value="'+esc(deviceTeam.id)+'">'+esc(deviceTeam.name||'Equipe')+'</option>';team.value=deviceTeam.id;team.disabled=true}
  }
 }
@@ -1851,8 +1969,37 @@ async function saveAviaryProfile(){
  try{$('#aviaryMsg').textContent='Salvando...';await ensureAviaryProfile();$('#aviaryMsg').textContent='Dados do aviário salvos ✓'}catch(e){$('#aviaryMsg').textContent=e.message}
 }
 async function savePoultryOperation(){
- const t=poultryTeams.find(x=>x.id===$('#poTeam').value);
+ const t=poultryTeams.find(x=>x.id===$('#poTeam').value)||(deviceMode?deviceTeam:null);
  if(!t||!$('#poStart').value)return $('#poMsg').textContent='Selecione a equipe e informe o início.';
+
+ if(deviceMode&&!navigator.onLine){
+  const integrated=$('#poIntegratedName').value.trim(),city=$('#poCity').value.trim(),farmName=$('#poFarmName').value.trim(),aviary=$('#poAviaryName').value.trim();
+  if(!integrated||!city||!aviary)return $('#poMsg').textContent='Preencha nome do integrado, cidade e aviário.';
+  try{
+   $('#poMsg').textContent='Salvando apanha neste celular...';
+   const id=makeOfflineId('apanha');
+   const form={
+    integrated,city,farm_name:farmName||null,aviary,
+    outlet_type:$('#poOutletType').value.trim()||null,
+    energy_type:$('#poEnergyType').value.trim()||null,
+    scheduled_start:new Date($('#poStart').value).toISOString(),
+    scheduled_end:$('#poEnd').value?new Date($('#poEnd').value).toISOString():null,
+    notes:$('#poNotes').value.trim()||null
+   };
+   await offlineQueueAdd({id,type:'poultry_operation',company_id:companyId,team_id:deviceAccess?.team_id||t.id,created_at:new Date().toISOString(),form});
+   $('#poultryForm').classList.add('hidden');
+   await loadDevicePoultryContext();
+   await loadPoultryOps();
+   openNextTruckForm({
+    operationId:'offline:'+id,loadingId:'offline:'+id,farmId:'offline-farm:'+id,
+    name:integrated,sequence:1
+   });
+   $('#poTruckMsg').className='okmsg';
+   $('#poTruckMsg').textContent='Apanha salva offline ✓ Registre os caminhões normalmente. Tudo será sincronizado quando voltar a internet.';
+  }catch(e){$('#poMsg').textContent=e.message||String(e)}
+  return;
+ }
+
  try{
   $('#poMsg').textContent='Salvando...';
   const {farm,barn}=await ensureAviaryProfile();
@@ -1871,7 +2018,7 @@ async function savePoultryOperation(){
   const op=opRows?.[0];
   if(!op)throw new Error('Apanha não foi criada.');
   const loadingRows=await rest('v2_poultry_loadings','','POST',{
-    company_id:companyId,operation_id:op.id,farm_id:farm.id,loading_date:$('#poStart').value.slice(0,10),
+    company_id:companyId,operation_id:op.id,integrator_id:farm.integrator_id,farm_id:farm.id,loading_date:$('#poStart').value.slice(0,10),
     catching_method:'back',planned_birds:planned||null,reported_birds:0,planned_trucks:null,reported_trucks:0,status:'planned',team_id:t.id,
     metadata:{default_barn_id:barn.id}
   });
@@ -1881,29 +2028,61 @@ async function savePoultryOperation(){
   $('#poultryForm').classList.add('hidden');
   if(deviceMode)await loadDevicePoultryContext();
   await loadPoultryOps();
-  openNextTruckForm({
-    operationId:op.id,
-    loadingId:loading.id,
-    farmId:farm.id,
-    name:farm.producer_name||op.title||'Apanha',
-    sequence:1
-  });
+  openNextTruckForm({operationId:op.id,loadingId:loading.id,farmId:farm.id,name:farm.producer_name||op.title||'Apanha',sequence:1});
  }catch(e){$('#poMsg').textContent=e.message}
 }
 async function loadPoultryOps(){
  try{
-  const [ops,loadings,trucks]=await Promise.all([
-   rest('v2_operations','select=id,title,customer_name,location_name,team_id,scheduled_start,scheduled_end,actual_start,actual_end,status,planned_birds,actual_birds,price_per_thousand,price_per_bird,actual_revenue,metadata&company_id=eq.'+companyId+'&operation_type=eq.poultry_catching&order=scheduled_start.desc&limit=100'),
-   rest('v2_poultry_loadings','select=id,operation_id,farm_id,status,reported_birds,reported_trucks,metadata&company_id=eq.'+companyId+'&order=created_at.desc'),
-   rest('v2_poultry_truck_loads','select=id,loading_id,truck_sequence,truck_plate,driver_name,birds,started_at,completed_at,is_cata,metadata&company_id=eq.'+companyId+'&order=created_at.asc')
-  ]);
+  let ops=[],loadings=[],trucks=[];
+  if(deviceMode&&!navigator.onLine){
+   const cached=await offlineCacheGet(offlineTeamKey('poultry_ops'))||{};
+   ops=cached.ops||[];loadings=cached.loadings||[];trucks=cached.trucks||[];
+  }else{
+   [ops,loadings,trucks]=await Promise.all([
+    rest('v2_operations','select=id,title,customer_name,location_name,team_id,scheduled_start,scheduled_end,actual_start,actual_end,status,planned_birds,actual_birds,price_per_thousand,price_per_bird,actual_revenue,offline_event_id,metadata&company_id=eq.'+companyId+'&operation_type=eq.poultry_catching&order=scheduled_start.desc&limit=100'),
+    rest('v2_poultry_loadings','select=id,operation_id,farm_id,status,reported_birds,reported_trucks,metadata,team_id&company_id=eq.'+companyId+'&order=created_at.desc'),
+    rest('v2_poultry_truck_loads','select=id,loading_id,truck_sequence,truck_plate,driver_name,birds,started_at,completed_at,is_cata,external_reference,metadata&company_id=eq.'+companyId+'&order=created_at.asc')
+   ]);
+   if(deviceMode)await offlineCacheSet(offlineTeamKey('poultry_ops'),{ops,loadings,trucks});
+  }
+
+  if(deviceMode){
+   const queue=await offlineQueueList();
+   for(const item of queue.filter(x=>x.type==='poultry_operation')){
+    const f=item.form||{},opId='offline:'+item.id,loadingId='offline:'+item.id,farmId='offline-farm:'+item.id,barnId='offline-barn:'+item.id;
+    if(!ops.some(o=>o.id===opId))ops.unshift({
+     id:opId,title:'Apanha - '+f.integrated,customer_name:f.integrated,location_name:(f.city||'')+' • '+(f.integrated||'')+' • '+(f.aviary||''),
+     team_id:item.team_id,scheduled_start:f.scheduled_start,scheduled_end:f.scheduled_end,status:'planned',
+     offline_event_id:item.id,metadata:{farm_id:farmId,barn_id:barnId,city:f.city,integrated_name:f.integrated,offline_pending:true}
+    });
+    if(!loadings.some(l=>l.id===loadingId))loadings.unshift({id:loadingId,operation_id:opId,farm_id:farmId,status:'planned',reported_birds:0,reported_trucks:0,team_id:item.team_id,metadata:{default_barn_id:barnId,offline_pending:true}});
+   }
+
+   for(const item of queue.filter(x=>x.type==='poultry_truck')){
+    const loadingId=item.loading_id||('offline:'+item.operation_offline_id);
+    if(!trucks.some(t=>t.external_reference===item.id))trucks.push({
+     id:'offline-truck:'+item.id,loading_id:loadingId,truck_sequence:item.payload?.truck_sequence,
+     truck_plate:item.payload?.truck_plate,driver_name:item.payload?.driver_name,birds:item.payload?.birds,
+     started_at:item.payload?.started_at,completed_at:item.payload?.completed_at,is_cata:!!item.payload?.is_cata,
+     external_reference:item.id,metadata:{barn_id:item.barn_id,notes:item.payload?.notes,offline_pending:true}
+    });
+   }
+
+   for(const item of queue.filter(x=>x.type==='poultry_complete')){
+    const opId=item.operation_offline_id?'offline:'+item.operation_offline_id:item.operation_id;
+    const op=ops.find(o=>o.id===opId);if(op){op.status='completed';op.metadata={...(op.metadata||{}),offline_complete_pending:true}}
+    const loadingId=item.loading_id||('offline:'+item.operation_offline_id);
+    const l=loadings.find(x=>x.id===loadingId);if(l)l.status='completed';
+   }
+  }
+
   poultryLoadings=loadings;poultryTruckLoads=trucks;
-  const today=ops.filter(o=>o.scheduled_start&&new Date(o.scheduled_start).toDateString()===new Date().toDateString());
+  const today=ops.filter(o=>o.scheduled_start&&saoPauloDateKey(o.scheduled_start)===localDateBR());
   const todayTrucks=trucks.filter(tr=>today.some(o=>loadings.find(l=>l.operation_id===o.id)?.id===tr.loading_id));
   const birdsToday=todayTrucks.reduce((a,t)=>a+poN(t.birds),0);
   $('#poultryKpis').innerHTML=[
     ['APANHAS HOJE',today.length],['CAMINHÕES HOJE',todayTrucks.length],['AVES CARREGADAS',birdsToday.toLocaleString('pt-BR')],['CATAS',todayTrucks.filter(t=>t.is_cata).length]
-  ].map(x=>`<div class="v2kpi"><div class="t">${x[0]}</div><div class="v">${x[1]}</div></div>`).join('');
+  ].map(x=>'<div class="v2kpi"><div class="t">'+x[0]+'</div><div class="v">'+x[1]+'</div></div>').join('');
 
   $('#poultryList').innerHTML=ops.length?ops.map(o=>{
     const loading=loadings.find(l=>l.operation_id===o.id),opTrucks=loading?trucks.filter(t=>t.loading_id===loading.id):[];
@@ -1911,26 +2090,29 @@ async function loadPoultryOps(){
     const team=poultryTeams.find(t=>t.id===o.team_id);
     const farm=poultryFarms.find(f=>f.id===(loading?.farm_id||o.metadata?.farm_id));
     const barn=poultryBarns.find(b=>b.id===(o.metadata?.barn_id||loading?.metadata?.default_barn_id));
-    const truckHtml=opTrucks.length?opTrucks.map(t=>`<div class="truck-row" style="padding:12px;border:1px solid #e5e7eb;border-radius:12px;margin:8px 0;background:#fff"><div class="toolbar" style="justify-content:space-between;align-items:flex-start"><div><b style="font-size:15px">🚚 Caminhão ${t.truck_sequence||''}</b><div class="muted" style="margin-top:3px">${esc(t.truck_plate)} • ${esc(t.driver_name)}</div></div>${t.is_cata?'<span class="pill warn">CATA</span>':''}</div><div style="margin-top:8px"><b>${poN(t.birds).toLocaleString('pt-BR')} aves</b> • ${t.started_at?new Date(t.started_at).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'—'} → ${t.completed_at?new Date(t.completed_at).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'—'} • ${esc(poultryBarns.find(b=>b.id===t.metadata?.barn_id)?.barn_number||barn?.barn_number||'Aviário')}</div></div>`).join(''):'<div class="muted" style="padding:10px 0">Nenhum caminhão registrado ainda. Comece pelo Caminhão 1.</div>';
-    return `<div class="item">
-      <div class="toolbar" style="justify-content:space-between"><div><strong>${esc(farm?.producer_name||o.customer_name||o.title)}</strong><div class="muted">${esc(farm?.city||'')} • ${esc(barn?.barn_number||'Aviário não informado')} • ${esc(team?.name||'Equipe')}</div></div><span class="pill ${o.status==='completed'?'ok':''}">${poSL(o.status)}</span></div>
-      <div class="site-memory"><b>Tomada:</b> ${esc(barn?.outlet_type||'Não informada')} &nbsp; • &nbsp; <b>Energia:</b> ${esc(barn?.energy_type||'Não informada')}</div>
-      <div class="po-detail"><div><span class="muted">Caminhões</span><br><b>${opTrucks.length}</b></div><div><span class="muted">Aves carregadas</span><br><b>${totalBirds.toLocaleString('pt-BR')}</b></div><div><span class="muted">Catas</span><br><b>${opTrucks.filter(t=>t.is_cata).length}</b></div><div><span class="muted">Início previsto</span><br><b>${o.scheduled_start?new Date(o.scheduled_start).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'—'}</b></div></div>
-      <div style="margin-top:14px;padding-top:12px;border-top:1px solid #e5e7eb">
-        <div class="toolbar" style="justify-content:space-between;align-items:flex-end"><div><strong>🚚 Carregamento caminhão por caminhão</strong><div class="muted">Cada caminhão fica registrado separadamente nesta apanha.</div></div><div class="muted">${opTrucks.length} registrado(s)</div></div>
-        <div class="truck-list">${truckHtml}</div>
-      </div>
-      <div class="po-actions" style="margin-top:12px">
-        ${loading&&o.status!=='completed'?`<button class="btn primary poAddTruck" style="font-size:15px;padding:12px 18px" data-op="${o.id}" data-loading="${loading.id}" data-farm="${loading.farm_id||''}" data-name="${esc(farm?.producer_name||o.title)}" data-seq="${opTrucks.length+1}">+ ADICIONAR CAMINHÃO ${opTrucks.length+1}</button>`:''}
-        ${loading&&o.status==='completed'?`<button class="btn primary poReopenAddTruck" style="font-size:15px;padding:12px 18px" data-op="${o.id}" data-loading="${loading.id}" data-farm="${loading.farm_id||''}" data-name="${esc(farm?.producer_name||o.title)}" data-seq="${opTrucks.length+1}">↩ REABRIR E ADICIONAR CAMINHÃO ${opTrucks.length+1}</button>`:''}
-        ${o.status==='completed'?`<span class="pill ok">APANHA CONCLUÍDA • ${opTrucks.length} CAMINHÃO(ÕES)</span>`:''}
-        ${o.status!=='completed'?`<button class="btn soft poCompleteOp" data-op="${o.id}" data-loading="${loading?.id||''}">✓ Concluir Apanha</button>`:''}
-        ${isAdminGeneral?`<button class="btn soft poFinance" data-op="${o.id}" data-name="${esc(farm?.producer_name||o.title)}" data-price="${poN(o.price_per_bird)}">R$ Valor</button>`:''}
-        ${isAdminGeneral?`<button class="btn danger poDeleteOp" data-op="${o.id}" data-loading="${loading?.id||''}" type="button">Excluir Apanha</button>`:''}
-      </div>
-    </div>`
+    const pending=!!o.metadata?.offline_pending;
+    const truckHtml=opTrucks.length?opTrucks.map(t=>
+      '<div class="truck-row" style="padding:12px;border:1px solid #e5e7eb;border-radius:12px;margin:8px 0;background:#fff">'+
+       '<div class="toolbar" style="justify-content:space-between;align-items:flex-start"><div><b style="font-size:15px">🚚 Caminhão '+esc(t.truck_sequence||'')+'</b><div class="muted" style="margin-top:3px">'+esc(t.truck_plate||'')+' • '+esc(t.driver_name||'')+'</div></div>'+
+       (t.metadata?.offline_pending?'<span class="pill warn">OFFLINE • PENDENTE</span>':(t.is_cata?'<span class="pill warn">CATA</span>':''))+'</div>'+
+       '<div style="margin-top:8px"><b>'+poN(t.birds).toLocaleString('pt-BR')+' aves</b> • '+(t.started_at?new Date(t.started_at).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'—')+' → '+(t.completed_at?new Date(t.completed_at).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'—')+' • '+esc(poultryBarns.find(b=>b.id===t.metadata?.barn_id)?.barn_number||barn?.barn_number||'Aviário')+'</div></div>'
+    ).join(''):'<div class="muted" style="padding:10px 0">Nenhum caminhão registrado ainda. Comece pelo Caminhão 1.</div>';
+
+    return '<div class="item">'+
+      '<div class="toolbar" style="justify-content:space-between"><div><strong>'+esc(farm?.producer_name||o.customer_name||o.title)+'</strong><div class="muted">'+esc(farm?.city||o.metadata?.city||'')+' • '+esc(barn?.barn_number||'Aviário não informado')+' • '+esc(team?.name||deviceTeam?.name||'Equipe')+'</div></div>'+
+      (pending?'<span class="pill warn">APANHA OFFLINE • PENDENTE</span>':'<span class="pill '+(o.status==='completed'?'ok':'')+'">'+esc(poSL(o.status))+'</span>')+'</div>'+
+      '<div class="site-memory"><b>Tomada:</b> '+esc(barn?.outlet_type||'Não informada')+' &nbsp; • &nbsp; <b>Energia:</b> '+esc(barn?.energy_type||'Não informada')+'</div>'+
+      '<div class="po-detail"><div><span class="muted">Caminhões</span><br><b>'+opTrucks.length+'</b></div><div><span class="muted">Aves carregadas</span><br><b>'+totalBirds.toLocaleString('pt-BR')+'</b></div><div><span class="muted">Catas</span><br><b>'+opTrucks.filter(t=>t.is_cata).length+'</b></div><div><span class="muted">Início previsto</span><br><b>'+(o.scheduled_start?new Date(o.scheduled_start).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'—')+'</b></div></div>'+
+      '<div style="margin-top:14px;padding-top:12px;border-top:1px solid #e5e7eb"><div class="toolbar" style="justify-content:space-between;align-items:flex-end"><div><strong>🚚 Carregamento caminhão por caminhão</strong><div class="muted">Cada caminhão fica registrado separadamente nesta apanha.</div></div><div class="muted">'+opTrucks.length+' registrado(s)</div></div><div class="truck-list">'+truckHtml+'</div></div>'+
+      '<div class="po-actions" style="margin-top:12px">'+
+       (loading&&o.status!=='completed'?'<button class="btn primary poAddTruck" style="font-size:15px;padding:12px 18px" data-op="'+esc(o.id)+'" data-loading="'+esc(loading.id)+'" data-farm="'+esc(loading.farm_id||'')+'" data-name="'+esc(farm?.producer_name||o.title)+'" data-seq="'+(opTrucks.length+1)+'">+ ADICIONAR CAMINHÃO '+(opTrucks.length+1)+'</button>':'')+
+       (o.status==='completed'?'<span class="pill ok">APANHA CONCLUÍDA • '+opTrucks.length+' CAMINHÃO(ÕES)'+(o.metadata?.offline_complete_pending?' • AGUARDANDO SYNC':'')+'</span>':'')+
+       (o.status!=='completed'?'<button class="btn soft poCompleteOp" data-op="'+esc(o.id)+'" data-loading="'+esc(loading?.id||'')+'">✓ Concluir Apanha</button>':'')+
+       (isAdminGeneral?'<button class="btn soft poFinance" data-op="'+esc(o.id)+'" data-name="'+esc(farm?.producer_name||o.title)+'" data-price="'+poN(o.price_per_bird)+'">R$ Valor</button>':'')+
+       (isAdminGeneral&&!pending?'<button class="btn danger poDeleteOp" data-op="'+esc(o.id)+'" data-loading="'+esc(loading?.id||'')+'" type="button">Excluir Apanha</button>':'')+
+      '</div></div>';
   }).join(''):'<div class="v2-empty">Nenhuma apanha cadastrada.</div>';
- }catch(e){$('#poultryList').innerHTML='<div class="error">'+esc(e.message)+'</div>'}
+ }catch(e){$('#poultryList').innerHTML='<div class="error">'+esc(e.message||String(e))+'</div>'}
 }
 async function refreshOperationBirdTotals(operationId,loadingId){
  const trucks=await rest('v2_poultry_truck_loads','select=birds,started_at,completed_at&loading_id=eq.'+loadingId);
@@ -1963,31 +2145,57 @@ function openNextTruckForm({operationId,loadingId,farmId,name,sequence}){
 async function saveTruckLoad(closeAfter=false){
  const operationId=$('#poTruckOperationId').value,loadingId=$('#poTruckLoadingId').value,driver=$('#poTruckDriver').value.trim(),plate=$('#poTruckPlate').value.trim().toUpperCase(),birds=poN($('#poTruckBirds').value),barnId=$('#poTruckBarn').value,start=$('#poTruckStart').value,end=$('#poTruckEnd').value;
  if(!operationId||!loadingId||!driver||!plate||!birds||!barnId||!start||!end)return $('#poTruckMsg').textContent='Preencha motorista, placa, aves, aviário, início e término.';
+
+ const existing=poultryTruckLoads.filter(t=>t.loading_id===loadingId);
+ const sequence=Number($('#poTruckSequence').value||existing.length+1);
+ const payload={
+  truck_sequence:sequence,truck_plate:plate,driver_name:driver,birds,
+  started_at:new Date(start).toISOString(),completed_at:new Date(end).toISOString(),
+  is_cata:$('#poTruckCata').checked,notes:$('#poTruckNotes').value.trim()||null
+ };
+
+ if(deviceMode&&!navigator.onLine){
+  try{
+   $('#poTruckMsg').textContent='Salvando caminhão neste celular...';
+   const id=makeOfflineId('truck');
+   const operationOfflineId=String(operationId).startsWith('offline:')?String(operationId).slice(8):null;
+   await offlineQueueAdd({
+    id,type:'poultry_truck',company_id:companyId,team_id:deviceAccess?.team_id||null,created_at:new Date().toISOString(),
+    operation_id:operationOfflineId?null:operationId,
+    loading_id:operationOfflineId?('offline:'+operationOfflineId):loadingId,
+    operation_offline_id:operationOfflineId,
+    barn_id:barnId,
+    payload
+   });
+   const farmId=poultryLoadings.find(l=>l.id===loadingId)?.farm_id||'';
+   const opName=$('#poTruckOpName').textContent||'';
+   await loadPoultryOps();
+   if(closeAfter){$('#poTruckCard').classList.add('hidden');return}
+   openNextTruckForm({operationId,loadingId,farmId,name:opName,sequence:sequence+1});
+   $('#poTruckMsg').className='okmsg';
+   $('#poTruckMsg').textContent='Caminhão '+sequence+' salvo offline ✓ Agora registre o Caminhão '+(sequence+1)+'.';
+  }catch(e){$('#poTruckMsg').textContent=e.message||String(e)}
+  return;
+ }
+
  try{
   $('#poTruckMsg').textContent='Salvando caminhão...';
-  const existing=poultryTruckLoads.filter(t=>t.loading_id===loadingId);
-  const sequence=Number($('#poTruckSequence').value||existing.length+1);
   const rows=await rest('v2_poultry_truck_loads','','POST',{
    company_id:companyId,loading_id:loadingId,truck_sequence:sequence,truck_plate:plate,driver_name:driver,birds,
-   started_at:new Date(start).toISOString(),completed_at:new Date(end).toISOString(),is_cata:$('#poTruckCata').checked,
-   metadata:{barn_id:barnId,notes:$('#poTruckNotes').value.trim()||null}
+   started_at:payload.started_at,completed_at:payload.completed_at,is_cata:payload.is_cata,
+   metadata:{barn_id:barnId,notes:payload.notes}
   });
   const truck=rows?.[0];if(!truck)throw new Error('Caminhão não foi salvo.');
-  await rest('v2_poultry_truck_barns','','POST',{company_id:companyId,truck_load_id:truck.id,barn_id:barnId,sequence_no:1,birds,started_at:new Date(start).toISOString(),completed_at:new Date(end).toISOString(),notes:$('#poTruckNotes').value.trim()||null});
+  await rest('v2_poultry_truck_barns','','POST',{company_id:companyId,truck_load_id:truck.id,barn_id:barnId,sequence_no:1,birds,started_at:payload.started_at,completed_at:payload.completed_at,notes:payload.notes});
   await refreshOperationBirdTotals(operationId,loadingId);
   const farmId=poultryLoadings.find(l=>l.id===loadingId)?.farm_id||'';
   const opName=$('#poTruckOpName').textContent||'';
   await loadPoultryOps();
-  if(closeAfter){
-    $('#poTruckCard').classList.add('hidden');
-    return;
-  }
+  if(closeAfter){$('#poTruckCard').classList.add('hidden');return}
   openNextTruckForm({operationId,loadingId,farmId,name:opName,sequence:sequence+1});
   $('#poTruckMsg').textContent='Caminhão '+sequence+' salvo ✓ Agora registre o Caminhão '+(sequence+1)+'.';
  }catch(e){$('#poTruckMsg').textContent=e.message}
 }
-
-
 async function reopenPoultryOperationAndAddTruck(btn){
  const opId=btn.dataset.op,loadingId=btn.dataset.loading;
  if(!opId||!loadingId)return alert('Apanha sem carregamento vinculado.');
@@ -2007,6 +2215,23 @@ async function reopenPoultryOperationAndAddTruck(btn){
 }
 
 async function completePoultryOperation(operationId,loadingId){
+ if(deviceMode&&!navigator.onLine){
+  try{
+   const trucks=poultryTruckLoads.filter(t=>t.loading_id===loadingId);
+   if(!trucks.length)return alert('Registre pelo menos um caminhão antes de concluir a apanha.');
+   const operationOfflineId=String(operationId).startsWith('offline:')?String(operationId).slice(8):null;
+   const id=makeOfflineId('complete');
+   await offlineQueueAdd({
+    id,type:'poultry_complete',company_id:companyId,team_id:deviceAccess?.team_id||null,created_at:new Date().toISOString(),
+    operation_id:operationOfflineId?null:operationId,
+    loading_id:operationOfflineId?('offline:'+operationOfflineId):loadingId,
+    operation_offline_id:operationOfflineId
+   });
+   await loadPoultryOps();
+   alert('Apanha concluída no celular ✓ A conclusão será sincronizada depois dos caminhões.');
+  }catch(e){alert(e.message||String(e))}
+  return;
+ }
  try{
   const trucks=await rest('v2_poultry_truck_loads','select=birds,started_at,completed_at&loading_id=eq.'+loadingId);
   if(!trucks.length)return alert('Registre pelo menos um caminhão antes de concluir a apanha.');
@@ -2066,6 +2291,7 @@ document.addEventListener('click',async e=>{
  const ra=e.target.closest('.poReopenAddTruck');
  if(ra){
    e.preventDefault();
+   if(deviceMode&&!navigator.onLine)return alert('Para reabrir uma apanha concluída, conecte o celular à internet.');
    await reopenPoultryOperationAndAddTruck(ra);
    return;
  }
@@ -2758,7 +2984,7 @@ if($('#offlineQueueBadge'))$('#offlineQueueBadge').addEventListener('click',()=>
 });
 if('serviceWorker' in navigator){
  window.addEventListener('load',()=>{
-  navigator.serviceWorker.register('./sw-v6-16.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
+  navigator.serviceWorker.register('./sw-v6-17.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
  });
 }
 
