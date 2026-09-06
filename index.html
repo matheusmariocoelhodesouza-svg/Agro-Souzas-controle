@@ -8,7 +8,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
-<title>Agro Souza's Controle • v6.25</title>
+<title>Agro Souza's Controle • v6.26</title>
 <link rel="manifest" href="./agro-souzas-controle-v7.webmanifest"/>
 <link rel="apple-touch-icon" href="./apple-touch-icon-180.png"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
@@ -132,7 +132,7 @@ body.app-ready .v2sidebar{display:block}
 .po-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
 .pill.warn{background:#fff3cd;color:#7c5700}
 
-/* 6.25 — Modo Equipe */
+/* 6.26 — Modo Equipe */
 .team-entry{max-width:520px;margin:42px auto}
 .team-entry .card{padding:20px}
 .team-entry-title{text-align:center;margin-bottom:18px}
@@ -183,13 +183,14 @@ body.device-mode .admin-only{display:none!important}
 .catch-report-total{font-size:26px;font-weight:950;margin-top:3px}
 @media(max-width:520px){.catch-report-meta{grid-template-columns:1fr}.catch-report-card .btn{width:100%}}
 .darkmode .offline-sync-box{background:#101c2e;color:#e7eef9}.darkmode .offline-sync-item{border-color:#203047}
+.bi-row{padding:10px 0;border-bottom:1px solid #edf1f5}.bi-row:last-child{border-bottom:0}.bi-line{display:flex;justify-content:space-between;gap:12px;align-items:center}.bi-bar{height:7px;background:#e2e8f0;border-radius:999px;overflow:hidden;margin-top:6px}.bi-fill{height:100%;background:currentColor;border-radius:999px;opacity:.7}.bi-value{font-weight:900;white-space:nowrap}
 
 </style>
 <script defer="" src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
 <script>
 (function(){
-  const BUILD='6.25';
+  const BUILD='6.26';
   try{
     const marker='controla_cache_cleanup_'+BUILD;
     if(!localStorage.getItem(marker)){
@@ -223,7 +224,7 @@ body.device-mode .admin-only{display:none!important}
 <div class="v2group">INTELIGÊNCIA</div>
 <button class="v2navbtn" data-v2tab="ia">✦   Assistente IA</button>
 </aside>
-<header><div class="brand"><div class="logo">AS</div><div><b>Agro Souza's Controle</b><div><small id="companyName">Administrador</small></div></div></div><div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.25</span><button class="btn soft" id="themeToggle" type="button">☾</button><button class="btn soft hidden" id="logout">Sair</button></div></header>
+<header><div class="brand"><div class="logo">AS</div><div><b>Agro Souza's Controle</b><div><small id="companyName">Administrador</small></div></div></div><div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.26</span><button class="btn soft" id="themeToggle" type="button">☾</button><button class="btn soft hidden" id="logout">Sair</button></div></header>
 <main class="wrap">
 <section class="login team-entry" id="login">
 <div class="card" id="deviceSetupCard">
@@ -240,7 +241,7 @@ body.device-mode .admin-only{display:none!important}
  <label>Senha</label><input autocomplete="current-password" id="password" type="password"/>
  <button class="btn primary" id="loginBtn">Entrar</button>
  <button class="btn soft" id="backDeviceSetup" type="button" style="margin-left:6px">Voltar</button>
- <div class="muted" id="loginMsg" style="margin-top:10px">Agro Souza's Controle • v6.25</div><div class="debug" id="debug"></div>
+ <div class="muted" id="loginMsg" style="margin-top:10px">Agro Souza's Controle • v6.26</div><div class="debug" id="debug"></div>
 </div>
 </section>
 <section class="hidden" id="app">
@@ -651,8 +652,24 @@ body.device-mode .admin-only{display:none!important}
 </div>
 
 <div class="section" data-screen="relatorios" hidden="" id="relatorios">
-<div class="card"><div class="toolbar" style="justify-content:space-between"><div><h3 style="margin:0">📊 Relatórios & BI</h3><div class="muted">Resumo consolidado de operação, aves, financeiro e ponto.</div></div><div class="toolbar"><input id="reportsMonth" type="month"/><button class="btn primary" id="refreshReports" type="button">GERAR</button><button class="btn soft" id="printReports" type="button">IMPRIMIR / PDF</button></div></div><div class="v2-kpis" id="reportsKpis" style="margin-top:14px"></div></div>
-<div class="card"><h3>Resumo mensal</h3><div id="reportsSummary" class="list"></div></div>
+<div class="v2hero">
+ <div><h1>Relatórios & BI</h1><p>Visão mensal consolidada da Agro Souza's: produção, equipes, integrados, frota, financeiro e ponto.</p></div>
+ <div class="toolbar"><input id="reportsMonth" type="month"/><button class="btn primary" id="refreshReports" type="button">GERAR</button><button class="btn soft" id="exportReportsCsv" type="button">EXPORTAR CSV</button><button class="btn soft" id="printReports" type="button">IMPRIMIR / PDF</button></div>
+</div>
+<div class="v2-kpis" id="reportsKpis"></div>
+<div class="v2main">
+ <div>
+  <div class="v2panel"><div class="v2panelhead"><div><h3>🐔 Produção por equipe</h3><div class="muted">Apanhas e aves no período.</div></div></div><div id="reportsByTeam" class="list"></div></div>
+  <div class="v2panel"><div class="v2panelhead"><div><h3>🏠 Produção por integrado</h3><div class="muted">Ranking de volume carregado.</div></div></div><div id="reportsByCustomer" class="list"></div></div>
+  <div class="v2panel"><div class="v2panelhead"><div><h3>🚚 Operação</h3><div class="muted">Indicadores de apanha e caminhões.</div></div></div><div id="reportsSummary" class="list"></div></div>
+ </div>
+ <div>
+  <div class="v2panel"><div class="v2panelhead"><div><h3>⛽ Combustível por condução</h3><div class="muted">Litros e custo registrados no mês.</div></div></div><div id="reportsFuel" class="list"></div></div>
+  <div class="v2panel"><div class="v2panelhead"><div><h3>💰 Financeiro</h3><div class="muted">Entradas, saídas e saldo.</div></div></div><div id="reportsFinance" class="v2stats"></div></div>
+  <div class="v2panel"><div class="v2panelhead"><div><h3>⏱️ Ponto</h3><div class="muted">Horas, atrasos e funcionários com movimento.</div></div></div><div id="reportsAttendance" class="v2stats"></div></div>
+ </div>
+</div>
+<div class="muted" id="reportsGeneratedAt" style="margin-top:10px"></div>
 </div>
 <div class="section" data-screen="alertas" hidden="" id="alertas">
 <div class="card"><div class="toolbar" style="justify-content:space-between"><div><h3 style="margin:0">⚠ Alertas Inteligentes</h3><div class="muted">Pendências importantes da operação, RH e frota.</div></div><button class="btn primary" id="refreshAlerts" type="button">Atualizar alertas</button></div><div class="v2-kpis" id="alertsKpis" style="margin-top:14px"></div></div>
@@ -3335,18 +3352,102 @@ async function loadFinance(){
 async function saveFinEntry(){const m=document.getElementById('finMsg'),amount=Number(document.getElementById('finAmount').value||0),desc=document.getElementById('finDescription').value.trim();if(!desc||amount<=0){m.textContent='Informe descrição e valor.';return}try{const u=await getUser(),d=document.getElementById('finIssueDate').value||new Date().toISOString().slice(0,10);await rest('v2_financial_entries','','POST',{company_id:companyId,entry_type:document.getElementById('finType').value,description:desc,amount,issue_date:d,due_date:document.getElementById('finDueDate').value||null,competence_date:d,status:'open',counterparty_name:document.getElementById('finCounterparty').value.trim()||null,source_type:'manual',metadata:{},created_by:u?.id||null});document.getElementById('finEditCard').style.display='none';await loadFinance()}catch(e){m.textContent=e.message}}
 async function cancelFinEntry(id){if(!id||!confirm('Cancelar este lançamento financeiro?'))return;try{await rest('v2_financial_entries','id=eq.'+id,'PATCH',{status:'cancelled'});await loadFinance()}catch(e){alert(e.message)}}
 
+let adminReportCache=null;
+function biRows(entries,valueFn,labelFn){
+ const arr=[...(entries||[])],max=Math.max(1,...arr.map(valueFn));
+ return arr.length?arr.map(x=>{
+  const v=valueFn(x),pct=Math.max(2,Math.round(v/max*100));
+  return '<div class="bi-row"><div class="bi-line"><span>'+esc(labelFn(x))+'</span><span class="bi-value">'+esc(v.toLocaleString('pt-BR'))+' aves</span></div><div class="bi-bar"><div class="bi-fill" style="width:'+pct+'%"></div></div></div>';
+ }).join(''):'<div class="v2-empty">Sem dados no período.</div>';
+}
+function reportMonthLabel(m){
+ const [y,mo]=String(m).split('-').map(Number);
+ return new Date(y,mo-1,1).toLocaleDateString('pt-BR',{month:'long',year:'numeric'});
+}
 async function loadReports(){
- const month=document.getElementById('reportsMonth')?.value||new Date().toISOString().slice(0,7);if(document.getElementById('reportsMonth')&&!document.getElementById('reportsMonth').value)document.getElementById('reportsMonth').value=month;
- const start=month+'-01';
- const [fin,ops,poultry,att]=await Promise.all([
-  rest('v2_report_monthly_financial','select=*&company_id=eq.'+companyId+'&reference_month=eq.'+start),
-  rest('v2_report_operations_monthly','select=*&company_id=eq.'+companyId+'&reference_month=eq.'+start),
-  rest('v2_report_poultry_monthly','select=*&company_id=eq.'+companyId+'&reference_month=eq.'+start),
-  rest('v2_report_attendance_monthly','select=*&company_id=eq.'+companyId+'&reference_month=eq.'+start)
+ const month=$('#reportsMonth')?.value||new Date().toISOString().slice(0,7);
+ if($('#reportsMonth')&&!$('#reportsMonth').value)$('#reportsMonth').value=month;
+ const bounds=monthBoundsBR(month),start=month+'-01';
+ const [finView,opsView,poultryView,attView,ops,teams,vehicles,fuel,trucks]=await Promise.all([
+  dashSafe('v2_report_monthly_financial','select=*&company_id=eq.'+companyId+'&reference_month=eq.'+start),
+  dashSafe('v2_report_operations_monthly','select=*&company_id=eq.'+companyId+'&reference_month=eq.'+start),
+  dashSafe('v2_report_poultry_monthly','select=*&company_id=eq.'+companyId+'&reference_month=eq.'+start),
+  dashSafe('v2_report_attendance_monthly','select=*&company_id=eq.'+companyId+'&reference_month=eq.'+start),
+  dashSafe('v2_operations','select=id,team_id,customer_name,title,status,scheduled_start,actual_birds,planned_birds,actual_revenue,actual_cost&company_id=eq.'+companyId+'&operation_type=eq.poultry_catching&scheduled_start=gte.'+encodeURIComponent(bounds.start)+'&scheduled_start=lt.'+encodeURIComponent(bounds.end)),
+  dashSafe('v2_teams','select=id,name,status&company_id=eq.'+companyId),
+  dashSafe('v2_vehicles','select=id,description,plate,model&company_id=eq.'+companyId),
+  dashSafe('v2_fuel_logs','select=id,vehicle_id,fueled_at,liters,total_amount&company_id=eq.'+companyId+'&fueled_at=gte.'+encodeURIComponent(bounds.start)+'&fueled_at=lt.'+encodeURIComponent(bounds.end)),
+  dashSafe('v2_poultry_truck_loads','select=id,birds,is_cata,created_at&company_id=eq.'+companyId+'&created_at=gte.'+encodeURIComponent(bounds.start)+'&created_at=lt.'+encodeURIComponent(bounds.end))
  ]);
- const f=fin?.[0]||{},o=ops?.[0]||{},p=poultry?.[0]||{},a=att?.[0]||{};
- const k=document.getElementById('reportsKpis');if(k)k.innerHTML=`<div class="v2kpi"><span>Faturamento</span><strong>${money(o.revenue||f.income||0)}</strong></div><div class="v2kpi"><span>Custos</span><strong>${money(o.cost||f.expense||0)}</strong></div><div class="v2kpi"><span>Resultado</span><strong>${money(o.result||f.balance||0)}</strong></div><div class="v2kpi"><span>Aves</span><strong>${Number(p.birds||0).toLocaleString('pt-BR')}</strong></div>`;
- const s=document.getElementById('reportsSummary');if(s)s.innerHTML=`<div class="item"><strong>Operação</strong><div class="muted">${Number(o.operations||0)} operações • ${Number(p.loadings||0)} apanhas • ${Number(p.trucks||0)} caminhões • média ${Number(p.avg_birds_per_truck||0).toLocaleString('pt-BR',{maximumFractionDigits:0})} aves/caminhão</div></div><div class="item"><strong>Ponto</strong><div class="muted">${Number(a.employees||0)} funcionários • ${fmtMinutes(a.worked_minutes||0)} trabalhadas • atrasos ${fmtMinutes(a.late_minutes||0)}</div></div><div class="item"><strong>Financeiro</strong><div class="muted">Entradas ${money(f.income||0)} • saídas ${money(f.expense||0)} • saldo ${money(f.balance||0)}</div></div>`;
+ const f=finView?.[0]||{},o=opsView?.[0]||{},p=poultryView?.[0]||{},a=attView?.[0]||{};
+ const birds=ops.reduce((s,x)=>s+poN(x.actual_birds||x.planned_birds),0)||poN(p.birds);
+ const revenue=poN(o.revenue||f.income),cost=poN(o.cost||f.expense),result=poN(o.result||(revenue-cost));
+ const truckCount=poN(p.trucks)||trucks.length;
+ const loadings=poN(p.loadings)||ops.length;
+ const avgTruck=truckCount?Math.round(birds/truckCount):0;
+
+ $('#reportsKpis').innerHTML=[
+  ['FATURAMENTO',money(revenue),'💰'],['CUSTOS',money(cost),'↘'],['RESULTADO',money(result),'▣'],
+  ['AVES',birds.toLocaleString('pt-BR'),'🐔'],['APANHAS',loadings.toLocaleString('pt-BR'),'📋'],['CAMINHÕES',truckCount.toLocaleString('pt-BR'),'🚚'],
+  ['MÉDIA / CAMINHÃO',avgTruck.toLocaleString('pt-BR'),'📦'],['HORAS DE PONTO',fmtMinutes(a.worked_minutes||0),'⏱']
+ ].map(x=>'<div class="v2kpi"><div class="t">'+esc(x[0])+'</div><div class="v">'+esc(x[1])+'</div><div class="v2ico">'+x[2]+'</div></div>').join('');
+
+ const teamMap={};
+ ops.forEach(x=>{const n=teams.find(t=>t.id===x.team_id)?.name||'Sem equipe';if(!teamMap[n])teamMap[n]={name:n,birds:0,ops:0};teamMap[n].birds+=poN(x.actual_birds||x.planned_birds);teamMap[n].ops++});
+ const byTeam=Object.values(teamMap).sort((x,y)=>y.birds-x.birds);
+ $('#reportsByTeam').innerHTML=biRows(byTeam,x=>x.birds,x=>x.name+' • '+x.ops+' apanha(s)');
+
+ const custMap={};
+ ops.forEach(x=>{const n=x.customer_name||'Não informado';if(!custMap[n])custMap[n]={name:n,birds:0,ops:0};custMap[n].birds+=poN(x.actual_birds||x.planned_birds);custMap[n].ops++});
+ const byCustomer=Object.values(custMap).sort((x,y)=>y.birds-x.birds);
+ $('#reportsByCustomer').innerHTML=biRows(byCustomer,x=>x.birds,x=>x.name+' • '+x.ops+' apanha(s)');
+
+ const fuelMap={};
+ fuel.forEach(x=>{const v=vehicles.find(v=>v.id===x.vehicle_id),name=v?(v.description||v.model||'Condução')+(v.plate?' • '+v.plate:''):'Condução';if(!fuelMap[name])fuelMap[name]={name,liters:0,cost:0,logs:0};fuelMap[name].liters+=poN(x.liters);fuelMap[name].cost+=poN(x.total_amount);fuelMap[name].logs++});
+ const fuels=Object.values(fuelMap).sort((x,y)=>y.liters-x.liters);
+ $('#reportsFuel').innerHTML=fuels.length?fuels.map(x=>'<div class="item"><div class="toolbar" style="justify-content:space-between"><strong>'+esc(x.name)+'</strong><b>'+x.liters.toLocaleString('pt-BR',{maximumFractionDigits:1})+' L</b></div><div class="muted">'+x.logs+' abastecimento(s) • '+money(x.cost)+(x.liters?(' • '+money(x.cost/x.liters)+'/L'):'')+'</div></div>').join(''):'<div class="v2-empty">Nenhum abastecimento registrado no período.</div>';
+
+ $('#reportsFinance').innerHTML=[
+  ['Entradas',money(f.income||revenue)],['Saídas',money(f.expense||cost)],['Saldo',money(f.balance||result)],['Lançamentos',Number(f.entries||0).toLocaleString('pt-BR')]
+ ].map(x=>'<div class="v2mini"><span class="muted">'+esc(x[0])+'</span><b>'+esc(x[1])+'</b></div>').join('');
+
+ $('#reportsAttendance').innerHTML=[
+  ['Funcionários',Number(a.employees||0).toLocaleString('pt-BR')],['Horas trabalhadas',fmtMinutes(a.worked_minutes||0)],['Atrasos',fmtMinutes(a.late_minutes||0)],['Ausências',fmtMinutes(a.absence_minutes||0)]
+ ].map(x=>'<div class="v2mini"><span class="muted">'+esc(x[0])+'</span><b>'+esc(x[1])+'</b></div>').join('');
+
+ $('#reportsSummary').innerHTML=[
+  '<div class="item"><strong>Volume operacional</strong><div class="muted">'+loadings.toLocaleString('pt-BR')+' apanha(s) • '+truckCount.toLocaleString('pt-BR')+' caminhão(ões) • '+birds.toLocaleString('pt-BR')+' aves • média '+avgTruck.toLocaleString('pt-BR')+' aves/caminhão</div></div>',
+  '<div class="item"><strong>Status das apanhas</strong><div class="muted">'+ops.filter(x=>x.status==='completed').length+' concluída(s) • '+ops.filter(x=>x.status==='in_progress').length+' em andamento • '+ops.filter(x=>['planned','scheduled'].includes(x.status)).length+' programada(s)</div></div>',
+  '<div class="item"><strong>Pontualidade operacional</strong><div class="muted">Variação média de início: '+(o.avg_start_variance_minutes==null?'sem dados':Math.round(poN(o.avg_start_variance_minutes))+' min')+'</div></div>'
+ ].join('');
+
+ adminReportCache={month,label:reportMonthLabel(month),company:cleanCompanyName(companyProfile.trade_name||companyProfile.legal_name),birds,revenue,cost,result,loadings,trucks:truckCount,avgTruck,byTeam,byCustomer,fuels,attendance:a,financial:f,generatedAt:new Date().toISOString()};
+ if($('#reportsGeneratedAt'))$('#reportsGeneratedAt').textContent='Gerado em '+new Date().toLocaleString('pt-BR')+' • '+adminReportCache.company;
+}
+function exportAdminReportsCsv(){
+ const r=adminReportCache;if(!r)return alert('Gere o relatório primeiro.');
+ const lines=[['Relatório Agro Souza\'s',r.label],[],['Indicador','Valor'],['Aves',r.birds],['Apanhas',r.loadings],['Caminhões',r.trucks],['Faturamento',r.revenue],['Custos',r.cost],['Resultado',r.result],[],['Produção por equipe','Aves']];
+ r.byTeam.forEach(x=>lines.push([x.name,x.birds]));
+ lines.push([],['Produção por integrado','Aves']);r.byCustomer.forEach(x=>lines.push([x.name,x.birds]));
+ lines.push([],['Combustível por condução','Litros','Custo']);r.fuels.forEach(x=>lines.push([x.name,x.liters,x.cost]));
+ const csv='\ufeff'+lines.map(row=>row.map(v=>'"'+String(v??'').replaceAll('"','""')+'"').join(';')).join('\n');
+ downloadText('Agro_Souzas_Relatorio_'+r.month+'.csv',csv,'text/csv;charset=utf-8');
+}
+function printAdminReports(){
+ const r=adminReportCache;if(!r)return alert('Gere o relatório primeiro.');
+ const team=r.byTeam.map(x=>'<tr><td>'+esc(x.name)+'</td><td>'+x.ops+'</td><td>'+x.birds.toLocaleString('pt-BR')+'</td></tr>').join('');
+ const cust=r.byCustomer.map(x=>'<tr><td>'+esc(x.name)+'</td><td>'+x.ops+'</td><td>'+x.birds.toLocaleString('pt-BR')+'</td></tr>').join('');
+ const fuel=r.fuels.map(x=>'<tr><td>'+esc(x.name)+'</td><td>'+x.liters.toLocaleString('pt-BR',{maximumFractionDigits:1})+'</td><td>'+money(x.cost)+'</td></tr>').join('');
+ const w=window.open('','_blank');if(!w)return alert('Permita pop-ups para gerar o PDF.');
+ w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>Relatório '+esc(r.label)+'</title><style>@page{size:A4;margin:12mm}body{font-family:Arial,sans-serif;color:#111;font-size:11px}h1{margin:0;font-size:22px}h2{font-size:14px;margin:18px 0 6px;border-bottom:1px solid #222;padding-bottom:4px}.head{border-bottom:2px solid #111;padding-bottom:10px}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin:12px 0}.k{border:1px solid #bbb;padding:8px}.k span{display:block;font-size:9px;color:#555}.k b{font-size:15px}table{width:100%;border-collapse:collapse;margin-top:5px}th,td{border-bottom:1px solid #ddd;padding:6px;text-align:left}th{background:#f4f4f4}.footer{margin-top:18px;border-top:1px solid #aaa;padding-top:6px;color:#555;font-size:9px}</style></head><body>'+
+ '<div class="head"><h1>AGRO SOUZA\'S — RELATÓRIO GERENCIAL</h1><div>'+esc(r.label)+' • Emitido '+new Date().toLocaleString('pt-BR')+'</div></div>'+
+ '<div class="grid"><div class="k"><span>AVES</span><b>'+r.birds.toLocaleString('pt-BR')+'</b></div><div class="k"><span>APANHAS</span><b>'+r.loadings+'</b></div><div class="k"><span>CAMINHÕES</span><b>'+r.trucks+'</b></div><div class="k"><span>MÉDIA/CAMINHÃO</span><b>'+r.avgTruck.toLocaleString('pt-BR')+'</b></div><div class="k"><span>FATURAMENTO</span><b>'+money(r.revenue)+'</b></div><div class="k"><span>CUSTOS</span><b>'+money(r.cost)+'</b></div><div class="k"><span>RESULTADO</span><b>'+money(r.result)+'</b></div><div class="k"><span>HORAS PONTO</span><b>'+fmtMinutes(r.attendance.worked_minutes||0)+'</b></div></div>'+
+ '<h2>Produção por equipe</h2><table><tr><th>Equipe</th><th>Apanhas</th><th>Aves</th></tr>'+team+'</table>'+
+ '<h2>Produção por integrado</h2><table><tr><th>Integrado</th><th>Apanhas</th><th>Aves</th></tr>'+cust+'</table>'+
+ '<h2>Combustível por condução</h2><table><tr><th>Condução</th><th>Litros</th><th>Custo</th></tr>'+fuel+'</table>'+
+ '<h2>Ponto</h2><p>Funcionários com movimento: <b>'+Number(r.attendance.employees||0)+'</b> • Horas trabalhadas: <b>'+fmtMinutes(r.attendance.worked_minutes||0)+'</b> • Atrasos: <b>'+fmtMinutes(r.attendance.late_minutes||0)+'</b> • Ausências: <b>'+fmtMinutes(r.attendance.absence_minutes||0)+'</b></p>'+
+ '<div class="footer">Agro Souza\'s Controle • relatório gerencial baseado nos registros existentes no sistema.</div><script>window.onload=()=>window.print();<\/script></body></html>');
+ w.document.close();
 }
 
 async function v2Go(tab){
@@ -3435,7 +3536,8 @@ document.addEventListener('click',async function(e){
   if(e.target.closest('#refreshFinance')){e.preventDefault();await loadFinance();return}
   const fc=e.target.closest('.finCancel');if(fc){e.preventDefault();await cancelFinEntry(fc.dataset.id);return}
   if(e.target.closest('#refreshReports')){e.preventDefault();await loadReports();return}
-  if(e.target.closest('#printReports')){e.preventDefault();window.print();return}
+  if(e.target.closest('#exportReportsCsv')){e.preventDefault();if(!adminReportCache)await loadReports();exportAdminReportsCsv();return}
+  if(e.target.closest('#printReports')){e.preventDefault();if(!adminReportCache)await loadReports();printAdminReports();return}
   const aj=e.target.closest('.alertJump');if(aj){e.preventDefault();v2Go(aj.dataset.tab);return}
   const vdocView=e.target.closest('.vehicleDocView');if(vdocView){e.preventDefault();await downloadVehicleDoc(vdocView.dataset.file,false);return}
   const vdocDown=e.target.closest('.vehicleDocDownload');if(vdocDown){e.preventDefault();await downloadVehicleDoc(vdocDown.dataset.file,true);return}
@@ -3504,7 +3606,7 @@ setInterval(()=>{
 },60000);
 if('serviceWorker' in navigator){
  window.addEventListener('load',()=>{
-  navigator.serviceWorker.register('./sw-v6-25.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
+  navigator.serviceWorker.register('./sw-v6-26.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
  });
 }
 
