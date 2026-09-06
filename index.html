@@ -8,7 +8,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
-<title>Comando 360 • v6.45</title>
+<title>Comando 360 • v6.46</title>
 <link rel="manifest" href="./comando360.webmanifest"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
@@ -353,7 +353,7 @@ header .brand small{color:#718198;font-weight:650}
 <script defer src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
 <script>
 (function(){
-  const BUILD='6.45';
+  const BUILD='6.46';
   try{
     const marker='controla_cache_cleanup_'+BUILD;
     if(!localStorage.getItem(marker)){
@@ -387,7 +387,7 @@ header .brand small{color:#718198;font-weight:650}
 <div class="v2group">INTELIGÊNCIA</div>
 <button class="v2navbtn" data-v2tab="ia">✦   Assistente IA</button>
 </aside>
-<header><div class="brand"><img class="header-brand-icon" src="./comando360-icon.svg" alt="Comando 360"/><div><b>Comando <span class="brand360">360</span></b><div><small id="companyName">Empresa</small></div></div></div><div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.45</span><button class="btn soft" id="themeToggle" type="button">☾</button><button class="btn soft hidden" id="logout">Sair</button></div></header>
+<header><div class="brand"><img class="header-brand-icon" src="./comando360-icon.svg" alt="Comando 360"/><div><b>Comando <span class="brand360">360</span></b><div><small id="companyName">Empresa</small></div></div></div><div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.46</span><button class="btn soft" id="themeToggle" type="button">☾</button><button class="btn soft hidden" id="logout">Sair</button></div></header>
 <main class="wrap">
 <section class="login team-entry" id="login">
 <div class="card" id="deviceSetupCard">
@@ -404,7 +404,7 @@ header .brand small{color:#718198;font-weight:650}
  <label>Senha</label><input autocomplete="current-password" id="password" type="password"/>
  <button class="btn primary" id="loginBtn">Entrar</button>
  <button class="btn soft" id="backDeviceSetup" type="button" style="margin-left:6px">Voltar</button>
- <div class="muted" id="loginMsg" style="margin-top:10px">Comando 360 • v6.45</div><div class="debug" id="debug"></div>
+ <div class="muted" id="loginMsg" style="margin-top:10px">Comando 360 • v6.46</div><div class="debug" id="debug"></div>
 </div>
 </section>
 <section class="hidden" id="app">
@@ -1542,7 +1542,7 @@ async function syncPoultryTruckOfflineItem(item){
   .map(x=>({barn_id:x?.barn_id||null,barn_number:normalizeAviaryNumber(x?.barn_number),birds:poN(x?.birds)}))
   .filter(x=>x.barn_number||x.barn_id);
 
- // Compatibilidade com itens offline criados antes da v6.45.
+ // Compatibilidade com itens offline criados antes da v6.46.
  if(!barnBreakdown.length&&item.barn_id){
   const oldId=String(item.barn_id).startsWith('offline:')?(refs.loading?.metadata?.default_barn_id||null):item.barn_id;
   const oldBarn=poultryBarns.find(b=>b.id===oldId);
@@ -2750,7 +2750,7 @@ async function savePoultryOperation(){
   openNextTruckForm({operationId:op.id,loadingId:loading.id,farmId:farm.id,name:farm.producer_name||op.title||'Apanha',sequence:1});
  }catch(e){$('#poMsg').textContent=e.message}
 }
-async function loadPoultryOps(){
+async function loadPoultryOps(renderUi=true){
  try{
   let ops=[],loadings=[],trucks=[];
   if(deviceMode&&!navigator.onLine){
@@ -2801,6 +2801,8 @@ async function loadPoultryOps(){
   }
 
   poultryOpsCache=ops;poultryLoadings=loadings;poultryTruckLoads=trucks;
+  if(!renderUi)return {ops,loadings,trucks};
+
   const today=ops.filter(o=>o.scheduled_start&&saoPauloDateKey(o.scheduled_start)===localDateBR());
   const todayTrucks=trucks.filter(tr=>today.some(o=>loadings.find(l=>l.operation_id===o.id)?.id===tr.loading_id));
   const birdsToday=todayTrucks.reduce((a,t)=>a+poN(t.birds),0);
@@ -2837,7 +2839,11 @@ async function loadPoultryOps(){
        (isAdminGeneral&&!pending?'<button class="btn danger poDeleteOp" data-op="'+esc(o.id)+'" data-loading="'+esc(loading?.id||'')+'" type="button">Excluir Apanha</button>':'')+
       '</div></div>';
   }).join(''):'<div class="v2-empty">Nenhuma apanha cadastrada.</div>';
- }catch(e){$('#poultryList').innerHTML='<div class="error">'+esc(e.message||String(e))+'</div>'}
+ }catch(e){
+  const list=$('#poultryList');
+  if(list)list.innerHTML='<div class="error">'+esc(e.message||String(e))+'</div>';
+  else throw e;
+ }
 }
 async function refreshOperationBirdTotals(operationId,loadingId){
  const trucks=await rest('v2_poultry_truck_loads','select=birds,started_at,completed_at&loading_id=eq.'+loadingId);
@@ -3273,7 +3279,7 @@ async function getDeviceSupervisorReportInfo(){
 }
 async function buildCatchReportsForDay(day){
  await loadDevicePoultryContext();
- await loadPoultryOps();
+ await loadPoultryOps(false);
  const supervisor=await getDeviceSupervisorReportInfo();
  const team=deviceTeam||poultryTeams.find(x=>x.id===deviceAccess?.team_id)||{};
  const contractor=team.metadata?.contractor_name||'Não informada';
@@ -4108,7 +4114,7 @@ setInterval(()=>{
 },60000);
 if('serviceWorker' in navigator){
  window.addEventListener('load',()=>{
-  navigator.serviceWorker.register('./sw-v6-45.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
+  navigator.serviceWorker.register('./sw-v6-46.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
  });
 }
 
