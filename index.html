@@ -8,7 +8,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
-<title>Agro Souza's Controle • v6.24</title>
+<title>Agro Souza's Controle • v6.25</title>
 <link rel="manifest" href="./agro-souzas-controle-v7.webmanifest"/>
 <link rel="apple-touch-icon" href="./apple-touch-icon-180.png"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
@@ -132,7 +132,7 @@ body.app-ready .v2sidebar{display:block}
 .po-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
 .pill.warn{background:#fff3cd;color:#7c5700}
 
-/* 6.24 — Modo Equipe */
+/* 6.25 — Modo Equipe */
 .team-entry{max-width:520px;margin:42px auto}
 .team-entry .card{padding:20px}
 .team-entry-title{text-align:center;margin-bottom:18px}
@@ -189,7 +189,7 @@ body.device-mode .admin-only{display:none!important}
 <script defer src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
 <script>
 (function(){
-  const BUILD='6.24';
+  const BUILD='6.25';
   try{
     const marker='controla_cache_cleanup_'+BUILD;
     if(!localStorage.getItem(marker)){
@@ -223,7 +223,7 @@ body.device-mode .admin-only{display:none!important}
 <div class="v2group">INTELIGÊNCIA</div>
 <button class="v2navbtn" data-v2tab="ia">✦   Assistente IA</button>
 </aside>
-<header><div class="brand"><div class="logo">AS</div><div><b>Agro Souza's Controle</b><div><small id="companyName">Administrador</small></div></div></div><div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.24</span><button class="btn soft" id="themeToggle" type="button">☾</button><button class="btn soft hidden" id="logout">Sair</button></div></header>
+<header><div class="brand"><div class="logo">AS</div><div><b>Agro Souza's Controle</b><div><small id="companyName">Administrador</small></div></div></div><div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.25</span><button class="btn soft" id="themeToggle" type="button">☾</button><button class="btn soft hidden" id="logout">Sair</button></div></header>
 <main class="wrap">
 <section class="login team-entry" id="login">
 <div class="card" id="deviceSetupCard">
@@ -240,7 +240,7 @@ body.device-mode .admin-only{display:none!important}
  <label>Senha</label><input autocomplete="current-password" id="password" type="password"/>
  <button class="btn primary" id="loginBtn">Entrar</button>
  <button class="btn soft" id="backDeviceSetup" type="button" style="margin-left:6px">Voltar</button>
- <div class="muted" id="loginMsg" style="margin-top:10px">Agro Souza's Controle • v6.24</div><div class="debug" id="debug"></div>
+ <div class="muted" id="loginMsg" style="margin-top:10px">Agro Souza's Controle • v6.25</div><div class="debug" id="debug"></div>
 </div>
 </section>
 <section class="hidden" id="app">
@@ -439,23 +439,34 @@ body.device-mode .admin-only{display:none!important}
 <div class="hidden" id="pointReceipt" style="margin-top:12px"></div>
 </div>
 <div class="card">
-<div class="toolbar" style="justify-content:space-between">
-<h3 style="margin:0">Espelho mensal</h3>
+<div class="toolbar" style="justify-content:space-between;align-items:flex-start">
+<div><h3 style="margin:0">Espelho mensal</h3><div class="muted" style="margin-top:5px">Jornada, intervalo, horas, rastreabilidade e tratamentos administrativos.</div></div>
 <div class="toolbar">
-<button class="btn soft" id="refreshMonthlyMirror">Atualizar</button>
-<button class="btn primary" id="printMonthlyMirror">IMPRIMIR / PDF</button>
+<button class="btn soft" id="refreshMonthlyMirror" type="button">Atualizar</button>
+<button class="btn soft admin-only" id="openTreatment" type="button">+ TRATAMENTO</button>
+<button class="btn soft admin-only" id="exportAFD" type="button">AFD • PRÉVIA</button>
+<button class="btn soft admin-only" id="exportAEJ" type="button">AEJ • PRÉVIA</button>
+<button class="btn primary" id="printMonthlyMirror" type="button">IMPRIMIR / PDF</button>
 </div>
 </div>
-<div class="muted" style="margin:6px 0 10px">Consulte o mês por jornada/turno, inclusive quando o trabalho atravessa a meia-noite.</div>
+<div class="muted" style="margin:6px 0 10px">Consulte o mês por jornada/turno, inclusive quando o trabalho atravessa a meia-noite. AFD/AEJ disponíveis aqui são prévias técnicas, não arquivos fiscais homologados.</div>
 <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr));margin-bottom:10px">
-<div>
-<label>Funcionário</label>
-<select id="monthlyEmployee" style="width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:10px;margin-top:6px"></select>
+<div><label>Funcionário</label><select id="monthlyEmployee" style="width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:10px;margin-top:6px"></select></div>
+<div><label>Mês</label><input id="monthlyMonth" style="width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:10px;margin-top:6px" type="month"/></div>
 </div>
-<div>
-<label>Mês</label>
-<input id="monthlyMonth" style="width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:10px;margin-top:6px" type="month"/>
-</div>
+<div id="treatmentCard" class="card-lite hidden admin-only" style="border:2px solid #334155">
+ <div class="toolbar" style="justify-content:space-between"><div><strong>Tratamento administrativo do ponto</strong><div class="muted">A marcação original não é alterada. O tratamento fica registrado separadamente com autor, data e justificativa.</div></div></div>
+ <div class="row" style="margin-top:10px">
+  <div><label>Tipo</label><select id="treatmentType"><option value="include">Incluir marcação faltante</option><option value="disregard">Desconsiderar marcação</option><option value="adjust_classification">Ajustar classificação</option></select></div>
+  <div><label>Tipo da batida</label><select id="treatmentEventType"><option value="in">Entrada</option><option value="break_start">Saída intervalo</option><option value="break_end">Retorno intervalo</option><option value="out">Saída final</option></select></div>
+  <div><label>Data e hora tratada</label><input id="treatmentDateTime" type="datetime-local"></div>
+ </div>
+ <div class="row">
+  <div><label>Marcação original (opcional)</label><select id="treatmentOriginalId"><option value="">Sem vínculo / inclusão manual</option></select></div>
+  <div style="grid-column:span 2"><label>Justificativa obrigatória</label><input id="treatmentReason" placeholder="Ex.: funcionário esqueceu de registrar a saída; conferido pelo encarregado"></div>
+ </div>
+ <div class="toolbar"><button class="btn primary" id="saveTreatment" type="button">REGISTRAR TRATAMENTO</button><span id="treatmentMsg" class="muted"></span></div>
+ <div style="margin-top:12px"><strong>Histórico do período</strong><div id="treatmentHistory" class="list" style="margin-top:8px"></div></div>
 </div>
 <div class="grid" id="monthlySummary" style="margin-bottom:10px"></div>
 <div class="list" id="monthlyMirrorList"></div>
@@ -1693,7 +1704,7 @@ async function loadEmployees(){try{const r=await rest('v2_employees','select=id,
 function employeeAddressText(a){if(!a)return'';if(typeof a==='string')return a;if(a.formatted)return a.formatted;return [a.street||a.address||a.logradouro,a.number||a.numero,a.neighborhood||a.bairro,a.city||a.municipio,a.state||a.uf,a.zip||a.cep].filter(Boolean).join(', ')}
 window.openEmployeeEdit=function(id){const e=(window.__rhEmployees||[]).find(x=>x.id===id);if(!e)return;$('#editEmployeeId').value=e.id;$('#editEmployeeName').value=e.full_name||'';$('#editEmployeeNumber').value=e.employee_number||'';$('#editEmployeeCpf').value=e.cpf||'';$('#editEmployeeRg').value=e.rg||'';$('#editEmployeeBirth').value=e.birth_date||'';$('#editEmployeePhone').value=e.phone||'';$('#editEmployeeJob').value=e.job_title||'';$('#editEmployeeTeam').value=e.primary_team||'';$('#editEmployeeAdmission').value=e.admission_date||'';$('#editEmployeeAddress').value=employeeAddressText(e.address);window.__employeePhotoFile=null;window.__removeEmployeePhoto=false;const pp=$('#editEmployeePhotoPreview');pp.src=employeePlaceholder(e.full_name);if(e.photo_path)employeePhotoObjectUrl(e.photo_path).then(u=>{if(u&&$('#editEmployeeId').value===e.id)pp.src=u});$('#employeeEditMsg').textContent='';$('#employeeEditCard').style.display='block';$('#employeeEditCard').scrollIntoView({behavior:'smooth',block:'start'})}
 
-async function loadOperations(){try{const r=await rest('v2_operations','select=operation_number,title,status,customer_name,location_name,scheduled_start,planned_revenue,actual_revenue&company_id=eq.'+companyId+'&order=scheduled_start.desc&limit=50');$('#operationsList').innerHTML=r.map(x=>`<div class="item"><strong>#${esc(x.operation_number)} • ${esc(x.title)}</strong><span class="pill">${esc(x.status)}</span><div class="muted">${esc(x.customer_name||'')} • ${esc(x.location_name||'')}</div><div class="muted">Previsto: ${money(x.planned_revenue)} • Real: ${money(x.actual_revenue)}</div></div>`).join('')||'<div class="muted">Ainda não há operações na Beta.</div>'}catch(e){$('#operationsList').innerHTML='<div class="error">'+esc(e.message)+'</div>'}}
+async function loadOperations(){try{const r=await rest('v2_operations','select=operation_number,title,status,customer_name,location_name,scheduled_start,planned_revenue,actual_revenue&company_id=eq.'+companyId+'&order=scheduled_start.desc&limit=50');$('#operationsList').innerHTML=r.map(x=>`<div class="item"><strong>#${esc(x.operation_number)} • ${esc(x.title)}</strong><span class="pill">${esc(x.status)}</span><div class="muted">${esc(x.customer_name||'')} • ${esc(x.location_name||'')}</div><div class="muted">Previsto: ${money(x.planned_revenue)} • Real: ${money(x.actual_revenue)}</div></div>`).join('')||'<div class="muted">Ainda não há operações cadastradas.</div>'}catch(e){$('#operationsList').innerHTML='<div class="error">'+esc(e.message)+'</div>'}}
 const vehiclePhotoUrls={};
 function vehiclePlaceholder(name='Veículo'){const t=(name||'V').trim().slice(0,2).toUpperCase();return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="220" height="164"><rect width="100%" height="100%" fill="#e2e8f0"/><text x="50%" y="54%" text-anchor="middle" font-family="Arial" font-size="38" fill="#64748b">${t}</text></svg>`)}`}
 async function vehiclePhotoObjectUrl(path){if(!path)return '';if(vehiclePhotoUrls[path])return vehiclePhotoUrls[path];try{const r=await authFetch('/storage/v1/object/employee-documents/'+path);if(!r.ok)throw new Error('Foto indisponível');const b=await r.blob();const u=URL.createObjectURL(b);vehiclePhotoUrls[path]=u;return u}catch(e){console.warn('vehicle photo',e);return ''}}
@@ -1747,6 +1758,8 @@ async function loadMonthlyMirror(){
       '&id=eq.'+encodeURIComponent(employeeId)+'&limit=1'
     );
     const emp=empRows?.[0]||{};
+    const originalSel=$('#treatmentOriginalId');
+    if(originalSel)originalSel.innerHTML='<option value="">Sem vínculo / inclusão manual</option>'+rows.map(x=>'<option value="'+esc(x.id)+'">'+esc(new Date(x.occurred_at).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo'}))+' • '+esc(pointLabels[x.event_type]||x.event_type)+'</option>').join('');
     list.dataset.employeeName=emp.full_name||'';
     list.dataset.employeeNumber=emp.employee_number||'';
     list.dataset.cpf=emp.cpf||'';
@@ -1826,6 +1839,7 @@ async function loadMonthlyMirror(){
     ].map(x=>`<div class="card" style="margin:0"><div class="kpi" style="font-size:20px">${esc(x[1])}</div><div class="label">${esc(x[0])}</div></div>`).join('');
 
     list.innerHTML=rendered||'<div class="muted">Nenhuma jornada encontrada nesse mês.</div>';
+    if(!$('#treatmentCard')?.classList.contains('hidden'))await refreshTreatmentHistory();
   }catch(e){
     summary.innerHTML='';
     list.innerHTML='<div class="error">'+esc(e.message||String(e))+'</div>';
@@ -2137,10 +2151,35 @@ $('#saveSchedule').addEventListener('click',async()=>{
 });
 
 if($('#lastReceiptBtn')) $('#lastReceiptBtn').addEventListener('click',()=>lastPointReceipt&&openReceipt(lastPointReceipt));
-if($('#openTreatment')) $('#openTreatment').addEventListener('click',()=>{$('#treatmentCard').classList.toggle('hidden');refreshTreatmentHistory()});
-if($('#saveTreatment')) $('#saveTreatment').addEventListener('click',async()=>{const employee_id=$('#monthlyEmployee').value,reason=$('#treatmentReason').value.trim(),m=$('#treatmentMsg');if(!employee_id||reason.length<3){m.className='error';m.textContent='Selecione o funcionário e informe o motivo.';return}const d=$('#treatmentDateTime').value,p={company_id:companyId,employee_id,treatment_type:$('#treatmentType').value,event_type:$('#treatmentEventType').value,occurred_at:d?new Date(d).toISOString():null,original_event_id:$('#treatmentOriginalId').value.trim()||null,reason,metadata:{source:'controla_beta_5_13'}};try{await restInsert('v2_attendance_treatments',p);m.className='okmsg';m.textContent='Tratamento registrado sem alterar a marcação original ✓';$('#treatmentReason').value='';await refreshTreatmentHistory()}catch(x){m.className='error';m.textContent=x.message||String(x)}});
-if($('#exportAFD')) $('#exportAFD').addEventListener('click',async()=>{const e=$('#monthlyEmployee').value,mo=$('#monthlyMonth').value;if(!e||!mo)return alert('Selecione funcionário e mês.');const [y,m]=mo.split('-').map(Number),a=new Date(Date.UTC(y,m-1,1)).toISOString(),z=new Date(Date.UTC(y,m,1)).toISOString(),r=await rest('v2_attendance_events','select=nsr,occurred_at,server_received_at,device_id,integrity_hash&company_id=eq.'+companyId+'&employee_id=eq.'+e+'&occurred_at=gte.'+encodeURIComponent(a)+'&occurred_at=lt.'+encodeURIComponent(z)+'&order=occurred_at.asc');downloadText('AFD_PREVIA_'+mo+'.txt',['AFD - PRÉVIA TÉCNICA','NÃO É AFD FISCAL ASSINADO','Empregador: '+(companyProfile.legal_name||companyProfile.trade_name||''),''].concat(r.map(x=>[x.nsr||'',x.occurred_at,x.server_received_at||'',x.device_id||'',x.integrity_hash||''].join(';'))).join('\n'))});
-if($('#exportAEJ')) $('#exportAEJ').addEventListener('click',()=>{const mo=$('#monthlyMonth').value;downloadText('AEJ_PREVIA_'+mo+'.txt','AEJ - PRÉVIA TÉCNICA\\nNÃO É AEJ FISCAL ASSINADO\\nPeríodo: '+mo+'\\nConsulte o Espelho mensal para as jornadas processadas.');});
+if($('#openTreatment')) $('#openTreatment').addEventListener('click',async()=>{
+ const card=$('#treatmentCard');card.classList.toggle('hidden');
+ if(!card.classList.contains('hidden')){
+  if(!$('#treatmentDateTime').value)$('#treatmentDateTime').value=poLocalInputDate();
+  await refreshTreatmentHistory();
+ }
+});
+if($('#saveTreatment')) $('#saveTreatment').addEventListener('click',async()=>{
+ const employee_id=$('#monthlyEmployee').value,reason=$('#treatmentReason').value.trim(),m=$('#treatmentMsg');
+ if(!employee_id||reason.length<3){m.className='error';m.textContent='Selecione o funcionário e informe uma justificativa.';return}
+ try{
+  const user=await getUser(),d=$('#treatmentDateTime').value,original=$('#treatmentOriginalId').value||null;
+  await restInsert('v2_attendance_treatments',{company_id:companyId,employee_id,treatment_type:$('#treatmentType').value,event_type:$('#treatmentEventType').value,occurred_at:d?new Date(d).toISOString():null,original_event_id:original,reason,created_by:user.id,metadata:{source:'agro_souzas_admin_v6_25'}});
+  m.className='okmsg';m.textContent='Tratamento registrado com rastreabilidade ✓';$('#treatmentReason').value='';
+  await refreshTreatmentHistory();await loadMonthlyMirror();
+ }catch(x){m.className='error';m.textContent=x.message||String(x)}
+});
+if($('#exportAFD')) $('#exportAFD').addEventListener('click',async()=>{
+ const e=$('#monthlyEmployee').value,mo=$('#monthlyMonth').value;if(!e||!mo)return alert('Selecione funcionário e mês.');
+ const b=monthBoundsBR(mo),r=await rest('v2_attendance_events','select=nsr,occurred_at,server_received_at,device_id,integrity_hash,event_type&company_id=eq.'+companyId+'&employee_id=eq.'+e+'&occurred_at=gte.'+encodeURIComponent(b.start)+'&occurred_at=lt.'+encodeURIComponent(b.end)+'&order=occurred_at.asc');
+ downloadText('AFD_PREVIA_'+mo+'.txt',['AFD - PRÉVIA TÉCNICA','NÃO É AFD FISCAL HOMOLOGADO','Empregador: '+cleanCompanyName(companyProfile.legal_name||companyProfile.trade_name||''),''].concat(r.map(x=>[x.nsr||'',x.occurred_at,x.server_received_at||'',x.event_type||'',x.device_id||'',x.integrity_hash||''].join(';'))).join('\n'));
+});
+if($('#exportAEJ')) $('#exportAEJ').addEventListener('click',async()=>{
+ const e=$('#monthlyEmployee').value,mo=$('#monthlyMonth').value;if(!e||!mo)return alert('Selecione funcionário e mês.');
+ const b=monthBoundsBR(mo),events=await rest('v2_attendance_events','select=occurred_at,event_type,nsr&company_id=eq.'+companyId+'&employee_id=eq.'+e+'&occurred_at=gte.'+encodeURIComponent(b.start)+'&occurred_at=lt.'+encodeURIComponent(b.end)+'&order=occurred_at.asc');
+ const treatments=await rest('v2_attendance_treatments','select=treatment_type,event_type,occurred_at,reason,created_at&company_id=eq.'+companyId+'&employee_id=eq.'+e+'&created_at=gte.'+encodeURIComponent(b.start)+'&created_at=lt.'+encodeURIComponent(b.end)+'&order=created_at.asc');
+ const txt=['AEJ - PRÉVIA TÉCNICA','NÃO É AEJ FISCAL HOMOLOGADO','Período: '+mo,'','MARCAÇÕES'].concat(events.map(x=>[x.nsr||'',x.occurred_at,x.event_type||''].join(';')),['','TRATAMENTOS'],treatments.map(x=>[x.treatment_type,x.event_type||'',x.occurred_at||'',x.reason||'',x.created_at].join(';'))).join('\n');
+ downloadText('AEJ_PREVIA_'+mo+'.txt',txt);
+});
 
 
 
@@ -3465,7 +3504,7 @@ setInterval(()=>{
 },60000);
 if('serviceWorker' in navigator){
  window.addEventListener('load',()=>{
-  navigator.serviceWorker.register('./sw-v6-24.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
+  navigator.serviceWorker.register('./sw-v6-25.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
  });
 }
 
