@@ -8,7 +8,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
-<title>Comando 360 • v6.46</title>
+<title>Comando 360 • v6.47</title>
 <link rel="manifest" href="./comando360.webmanifest"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
@@ -353,7 +353,7 @@ header .brand small{color:#718198;font-weight:650}
 <script defer src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
 <script>
 (function(){
-  const BUILD='6.46';
+  const BUILD='6.47';
   try{
     const marker='controla_cache_cleanup_'+BUILD;
     if(!localStorage.getItem(marker)){
@@ -387,7 +387,7 @@ header .brand small{color:#718198;font-weight:650}
 <div class="v2group">INTELIGÊNCIA</div>
 <button class="v2navbtn" data-v2tab="ia">✦   Assistente IA</button>
 </aside>
-<header><div class="brand"><img class="header-brand-icon" src="./comando360-icon.svg" alt="Comando 360"/><div><b>Comando <span class="brand360">360</span></b><div><small id="companyName">Empresa</small></div></div></div><div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.46</span><button class="btn soft" id="themeToggle" type="button">☾</button><button class="btn soft hidden" id="logout">Sair</button></div></header>
+<header><div class="brand"><img class="header-brand-icon" src="./comando360-icon.svg" alt="Comando 360"/><div><b>Comando <span class="brand360">360</span></b><div><small id="companyName">Empresa</small></div></div></div><div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.47</span><button class="btn soft" id="themeToggle" type="button">☾</button><button class="btn soft hidden" id="logout">Sair</button></div></header>
 <main class="wrap">
 <section class="login team-entry" id="login">
 <div class="card" id="deviceSetupCard">
@@ -404,7 +404,7 @@ header .brand small{color:#718198;font-weight:650}
  <label>Senha</label><input autocomplete="current-password" id="password" type="password"/>
  <button class="btn primary" id="loginBtn">Entrar</button>
  <button class="btn soft" id="backDeviceSetup" type="button" style="margin-left:6px">Voltar</button>
- <div class="muted" id="loginMsg" style="margin-top:10px">Comando 360 • v6.46</div><div class="debug" id="debug"></div>
+ <div class="muted" id="loginMsg" style="margin-top:10px">Comando 360 • v6.47</div><div class="debug" id="debug"></div>
 </div>
 </section>
 <section class="hidden" id="app">
@@ -767,7 +767,7 @@ header .brand small{color:#718198;font-weight:650}
 <div class="toolbar" style="margin-top:12px"><button class="btn primary" id="saveMaintenanceEdit" type="button">SALVAR MANUTENÇÃO</button><button class="btn soft" id="archiveMaintenanceBtn" type="button">DESATIVAR PLANO</button><button class="btn danger" id="deleteMaintenanceBtn" type="button">EXCLUIR MANUTENÇÃO</button></div><div class="muted" id="maintenanceEditMsg" style="margin-top:8px"></div></div>
 </div>
 <div class="section" data-screen="combustivel" hidden="" id="combustivel">
-<div class="card"><div class="toolbar" style="justify-content:space-between"><div><h3 style="margin:0">⛽ Combustível & KM</h3><div class="muted">Abastecimentos, quilometragem, consumo e custo da frota.</div></div><div class="toolbar"><button class="btn primary" id="newFuelBtn" type="button">+ ABASTECIMENTO</button><button class="btn soft" id="newKmBtn" type="button">+ REGISTRAR KM</button></div></div><div class="v2-kpis" id="fuelKpis" style="margin-top:14px"></div></div>
+<div class="card"><div class="toolbar" style="justify-content:space-between"><div><h3 id="fuelScreenTitle" style="margin:0">⛽ Combustível & KM</h3><div class="muted" id="fuelScreenSubtitle">Abastecimentos, quilometragem, consumo e custo da frota.</div></div><div class="toolbar"><button class="btn primary" id="newFuelBtn" type="button">+ ABASTECIMENTO</button><button class="btn soft" id="newKmBtn" type="button">+ REGISTRAR KM</button></div></div><div class="v2-kpis" id="fuelKpis" style="margin-top:14px"></div></div>
 <div class="card" id="fuelEditCard" style="display:none"><div class="toolbar" style="justify-content:space-between"><div><h3 style="margin:0">Novo abastecimento</h3><div class="muted">O KM informado também atualiza a ficha do veículo quando for maior.</div></div><button class="btn soft" id="cancelFuelEdit" type="button">Cancelar</button></div>
 <div class="row" style="margin-top:12px"><div><label>Veículo</label><select id="fuelVehicle"></select></div><div><label>Data e hora</label><input id="fuelDate" type="datetime-local"/></div><div><label>KM atual</label><input id="fuelKm" type="number" min="0" step="1"/></div></div>
 <div class="row"><div><label>Litros</label><input id="fuelLiters" type="number" min="0" step="0.01"/></div><div><label>Valor total (R$)</label><input id="fuelTotal" type="number" min="0" step="0.01"/></div><div><label>Posto</label><input id="fuelStation" placeholder="Nome do posto"/></div></div>
@@ -782,7 +782,7 @@ header .brand small{color:#718198;font-weight:650}
 <div class="row" style="margin-top:12px"><div><label>Veículo</label><select id="kmVehicle"></select></div><div><label>Data e hora</label><input id="kmDate" type="datetime-local"/></div><div><label>KM do hodômetro</label><input id="kmValue" type="number" min="0" step="1"/></div></div>
 <div><label>Motivo / rota</label><input id="kmNotes" placeholder="Ex.: retorno da equipe / conferência do painel"/></div>
 <div class="toolbar" style="margin-top:12px"><button class="btn primary" id="saveKmBtn" type="button">SALVAR KM</button></div><div class="muted" id="kmMsg" style="margin-top:8px"></div></div>
-<div class="card"><div class="toolbar" style="justify-content:space-between"><div><h3 style="margin:0">Histórico de abastecimentos</h3><div class="muted">Consumo é calculado entre abastecimentos consecutivos do mesmo veículo.</div></div><button class="btn soft" id="refreshFuelBtn" type="button">Atualizar</button></div><div class="list" id="fuelList" style="margin-top:12px"></div></div>
+<div class="card"><div class="toolbar" style="justify-content:space-between"><div><h3 style="margin:0">Histórico de abastecimentos</h3><div class="muted" id="fuelHistorySubtitle">Consumo é calculado entre abastecimentos consecutivos do mesmo veículo.</div></div><button class="btn soft" id="refreshFuelBtn" type="button">Atualizar</button></div><div class="list" id="fuelList" style="margin-top:12px"></div></div>
 </div>
 <div class="section" data-screen="documentosfrota" hidden="" id="documentosfrota">
 <div class="card"><div class="toolbar" style="justify-content:space-between"><div><h3 style="margin:0">📄 Documentos da Frota</h3><div class="muted">Guarde o PDF do veículo e use o CRLV para preencher a condução automaticamente.</div></div><div class="toolbar"><button class="btn primary" id="importCrlvBtn" type="button">✨ LER CRLV / CADASTRAR CONDUÇÃO</button><button class="btn soft" id="newVehicleDocBtn" type="button">+ DOCUMENTO MANUAL</button></div></div><input id="crlvImportFile" type="file" accept="application/pdf,image/jpeg,image/png,image/webp" hidden/><div class="v2-kpis" id="vehicleDocKpis" style="margin-top:14px"></div></div>
@@ -1542,7 +1542,7 @@ async function syncPoultryTruckOfflineItem(item){
   .map(x=>({barn_id:x?.barn_id||null,barn_number:normalizeAviaryNumber(x?.barn_number),birds:poN(x?.birds)}))
   .filter(x=>x.barn_number||x.barn_id);
 
- // Compatibilidade com itens offline criados antes da v6.46.
+ // Compatibilidade com itens offline criados antes da v6.47.
  if(!barnBreakdown.length&&item.barn_id){
   const oldId=String(item.barn_id).startsWith('offline:')?(refs.loading?.metadata?.default_barn_id||null):item.barn_id;
   const oldBarn=poultryBarns.find(b=>b.id===oldId);
@@ -3482,11 +3482,26 @@ async function loadFuel(){
  let kmDriven=0;
  fuelVehicles.forEach(v=>{const a=fuelCache.filter(x=>x.vehicle_id===v.id&&Number(x.odometer_km)>0).sort((x,y)=>Number(x.odometer_km)-Number(y.odometer_km));if(a.length>1)kmDriven+=Math.max(0,Number(a[a.length-1].odometer_km)-Number(a[0].odometer_km))});
  const k=document.getElementById('fuelKpis');
- if(k)k.innerHTML=
-  '<div class="v2kpi"><span>Gasto no mês</span><strong>'+money(cost)+'</strong></div>'+
-  '<div class="v2kpi"><span>Litros no mês</span><strong>'+liters.toLocaleString('pt-BR',{maximumFractionDigits:1})+' L</strong></div>'+
-  '<div class="v2kpi"><span>Preço médio</span><strong>'+(liters?money(cost/liters):'R$ 0,00')+'/L</strong></div>'+
-  '<div class="v2kpi"><span>KM entre abastecimentos</span><strong>'+kmDriven.toLocaleString('pt-BR')+' km</strong></div>';
+ const title=document.getElementById('fuelScreenTitle'),sub=document.getElementById('fuelScreenSubtitle'),histSub=document.getElementById('fuelHistorySubtitle');
+ const kmBtn=document.getElementById('newKmBtn'),kmCard=document.getElementById('kmEditCard');
+ if(deviceMode){
+  if(title)title.textContent='⛽ Abastecimento';
+  if(sub)sub.textContent='Registre abastecimentos e consulte o histórico da condução.';
+  if(histSub)histSub.textContent='Lançamentos registrados pela equipe, do mais recente para o mais antigo.';
+  if(k)k.style.display='none';
+  if(kmBtn)kmBtn.style.display='none';
+  if(kmCard)kmCard.style.display='none';
+ }else{
+  if(title)title.textContent='⛽ Combustível & KM';
+  if(sub)sub.textContent='Abastecimentos, quilometragem, consumo e custo da frota.';
+  if(histSub)histSub.textContent='Consumo é calculado entre abastecimentos consecutivos do mesmo veículo.';
+  if(k){k.style.display='grid';k.innerHTML=
+   '<div class="v2kpi"><span>Gasto no mês</span><strong>'+money(cost)+'</strong></div>'+
+   '<div class="v2kpi"><span>Litros no mês</span><strong>'+liters.toLocaleString('pt-BR',{maximumFractionDigits:1})+' L</strong></div>'+
+   '<div class="v2kpi"><span>Preço médio</span><strong>'+(liters?money(cost/liters):'R$ 0,00')+'/L</strong></div>'+
+   '<div class="v2kpi"><span>KM entre abastecimentos</span><strong>'+kmDriven.toLocaleString('pt-BR')+' km</strong></div>';}
+  if(kmBtn)kmBtn.style.display='';
+ }
  const list=document.getElementById('fuelList');if(!list)return;
  list.innerHTML=fuelCache.map(x=>{
   const v=fuelVehicles.find(z=>z.id===x.vehicle_id);
@@ -3494,15 +3509,18 @@ async function loadFuel(){
   const dist=same&&x.odometer_km&&same.odometer_km?Number(x.odometer_km)-Number(same.odometer_km):0;
   const cons=dist>0&&Number(x.liters)>0?dist/Number(x.liters):0;
   const cpk=dist>0?Number(x.total_amount||0)/dist:0;
-  let badges='<span class="pill">'+(Number(x.liters)>0?money(Number(x.total_amount||0)/Number(x.liters)):'R$ 0,00')+'/L</span>';
-  if(cons)badges+=' <span class="pill ok">'+cons.toLocaleString('pt-BR',{maximumFractionDigits:2})+' km/L</span> <span class="pill">'+money(cpk)+'/km</span>';
-  if(x.station_name)badges+=' <span class="pill">⛽ '+esc(x.station_name)+'</span>';
-  if(x.metadata&&x.metadata.driver)badges+=' <span class="pill">👤 '+esc(x.metadata.driver)+'</span>';
+  let badges='';
+  if(!deviceMode){
+   badges='<span class="pill">'+(Number(x.liters)>0?money(Number(x.total_amount||0)/Number(x.liters)):'R$ 0,00')+'/L</span>';
+   if(cons)badges+=' <span class="pill ok">'+cons.toLocaleString('pt-BR',{maximumFractionDigits:2})+' km/L</span> <span class="pill">'+money(cpk)+'/km</span>';
+  }
+  if(x.station_name)badges+=(badges?' ':'')+'<span class="pill">⛽ '+esc(x.station_name)+'</span>';
+  if(x.metadata&&x.metadata.driver)badges+=(badges?' ':'')+'<span class="pill">👤 '+esc(x.metadata.driver)+'</span>';
   if(x.metadata&&x.metadata.offline_pending)badges+=' <span class="pill warn">OFFLINE • PENDENTE</span>';
   else if(x.metadata&&x.metadata.receipt_path)badges+=' <span class="pill ok">📷 Comprovante</span>';
   const notes=x.metadata&&x.metadata.notes?'<div class="muted" style="margin-top:6px">'+esc(x.metadata.notes)+'</div>':'';
   const photo=(x.metadata&&x.metadata.receipt_path&&!x.metadata.offline_pending&&!deviceMode)?'<button class="btn soft viewFuelReceipt" data-path="'+esc(x.metadata.receipt_path)+'" type="button">Ver foto</button>':'';
-  const del=x.metadata&&x.metadata.offline_pending?'':'<button class="btn danger deleteFuelBtn" data-id="'+esc(x.id)+'" type="button">Excluir</button>';
+  const del=(deviceMode||x.metadata&&x.metadata.offline_pending)?'':'<button class="btn danger deleteFuelBtn" data-id="'+esc(x.id)+'" type="button">Excluir</button>';
   return '<div class="item"><div class="toolbar" style="justify-content:space-between;gap:10px"><div><strong>'+esc(v?.description||v?.model||'Veículo')+' • '+esc(v?.plate||'sem placa')+'</strong><div class="muted">'+new Date(x.fueled_at).toLocaleString('pt-BR')+' • '+Number(x.odometer_km||0).toLocaleString('pt-BR')+' km • '+Number(x.liters||0).toLocaleString('pt-BR',{maximumFractionDigits:2})+' L • '+money(x.total_amount||0)+'</div><div style="margin-top:6px">'+badges+'</div>'+notes+'</div><div class="toolbar">'+photo+del+'</div></div></div>';
  }).join('')||'<div class="muted">Nenhum abastecimento registrado.</div>';
 }
@@ -4016,7 +4034,7 @@ document.addEventListener('click',async function(e){
   }
   if(e.target.closest('#cancelFuelEdit')){e.preventDefault();document.getElementById('fuelEditCard').style.display='none';return}
   if(e.target.closest('#saveFuelBtn')){e.preventDefault();await saveFuel();return}
-  if(e.target.closest('#newKmBtn')){e.preventDefault();document.getElementById('kmEditCard').style.display='block';document.getElementById('kmDate').value=localDateTimeInput();document.getElementById('kmMsg').textContent='';return}
+  if(e.target.closest('#newKmBtn')){e.preventDefault();if(deviceMode)return;document.getElementById('kmEditCard').style.display='block';document.getElementById('kmDate').value=localDateTimeInput();document.getElementById('kmMsg').textContent='';return}
   if(e.target.closest('#cancelKmEdit')){e.preventDefault();document.getElementById('kmEditCard').style.display='none';return}
   if(e.target.closest('#saveKmBtn')){e.preventDefault();await saveKm();return}
   if(e.target.closest('#refreshFuelBtn')){e.preventDefault();await loadFuel();return}
@@ -4114,7 +4132,7 @@ setInterval(()=>{
 },60000);
 if('serviceWorker' in navigator){
  window.addEventListener('load',()=>{
-  navigator.serviceWorker.register('./sw-v6-46.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
+  navigator.serviceWorker.register('./sw-v6-47.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
  });
 }
 
