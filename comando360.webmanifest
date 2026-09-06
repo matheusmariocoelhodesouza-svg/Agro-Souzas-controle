@@ -17,16 +17,16 @@
   "theme_color": "#1976d2",
   "icons": [
     {
-      "src": "./comando360-192.png",
-      "sizes": "192x192",
-      "type": "image/png",
+      "src": "./comando360-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
       "purpose": "any"
     },
     {
-      "src": "./comando360-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "src": "./comando360-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
     }
   ]
 }
