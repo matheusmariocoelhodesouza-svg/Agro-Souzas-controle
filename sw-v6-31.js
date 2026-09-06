@@ -3,9 +3,7 @@ const CORE=[
   './',
   './index.html',
   './comando360.webmanifest',
-  './comando360-192.png',
-  './comando360-512.png',
-  './comando360-180.png'
+  './comando360-icon.svg',
 ];
 
 self.addEventListener('install',event=>{
