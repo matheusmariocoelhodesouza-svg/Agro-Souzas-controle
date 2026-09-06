@@ -1,13 +1,17 @@
 {
   "id": "./",
-  "name": "Agro Souza's Controle",
-  "short_name": "Agro Souza's",
-  "description": "Gestão de equipes, ponto, apanha, frota e abastecimento",
+  "name": "Controla",
+  "short_name": "Controla",
+  "description": "Gestão empresarial de equipes, ponto, operações, frota, manutenção, abastecimento, financeiro e relatórios",
   "lang": "pt-BR",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "display_override": ["standalone", "fullscreen", "minimal-ui"],
+  "display_override": [
+    "standalone",
+    "fullscreen",
+    "minimal-ui"
+  ],
   "orientation": "portrait-primary",
   "background_color": "#0f172a",
   "theme_color": "#0f172a",
