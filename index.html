@@ -8,7 +8,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
-<title>Comando 360 • v6.34</title>
+<title>Comando 360 • v6.35</title>
 <link rel="manifest" href="./comando360.webmanifest"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
@@ -351,7 +351,7 @@ header .brand small{color:#718198;font-weight:650}
 <script defer src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
 <script>
 (function(){
-  const BUILD='6.34';
+  const BUILD='6.35';
   try{
     const marker='controla_cache_cleanup_'+BUILD;
     if(!localStorage.getItem(marker)){
@@ -385,7 +385,7 @@ header .brand small{color:#718198;font-weight:650}
 <div class="v2group">INTELIGÊNCIA</div>
 <button class="v2navbtn" data-v2tab="ia">✦   Assistente IA</button>
 </aside>
-<header><div class="brand"><img class="header-brand-icon" src="./comando360-icon.svg" alt="Comando 360"/><div><b>Comando <span class="brand360">360</span></b><div><small id="companyName">Empresa</small></div></div></div><div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.34</span><button class="btn soft" id="themeToggle" type="button">☾</button><button class="btn soft hidden" id="logout">Sair</button></div></header>
+<header><div class="brand"><img class="header-brand-icon" src="./comando360-icon.svg" alt="Comando 360"/><div><b>Comando <span class="brand360">360</span></b><div><small id="companyName">Empresa</small></div></div></div><div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.35</span><button class="btn soft" id="themeToggle" type="button">☾</button><button class="btn soft hidden" id="logout">Sair</button></div></header>
 <main class="wrap">
 <section class="login team-entry" id="login">
 <div class="card" id="deviceSetupCard">
@@ -402,7 +402,7 @@ header .brand small{color:#718198;font-weight:650}
  <label>Senha</label><input autocomplete="current-password" id="password" type="password"/>
  <button class="btn primary" id="loginBtn">Entrar</button>
  <button class="btn soft" id="backDeviceSetup" type="button" style="margin-left:6px">Voltar</button>
- <div class="muted" id="loginMsg" style="margin-top:10px">Comando 360 • v6.34</div><div class="debug" id="debug"></div>
+ <div class="muted" id="loginMsg" style="margin-top:10px">Comando 360 • v6.35</div><div class="debug" id="debug"></div>
 </div>
 </section>
 <section class="hidden" id="app">
@@ -531,7 +531,7 @@ header .brand small{color:#718198;font-weight:650}
 <div style="margin-top:16px"><div class="toolbar" style="justify-content:space-between"><div><label style="font-size:15px">Funcionários da equipe</label><div class="muted">Marque para adicionar. Desmarque para retirar. Se o funcionário estiver em outra equipe, ele será transferido.</div></div><span class="pill" id="teamMembersCount">0 selecionado(s)</span></div><div id="teamMembersList" class="list" style="margin-top:10px;max-height:360px;overflow:auto"></div></div><div class="toolbar" style="margin-top:12px"><button class="btn primary" id="saveTeamEdit" type="button">SALVAR EQUIPE</button><button class="btn soft" id="archiveTeamBtn" type="button">ARQUIVAR EQUIPE</button><button class="btn danger" id="deleteTeamBtn" type="button">EXCLUIR EQUIPE</button></div><div class="muted" id="teamEditMsg" style="margin-top:8px"></div></div>
 </div>
 <div class="section" data-screen="funcionarios" hidden="" id="funcionarios"><div class="card"><div class="toolbar"><div><strong>Dados do empregador</strong><div class="muted">Usados nos documentos e comprovantes do ponto.</div></div></div><div class="row"><div><label>Razão social</label><input id="companyLegalName"/></div><div><label>Nome fantasia</label><input id="companyTradeName"/></div><div><label>CNPJ / CPF</label><input id="companyTaxId" inputmode="numeric" placeholder="00.000.000/0000-00"/></div></div><button class="btn primary" id="saveCompanyProfile" style="margin-top:10px">Salvar empregador</button><div class="muted" id="companyProfileMsg"></div></div><div class="card"><strong>Dados profissionais do trabalhador</strong><div class="muted">Cargo/função e data de admissão passam a integrar o cadastro profissional e o espelho de ponto.</div><div class="row" style="margin-top:10px"><div><label>Funcionário</label><select id="profEmployee"></select></div><div><label>Cargo / função</label><input id="profJobTitle" placeholder="Ex.: Apanhador de aves"/></div><div><label>Data de admissão</label><input id="profAdmissionDate" type="date"/></div></div><button class="btn primary" id="saveProfessional" style="margin-top:10px">Salvar dados profissionais</button><div class="muted" id="profMsg"></div></div>
-<div class="card" id="employeeEditCard" style="display:none"><div class="toolbar"><div><h3 style="margin:0">Editar funcionário</h3><div class="muted" id="employeeEditSubtitle">Atualize o cadastro sem perder o histórico.</div></div><button class="btn soft" id="cancelEmployeeEdit" type="button">Cancelar</button></div><input id="editEmployeeId" type="hidden"/><div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin:12px 0 16px"><img id="editEmployeePhotoPreview" alt="Foto do funcionário" style="width:112px;height:112px;object-fit:cover;border-radius:18px;border:1px solid #cbd5e1;background:#f8fafc"/><div><div style="font-weight:800;margin-bottom:8px">Foto de perfil</div><div class="toolbar"><button class="btn primary" id="takeEmployeePhoto" type="button">📷 TIRAR FOTO</button><button class="btn soft" id="chooseEmployeePhoto" type="button">🖼️ GALERIA</button><button class="btn soft" id="removeEmployeePhoto" type="button">REMOVER</button></div><input accept="image/jpeg,image/png,image/webp" capture="environment" class="hidden" id="employeePhotoCamera" type="file"/><input accept="image/jpeg,image/png,image/webp" class="hidden" id="employeePhotoGallery" type="file"/><div class="muted" style="margin-top:7px"><b>Foto oficial do colaborador.</b> Ao salvar uma nova foto, o app também usa esta mesma imagem como referência do reconhecimento facial do Ponto 2.0.</div></div></div><div class="row"><div><label>Nome completo</label><input id="editEmployeeName"/></div><div><label>Matrícula</label><input id="editEmployeeNumber" inputmode="numeric"/></div><div><label>CPF</label><input id="editEmployeeCpf" inputmode="numeric"/></div></div><div class="row"><div><label>RG</label><input id="editEmployeeRg"/></div><div><label>Data de nascimento</label><input id="editEmployeeBirth" type="date"/></div><div><label>Telefone</label><input id="editEmployeePhone"/></div></div><div class="row"><div><label>Cargo / função</label><input id="editEmployeeJob"/></div><div><label>Equipe</label><input id="editEmployeeTeam" placeholder="Ex.: Equipe 1"/></div><div><label>Data de admissão</label><input id="editEmployeeAdmission" type="date"/></div></div><div><label>Endereço</label><input id="editEmployeeAddress" placeholder="Rua, número, bairro, cidade..."/></div><div class="row" style="margin-top:12px"><button class="btn primary" id="saveEmployeeEdit" type="button">SALVAR ALTERAÇÕES</button><button class="btn soft" id="archiveEmployee" type="button">ARQUIVAR FUNCIONÁRIO</button><button class="btn danger" id="deleteEmployee" type="button">EXCLUIR DEFINITIVAMENTE</button></div><div class="muted" id="employeeEditMsg" style="margin-top:8px"></div></div>
+<div class="card" id="employeeEditCard" style="display:none"><div class="toolbar"><div><h3 style="margin:0">Editar funcionário</h3><div class="muted" id="employeeEditSubtitle">Atualize o cadastro sem perder o histórico.</div></div><button class="btn soft" id="cancelEmployeeEdit" type="button">Cancelar</button></div><input id="editEmployeeId" type="hidden"/><div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin:12px 0 16px"><img id="editEmployeePhotoPreview" alt="Foto do funcionário" style="width:112px;height:112px;object-fit:cover;border-radius:18px;border:1px solid #cbd5e1;background:#f8fafc"/><div><div style="font-weight:800;margin-bottom:8px">Foto de perfil</div><div class="toolbar"><button class="btn primary" id="takeEmployeePhoto" type="button">📷 TIRAR FOTO</button><button class="btn soft" id="chooseEmployeePhoto" type="button">🖼️ GALERIA</button><button class="btn soft" id="removeEmployeePhoto" type="button">REMOVER</button></div><input accept="image/jpeg,image/png,image/webp" capture="user" class="hidden" id="employeePhotoCamera" type="file"/><input accept="image/jpeg,image/png,image/webp" class="hidden" id="employeePhotoGallery" type="file"/><div class="muted" style="margin-top:7px"><b>Foto oficial do colaborador.</b> Ao salvar uma nova foto, o app também usa esta mesma imagem como referência do reconhecimento facial do Ponto 2.0.</div></div></div><div class="row"><div><label>Nome completo</label><input id="editEmployeeName"/></div><div><label>Matrícula</label><input id="editEmployeeNumber" inputmode="numeric"/></div><div><label>CPF</label><input id="editEmployeeCpf" inputmode="numeric"/></div></div><div class="row"><div><label>RG</label><input id="editEmployeeRg"/></div><div><label>Data de nascimento</label><input id="editEmployeeBirth" type="date"/></div><div><label>Telefone</label><input id="editEmployeePhone"/></div></div><div class="row"><div><label>Cargo / função</label><input id="editEmployeeJob"/></div><div><label>Equipe</label><input id="editEmployeeTeam" placeholder="Ex.: Equipe 1"/></div><div><label>Data de admissão</label><input id="editEmployeeAdmission" type="date"/></div></div><div><label>Endereço</label><input id="editEmployeeAddress" placeholder="Rua, número, bairro, cidade..."/></div><div class="row" style="margin-top:12px"><button class="btn primary" id="saveEmployeeEdit" type="button">SALVAR ALTERAÇÕES</button><button class="btn soft" id="archiveEmployee" type="button">ARQUIVAR FUNCIONÁRIO</button><button class="btn danger" id="deleteEmployee" type="button">EXCLUIR DEFINITIVAMENTE</button></div><div class="muted" id="employeeEditMsg" style="margin-top:8px"></div></div>
 <div class="grid">
 <div class="card"><div class="kpi" id="rhActive">0</div><div class="label">Funcionários ativos</div></div>
 <div class="card"><div class="kpi" id="rhWorking">0</div><div class="label">Com ponto hoje</div></div>
@@ -1016,7 +1016,7 @@ let faceModelsReady=false;
 async function ensureFaceModels(){
  if(faceModelsReady)return;
  if(!window.faceapi)throw new Error('Reconhecimento facial ainda carregando. Aguarde alguns segundos e tente novamente.');
- $('#pointMsg').textContent='Carregando reconhecimento facial...';
+ const pointMsgEl=$('#pointMsg');if(pointMsgEl)pointMsgEl.textContent='Carregando reconhecimento facial...';
  await Promise.all([faceapi.nets.tinyFaceDetector.loadFromUri(FACE_MODELS),faceapi.nets.faceLandmark68Net.loadFromUri(FACE_MODELS),faceapi.nets.faceRecognitionNet.loadFromUri(FACE_MODELS)]);
  faceModelsReady=true;
 }
@@ -3869,7 +3869,7 @@ setInterval(()=>{
 },60000);
 if('serviceWorker' in navigator){
  window.addEventListener('load',()=>{
-  navigator.serviceWorker.register('./sw-v6-34.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
+  navigator.serviceWorker.register('./sw-v6-35.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
  });
 }
 
