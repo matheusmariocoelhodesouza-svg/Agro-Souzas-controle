@@ -8,7 +8,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
-<title>Controla V2 • Beta 6.20 Modo Equipe</title>
+<title>Controla V2 • Beta 6.21 Modo Equipe</title>
 <link rel="manifest" href="./agro-souzas-controle-v7.webmanifest"/>
 <link rel="apple-touch-icon" href="./apple-touch-icon-180.png"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
@@ -132,7 +132,7 @@ body.app-ready .v2sidebar{display:block}
 .po-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
 .pill.warn{background:#fff3cd;color:#7c5700}
 
-/* Beta 6.20 — Modo Equipe */
+/* Beta 6.21 — Modo Equipe */
 .team-entry{max-width:520px;margin:42px auto}
 .team-entry .card{padding:20px}
 .team-entry-title{text-align:center;margin-bottom:18px}
@@ -189,7 +189,7 @@ body.device-mode .admin-only{display:none!important}
 <script defer src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
 <script>
 (function(){
-  const BUILD='6.20';
+  const BUILD='6.21';
   try{
     const marker='controla_cache_cleanup_'+BUILD;
     if(!localStorage.getItem(marker)){
@@ -225,7 +225,7 @@ body.device-mode .admin-only{display:none!important}
 <div class="v2group">EM BREVE</div>
 <button class="v2navbtn" type="button">Estoque</button>
 </aside>
-<header><div class="brand"><div class="logo">C</div><div><b>Controla</b><div><small id="companyName">Beta</small></div></div></div><div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.20</span><button class="btn soft" id="themeToggle" type="button">☾</button><button class="btn soft hidden" id="logout">Sair</button></div></header>
+<header><div class="brand"><div class="logo">C</div><div><b>Controla</b><div><small id="companyName">Beta</small></div></div></div><div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.21</span><button class="btn soft" id="themeToggle" type="button">☾</button><button class="btn soft hidden" id="logout">Sair</button></div></header>
 <main class="wrap">
 <section class="login team-entry" id="login">
 <div class="card" id="deviceSetupCard">
@@ -242,7 +242,7 @@ body.device-mode .admin-only{display:none!important}
  <label>Senha</label><input autocomplete="current-password" id="password" type="password"/>
  <button class="btn primary" id="loginBtn">Entrar</button>
  <button class="btn soft" id="backDeviceSetup" type="button" style="margin-left:6px">Voltar</button>
- <div class="muted" id="loginMsg" style="margin-top:10px">Beta 6.20 • Modo Equipe</div><div class="debug" id="debug"></div>
+ <div class="muted" id="loginMsg" style="margin-top:10px">Beta 6.21 • Modo Equipe</div><div class="debug" id="debug"></div>
 </div>
 </section>
 <section class="hidden" id="app">
@@ -275,7 +275,7 @@ body.device-mode .admin-only{display:none!important}
 </div>
 <div class="section" data-screen="equipereport" hidden="" id="equipereport">
  <div class="v2hero">
-  <div><h1>Relatório de Apanha</h1><p id="teamReportSubtitle">Documento para entregar ao responsável da granja</p></div>
+  <div><h1>Relatório de Apanha</h1><p id="teamReportSubtitle">Cupom de apanha em bobina térmica de 80 mm</p></div>
   <div class="toolbar"><input id="teamReportDate" type="date"/><button class="btn soft" id="refreshTeamReport" type="button">↻ Atualizar</button></div>
  </div>
  <div class="card" style="margin-bottom:12px">
@@ -2533,13 +2533,14 @@ async function loadTeamReport(){
    const farmName=r.farm.farm_name||r.farm.producer_name||r.op.customer_name||r.op.title||'Granja';
    const integrated=r.farm.producer_name||r.op.customer_name||'Não informado';
    const barn=r.defaultBarn.barn_number||'Não informado';
-   return '<div class="catch-report-card"><div class="catch-report-title"><div><div class="muted">RELATÓRIO DE APANHA DE AVES'+(r.op.operation_number?' • Nº '+esc(r.op.operation_number):'')+'</div><h3>'+esc(integrated)+'</h3><div class="muted">'+esc(farmName)+' • '+esc(r.farm.city||r.op.metadata?.city||'Cidade não informada')+' • Aviário '+esc(barn)+'</div></div><span class="pill '+(r.op.metadata?.offline_pending?'warn':(r.op.status==='completed'?'ok':''))+'">'+esc(r.op.metadata?.offline_pending?'OFFLINE • PENDENTE':poSL(r.op.status))+'</span></div><div class="catch-report-meta"><div><span class="muted">Total de aves</span><div class="catch-report-total">'+r.totalBirds.toLocaleString('pt-BR')+'</div></div><div><span class="muted">Caminhões</span><div class="catch-report-total">'+r.trucks.length+'</div></div><div><span class="muted">Horário</span><div><b>'+catchTime(r.actualStart)+' → '+catchTime(r.actualEnd)+'</b><br><span class="muted">Duração '+catchDuration(r.actualStart,r.actualEnd)+'</span></div></div><div><span class="muted">Encarregado</span><div><b>'+esc(r.supervisor.name)+'</b><br><span class="muted">'+esc(r.supervisor.phone)+'</span></div></div></div><div class="toolbar" style="margin-top:12px"><button class="btn primary catchReportPrint" type="button" data-index="'+idx+'">📄 VISUALIZAR / PDF / IMPRIMIR</button></div></div>';
+   return '<div class="catch-report-card"><div class="catch-report-title"><div><div class="muted">RELATÓRIO DE APANHA DE AVES'+(r.op.operation_number?' • Nº '+esc(r.op.operation_number):'')+'</div><h3>'+esc(integrated)+'</h3><div class="muted">'+esc(farmName)+' • '+esc(r.farm.city||r.op.metadata?.city||'Cidade não informada')+' • Aviário '+esc(barn)+'</div></div><span class="pill '+(r.op.metadata?.offline_pending?'warn':(r.op.status==='completed'?'ok':''))+'">'+esc(r.op.metadata?.offline_pending?'OFFLINE • PENDENTE':poSL(r.op.status))+'</span></div><div class="catch-report-meta"><div><span class="muted">Total de aves</span><div class="catch-report-total">'+r.totalBirds.toLocaleString('pt-BR')+'</div></div><div><span class="muted">Caminhões</span><div class="catch-report-total">'+r.trucks.length+'</div></div><div><span class="muted">Horário</span><div><b>'+catchTime(r.actualStart)+' → '+catchTime(r.actualEnd)+'</b><br><span class="muted">Duração '+catchDuration(r.actualStart,r.actualEnd)+'</span></div></div><div><span class="muted">Encarregado</span><div><b>'+esc(r.supervisor.name)+'</b><br><span class="muted">'+esc(r.supervisor.phone)+'</span></div></div></div><div class="toolbar" style="margin-top:12px"><button class="btn primary catchReportPrint" type="button" data-index="'+idx+'">🧾 IMPRIMIR 80 MM</button></div></div>';
   }).join('');
  }catch(e){list.innerHTML='<div class="error">'+esc(e.message||String(e))+'</div>'}
 }
 function printCatchReport(index){
  const r=teamCatchReports[Number(index)];
  if(!r)return alert('Relatório não encontrado. Atualize a tela e tente novamente.');
+
  const op=r.op,farm=r.farm,barn=r.defaultBarn,team=r.team,sup=r.supervisor;
  const companyName=companyProfile?.trade_name||companyProfile?.legal_name||"Agro Souza's";
  const legalName=companyProfile?.legal_name||companyName;
@@ -2551,23 +2552,83 @@ function printCatchReport(index){
  const outlet=barn.outlet_type||op.metadata?.outlet_type||'Não informada';
  const energy=barn.energy_type||op.metadata?.energy_type||'Não informada';
  const reportNo=op.operation_number?'Nº '+op.operation_number:'Registro '+catchDate(op.scheduled_start);
- const truckRows=r.trucks.length?r.trucks.map(t=>{
+
+ const trucksHtml=r.trucks.length?r.trucks.map(t=>{
   const tb=poultryBarns.find(b=>b.id===t.metadata?.barn_id)||barn;
-  return '<tr><td>'+esc(t.truck_sequence||'')+'</td><td>'+esc(t.truck_plate||'—')+'</td><td>'+esc(t.driver_name||'—')+'</td><td>'+esc(tb?.barn_number||aviary)+'</td><td>'+catchTime(t.started_at)+'</td><td>'+catchTime(t.completed_at)+'</td><td class="num">'+poN(t.birds).toLocaleString('pt-BR')+'</td><td>'+(t.is_cata?'SIM':'NÃO')+'</td></tr>';
- }).join(''):'<tr><td colspan="8">Nenhum caminhão registrado.</td></tr>';
+  return '<div class="truck">'+
+   '<div class="truck-head">CAMINHÃO '+esc(t.truck_sequence||'')+(t.is_cata?' • CATA':'')+'</div>'+
+   '<div>Placa: <b>'+esc(t.truck_plate||'—')+'</b></div>'+
+   '<div>Motorista: <b>'+esc(t.driver_name||'—')+'</b></div>'+
+   '<div>Aviário: <b>'+esc(tb?.barn_number||aviary)+'</b></div>'+
+   '<div>Horário: <b>'+catchTime(t.started_at)+' → '+catchTime(t.completed_at)+'</b></div>'+
+   '<div class="truck-birds">'+poN(t.birds).toLocaleString('pt-BR')+' AVES</div>'+
+   (t.metadata?.notes?'<div class="note">Obs.: '+esc(t.metadata.notes)+'</div>':'')+
+  '</div>';
+ }).join(''):'<div class="truck"><b>Nenhum caminhão registrado.</b></div>';
+
  const truckNotes=r.trucks.filter(t=>t.metadata?.notes).map(t=>'Caminhão '+(t.truck_sequence||'')+': '+t.metadata.notes);
  const notes=[op.notes,...truckNotes].filter(Boolean).join(' • ')||'Sem observações.';
+
  const w=window.open('','_blank');
- if(!w)return alert('O navegador bloqueou a janela do relatório.');
- w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>Relatório de Apanha - '+esc(integrated)+'</title><style>@page{size:A4;margin:12mm}*{box-sizing:border-box}body{font-family:Arial,sans-serif;color:#111;margin:0;font-size:11px}.head{border-bottom:3px solid #111;padding-bottom:10px;margin-bottom:12px;display:flex;justify-content:space-between;gap:20px}.brand{font-size:23px;font-weight:900;letter-spacing:.3px}.doc-title{text-align:right}.doc-title h1{font-size:17px;margin:0 0 4px}.muted{color:#555}.section{border:1px solid #cfcfcf;border-radius:8px;margin:9px 0;overflow:hidden}.section h2{font-size:11px;text-transform:uppercase;letter-spacing:.5px;background:#f0f0f0;margin:0;padding:7px 9px}.grid{display:grid;grid-template-columns:repeat(2,1fr)}.field{padding:7px 9px;border-top:1px solid #e5e5e5}.field:nth-child(odd){border-right:1px solid #e5e5e5}.field b{display:block;margin-top:2px;font-size:12px}table{width:100%;border-collapse:collapse}th,td{border:1px solid #ccc;padding:6px 5px;text-align:left}th{background:#f0f0f0;font-size:9px;text-transform:uppercase}.num{text-align:right;font-weight:700}.totals{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin:10px 0}.total{border:1px solid #bbb;border-radius:7px;padding:8px;text-align:center}.total strong{display:block;font-size:16px;margin-top:3px}.obs{border:1px solid #ccc;border-radius:8px;padding:9px;min-height:50px}.signatures{display:grid;grid-template-columns:1fr 1fr;gap:36px;margin-top:46px}.sig{border-top:1px solid #111;text-align:center;padding-top:5px}.footer{margin-top:18px;border-top:1px solid #ddd;padding-top:7px;color:#555;font-size:9px;text-align:center}</style></head><body>'+
- '<div class="head"><div><div class="brand">'+esc(companyName)+'</div><div>'+esc(legalName)+'</div><div class="muted">CNPJ/CPF: '+esc(tax)+'</div></div><div class="doc-title"><h1>RELATÓRIO DE APANHA DE AVES</h1><div>'+esc(reportNo)+'</div><div class="muted">Data: '+catchDate(op.scheduled_start)+'</div></div></div>'+
- '<div class="section"><h2>Prestadora e equipe</h2><div class="grid"><div class="field">Empresa prestadora<b>'+esc(companyName)+'</b></div><div class="field">Equipe<b>'+esc(team.name||'Não informada')+'</b></div><div class="field">Empresa contratante<b>'+esc(r.contractor)+'</b></div><div class="field">Encarregado<b>'+esc(sup.name)+'</b></div><div class="field">Telefone do encarregado<b>'+esc(sup.phone)+'</b></div><div class="field">Situação<b>'+esc(poSL(op.status))+'</b></div></div></div>'+
- '<div class="section"><h2>Dados da granja / aviário</h2><div class="grid"><div class="field">Integrado / responsável<b>'+esc(integrated)+'</b></div><div class="field">Granja<b>'+esc(farmName)+'</b></div><div class="field">Cidade<b>'+esc(city)+'</b></div><div class="field">Aviário<b>'+esc(aviary)+'</b></div><div class="field">Tomada / padrão elétrico<b>'+esc(outlet)+'</b></div><div class="field">Energia<b>'+esc(energy)+'</b></div><div class="field">Início da apanha<b>'+catchTime(r.actualStart)+'</b></div><div class="field">Término da apanha<b>'+catchTime(r.actualEnd)+'</b></div></div></div>'+
- '<div class="section"><h2>Carregamento caminhão por caminhão</h2><table><thead><tr><th>#</th><th>Placa</th><th>Motorista</th><th>Aviário</th><th>Início</th><th>Término</th><th>Aves</th><th>Cata</th></tr></thead><tbody>'+truckRows+'</tbody></table></div>'+
- '<div class="totals"><div class="total">Caminhões<strong>'+r.trucks.length+'</strong></div><div class="total">Total de aves<strong>'+r.totalBirds.toLocaleString('pt-BR')+'</strong></div><div class="total">Catas<strong>'+r.catas+'</strong></div><div class="total">Duração<strong>'+catchDuration(r.actualStart,r.actualEnd)+'</strong></div></div>'+
- '<div><b>Observações</b><div class="obs">'+esc(notes)+'</div></div>'+
- '<div class="signatures"><div class="sig">'+esc(sup.name)+'<br><span class="muted">Encarregado / responsável da equipe</span></div><div class="sig">Responsável pela granja / integrado<br><span class="muted">Nome e assinatura</span></div></div>'+
- '<div class="footer">Relatório operacional emitido pelo Agro Souza\'s Controle • '+new Date().toLocaleString('pt-BR')+'</div><script>window.onload=function(){setTimeout(function(){window.print()},200)}<\/script></body></html>');
+ if(!w)return alert('O navegador bloqueou a janela de impressão.');
+
+ w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>Apanha - '+esc(integrated)+'</title><style>'+
+ '@page{size:80mm auto;margin:2.5mm}'+
+ '*{box-sizing:border-box}html,body{margin:0;padding:0;width:75mm}'+
+ 'body{font-family:Arial,Helvetica,sans-serif;color:#000;font-size:10.5px;line-height:1.28}'+
+ '.center{text-align:center}.brand{font-size:20px;font-weight:900;line-height:1.05}.legal{font-size:9px;margin-top:2px}'+
+ '.title{font-size:14px;font-weight:900;margin-top:9px}.sep{border-top:1px dashed #000;margin:8px 0}'+
+ '.row{margin:3px 0}.row b{font-size:11px}.label{font-size:8.5px;text-transform:uppercase;font-weight:700}'+
+ '.block{border:1px solid #000;padding:6px;margin:6px 0}.block-title{font-weight:900;font-size:10px;border-bottom:1px solid #000;padding-bottom:3px;margin-bottom:4px;text-transform:uppercase}'+
+ '.truck{border:1px dashed #000;padding:6px;margin:6px 0}.truck-head{font-size:11px;font-weight:900;border-bottom:1px dashed #000;padding-bottom:3px;margin-bottom:4px}'+
+ '.truck-birds{text-align:center;font-size:18px;font-weight:950;margin-top:5px}.note{font-size:9px;margin-top:4px}'+
+ '.totals{border:2px solid #000;padding:7px;margin:8px 0;text-align:center}.total-big{font-size:25px;font-weight:950;line-height:1}.total-label{font-size:9px;font-weight:700;margin-bottom:3px}'+
+ '.totals-small{display:flex;justify-content:space-between;gap:4px;margin-top:7px}.totals-small div{flex:1;border-top:1px solid #000;padding-top:4px}'+
+ '.obs{border:1px solid #000;min-height:34px;padding:5px;margin-top:5px}'+
+ '.sign{margin-top:26px;border-top:1px solid #000;text-align:center;padding-top:3px;font-size:9px}.sign+.sign{margin-top:28px}'+
+ '.footer{text-align:center;font-size:8px;margin-top:10px;border-top:1px dashed #000;padding-top:6px}'+
+ '@media print{html,body{width:75mm}.no-print{display:none}}'+
+ '</style></head><body>'+
+
+ '<div class="center"><div class="brand">'+esc(companyName)+'</div><div class="legal">'+esc(legalName)+'</div><div class="legal">CNPJ/CPF: '+esc(tax)+'</div></div>'+
+ '<div class="sep"></div>'+
+ '<div class="center title">RELATÓRIO DE APANHA DE AVES</div>'+
+ '<div class="center">'+esc(reportNo)+'</div>'+
+ '<div class="center"><b>'+catchDate(op.scheduled_start)+'</b></div>'+
+
+ '<div class="sep"></div>'+
+ '<div class="block"><div class="block-title">Equipe</div>'+
+ '<div class="row">Equipe: <b>'+esc(team.name||'Não informada')+'</b></div>'+
+ '<div class="row">Contratante: <b>'+esc(r.contractor)+'</b></div>'+
+ '<div class="row">Encarregado: <b>'+esc(sup.name)+'</b></div>'+
+ '<div class="row">Telefone: <b>'+esc(sup.phone)+'</b></div>'+
+ '</div>'+
+
+ '<div class="block"><div class="block-title">Granja / Aviário</div>'+
+ '<div class="row">Integrado: <b>'+esc(integrated)+'</b></div>'+
+ '<div class="row">Granja: <b>'+esc(farmName)+'</b></div>'+
+ '<div class="row">Cidade: <b>'+esc(city)+'</b></div>'+
+ '<div class="row">Aviário: <b>'+esc(aviary)+'</b></div>'+
+ '<div class="row">Tomada: <b>'+esc(outlet)+'</b></div>'+
+ '<div class="row">Energia: <b>'+esc(energy)+'</b></div>'+
+ '<div class="row">Apanha: <b>'+catchTime(r.actualStart)+' → '+catchTime(r.actualEnd)+'</b></div>'+
+ '<div class="row">Duração: <b>'+catchDuration(r.actualStart,r.actualEnd)+'</b></div>'+
+ '</div>'+
+
+ '<div class="center label">CARREGAMENTO CAMINHÃO POR CAMINHÃO</div>'+
+ trucksHtml+
+
+ '<div class="totals"><div class="total-label">TOTAL DE AVES</div><div class="total-big">'+r.totalBirds.toLocaleString('pt-BR')+'</div>'+
+ '<div class="totals-small"><div>Caminhões<br><b>'+r.trucks.length+'</b></div><div>Catas<br><b>'+r.catas+'</b></div><div>Duração<br><b>'+catchDuration(r.actualStart,r.actualEnd)+'</b></div></div></div>'+
+
+ '<div class="label">OBSERVAÇÕES</div><div class="obs">'+esc(notes)+'</div>'+
+
+ '<div class="sign">'+esc(sup.name)+'<br>Encarregado da equipe</div>'+
+ '<div class="sign">Responsável pela granja / integrado<br>Nome e assinatura</div>'+
+
+ '<div class="footer">Emitido pelo Agro Souza\'s Controle<br>'+new Date().toLocaleString('pt-BR')+'<br><br>*** FIM DO RELATÓRIO ***</div>'+
+ '<script>window.onload=function(){setTimeout(function(){window.print()},250)}<\/script></body></html>');
+
  w.document.close();
 }
 document.addEventListener('click',function(e){
@@ -3202,7 +3263,7 @@ setInterval(()=>{
 },60000);
 if('serviceWorker' in navigator){
  window.addEventListener('load',()=>{
-  navigator.serviceWorker.register('./sw-v6-20.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
+  navigator.serviceWorker.register('./sw-v6-21.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
  });
 }
 
