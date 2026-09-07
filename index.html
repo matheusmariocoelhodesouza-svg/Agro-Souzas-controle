@@ -8,7 +8,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
-<title>Comando 360 • v6.51</title>
+<title>Comando 360 • v6.52</title>
 <link rel="manifest" href="./comando360.webmanifest"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
@@ -483,13 +483,105 @@ header .brand small{color:#718198;font-weight:650}
  #maintenanceEditCard #deleteMaintenanceBtn{grid-column:auto}
 }
 
+/* 6.52 — Apanha de campo no padrão visual da Manutenção */
+.field-poultry-form,.field-truck-form{overflow:hidden}
+.field-form-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:14px}
+.field-form-head h3{margin:0;font-size:23px;line-height:1.15}
+.field-section{margin-top:12px;padding:14px;border:1px solid #dce6f0;border-radius:15px;background:#f8fbfe}
+.field-section-title{display:flex;align-items:flex-start;gap:9px;margin-bottom:12px}
+.field-section-title>span{font-size:20px;line-height:1}
+.field-section-title strong{font-size:15px}
+.field-section-title.compact{margin-bottom:9px}
+.field-section .row,.po-field-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:10px}
+.field-section .row>div,.po-field-grid>div{min-width:0}
+.field-section label,.field-single label,.field-notes-section>label{display:block;font-size:11px;font-weight:850;color:#64748b;margin-bottom:6px}
+.field-section input,.field-section select,.field-section textarea,.field-single select,.field-notes-section textarea{
+ display:block;width:100%;min-width:0;box-sizing:border-box;border:1px solid #cbd5e1;border-radius:10px;padding:11px 12px;background:#fff;color:#172033;font:inherit
+}
+.field-section textarea,.field-notes-section textarea{resize:vertical}
+.field-section input:focus,.field-section select:focus,.field-section textarea:focus,.field-single select:focus,.field-notes-section textarea:focus{outline:3px solid rgba(8,124,240,.10);border-color:#1684eb}
+.field-single{margin-top:9px}
+.po-team-line{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:7px}
+.po-team-line select{width:100%}
+.field-inline-action{margin-top:12px}
+.field-notes-section{background:transparent}
+.field-primary-actions{display:grid;gap:8px;margin-top:14px}
+.field-primary-actions .btn{min-height:48px}
+.field-photo-btn{display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
+.field-sheet-preview{margin-top:10px}
+.field-sheet-preview img{width:100%;max-width:300px;max-height:200px;object-fit:contain;border:1px solid #cbd5e1;border-radius:12px;background:#fff}
+.po-truck-driver-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+.field-cata-switch{display:flex!important;align-items:center;gap:10px;margin:14px 0 10px!important;padding:12px;border:1px solid #cdd9e7;border-radius:12px;background:#fff;cursor:pointer}
+.field-cata-switch input{width:22px!important;height:22px!important;flex:0 0 auto;margin:0}
+.field-cata-switch span{display:flex;flex-direction:column;gap:2px}
+.field-cata-switch strong{font-size:14px}.field-cata-switch small{font-size:10px;color:#75869a}
+.field-single-aviary{margin-top:10px}
+.field-single-aviary label{display:block;font-size:11px;font-weight:850;color:#64748b;margin-bottom:6px}
+.field-single-aviary input{width:100%;box-sizing:border-box}
+.field-cata-box{margin-top:10px;padding:12px;border:1px solid #1684eb;border-radius:13px;background:#f4f9ff}
+.field-add-aviary{width:100%;margin-top:9px}
+.field-cata-total{margin-top:9px;font-size:13px;font-weight:900;color:#0b6fd3}
+.truck-cata-row{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto!important;gap:8px!important;align-items:end!important;padding:9px!important;border:1px solid #dbe4ee!important;border-radius:11px!important;background:#fff!important}
+.truck-cata-field{min-width:0}.truck-cata-field label{display:block;font-size:10px;font-weight:850;color:#64748b;margin-bottom:5px}
+.truck-cata-field input{width:100%;box-sizing:border-box}
+.truck-cata-remove{height:43px;min-width:43px!important;padding:0!important;font-size:20px!important}
+.po-operation-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+.po-time-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+.field-calc-hint{min-height:44px;display:flex;align-items:center;padding:10px 11px;border:1px dashed #9fb4ca;border-radius:10px;color:#64748b;font-size:11px;background:#fff}
+.field-truck-actions{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:9px;margin-top:15px}
+.field-truck-actions .btn{min-height:50px;width:100%}
+.field-form-msg{margin-top:8px}
+.darkmode .field-section{background:#0b1727;border-color:#26374d}
+.darkmode .field-section input,.darkmode .field-section select,.darkmode .field-section textarea,.darkmode .field-single select,.darkmode .field-notes-section textarea{background:#101820;color:#eef5ff;border-color:#3b4c61}
+.darkmode .field-section label,.darkmode .field-single label,.darkmode .field-notes-section>label,.darkmode .field-single-aviary label,.darkmode .truck-cata-field label{color:#9eb0c6}
+.darkmode .field-cata-switch,.darkmode .truck-cata-row{background:#101820!important;border-color:#33465e!important}
+.darkmode .field-cata-box{background:#07192b;border-color:#1684eb}
+.darkmode .field-calc-hint{background:#101820;border-color:#40566f;color:#a8b7ca}
+.darkmode .field-sheet-preview img{background:#101820;border-color:#33465e}
+
+/* Celular da equipe: mesma sensação visual do formulário de Manutenção */
+body.device-mode #operacoes .v2hero{display:grid;grid-template-columns:1fr;gap:10px;padding:14px;border-radius:16px}
+body.device-mode #operacoes .v2hero h1{font-size:25px}
+body.device-mode #operacoes .v2hero .v2new{width:100%;min-height:48px}
+body.device-mode .field-poultry-form,body.device-mode .field-truck-form{padding:15px}
+body.device-mode #quickTeamBtn{display:none!important}
+body.device-mode .po-team-line{grid-template-columns:1fr}
+body.device-mode #poTeam:disabled{opacity:1}
+body.device-mode .field-section{padding:13px}
+body.device-mode .field-form-head h3{font-size:24px}
+body.device-mode #poultryKpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+body.device-mode #poultryKpis .v2kpi{min-height:96px}
+body.device-mode #poultryList .item{border-radius:16px}
+body.device-mode #poultryList .truck-row{border-radius:13px!important}
+body.device-mode .po-actions{display:grid!important;grid-template-columns:1fr;gap:8px}
+body.device-mode .po-actions .btn{width:100%;min-height:47px}
+@media(max-width:720px){
+ .field-form-head{display:grid;grid-template-columns:1fr auto}
+ .field-section .row,.po-field-grid,.po-truck-driver-grid,.po-operation-grid,.po-time-grid{grid-template-columns:1fr!important;gap:11px}
+ .field-section label,.field-single label,.field-notes-section>label,.field-single-aviary label{font-size:12px;margin-bottom:5px}
+ .field-section input,.field-section select,.field-section textarea,.field-single select,.field-notes-section textarea,.field-single-aviary input{font-size:16px;min-height:48px;padding:12px}
+ .field-section textarea,.field-notes-section textarea{min-height:88px}
+ .field-photo-btn{width:100%;min-height:47px}
+ .truck-cata-row{grid-template-columns:minmax(0,1fr) minmax(0,1fr) 44px!important}
+ .field-truck-actions{grid-template-columns:1fr}
+ .field-truck-actions #poTruckSave{min-height:54px}
+}
+@media(max-width:430px){
+ .field-form-head{grid-template-columns:1fr}
+ .field-form-head>.btn{width:100%}
+ .truck-cata-row{grid-template-columns:1fr 1fr 40px!important;gap:6px!important;padding:8px!important}
+ .truck-cata-field label{font-size:9px}
+ .truck-cata-remove{min-width:40px!important;height:46px}
+ body.device-mode #poultryKpis{gap:8px}
+}
+
 .truck-barn-checks{display:grid;gap:7px;margin-top:5px}.truck-cata-row{display:grid;grid-template-columns:minmax(90px,1fr) minmax(110px,1fr) auto;gap:7px;align-items:center;padding:8px;border:1px solid #dbe4ee;border-radius:10px;background:#fff}.truck-cata-row input{margin:0!important;min-width:0}.truck-cata-remove{padding:7px 10px!important;min-width:38px}@media(max-width:520px){.truck-cata-row{grid-template-columns:1fr 1fr auto}}
 </style>
 <script defer="" src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
 <script>
 (function(){
-  const BUILD='6.51';
+  const BUILD='6.52';
   try{
     const marker='controla_cache_cleanup_'+BUILD;
     if(!localStorage.getItem(marker)){
@@ -522,7 +614,7 @@ header .brand small{color:#718198;font-weight:650}
 <div class="v2group">INTELIGÊNCIA</div>
 <button class="v2navbtn" data-v2tab="ia">✦   Assistente IA</button>
 </aside>
-<header><div class="brand"><img class="header-brand-icon" src="./comando360-icon.svg" alt="Comando 360"/><div><b>Comando <span class="brand360">360</span></b><div><small id="companyName">Empresa</small></div></div></div><div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.51</span><button class="btn soft" id="themeToggle" type="button">☾</button><button class="btn soft hidden" id="logout">Sair</button></div></header>
+<header><div class="brand"><img class="header-brand-icon" src="./comando360-icon.svg" alt="Comando 360"/><div><b>Comando <span class="brand360">360</span></b><div><small id="companyName">Empresa</small></div></div></div><div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.52</span><button class="btn soft" id="themeToggle" type="button">☾</button><button class="btn soft hidden" id="logout">Sair</button></div></header>
 <main class="wrap">
 <section class="login team-entry" id="login">
 <div class="card" id="deviceSetupCard">
@@ -539,7 +631,7 @@ header .brand small{color:#718198;font-weight:650}
  <label>Senha</label><input autocomplete="current-password" id="password" type="password"/>
  <button class="btn primary" id="loginBtn">Entrar</button>
  <button class="btn soft" id="backDeviceSetup" type="button" style="margin-left:6px">Voltar</button>
- <div class="muted" id="loginMsg" style="margin-top:10px">Comando 360 • v6.51</div><div class="debug" id="debug"></div>
+ <div class="muted" id="loginMsg" style="margin-top:10px">Comando 360 • v6.52</div><div class="debug" id="debug"></div>
 </div>
 </section>
 <section class="hidden" id="app">
@@ -782,41 +874,48 @@ header .brand small{color:#718198;font-weight:650}
 <div class="section" data-screen="operacoes" hidden="" id="operacoes">
 <div class="v2hero"><div><h1>Apanhas</h1><p>Cadastro da granja e carregamento caminhão por caminhão.</p></div><button class="btn v2new" id="newPoultryOp">+ Nova Apanha</button></div>
 
-<div class="card hidden" id="poultryForm">
- <div class="toolbar"><div><strong>Nova Apanha</strong><div class="muted">Os dados da granja ficam salvos para a próxima visita. O número do aviário é informado em cada caminhão.</div></div><button class="btn soft" id="closePoultryForm">Fechar</button></div>
- <div class="row">
-   <div><label>Equipe</label><div class="toolbar"><select id="poTeam" style="flex:1"></select><button id="quickTeamBtn" class="btn soft" type="button">+ Equipe</button></div></div>
+<div class="card hidden field-poultry-form" id="poultryForm">
+ <div class="field-form-head">
+  <div><h3>🐔 Nova apanha</h3><div class="muted">Cadastre a granja e depois registre o carregamento caminhão por caminhão.</div></div>
+  <button class="btn soft" id="closePoultryForm" type="button">Cancelar</button>
+ </div>
+
+ <div class="field-section">
+  <div class="field-section-title"><span>📋</span><div><strong>Dados da apanha</strong><div class="muted">Equipe e horário previsto.</div></div></div>
+  <div class="row po-field-grid">
+   <div><label>Equipe</label><div class="toolbar po-team-line"><select id="poTeam"></select><button id="quickTeamBtn" class="btn soft" type="button">+ Equipe</button></div></div>
    <div><label>Início previsto</label><input id="poStart" type="datetime-local"></div>
    <div><label>Fim previsto (opcional)</label><input id="poEnd" type="datetime-local"></div>
+  </div>
  </div>
 
- <div class="card-lite">
-   <div class="toolbar"><div><strong>Local / Granja</strong><div class="muted">Selecione uma granja já salva ou cadastre os dados fixos uma única vez.</div></div></div>
-   <label>Granja já cadastrada</label>
-   <select id="poSavedAviary"><option value="">Nova / selecione...</option></select>
-   <div class="row" style="margin-top:10px">
-     <div><label>Nome do integrado / produtor</label><input id="poIntegratedName" placeholder="Ex.: João da Silva"></div>
-     <div><label>Cidade</label><input id="poCity" placeholder="Ex.: Tatuí"></div>
-     <div><label>Granja / propriedade (opcional)</label><input id="poFarmName" placeholder="Ex.: Granja Boa Vista"></div>
-   </div>
-   <div class="row">
-     <div><label>Tomada da granja</label><input id="poOutletType" placeholder="Ex.: 6 polos + terra"></div>
-     <div><label>Tipo de energia</label><input id="poEnergyType" placeholder="Ex.: Trifásico 380 V"></div>
-   </div>
-   <div class="toolbar"><button id="saveAviaryProfile" class="btn soft" type="button">Salvar dados da granja</button><span id="aviaryMsg" class="muted"></span></div>
+ <div class="field-section">
+  <div class="field-section-title"><span>🏠</span><div><strong>Local / Granja</strong><div class="muted">Use uma granja já salva ou cadastre os dados fixos uma única vez.</div></div></div>
+  <div class="field-single"><label>Granja já cadastrada</label><select id="poSavedAviary"><option value="">Nova / selecione...</option></select></div>
+  <div class="row po-field-grid">
+   <div><label>Nome do integrado / produtor</label><input id="poIntegratedName" placeholder="Ex.: João da Silva"></div>
+   <div><label>Cidade</label><input id="poCity" placeholder="Ex.: Tatuí"></div>
+   <div><label>Granja / propriedade (opcional)</label><input id="poFarmName" placeholder="Ex.: Granja Boa Vista"></div>
+  </div>
+  <div class="row po-field-grid">
+   <div><label>Tomada da granja</label><input id="poOutletType" placeholder="Ex.: 6 polos + terra"></div>
+   <div><label>Tipo de energia</label><input id="poEnergyType" placeholder="Ex.: Trifásico 380 V"></div>
+  </div>
+  <div class="toolbar field-inline-action"><button id="saveAviaryProfile" class="btn soft" type="button">SALVAR DADOS DA GRANJA</button><span id="aviaryMsg" class="muted"></span></div>
  </div>
 
- <div class="card-lite admin-only" id="poAdminPlanning">
-   <strong>Planejamento do Administrador Geral</strong>
-   <div class="muted">Estes campos não aparecem para o colaborador de campo. O valor é calculado por ave carregada.</div>
-   <div class="row" style="margin-top:8px">
-     <div><label>Aves previstas</label><input id="poPlannedBirds" type="number" min="0" placeholder="Ex.: 25000"></div>
-     <div><label>Valor por ave</label><input id="poPricePerBird" type="number" min="0" step="0.01" placeholder="Ex.: 0,085"></div>
-   </div>
+ <div class="field-section admin-only" id="poAdminPlanning">
+  <div class="field-section-title"><span>💰</span><div><strong>Planejamento do Administrador Geral</strong><div class="muted">Estes campos não aparecem no celular de campo.</div></div></div>
+  <div class="row po-field-grid">
+   <div><label>Aves previstas</label><input id="poPlannedBirds" type="number" min="0" placeholder="Ex.: 25000"></div>
+   <div><label>Valor por ave</label><input id="poPricePerBird" type="number" min="0" step="0.01" placeholder="Ex.: 0,085"></div>
+  </div>
  </div>
 
- <label>Observações</label><textarea id="poNotes" rows="3"></textarea>
- <div class="toolbar"><button class="btn primary" id="savePoultryOp">Salvar Apanha</button><span class="muted" id="poMsg"></span></div>
+ <div class="field-section field-notes-section">
+  <label>Observações</label><textarea id="poNotes" rows="3" placeholder="Observações gerais da apanha"></textarea>
+ </div>
+ <div class="field-primary-actions"><button class="btn primary" id="savePoultryOp" type="button">SALVAR APANHA E ABRIR CAMINHÃO 1 →</button><span class="muted" id="poMsg"></span></div>
 </div>
 
 <div id="quickTeamCard" class="card hidden">
@@ -825,52 +924,71 @@ header .brand small{color:#718198;font-weight:650}
  <button id="quickTeamSave" class="btn primary" type="button">Salvar Equipe</button><span id="quickTeamMsg" class="muted"></span>
 </div>
 
-<div id="poTruckCard" class="card hidden" style="border:2px solid #111827">
- <div class="toolbar" style="justify-content:space-between;align-items:flex-start"><div><strong id="poTruckTitle" style="font-size:18px">🚚 Caminhão 1</strong><div id="poTruckOpName" class="muted"></div><div class="muted" style="margin-top:4px">Apanha cadastrada. Agora registre o primeiro caminhão. Ao salvar, o próximo será aberto automaticamente.</div></div><button id="poTruckClose" class="btn soft" type="button">Fechar</button></div>
+<div id="poTruckCard" class="card hidden field-truck-form">
+ <div class="field-form-head">
+  <div><h3 id="poTruckTitle">🚚 Caminhão 1</h3><div id="poTruckOpName" class="muted"></div><div class="muted">Preencha os dados do carregamento. Ao salvar, o próximo caminhão será aberto automaticamente.</div></div>
+  <button id="poTruckClose" class="btn soft" type="button">Fechar</button>
+ </div>
  <input id="poTruckOperationId" type="hidden"><input id="poTruckLoadingId" type="hidden"><input id="poTruckSequence" type="hidden">
- <div class="card-lite" style="margin-top:12px">
-  <div class="toolbar" style="justify-content:space-between;align-items:center">
-   <div><strong>Ficha do caminhão</strong><div class="muted">Preencha manualmente ou fotografe a ficha para guardar junto do lançamento.</div></div>
-   <label class="btn soft" style="cursor:pointer">📷 FOTO DA FICHA<input id="poTruckSheetFile" type="file" accept="image/jpeg,image/png,image/webp" capture="environment" hidden></label>
-  </div>
-  <div id="poTruckSheetPreviewWrap" class="hidden" style="margin-top:10px"><img id="poTruckSheetPreview" alt="Foto da ficha" style="max-width:220px;max-height:150px;object-fit:contain;border:1px solid #cbd5e1;border-radius:10px"><div class="muted" id="poTruckSheetFileName"></div></div>
+
+ <div class="field-section truck-sheet-section">
+  <div class="field-section-title"><span>📷</span><div><strong>Foto da ficha</strong><div class="muted">Opcional. A foto fica guardada junto deste caminhão.</div></div></div>
+  <label class="btn soft field-photo-btn">📷 TIRAR FOTO DA FICHA<input id="poTruckSheetFile" type="file" accept="image/jpeg,image/png,image/webp" capture="environment" hidden></label>
+  <div id="poTruckSheetPreviewWrap" class="hidden field-sheet-preview"><img id="poTruckSheetPreview" alt="Foto da ficha"><div class="muted" id="poTruckSheetFileName"></div></div>
  </div>
 
- <div class="row">
+ <div class="field-section">
+  <div class="field-section-title"><span>🏠</span><div><strong>Dados da apanha</strong><div class="muted">Conferência do local deste carregamento.</div></div></div>
+  <div class="row po-field-grid">
    <div><label>Produtor / Integrado</label><input id="poTruckProducer" placeholder="Nome do produtor / integrado"></div>
    <div><label>Cidade</label><input id="poTruckCity" placeholder="Ex.: Laranjal Paulista - SP"></div>
    <div><label>Data</label><input id="poTruckDate" type="date"></div>
+  </div>
  </div>
- <div class="row">
+
+ <div class="field-section">
+  <div class="field-section-title"><span>🚛</span><div><strong>Dados do caminhão</strong><div class="muted">Motorista, placa e aviário.</div></div></div>
+  <div class="row po-field-grid po-truck-driver-grid">
    <div><label>Motorista</label><input id="poTruckDriver" list="poDriverSuggestions" autocomplete="off" placeholder="Digite ou selecione o motorista"><datalist id="poDriverSuggestions"></datalist></div>
    <div><label>Placa</label><input id="poTruckPlate" list="poPlateSuggestions" autocomplete="off" autocapitalize="characters" placeholder="Digite ou selecione a placa"><datalist id="poPlateSuggestions"></datalist></div>
-   <div>
-     <div id="poTruckSingleBarnWrap"><label>Nº do aviário</label><input id="poTruckAviaryNumber" autocomplete="off" placeholder="Ex.: 01"></div>
-     <div id="poTruckMultiBarnWrap" class="hidden">
-       <label>Aviários da CATA</label>
-       <div id="poTruckBarnChecks" class="truck-barn-checks"></div>
-       <button id="poTruckAddCataAviary" class="btn soft" type="button" style="margin-top:7px">+ Adicionar aviário</button>
-       <div id="poTruckBarnHint" class="muted" style="margin-top:5px">Informe o número e as aves de cada aviário.</div>
-     </div>
-   </div>
+  </div>
+
+  <label class="checkline field-cata-switch"><input id="poTruckCata" type="checkbox"><span><strong>Este caminhão foi CATA</strong><small>Ative quando houver aves de mais de um aviário.</small></span></label>
+
+  <div id="poTruckSingleBarnWrap" class="field-single-aviary"><label>Nº do aviário</label><input id="poTruckAviaryNumber" autocomplete="off" inputmode="numeric" placeholder="Ex.: 01"></div>
+  <div id="poTruckMultiBarnWrap" class="hidden field-cata-box">
+    <div class="field-section-title compact"><span>🏠</span><div><strong>Aviários da CATA</strong><div class="muted">Informe o número do aviário e quantas aves vieram de cada um.</div></div></div>
+    <div id="poTruckBarnChecks" class="truck-barn-checks"></div>
+    <button id="poTruckAddCataAviary" class="btn soft field-add-aviary" type="button">+ ADICIONAR AVIÁRIO</button>
+    <div id="poTruckBarnHint" class="field-cata-total">Total da CATA: 0 aves.</div>
+  </div>
  </div>
- <div class="row">
-   <div><label>Nº de caixas</label><input id="poTruckBoxes" type="number" min="0" step="1" placeholder="Ex.: 600"></div>
-   <div><label>Aves por caixa</label><input id="poTruckBirdsPerBox" type="number" min="0" step="0.01" placeholder="Ex.: 6,17"></div>
-   <div><label>Total de aves</label><input id="poTruckBirds" type="number" min="0" placeholder="Ex.: 4000"></div>
- </div>
- <div class="row">
-   <div><label>Nº de caixas vazias</label><input id="poTruckEmptyBoxes" type="number" min="0" step="1" placeholder="Ex.: 1"></div>
-   <div><label>Morte no carregamento</label><input id="poTruckLoadingDeaths" type="number" min="0" step="1" placeholder="Ex.: 0"></div>
- </div>
- <div class="row">
+
+ <div class="field-section">
+  <div class="field-section-title"><span>📊</span><div><strong>Dados operacionais do caminhão</strong><div class="muted">Caixas, aves, perdas e horários.</div></div></div>
+  <div class="row po-field-grid po-operation-grid">
+   <div><label>Nº de caixas</label><input id="poTruckBoxes" type="number" min="0" step="1" inputmode="numeric" placeholder="Ex.: 600"></div>
+   <div><label>Aves por caixa</label><input id="poTruckBirdsPerBox" type="number" min="0" step="0.01" inputmode="decimal" placeholder="Ex.: 7"></div>
+   <div><label>Total de aves</label><input id="poTruckBirds" type="number" min="0" inputmode="numeric" placeholder="Ex.: 4200"></div>
+   <div><label>Nº de caixas vazias</label><input id="poTruckEmptyBoxes" type="number" min="0" step="1" inputmode="numeric" placeholder="Ex.: 1"></div>
+   <div><label>Mortes no carregamento</label><input id="poTruckLoadingDeaths" type="number" min="0" step="1" inputmode="numeric" placeholder="Ex.: 0"></div>
+  </div>
+  <div class="row po-field-grid po-time-grid">
    <div><label>Hora início carregamento</label><input id="poTruckStart" type="datetime-local"></div>
    <div><label>Hora fim carregamento</label><input id="poTruckEnd" type="datetime-local"></div>
-   <div><label>Conferência</label><div class="muted" id="poTruckCalcHint" style="padding-top:11px">Informe caixas e aves/caixa para conferir o total.</div></div>
+   <div><label>Conferência</label><div class="field-calc-hint" id="poTruckCalcHint">Informe caixas e aves/caixa para conferir o total.</div></div>
+  </div>
  </div>
- <label class="checkline"><input id="poTruckCata" type="checkbox"> Este caminhão foi <strong>CATA</strong> <span class="muted">• mais de um aviário</span></label>
- <label>Observações</label><textarea id="poTruckNotes" rows="2"></textarea>
- <div class="toolbar"><button id="poTruckSave" class="btn primary" type="button">SALVAR E IR PARA O PRÓXIMO CAMINHÃO →</button><button id="poTruckSaveClose" class="btn soft" type="button">Salvar e fechar</button><span id="poTruckMsg" class="muted"></span></div>
+
+ <div class="field-section field-notes-section">
+  <label>Observações</label><textarea id="poTruckNotes" rows="3" placeholder="Observações deste carregamento"></textarea>
+ </div>
+
+ <div class="field-truck-actions">
+  <button id="poTruckSave" class="btn primary" type="button">SALVAR E IR PARA O PRÓXIMO CAMINHÃO →</button>
+  <button id="poTruckSaveClose" class="btn soft" type="button">Salvar e fechar</button>
+ </div>
+ <div id="poTruckMsg" class="muted field-form-msg"></div>
 </div>
 
 <div id="poFinanceCard" class="card hidden">
@@ -1706,7 +1824,7 @@ async function syncPoultryTruckOfflineItem(item){
   .map(x=>({barn_id:x?.barn_id||null,barn_number:normalizeAviaryNumber(x?.barn_number),birds:poN(x?.birds)}))
   .filter(x=>x.barn_number||x.barn_id);
 
- // Compatibilidade com itens offline criados antes da v6.51.
+ // Compatibilidade com itens offline criados antes da v6.52.
  if(!barnBreakdown.length&&item.barn_id){
   const oldId=String(item.barn_id).startsWith('offline:')?(refs.loading?.metadata?.default_barn_id||null):item.barn_id;
   const oldBarn=poultryBarns.find(b=>b.id===oldId);
@@ -3057,9 +3175,9 @@ function renderTruckCataRows(rows=null){
  const box=$('#poTruckBarnChecks');if(!box)return;
  const list=Array.isArray(rows)&&rows.length?rows:[{barn_number:'',birds:''},{barn_number:'',birds:''}];
  box.innerHTML=list.map((r,i)=>`<div class="truck-cata-row">
-   <input class="truck-barn-number" autocomplete="off" placeholder="Aviário ${i+1}" value="${esc(r?.barn_number||'')}">
-   <input class="truck-barn-birds" type="number" min="0" step="1" inputmode="numeric" placeholder="Aves" value="${poN(r?.birds)||''}">
-   <button class="btn soft truck-cata-remove" type="button" title="Remover">×</button>
+   <div class="truck-cata-field"><label>Aviário ${i+1}</label><input class="truck-barn-number" autocomplete="off" inputmode="numeric" placeholder="Nº do aviário" value="${esc(r?.barn_number||'')}"></div>
+   <div class="truck-cata-field"><label>Aves carregadas</label><input class="truck-barn-birds" type="number" min="0" step="1" inputmode="numeric" placeholder="Quantidade de aves" value="${poN(r?.birds)||''}"></div>
+   <button class="btn soft truck-cata-remove" type="button" title="Remover aviário">×</button>
   </div>`).join('');
  calcTruckCataBirdTotal();
 }
@@ -4330,7 +4448,7 @@ setInterval(()=>{
 },60000);
 if('serviceWorker' in navigator){
  window.addEventListener('load',()=>{
-  navigator.serviceWorker.register('./sw-v6-51.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
+  navigator.serviceWorker.register('./sw-v6-52.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
  });
 }
 
