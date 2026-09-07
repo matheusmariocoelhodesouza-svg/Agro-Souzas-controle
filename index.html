@@ -8,7 +8,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
-<title>Comando 360 • v6.70</title>
+<title>Comando 360 • v6.71</title>
 <link rel="manifest" href="./comando360.webmanifest"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
@@ -1506,7 +1506,7 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
  *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
 }
 
-/* 6.70 — Rastreamento MOVIT */
+/* 6.71 — Rastreamento MOVIT */
 .tracking-hero{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;margin-bottom:16px}
 .tracking-hero h1{margin:0;font-size:27px;color:#10233f}.tracking-hero p{margin:5px 0 0;color:#6b7d95;font-size:13px}
 .tracking-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:14px}
@@ -1522,7 +1522,7 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
 .darkmode .tracking-kpi,.darkmode .tracking-card{background:#101c2e;border-color:#203047}.darkmode .tracking-hero h1,.darkmode .tracking-kpi strong,.darkmode .tracking-card-main strong{color:#e7eef9}.darkmode .movit-security-note{background:#0d1b2e;border-color:#26394f;color:#9fb3cb}
 @media(max-width:1050px){.tracking-card{grid-template-columns:1fr 1fr}.tracking-actions{grid-column:1/-1;justify-content:flex-start}}
 @media(max-width:700px){.tracking-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.tracking-card{grid-template-columns:1fr}.tracking-actions{grid-column:auto}.tracking-hero{flex-direction:column}.tracking-hero .btn{width:100%}}
-/* 6.70 — mapa profissional da frota */
+/* 6.71 — mapa profissional da frota */
 .tracking-map-card{overflow:hidden}.tracking-map-head{padding-bottom:4px}
 .tracking-map-wrap{position:relative;margin-top:14px;border:1px solid #dce6f1;border-radius:18px;overflow:hidden;background:#eaf0f6}
 #movitMap{height:430px;width:100%;z-index:1}
@@ -1544,7 +1544,7 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
 <script defer src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 (function(){
-  const BUILD='6.70';
+  const BUILD='6.71';
   try{
     const marker='controla_cache_cleanup_'+BUILD;
     if(!localStorage.getItem(marker)){
@@ -1595,7 +1595,7 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
   <div class="brand"><img class="header-brand-icon" src="./comando360-icon.svg" alt="Comando 360"/><div><b>Comando <span class="brand360">360</span></b><div><small id="companyName">Empresa</small></div></div></div>
  </div>
  <div class="header-module" id="headerModule"><span id="headerModuleTitle">Painel Geral</span><small id="headerModuleSubtitle">Central de gestão</small></div>
- <div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.70</span><button class="btn soft" id="themeToggle" type="button" aria-label="Alternar tema">☾</button><button class="btn soft hidden" id="logout">Sair</button></div>
+ <div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.71</span><button class="btn soft" id="themeToggle" type="button" aria-label="Alternar tema">☾</button><button class="btn soft hidden" id="logout">Sair</button></div>
 </header>
 <main class="wrap">
 <section class="login team-entry" id="login">
@@ -1613,7 +1613,7 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
  <label>Senha</label><input autocomplete="current-password" id="password" type="password"/>
  <button class="btn primary" id="loginBtn">Entrar</button>
  <button class="btn soft" id="backDeviceSetup" type="button" style="margin-left:6px">Voltar</button>
- <div class="muted" id="loginMsg" style="margin-top:10px">Comando 360 • v6.70</div><div class="debug" id="debug"></div>
+ <div class="muted" id="loginMsg" style="margin-top:10px">Comando 360 • v6.71</div><div class="debug" id="debug"></div>
 </div>
 </section>
 <section class="hidden" id="app">
@@ -6572,10 +6572,11 @@ function renderMovitMap(forceFit=false){
  const bounds=[];
  for(const v of (movitTrackingRows||[])){
   const lat=Number(v.latitude),lon=Number(v.longitude);if(!Number.isFinite(lat)||!Number.isFinite(lon))continue;
-  const state=movitMapState(v),name=v.vehicle_name||'Rastreador',plate=v.license_plate||v.raw_data?.license_plate||'';
+  const state=movitMapState(v),name=v.vehicle_name||'Rastreador',plate=v.license_plate||v.raw_data?.license_plate||'',trackerPlate=v.tracker_plate||v.raw_data?.tracker_plate||'';
+  const plateChanged=trackerPlate&&String(trackerPlate).replace(/[^A-Z0-9]/gi,'').toUpperCase()!==String(plate).replace(/[^A-Z0-9]/gi,'').toUpperCase();
   const icon=L.divIcon({className:'c360-map-icon',html:'<div class="c360-map-marker"><span class="pin '+state.cls+'"></span><span class="map-label">'+esc(name)+(plate?' • '+esc(plate):'')+'</span></div>',iconSize:[190,32],iconAnchor:[9,18]});
   const age=movitAge(v.recorded_at||v.gps_at||v.updated_at),km=v.odometer_km!=null?Number(v.odometer_km).toLocaleString('pt-BR')+' km':'—',address=v.address||v.raw_data?.address||'Endereço não informado';
-  const popup='<div class="c360-map-popup"><strong>'+esc(name)+'</strong>'+(plate?'<span class="plate">'+esc(plate)+'</span>':'')+'<div class="meta"><b>'+esc(state.label)+'</b> • '+esc(age.text)+'<br>Velocidade: '+Number(v.speed_kmh||0).toFixed(0)+' km/h<br>Ignição: '+(v.ignition===true?'Ligada':v.ignition===false?'Desligada':'—')+'<br>Hodômetro: '+km+'<br>'+esc(address)+'</div></div>';
+  const popup='<div class="c360-map-popup"><strong>'+esc(name)+'</strong>'+(plate?'<span class="plate">'+esc(plate)+'</span>':'')+'<div class="meta"><b>'+esc(state.label)+'</b> • '+esc(age.text)+'<br>Velocidade: '+Number(v.speed_kmh||0).toFixed(0)+' km/h<br>Ignição: '+(v.ignition===true?'Ligada':v.ignition===false?'Desligada':'—')+'<br>Hodômetro: '+km+(plateChanged?'<br>Placa no MOVIT: '+esc(trackerPlate):'')+'<br>'+esc(address)+'</div></div>';
   L.marker([lat,lon],{icon}).addTo(movitMapMarkers).bindPopup(popup,{maxWidth:290});
   bounds.push([lat,lon]);
  }
@@ -6598,9 +6599,9 @@ function renderMovitTracking(){
  list.innerHTML=rows.map(function(v){
   const age=movitAge(v.recorded_at||v.gps_at||v.updated_at),lat=Number(v.latitude),lon=Number(v.longitude),hasPos=Number.isFinite(lat)&&Number.isFinite(lon),moving=Number(v.speed_kmh||0)>2;
   const dot=age.stale?'stale':moving?'move':v.ignition===true?'on':'',status=age.stale?'GPS desatualizado':moving?'Em movimento':v.ignition===true?'Ligada':'Parada';
-  const name=v.vehicle_name||'Rastreador não vinculado',plate=v.license_plate||v.raw_data?.license_plate||'sem placa',km=v.odometer_km!=null?Number(v.odometer_km).toLocaleString('pt-BR')+' km':'—',address=v.address||v.raw_data?.address||'Endereço não informado';
+  const name=v.vehicle_name||'Rastreador não vinculado',plate=v.license_plate||v.raw_data?.license_plate||'sem placa',trackerPlate=v.tracker_plate||v.raw_data?.tracker_plate||'',plateChanged=trackerPlate&&String(trackerPlate).replace(/[^A-Z0-9]/gi,'').toUpperCase()!==String(plate).replace(/[^A-Z0-9]/gi,'').toUpperCase(),km=v.odometer_km!=null?Number(v.odometer_km).toLocaleString('pt-BR')+' km':'—',address=v.address||v.raw_data?.address||'Endereço não informado';
   const map=hasPos?'<a class="btn soft" target="_blank" rel="noopener" href="https://www.google.com/maps?q='+lat+','+lon+'">ABRIR NO MAPA</a>':'';
-  return '<div class="tracking-card"><div class="tracking-card-main"><strong>'+esc(name)+'</strong><span class="plate">'+esc(plate)+'</span><div class="muted" style="margin-top:7px"><span class="tracking-dot '+dot+'"></span>'+esc(status)+' • '+esc(age.text)+'</div></div><div class="tracking-data"><b>Velocidade:</b> '+Number(v.speed_kmh||0).toFixed(0)+' km/h<br><b>Ignição:</b> '+(v.ignition===true?'Ligada':v.ignition===false?'Desligada':'—')+'<br><b>Hodômetro:</b> '+km+'</div><div class="tracking-data"><b>Local:</b> '+esc(address)+'<br>'+(hasPos?esc(lat.toFixed(5)+', '+lon.toFixed(5)):'Sem coordenadas')+'</div><div class="tracking-actions">'+map+(v.vehicle_id?'':'<button class="btn soft" type="button" data-jump="frota">VER FROTA</button>')+'</div></div>';
+  return '<div class="tracking-card"><div class="tracking-card-main"><strong>'+esc(name)+'</strong><span class="plate">'+esc(plate)+'</span>'+(plateChanged?'<div class="muted" style="margin-top:5px">MOVIT ainda cadastrado como '+esc(trackerPlate)+'</div>':'')+'<div class="muted" style="margin-top:7px"><span class="tracking-dot '+dot+'"></span>'+esc(status)+' • '+esc(age.text)+'</div></div><div class="tracking-data"><b>Velocidade:</b> '+Number(v.speed_kmh||0).toFixed(0)+' km/h<br><b>Ignição:</b> '+(v.ignition===true?'Ligada':v.ignition===false?'Desligada':'—')+'<br><b>Hodômetro:</b> '+km+'</div><div class="tracking-data"><b>Local:</b> '+esc(address)+'<br>'+(hasPos?esc(lat.toFixed(5)+', '+lon.toFixed(5)):'Sem coordenadas')+'</div><div class="tracking-actions">'+map+(v.vehicle_id?'':'<button class="btn soft" type="button" data-jump="frota">VER FROTA</button>')+'</div></div>';
  }).join('');
  setTimeout(()=>renderMovitMap(false),0);
 }
@@ -6964,7 +6965,7 @@ function c360SetModule(tab){
  const m=C360_MODULES[tab]||[tab,'Comando 360'];
  const t=document.getElementById('headerModuleTitle'),s=document.getElementById('headerModuleSubtitle');
  if(t)t.textContent=m[0];if(s)s.textContent=m[1];
- document.title='Comando 360 • '+m[0]+' • v6.70';
+ document.title='Comando 360 • '+m[0]+' • v6.71';
  document.querySelectorAll('#mobileBottomNav [data-mobiletab]').forEach(b=>{
   const mt=b.dataset.mobiletab;
   b.classList.toggle('active',mt===tab||(mt==='more'&&!['inicio','operacoes','ponto','frota'].includes(tab)));
@@ -7206,7 +7207,7 @@ setInterval(()=>{
 },60000);
 if('serviceWorker' in navigator){
  window.addEventListener('load',()=>{
-  navigator.serviceWorker.register('./sw-v6-70.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
+  navigator.serviceWorker.register('./sw-v6-71.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
  });
 }
 
