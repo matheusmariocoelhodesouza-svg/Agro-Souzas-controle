@@ -1110,7 +1110,7 @@ body.device-mode .po-actions .btn{width:100%;min-height:47px}
  <div class="row"><div><label>Ano fabricação</label><input id="crlvYearFab" type="number"/></div><div><label>Ano modelo</label><input id="crlvYearModel" type="number"/></div><div><label>Chassi</label><input id="crlvChassis"/></div></div>
  <div class="row"><div><label>Proprietário</label><input id="crlvOwner"/></div><div><label>Cor</label><input id="crlvColor"/></div><div><label>Combustível</label><input id="crlvFuel"/></div><div><label>Categoria para licenciamento</label><select id="crlvLicenseCategory"><option value="regular">Ônibus / van / carro / reboque</option><option value="truck">Caminhão / caminhão-trator</option></select></div></div><div class="row"><div><label>UF do licenciamento</label><input id="crlvLicenseState" value="SP" readonly aria-readonly="true"/></div><div><label>Ano do licenciamento no CRLV</label><input id="crlvLicensingYear" type="number" min="2000" max="2100" readonly aria-readonly="true" placeholder="Detectado no CRLV"/></div><div><label>Prazo calculado do ano atual</label><input id="crlvExpires" type="date" readonly aria-readonly="true"/></div></div><div class="muted" id="crlvExpiryRule">O prazo vem do calendário do Detran-SP; o ano do licenciamento é confirmado pelo próprio CRLV.</div>
  <div class="toolbar"><button class="btn primary" id="confirmCrlvImport" type="button">CONFIRMAR E SALVAR</button><span class="muted" id="crlvImportMsg"></span></div>
- <div class="muted" style="margin-top:8px">O Comando 360 nunca grava os dados lidos sem esta confirmação. PDFs digitalizados como imagem podem precisar de preenchimento manual.</div>
+ <div class="muted" style="margin-top:8px">O Comando 360 lê automaticamente o CRLV digital em PDF. Fotos e PDFs escaneados não confirmam o EXERCÍCIO e ficam como situação não confirmada.</div>
 </div>
 
 <div class="card" id="vehicleEditCard" style="display:none">
@@ -4834,8 +4834,8 @@ async function beginCrlvImport(file){
  try{
   msg.textContent='Lendo documento...';
   let d={};
-  if(file.type==='application/pdf'||file.name.toLowerCase().endsWith('.pdf')){const txt=await extractPdfText(file);d=parseCrlvText(txt);if(!txt||txt.length<40)msg.textContent='PDF parece ser imagem. Preencha/conferira os campos manualmente.'}
-  else msg.textContent='Imagem anexada. Nesta versão, confirme os dados manualmente.';
+  if(file.type==='application/pdf'||file.name.toLowerCase().endsWith('.pdf')){const txt=await extractPdfText(file);d=parseCrlvText(txt);if(!txt||txt.length<40)msg.textContent='Este PDF parece ser uma imagem/scan. Use o CRLV digital original para o Comando 360 confirmar automaticamente o EXERCÍCIO.'}
+  else msg.textContent='Foto/imagem anexada. O arquivo pode ser salvo, mas o EXERCÍCIO não será confirmado automaticamente; prefira o CRLV digital em PDF.';
   pendingCrlvData=d;
   document.getElementById('crlvPlate').value=d.plate||'';document.getElementById('crlvRenavam').value=d.renavam||'';document.getElementById('crlvMakeModel').value=d.makeModel||'';document.getElementById('crlvYearFab').value=d.yearFab||'';document.getElementById('crlvYearModel').value=d.yearModel||'';document.getElementById('crlvChassis').value=d.chassis||'';document.getElementById('crlvOwner').value=d.owner||'';document.getElementById('crlvColor').value=d.color||'';document.getElementById('crlvFuel').value=d.fuel||'';if(document.getElementById('crlvLicensingYear'))document.getElementById('crlvLicensingYear').value=d.licensingYear||'';if(document.getElementById('crlvLicenseState'))document.getElementById('crlvLicenseState').value=d.uf||'SP';if(document.getElementById('crlvLicenseCategory'))document.getElementById('crlvLicenseCategory').value=crlvLicensingCategoryFromData(d);
   updateCrlvAutoExpiry();
