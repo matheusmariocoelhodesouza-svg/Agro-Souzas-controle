@@ -1108,7 +1108,7 @@ body.device-mode .po-actions .btn{width:100%;min-height:47px}
  </div>
  <div class="row" style="margin-top:12px"><div><label>Placa</label><input id="crlvPlate"/></div><div><label>RENAVAM</label><input id="crlvRenavam"/></div><div><label>Marca / Modelo</label><input id="crlvMakeModel"/></div></div>
  <div class="row"><div><label>Ano fabricação</label><input id="crlvYearFab" type="number"/></div><div><label>Ano modelo</label><input id="crlvYearModel" type="number"/></div><div><label>Chassi</label><input id="crlvChassis"/></div></div>
- <div class="row"><div><label>Proprietário</label><input id="crlvOwner"/></div><div><label>Cor</label><input id="crlvColor"/></div><div><label>Combustível</label><input id="crlvFuel"/></div><div><label>Vencimento do CRLV</label><input id="crlvExpires" type="date"/></div></div>
+ <div class="row"><div><label>Proprietário</label><input id="crlvOwner"/></div><div><label>Cor</label><input id="crlvColor"/></div><div><label>Combustível</label><input id="crlvFuel"/></div><div><label>Categoria para licenciamento</label><select id="crlvLicenseCategory"><option value="regular">Ônibus / van / carro / reboque</option><option value="truck">Caminhão / caminhão-trator</option></select></div></div><div class="row"><div><label>UF do licenciamento</label><input id="crlvLicenseState" value="SP" readonly aria-readonly="true"/></div><div><label>Vencimento calculado</label><input id="crlvExpires" type="date" readonly aria-readonly="true"/></div><div style="display:flex;align-items:flex-end"><div class="muted" id="crlvExpiryRule">Calculado automaticamente pelo calendário do Detran-SP e final da placa.</div></div></div>
  <div class="toolbar"><button class="btn primary" id="confirmCrlvImport" type="button">CONFIRMAR E SALVAR</button><span class="muted" id="crlvImportMsg"></span></div>
  <div class="muted" style="margin-top:8px">O Comando 360 nunca grava os dados lidos sem esta confirmação. PDFs digitalizados como imagem podem precisar de preenchimento manual.</div>
 </div>
@@ -2548,13 +2548,16 @@ async function loadVehicles(){
    const crlvFile=crlv?.file_id?vehicleDocFiles[crlv.file_id]:null;
    let crlvInfo='';
 
+   const licensingCategory=inferVehicleLicenseCategory(x);
+   const autoDue=spLicensingDueDate(x.plate,licensingCategory,new Date().getFullYear());
+   const dueDate=crlv?.expires_at||autoDue;
+   const z=vehicleDocStatus(dueDate);
+   const dateText=dueDate?new Date(dueDate+'T00:00:00').toLocaleDateString('pt-BR'):'placa inválida';
+   const statusText=dueDate?z.label:'Não calculado';
    if(crlv){
-    const z=vehicleDocStatus(crlv.expires_at);
-    const dateText=crlv.expires_at?new Date(crlv.expires_at+'T00:00:00').toLocaleDateString('pt-BR'):'não informado';
-    const statusText=crlv.expires_at?z.label:'Informe o vencimento';
     crlvInfo=
      '<div class="toolbar" style="margin-top:8px;gap:7px;flex-wrap:wrap">'+
-       '<span class="pill '+z.cls+'">📄 CRLV • Vencimento: '+esc(dateText)+' • '+esc(statusText)+'</span>'+
+       '<span class="pill '+z.cls+'">📄 CRLV • '+esc(dateText)+' • '+esc(statusText)+' • Detran-SP</span>'+
        (crlvFile
         ?'<button class="btn soft vehicleDocView" data-file="'+crlvFile.id+'" type="button">📄 ABRIR CRLV</button>'
         :'<button class="btn soft" type="button" disabled title="Cadastre o arquivo do CRLV">📄 CRLV SEM ARQUIVO</button>')+
@@ -2562,7 +2565,7 @@ async function loadVehicles(){
    }else{
     crlvInfo=
      '<div class="toolbar" style="margin-top:8px;gap:7px;flex-wrap:wrap">'+
-       '<span class="pill">📄 CRLV não cadastrado</span>'+
+       '<span class="pill '+z.cls+'">📄 Prazo CRLV '+new Date().getFullYear()+': '+esc(dateText)+' • Detran-SP</span>'+
        '<button class="btn soft" type="button" onclick="openVehicleEdit(\''+x.id+'\')">+ CADASTRAR CRLV</button>'+
      '</div>';
    }
@@ -4439,6 +4442,46 @@ async function deletePoultryOperation(operationId,loadingId){
 let vehicleDocsCache=[],vehicleDocsVehicles=[],vehicleDocFiles={},pendingCrlvFile=null,pendingCrlvData=null;
 const VEHICLE_DOC_BUCKET='vehicle-documents';
 
+function plateFinalDigit(plate){
+ const s=String(plate||'').replace(/[^A-Z0-9]/gi,'').toUpperCase();
+ const m=s.match(/(\d)$/);
+ return m?Number(m[1]):null;
+}
+function lastDayIso(year,month){
+ const d=new Date(Date.UTC(year,month,0));
+ return year+'-'+String(month).padStart(2,'0')+'-'+String(d.getUTCDate()).padStart(2,'0');
+}
+function inferVehicleLicenseCategory(v={}){
+ const explicit=v?.metadata?.licensing_category||v?.metadata?.vehicle_category||'';
+ if(explicit==='truck')return 'truck';
+ if(explicit==='regular')return 'regular';
+ const txt=[v.description,v.make,v.model,v?.metadata?.crlv?.category,v?.metadata?.crlv?.species].filter(Boolean).join(' ').toLowerCase();
+ return /caminh[aã]o|caminhao|truck|cavalo mec[aâ]nico|caminh[aã]o-trator|caminhao-trator/.test(txt)?'truck':'regular';
+}
+function spLicensingDueDate(plate,category='regular',year=new Date().getFullYear()){
+ const final=plateFinalDigit(plate);
+ if(final===null)return null;
+ const regularMonths={1:7,2:7,3:8,4:8,5:9,6:9,7:10,8:10,9:11,0:12};
+ const truckMonths={1:9,2:9,3:10,4:10,5:10,6:11,7:11,8:11,9:12,0:12};
+ const month=(category==='truck'?truckMonths:regularMonths)[final];
+ return month?lastDayIso(year,month):null;
+}
+function spLicensingLabel(plate,category='regular',year=new Date().getFullYear()){
+ const due=spLicensingDueDate(plate,category,year);
+ if(!due)return 'Placa sem final numérico válido';
+ const f=plateFinalDigit(plate);
+ const d=new Date(due+'T00:00:00');
+ return 'Detran-SP • placa final '+f+' • '+(category==='truck'?'caminhão':'veículo/ônibus/reboque')+' • até '+d.toLocaleDateString('pt-BR');
+}
+function updateCrlvAutoExpiry(){
+ const plate=document.getElementById('crlvPlate')?.value||'';
+ const cat=document.getElementById('crlvLicenseCategory')?.value||'regular';
+ const due=spLicensingDueDate(plate,cat,new Date().getFullYear());
+ const input=document.getElementById('crlvExpires');
+ const rule=document.getElementById('crlvExpiryRule');
+ if(input)input.value=due||'';
+ if(rule)rule.textContent=due?spLicensingLabel(plate,cat,new Date().getFullYear()):'Informe uma placa válida para calcular o vencimento pelo Detran-SP.';
+}
 function isVehicleCrlv(type){
  const s=String(type||'').toLowerCase();
  return s.includes('crlv')||s.includes('licenciamento');
@@ -4552,6 +4595,8 @@ function parseCrlvText(raw){
 async function beginCrlvImport(file){
  const msg=document.getElementById('crlvImportMsg');pendingCrlvFile=file;pendingCrlvData={};
  document.getElementById('crlvPreviewCard').style.display='block';
+ if(document.getElementById('crlvLicenseState'))document.getElementById('crlvLicenseState').value='SP';
+ if(document.getElementById('crlvLicenseCategory'))document.getElementById('crlvLicenseCategory').value='regular';
  if(document.getElementById('crlvExpires'))document.getElementById('crlvExpires').value='';
  try{
   msg.textContent='Lendo documento...';
@@ -4560,6 +4605,7 @@ async function beginCrlvImport(file){
   else msg.textContent='Imagem anexada. Nesta versão, confirme os dados manualmente.';
   pendingCrlvData=d;
   document.getElementById('crlvPlate').value=d.plate||'';document.getElementById('crlvRenavam').value=d.renavam||'';document.getElementById('crlvMakeModel').value=d.makeModel||'';document.getElementById('crlvYearFab').value=d.yearFab||'';document.getElementById('crlvYearModel').value=d.yearModel||'';document.getElementById('crlvChassis').value=d.chassis||'';document.getElementById('crlvOwner').value=d.owner||'';document.getElementById('crlvColor').value=d.color||'';document.getElementById('crlvFuel').value=d.fuel||'';
+  updateCrlvAutoExpiry();
   if(d.plate||d.renavam)msg.textContent='Dados encontrados. Confira e toque em CONFIRMAR E SALVAR.';
   else if(file.type==='application/pdf')msg.textContent='Não consegui identificar placa/RENAVAM automaticamente. Confira e preencha antes de salvar.';
  }catch(e){msg.textContent='Leitura automática não concluída: '+e.message+' Você ainda pode preencher os campos e salvar o arquivo.'}
@@ -4569,8 +4615,11 @@ async function confirmCrlvImport(){
  const plate=document.getElementById('crlvPlate').value.toUpperCase().replace(/[^A-Z0-9]/g,'');
  const renavam=document.getElementById('crlvRenavam').value.replace(/\D/g,'');
  const mm=document.getElementById('crlvMakeModel').value.trim();
- const expires=document.getElementById('crlvExpires')?.value||null;
+ const licenseCategory=document.getElementById('crlvLicenseCategory')?.value||'regular';
+ const licenseState='SP';
+ const expires=spLicensingDueDate(plate,licenseCategory,new Date().getFullYear());
  if(!plate&&!renavam){msg.textContent='Informe pelo menos a placa ou o RENAVAM.';return}
+ if(!expires){msg.textContent='Não consegui calcular o vencimento. Confira se a placa termina com número.';return}
 
  try{
   msg.textContent='Verificando a frota...';
@@ -4593,6 +4642,9 @@ async function confirmCrlvImport(){
     fuel:document.getElementById('crlvFuel').value.trim()||null,
     year_fabrication:Number(document.getElementById('crlvYearFab').value)||null,
     expires_at:expires,
+    licensing_state:licenseState,
+    licensing_category:licenseCategory,
+    licensing_rule:'DETRAN-SP calendário anual por final de placa',
     imported_at:new Date().toISOString()
    }
   };
@@ -4605,7 +4657,7 @@ async function confirmCrlvImport(){
    model_year:Number(document.getElementById('crlvYearModel').value)||Number(document.getElementById('crlvYearFab').value)||v?.model_year||null,
    description:v?.description||(model||mm||plate||'Condução'),
    status:v?.status||'active',
-   metadata:meta
+   metadata:{...meta,licensing_state:licenseState,licensing_category:licenseCategory}
   };
 
   if(v){
@@ -5069,12 +5121,16 @@ document.addEventListener('click',async function(e){
   }
 });
 document.addEventListener('change',async function(e){
+ if(e.target?.id==='crlvLicenseCategory'){updateCrlvAutoExpiry();return}
+
  if(e.target?.id==='crlvImportFile'){
   const f=e.target.files?.[0];e.target.value='';
   if(f)await beginCrlvImport(f);
  }
 });
 document.addEventListener('input',function(e){
+ if(e.target?.id==='crlvPlate')updateCrlvAutoExpiry();
+
   if(e.target && (e.target.id==='maintenancePartsCost'||e.target.id==='maintenanceLaborCost')) calcMaintenanceTotal();
   if(e.target && (e.target.id==='fuelLiters'||e.target.id==='fuelTotal')) fuelCalcPrice();
 });
