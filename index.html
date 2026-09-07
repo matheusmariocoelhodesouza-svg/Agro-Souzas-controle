@@ -2557,7 +2557,7 @@ async function loadMonthlyMirror(){
 
     const rows=await rest(
       'v2_attendance_events',
-      'select=id,employee_id,occurred_at,event_type,method,accuracy_m,nsr,integrity_hash&company_id=eq.'+companyId+
+      'select=id,employee_id,occurred_at,event_type,method,accuracy_m,nsr,integrity_hash,work_team_id,device_access_id,metadata&company_id=eq.'+companyId+
       '&employee_id=eq.'+encodeURIComponent(employeeId)+
       '&occurred_at=gte.'+encodeURIComponent(queryStart)+
       '&occurred_at=lt.'+encodeURIComponent(bounds.end)+
@@ -2570,8 +2570,10 @@ async function loadMonthlyMirror(){
       '&id=eq.'+encodeURIComponent(employeeId)+'&limit=1'
     );
     const emp=empRows?.[0]||{};
+    const teamRows=await rest('v2_teams','select=id,name,code,status&company_id=eq.'+companyId+'&order=name.asc');
+    const teamMap=Object.fromEntries((teamRows||[]).map(t=>[t.id,t]));
     const originalSel=$('#treatmentOriginalId');
-    if(originalSel)originalSel.innerHTML='<option value="">Sem vínculo / inclusão manual</option>'+rows.map(x=>'<option value="'+esc(x.id)+'">'+esc(new Date(x.occurred_at).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo'}))+' • '+esc(pointLabels[x.event_type]||x.event_type)+'</option>').join('');
+    if(originalSel)originalSel.innerHTML='<option value="">Sem vínculo / inclusão manual</option>'+rows.map(x=>{const tn=pointEventTeamName(x,teamMap);return '<option value="'+esc(x.id)+'">'+esc(new Date(x.occurred_at).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo'}))+' • '+esc(pointLabels[x.event_type]||x.event_type)+(tn?' • '+esc(tn):'')+'</option>';}).join('');
     list.dataset.employeeName=emp.full_name||'';
     list.dataset.employeeNumber=emp.employee_number||'';
     list.dataset.cpf=emp.cpf||'';
@@ -2631,12 +2633,14 @@ async function loadMonthlyMirror(){
         ? (isToday?'Jornada em andamento':'Batidas incompletas')
         : (statusLabels[mt.status]||mt.status);
 
+      const sessionTeams=[...new Set(session.events.map(e=>pointEventTeamName(e,teamMap)).filter(Boolean))];
       return `<div class="item">
         <strong>${esc(dateLabel)}${crossedMidnight?' • virou a meia-noite':''}</strong>
         <span class="pill ${mt.incomplete?'warn':(statusClass[mt.status]||'')}">${esc(statusText)}</span>
         <div class="muted">Primeira: ${fmt(first.occurred_at)} • Última: ${fmt(last.occurred_at)}</div>
+        <div class="muted"><b>Equipe(s) trabalhada(s):</b> ${esc(sessionTeams.length?sessionTeams.join(' → '):(emp.primary_team||'Não identificada'))}</div>
         <div class="muted">Trabalhado: <b>${fmtMinutes(mt.worked)}</b> • Intervalo: ${fmtMinutes(mt.breakMinutes)} • Extra: <b>${fmtMinutes(mt.overtime)}</b> • Saldo: <b>${mt.incomplete?'Em aberto':fmtSignedMinutes(balance)}</b>${late?' • '+(mt.incomplete?'Atraso provisório':'Atraso')+': <b>'+fmtMinutes(late)+'</b>':''}${early?' • Saída antecipada: <b>'+fmtMinutes(early)+'</b>':''}</div>
-        <div class="muted"><b>Marcações originais:</b> ${session.events.map(e=>`${fmt(e.occurred_at)} ${pointLabels[e.event_type]||e.event_type}${e.nsr?' [NSR '+e.nsr+']':''}${e.integrity_hash?' [SHA-256 '+e.integrity_hash.slice(0,12)+'…]':''}`).join(' • ')}</div>
+        <div class="muted"><b>Marcações originais:</b> ${session.events.map(e=>{const tn=pointEventTeamName(e,teamMap);return `${fmt(e.occurred_at)} ${pointLabels[e.event_type]||e.event_type}${tn?' [Equipe '+tn+']':''}${e.nsr?' [NSR '+e.nsr+']':''}${e.integrity_hash?' [SHA-256 '+e.integrity_hash.slice(0,12)+'…]':''}`;}).join(' • ')}</div>
       </div>`;
     }).join('');
 
