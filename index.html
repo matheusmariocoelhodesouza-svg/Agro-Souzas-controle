@@ -8,7 +8,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
-<title>Comando 360 • v6.65</title>
+<title>Comando 360 • v6.66</title>
 <link rel="manifest" href="./comando360.webmanifest"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
@@ -1348,13 +1348,169 @@ body.device-mode #screenHost .v2panel{
 .darkmode #inicio .dash-action-strip>button{background:#0f1d2e;border-color:#20334a;color:#e9f0f9}
 .darkmode #inicio .dash-action-strip b{color:#edf4fd}
 .darkmode #inicio .dash-action-strip>button>span{background:#13263b}
+
+/* =========================================================
+   6.66 — RELEASE POLISH • COMANDO 360 PRONTO PARA USO
+   ========================================================= */
+body{min-height:100vh}
+button,input,select,textarea{font-family:inherit}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,summary:focus-visible{
+ outline:3px solid rgba(31,104,201,.22)!important;
+ outline-offset:2px;
+}
+button:disabled{cursor:not-allowed;opacity:.58;transform:none!important;box-shadow:none!important}
+.header-left{display:flex;align-items:center;gap:10px;min-width:0}
+.header-menu-btn{
+ display:none;width:40px;height:40px;border:1px solid #dde6ef;border-radius:11px;
+ background:#f5f8fb;color:#183754;font-size:19px;align-items:center;justify-content:center;cursor:pointer;
+}
+.header-module{
+ position:absolute;left:50%;transform:translateX(-50%);
+ text-align:center;line-height:1.15;pointer-events:none;
+}
+.header-module span{display:block;font-size:12px;font-weight:900;color:#203753}
+.header-module small{display:block;font-size:9px;color:#8392a5;margin-top:3px}
+.app-progress{
+ position:fixed;left:232px;right:0;top:0;height:3px;z-index:220;
+ opacity:0;pointer-events:none;overflow:hidden;background:transparent;
+ transition:opacity .12s ease;
+}
+.app-progress.active{opacity:1}
+.app-progress i{
+ display:block;width:34%;height:100%;
+ background:linear-gradient(90deg,#1e68c9,#54b4ff);
+ box-shadow:0 0 12px rgba(31,104,201,.45);
+ animation:c360Progress 1s ease-in-out infinite;
+}
+@keyframes c360Progress{
+ 0%{transform:translateX(-110%)}
+ 100%{transform:translateX(400%)}
+}
+.c360-toast-stack{
+ position:fixed;right:18px;top:78px;z-index:250;width:min(380px,calc(100vw - 28px));
+ display:grid;gap:8px;pointer-events:none;
+}
+.c360-toast{
+ pointer-events:auto;background:#fff;border:1px solid #dfe7f0;border-radius:13px;
+ padding:11px 13px;display:flex;gap:10px;align-items:flex-start;
+ box-shadow:0 14px 36px rgba(14,37,66,.14);animation:c360ToastIn .18s ease-out;
+}
+.c360-toast i{
+ width:28px;height:28px;border-radius:9px;display:grid;place-items:center;flex:0 0 auto;
+ font-style:normal;background:#eef5fd;color:#1d5fae;font-weight:900;
+}
+.c360-toast.error i{background:#fff0f1;color:#ad3038}
+.c360-toast.success i{background:#eaf8f0;color:#177046}
+.c360-toast strong{display:block;font-size:11px;color:#18304c}
+.c360-toast span{display:block;font-size:10px;color:#71839a;margin-top:2px;line-height:1.35}
+@keyframes c360ToastIn{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:none}}
+.mobile-bottom-nav,.mobile-menu-backdrop{display:none}
+
+/* acabamento de superfícies */
+body.app-ready:not(.device-mode) #screenHost>.section{padding-bottom:16px}
+body.app-ready:not(.device-mode) #screenHost .card,
+body.app-ready:not(.device-mode) #screenHost .v2panel,
+body.app-ready:not(.device-mode) #screenHost .v2kpi,
+body.app-ready:not(.device-mode) #screenHost .item{
+ -webkit-tap-highlight-color:transparent;
+}
+body.app-ready:not(.device-mode) #screenHost .card .toolbar .btn,
+body.app-ready:not(.device-mode) #screenHost .v2panelhead .btn{flex:0 0 auto}
+body.app-ready:not(.device-mode) #screenHost .error{
+ background:#fff2f3;border:1px solid #f1d8db;color:#9f2b33;
+ border-radius:11px;padding:10px 12px;line-height:1.4;
+}
+body.app-ready:not(.device-mode) #screenHost .okmsg{
+ background:#edf9f2;border:1px solid #d8eee1;color:#176d45;
+ border-radius:11px;padding:10px 12px;line-height:1.4;
+}
+body.app-ready:not(.device-mode) #screenHost .v2-empty,
+body.app-ready:not(.device-mode) #screenHost .fleet-empty{
+ min-height:72px;display:flex;align-items:center;justify-content:center;
+ flex-direction:column;text-align:center;color:#8090a4;
+}
+body.app-ready:not(.device-mode) #screenHost input::placeholder,
+body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8}
+
+/* barras de rolagem discretas */
+@media(pointer:fine){
+ *{scrollbar-width:thin;scrollbar-color:#bcc9d8 transparent}
+ *::-webkit-scrollbar{width:8px;height:8px}
+ *::-webkit-scrollbar-thumb{background:#bcc9d8;border-radius:999px;border:2px solid transparent;background-clip:padding-box}
+ *::-webkit-scrollbar-track{background:transparent}
+}
+
+/* mobile/tablet profissional */
+@media(max-width:900px){
+ body.app-ready:not(.device-mode){padding-bottom:72px}
+ body.app-ready:not(.device-mode) .header-menu-btn{display:flex}
+ body.app-ready:not(.device-mode) header{position:sticky;top:0;z-index:90}
+ body.app-ready:not(.device-mode) .header-module{display:none}
+ body.app-ready:not(.device-mode) .v2date{display:none!important}
+ body.app-ready:not(.device-mode) #networkBadge{font-size:0;width:30px;height:30px;padding:0;display:grid;place-items:center}
+ body.app-ready:not(.device-mode) #networkBadge::first-letter{font-size:12px}
+ body.app-ready:not(.device-mode) #themeToggle{width:36px;min-width:36px;padding:0}
+ body.app-ready:not(.device-mode) .v2sidebar{
+  display:block!important;position:fixed;z-index:180;left:0;top:0;bottom:0;
+  width:min(290px,86vw)!important;transform:translateX(-105%);
+  transition:transform .2s ease;box-shadow:18px 0 44px rgba(4,18,36,.18);
+ }
+ body.mobile-menu-open.app-ready:not(.device-mode) .v2sidebar{transform:translateX(0)}
+ body.app-ready:not(.device-mode) .mobile-menu-backdrop{
+  display:block;position:fixed;inset:0;background:rgba(6,20,39,.46);
+  opacity:0;visibility:hidden;z-index:170;transition:.2s ease;backdrop-filter:blur(2px);
+ }
+ body.mobile-menu-open.app-ready:not(.device-mode) .mobile-menu-backdrop{opacity:1;visibility:visible}
+ body.app-ready:not(.device-mode) .mobile-bottom-nav{
+  display:grid;grid-template-columns:repeat(5,1fr);position:fixed;left:8px;right:8px;bottom:8px;
+  z-index:150;background:rgba(255,255,255,.96);backdrop-filter:blur(16px);
+  border:1px solid #dce5ee;border-radius:17px;padding:5px;
+  box-shadow:0 13px 34px rgba(13,37,66,.17);
+ }
+ body.app-ready:not(.device-mode) .mobile-bottom-nav button{
+  appearance:none;border:0;background:transparent;color:#71839a;border-radius:12px;
+  min-height:51px;padding:5px 2px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:2px;cursor:pointer;
+ }
+ body.app-ready:not(.device-mode) .mobile-bottom-nav button span{font-size:17px;line-height:1}
+ body.app-ready:not(.device-mode) .mobile-bottom-nav button small{font-size:8.5px;font-weight:800}
+ body.app-ready:not(.device-mode) .mobile-bottom-nav button.active{background:#eaf3ff;color:#185bac}
+ body.app-ready:not(.device-mode) #nav{display:none!important}
+ body.app-ready:not(.device-mode) .app-progress{left:0}
+ .c360-toast-stack{top:68px;right:10px}
+}
+@media(max-width:520px){
+ body.app-ready:not(.device-mode) header .brand b{font-size:13px}
+ body.app-ready:not(.device-mode) header .header-brand-icon{width:34px;height:34px}
+ body.app-ready:not(.device-mode) #offlineQueueBadge{display:none}
+ body.app-ready:not(.device-mode) .wrap{padding:9px 9px 15px}
+ body.app-ready:not(.device-mode) #screenHost .card,
+ body.app-ready:not(.device-mode) #screenHost .v2panel{border-radius:14px}
+ body.app-ready:not(.device-mode) #screenHost .toolbar{gap:6px}
+}
+
+/* dark */
+.darkmode .header-menu-btn{background:#102033;border-color:#26394f;color:#eaf1fa}
+.darkmode .header-module span{color:#e8f0fa}
+.darkmode .header-module small{color:#8ea3bb}
+.darkmode .c360-toast{background:#0f1d2e;border-color:#26394f}
+.darkmode .c360-toast strong{color:#edf4fd}
+.darkmode .c360-toast span{color:#93a7bd}
+.darkmode .mobile-bottom-nav{background:rgba(15,29,46,.97)!important;border-color:#26394f!important}
+.darkmode .mobile-bottom-nav button{color:#8fa4bc!important}
+.darkmode .mobile-bottom-nav button.active{background:#142a43!important;color:#79b5ff!important}
+
+/* reduced motion */
+@media(prefers-reduced-motion:reduce){
+ *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+}
 </style>
 <script defer="" src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"></script>
 <script>
 (function(){
-  const BUILD='6.65';
+  const BUILD='6.66';
   try{
     const marker='controla_cache_cleanup_'+BUILD;
     if(!localStorage.getItem(marker)){
@@ -1388,7 +1544,24 @@ body.device-mode #screenHost .v2panel{
 <div class="v2group">INTELIGÊNCIA</div>
 <button class="v2navbtn" data-v2tab="ia">✦   Assistente IA</button>
 </aside>
-<header><div class="brand"><img class="header-brand-icon" src="./comando360-icon.svg" alt="Comando 360"/><div><b>Comando <span class="brand360">360</span></b><div><small id="companyName">Empresa</small></div></div></div><div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.65</span><button class="btn soft" id="themeToggle" type="button">☾</button><button class="btn soft hidden" id="logout">Sair</button></div></header>
+<div class="mobile-menu-backdrop" id="mobileMenuBackdrop" aria-hidden="true"></div>
+<div class="app-progress" id="appProgress" aria-hidden="true"><i></i></div>
+<div class="c360-toast-stack" id="c360ToastStack" aria-live="polite" aria-atomic="true"></div>
+<nav class="mobile-bottom-nav" id="mobileBottomNav" aria-label="Navegação principal">
+ <button type="button" data-mobiletab="inicio" class="active"><span>⌂</span><small>Início</small></button>
+ <button type="button" data-mobiletab="operacoes"><span>🐔</span><small>Apanhas</small></button>
+ <button type="button" data-mobiletab="ponto"><span>◷</span><small>Ponto</small></button>
+ <button type="button" data-mobiletab="frota"><span>▰</span><small>Frota</small></button>
+ <button type="button" data-mobiletab="more"><span>☰</span><small>Mais</small></button>
+</nav>
+<header>
+ <div class="header-left">
+  <button class="header-menu-btn" id="mobileMenuBtn" type="button" aria-label="Abrir menu" aria-expanded="false">☰</button>
+  <div class="brand"><img class="header-brand-icon" src="./comando360-icon.svg" alt="Comando 360"/><div><b>Comando <span class="brand360">360</span></b><div><small id="companyName">Empresa</small></div></div></div>
+ </div>
+ <div class="header-module" id="headerModule"><span id="headerModuleTitle">Painel Geral</span><small id="headerModuleSubtitle">Central de gestão</small></div>
+ <div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.66</span><button class="btn soft" id="themeToggle" type="button" aria-label="Alternar tema">☾</button><button class="btn soft hidden" id="logout">Sair</button></div>
+</header>
 <main class="wrap">
 <section class="login team-entry" id="login">
 <div class="card" id="deviceSetupCard">
@@ -1405,7 +1578,7 @@ body.device-mode #screenHost .v2panel{
  <label>Senha</label><input autocomplete="current-password" id="password" type="password"/>
  <button class="btn primary" id="loginBtn">Entrar</button>
  <button class="btn soft" id="backDeviceSetup" type="button" style="margin-left:6px">Voltar</button>
- <div class="muted" id="loginMsg" style="margin-top:10px">Comando 360 • v6.65</div><div class="debug" id="debug"></div>
+ <div class="muted" id="loginMsg" style="margin-top:10px">Comando 360 • v6.66</div><div class="debug" id="debug"></div>
 </div>
 </section>
 <section class="hidden" id="app">
@@ -6533,8 +6706,61 @@ function printAdminReports(){
  w.document.close();
 }
 
+const C360_MODULES={
+ inicio:['Painel Geral','Central de gestão'],
+ operacoes:['Apanhas','Operação de campo'],
+ equipes:['Equipes','Pessoas, conduções e aparelhos'],
+ funcionarios:['RH & Pessoas','Gestão dos colaboradores'],
+ documentosrh:['Documentos RH','Validades e arquivos'],
+ ponto:['RH & Ponto','Presença e jornada'],
+ frota:['Frota','Conduções e CRLV'],
+ manutencoes:['Manutenções','Preventiva e corretiva'],
+ combustivel:['Combustível & KM','Abastecimentos e hodômetro'],
+ financeiro:['Financeiro','Entradas, saídas e resultado'],
+ relatorios:['Relatórios & BI','Indicadores gerenciais'],
+ alertas:['Alertas','Pendências e prioridades'],
+ integracoes:['Integrações','Serviços conectados'],
+ ia:['Assistente IA','Inteligência do Comando 360'],
+ equipehome:['Equipe','Acesso de campo'],
+ equipereport:['Relatório de Apanha','Impressão de campo']
+};
+function c360SetModule(tab){
+ const m=C360_MODULES[tab]||[tab,'Comando 360'];
+ const t=document.getElementById('headerModuleTitle'),s=document.getElementById('headerModuleSubtitle');
+ if(t)t.textContent=m[0];if(s)s.textContent=m[1];
+ document.title='Comando 360 • '+m[0]+' • v6.66';
+ document.querySelectorAll('#mobileBottomNav [data-mobiletab]').forEach(b=>{
+  const mt=b.dataset.mobiletab;
+  b.classList.toggle('active',mt===tab||(mt==='more'&&!['inicio','operacoes','ponto','frota'].includes(tab)));
+ });
+}
+function c360Busy(on){
+ const p=document.getElementById('appProgress');
+ if(p)p.classList.toggle('active',!!on);
+ document.body.classList.toggle('app-loading',!!on);
+}
+function c360Toast(title,message='',type='info',duration=3600){
+ const stack=document.getElementById('c360ToastStack');if(!stack)return;
+ const d=document.createElement('div');d.className='c360-toast '+type;
+ const ico=type==='error'?'!':type==='success'?'✓':'i';
+ d.innerHTML='<i>'+ico+'</i><div><strong>'+esc(title)+'</strong>'+(message?'<span>'+esc(message)+'</span>':'')+'</div>';
+ stack.appendChild(d);
+ setTimeout(()=>{d.style.opacity='0';d.style.transform='translateY(-4px)';setTimeout(()=>d.remove(),180)},duration);
+}
+function c360CloseMobileMenu(){
+ document.body.classList.remove('mobile-menu-open');
+ const b=document.getElementById('mobileMenuBtn');if(b)b.setAttribute('aria-expanded','false');
+}
+function c360ToggleMobileMenu(){
+ const open=!document.body.classList.contains('mobile-menu-open');
+ document.body.classList.toggle('mobile-menu-open',open);
+ const b=document.getElementById('mobileMenuBtn');if(b)b.setAttribute('aria-expanded',open?'true':'false');
+}
 async function v2Go(tab){
  if(tab==='documentosfrota')tab='frota';
+ c360SetModule(tab);
+ c360CloseMobileMenu();
+ c360Busy(true);
  if(deviceMode&&!['equipehome','operacoes','ponto','combustivel','equipereport'].includes(tab))tab='equipehome';
  const host=document.getElementById('screenHost');
  const target=v2ScreenStore[tab];
@@ -6571,8 +6797,27 @@ async function v2Go(tab){
    else if(tab==='alertas') await loadSmartAlerts();
    else if(tab==='integracoes') await loadIntegrations();
    else if(tab==='ponto'){await loadSchedules();if(deviceMode)await loadTeamPoint();else await loadRHPoint();}
- }catch(e){console.warn('Falha ao carregar tela',tab,e)}
+ }catch(e){
+   console.warn('Falha ao carregar tela',tab,e);
+   c360Toast('Não foi possível carregar '+(C360_MODULES[tab]?.[0]||'a tela'),e?.message||'Tente novamente.','error',5000);
+ }finally{
+   c360Busy(false);
+ }
 }
+document.addEventListener('click',function(e){
+ const mobile=e.target.closest('#mobileBottomNav [data-mobiletab]');
+ if(mobile){
+  const tab=mobile.dataset.mobiletab;
+  if(tab==='more')c360ToggleMobileMenu();
+  else v2Go(tab);
+  return;
+ }
+ if(e.target.closest('#mobileMenuBtn')){c360ToggleMobileMenu();return}
+ if(e.target.closest('#mobileMenuBackdrop')){c360CloseMobileMenu();return}
+ const side=e.target.closest('.v2navbtn[data-v2tab]');
+ if(side&&window.innerWidth<=900)c360CloseMobileMenu();
+});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')c360CloseMobileMenu()});
 document.addEventListener('click',async function(e){
   if(e.target.closest('#newFuelBtn')){
    e.preventDefault();
@@ -6700,8 +6945,8 @@ function updateNetworkBadge(){
  el.classList.toggle('online',online);
  el.classList.toggle('offline',!online);
 }
-window.addEventListener('online',()=>{updateNetworkBadge();fleetCrlvAutoReadTried.clear();setTimeout(()=>{syncOfflineQueue().catch(e=>console.warn('sync online',e));scheduleAutomaticCrlvRead()},400)});
-window.addEventListener('offline',updateNetworkBadge);
+window.addEventListener('online',()=>{updateNetworkBadge();c360Toast('Conexão restabelecida','O Comando 360 voltou a ficar online.','success',2600);fleetCrlvAutoReadTried.clear();setTimeout(()=>{syncOfflineQueue().catch(e=>console.warn('sync online',e));scheduleAutomaticCrlvRead()},400)});
+window.addEventListener('offline',()=>{updateNetworkBadge();c360Toast('Você está sem internet','Os registros compatíveis continuam sendo guardados para sincronizar depois.','info',4200)});
 updateNetworkBadge();
 setInterval(()=>{if(navigator.onLine&&session()?.refresh_token)ensureFreshAccessToken(180).catch(e=>console.warn('renovação de sessão',e))},5*60*1000);
 if($('#offlineQueueBadge'))$('#offlineQueueBadge').addEventListener('click',()=>{openOfflineSyncPanel().catch(e=>console.warn(e))});
@@ -6718,7 +6963,7 @@ setInterval(()=>{
 },60000);
 if('serviceWorker' in navigator){
  window.addEventListener('load',()=>{
-  navigator.serviceWorker.register('./sw-v6-65.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
+  navigator.serviceWorker.register('./sw-v6-66.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
  });
 }
 
