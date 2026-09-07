@@ -8,7 +8,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
-<title>Comando 360 • v6.52</title>
+<title>Comando 360 • v6.53</title>
 <link rel="manifest" href="./comando360.webmanifest"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
@@ -575,13 +575,42 @@ body.device-mode .po-actions .btn{width:100%;min-height:47px}
  body.device-mode #poultryKpis{gap:8px}
 }
 
+/* 6.53 — Integração Thomson Reuters Onvio */
+.integration-card{overflow:hidden}
+.integration-head{display:flex;align-items:center;gap:13px;margin-bottom:14px}
+.integration-brandmark{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-weight:950;letter-spacing:-1px;background:#fff1eb;color:#cf4a2c;border:1px solid #ffd3c7;flex:0 0 auto}
+.integration-head-copy{min-width:0;flex:1}
+.integration-flow{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:14px 0}
+.integration-step{display:flex;gap:10px;padding:12px;border:1px solid #e0e8f2;border-radius:13px;background:#f8fbfe}
+.integration-step-num{width:27px;height:27px;border-radius:999px;display:flex;align-items:center;justify-content:center;background:#0f6fef;color:#fff;font-size:12px;font-weight:900;flex:0 0 auto}
+.integration-step strong{display:block;font-size:12px}.integration-step .muted{margin-top:4px;font-size:10px}
+.integration-box{margin-top:11px;padding:13px;border:1px solid #e0e8f2;border-radius:13px;background:#fbfdff}
+.integration-box code{display:block;margin-top:8px;padding:10px 11px;border:1px solid #d8e3ef;border-radius:10px;background:#f3f7fb;white-space:normal;word-break:break-all;font-size:11px}
+.integration-creds-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.integration-creds-row label{display:block;font-size:11px;font-weight:850;color:#64748b;margin-bottom:5px}
+.integration-creds-row input,.integration-client-row select{width:100%;box-sizing:border-box;padding:11px 12px;border:1px solid #cbd5e1;border-radius:10px;background:#fff;color:#172033;font:inherit}
+.integration-connect-actions{gap:8px;flex-wrap:wrap}
+.integration-client-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px}
+.integration-status-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin-top:13px}
+.integration-stat{border:1px solid #e0e8f2;border-radius:12px;padding:11px;background:#f8fbfe;min-width:0}
+.integration-stat span{display:block;font-size:9px;text-transform:uppercase;letter-spacing:.45px;font-weight:900;color:#718096}
+.integration-stat strong{display:block;margin-top:5px;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.integration-return{border-left:4px solid #1684eb}
+.darkmode .integration-step,.darkmode .integration-box,.darkmode .integration-stat{background:#0b1727;border-color:#26374d}
+.darkmode .integration-box code{background:#101820;border-color:#33465e;color:#dceaff}
+.darkmode .integration-creds-row label{color:#9eb0c6}
+.darkmode .integration-creds-row input,.darkmode .integration-client-row select{background:#101820;color:#eef5ff;border-color:#3b4c61}
+.darkmode .integration-brandmark{background:#2b1712;border-color:#5e2c21}
+@media(max-width:850px){.integration-flow{grid-template-columns:1fr}.integration-status-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:620px){.integration-creds-row{grid-template-columns:1fr}.integration-client-row{grid-template-columns:1fr}.integration-client-row .btn{width:100%}.integration-connect-actions{display:grid;grid-template-columns:1fr}.integration-connect-actions .btn{width:100%}}
+@media(max-width:430px){.integration-status-grid{grid-template-columns:1fr 1fr}.integration-head{align-items:flex-start}.integration-brandmark{width:46px;height:46px}}
 .truck-barn-checks{display:grid;gap:7px;margin-top:5px}.truck-cata-row{display:grid;grid-template-columns:minmax(90px,1fr) minmax(110px,1fr) auto;gap:7px;align-items:center;padding:8px;border:1px solid #dbe4ee;border-radius:10px;background:#fff}.truck-cata-row input{margin:0!important;min-width:0}.truck-cata-remove{padding:7px 10px!important;min-width:38px}@media(max-width:520px){.truck-cata-row{grid-template-columns:1fr 1fr auto}}
 </style>
 <script defer="" src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
 <script>
 (function(){
-  const BUILD='6.52';
+  const BUILD='6.53';
   try{
     const marker='controla_cache_cleanup_'+BUILD;
     if(!localStorage.getItem(marker)){
@@ -611,10 +640,11 @@ body.device-mode .po-actions .btn{width:100%;min-height:47px}
 <button class="v2navbtn" data-v2tab="financeiro">💰   Financeiro</button>
 <button class="v2navbtn" data-v2tab="relatorios">📊   Relatórios & BI</button>
 <button class="v2navbtn" data-v2tab="alertas">⚠   Alertas</button>
+<button class="v2navbtn" data-v2tab="integracoes">🔗   Integrações</button>
 <div class="v2group">INTELIGÊNCIA</div>
 <button class="v2navbtn" data-v2tab="ia">✦   Assistente IA</button>
 </aside>
-<header><div class="brand"><img class="header-brand-icon" src="./comando360-icon.svg" alt="Comando 360"/><div><b>Comando <span class="brand360">360</span></b><div><small id="companyName">Empresa</small></div></div></div><div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.52</span><button class="btn soft" id="themeToggle" type="button">☾</button><button class="btn soft hidden" id="logout">Sair</button></div></header>
+<header><div class="brand"><img class="header-brand-icon" src="./comando360-icon.svg" alt="Comando 360"/><div><b>Comando <span class="brand360">360</span></b><div><small id="companyName">Empresa</small></div></div></div><div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.53</span><button class="btn soft" id="themeToggle" type="button">☾</button><button class="btn soft hidden" id="logout">Sair</button></div></header>
 <main class="wrap">
 <section class="login team-entry" id="login">
 <div class="card" id="deviceSetupCard">
@@ -631,11 +661,11 @@ body.device-mode .po-actions .btn{width:100%;min-height:47px}
  <label>Senha</label><input autocomplete="current-password" id="password" type="password"/>
  <button class="btn primary" id="loginBtn">Entrar</button>
  <button class="btn soft" id="backDeviceSetup" type="button" style="margin-left:6px">Voltar</button>
- <div class="muted" id="loginMsg" style="margin-top:10px">Comando 360 • v6.52</div><div class="debug" id="debug"></div>
+ <div class="muted" id="loginMsg" style="margin-top:10px">Comando 360 • v6.53</div><div class="debug" id="debug"></div>
 </div>
 </section>
 <section class="hidden" id="app">
-<div class="nav" id="nav"><button class="active" data-tab="inicio">Início</button><button data-tab="equipes">Equipes</button><button data-tab="funcionarios">RH &amp; Pessoas</button><button data-tab="documentosrh">Docs RH</button><button data-tab="ponto">Ponto</button><button data-tab="operacoes">Operações / Apanha</button><button data-tab="frota">Frota</button><button data-tab="manutencoes">Manutenções</button><button data-tab="combustivel">Combustível & KM</button><button data-tab="financeiro">Financeiro</button><button data-tab="relatorios">Relatórios</button><button data-tab="alertas">Alertas</button><button data-tab="ia">Assistente IA</button></div>
+<div class="nav" id="nav"><button class="active" data-tab="inicio">Início</button><button data-tab="equipes">Equipes</button><button data-tab="funcionarios">RH &amp; Pessoas</button><button data-tab="documentosrh">Docs RH</button><button data-tab="ponto">Ponto</button><button data-tab="operacoes">Operações / Apanha</button><button data-tab="frota">Frota</button><button data-tab="manutencoes">Manutenções</button><button data-tab="combustivel">Combustível & KM</button><button data-tab="financeiro">Financeiro</button><button data-tab="relatorios">Relatórios</button><button data-tab="alertas">Alertas</button><button data-tab="integracoes">Integrações</button><button data-tab="ia">Assistente IA</button></div>
 <div class="team-mode-bar hidden" id="deviceModeBar"><div><strong id="deviceModeTeam">Equipe</strong><div class="muted">Acesso restrito a este aparelho</div></div><button class="btn soft" type="button" data-teamtab="equipehome">⌂ Início</button></div>
 <div class="offline-sync-panel hidden" id="offlineSyncPanel">
  <div class="offline-sync-box">
@@ -1125,6 +1155,98 @@ body.device-mode .po-actions .btn{width:100%;min-height:47px}
 <div class="section" data-screen="alertas" hidden="" id="alertas">
 <div class="card"><div class="toolbar" style="justify-content:space-between"><div><h3 style="margin:0">⚠ Alertas Inteligentes</h3><div class="muted">Pendências importantes da operação, RH e frota.</div></div><button class="btn primary" id="refreshAlerts" type="button">Atualizar alertas</button></div><div class="v2-kpis" id="alertsKpis" style="margin-top:14px"></div></div>
 <div class="card"><div class="list" id="alertsList"></div></div></div>
+
+<div class="section" data-screen="integracoes" hidden="" id="integracoes">
+ <div class="v2hero">
+  <div><div class="dashboard-eyebrow">CONEXÕES EXTERNAS</div><h1>Integrações</h1><p>Conecte serviços externos ao Comando 360 sem compartilhar senhas com colaboradores.</p></div>
+  <button class="btn soft" id="refreshIntegrations" type="button">↻ ATUALIZAR</button>
+ </div>
+
+ <div id="onvioReturnMsg" class="card hidden integration-return"></div>
+
+ <div class="card integration-card">
+  <div class="integration-head">
+   <div class="integration-brandmark">TR</div>
+   <div class="integration-head-copy">
+    <div class="toolbar" style="gap:8px"><h3 style="margin:0">Thomson Reuters Onvio</h3><span class="pill" id="onvioStatusPill">Verificando...</span></div>
+    <div class="muted">Sincronização do Portal do Cliente para os documentos do Comando 360.</div>
+   </div>
+  </div>
+
+  <div class="integration-flow">
+   <div class="integration-step">
+    <span class="integration-step-num">1</span>
+    <div><strong>Credenciais oficiais da Thomson Reuters</strong><div class="muted">O Onvio exige client_id e client_secret próprios para integração OAuth. Sua senha do Portal não é armazenada no Comando 360.</div></div>
+   </div>
+   <div class="integration-step">
+    <span class="integration-step-num">2</span>
+    <div><strong>Autorizar sua conta Onvio</strong><div class="muted">Você entra na própria tela da Thomson Reuters e autoriza o Comando 360 uma única vez.</div></div>
+   </div>
+   <div class="integration-step">
+    <span class="integration-step-num">3</span>
+    <div><strong>Sincronização automática</strong><div class="muted">Após a Thomson liberar a API de Documentos do Client Center, novos arquivos serão copiados para o Comando 360 sem baixar manualmente.</div></div>
+   </div>
+  </div>
+
+  <div class="integration-box">
+   <div class="toolbar" style="justify-content:space-between;align-items:flex-start">
+    <div><strong>Callback oficial do Comando 360</strong><div class="muted">Informe exatamente este endereço ao solicitar as credenciais OAuth.</div></div>
+    <button class="btn soft" id="copyOnvioCallback" type="button">COPIAR</button>
+   </div>
+   <code id="onvioCallbackUrl">Carregando...</code>
+  </div>
+
+  <div class="integration-box">
+   <div class="toolbar" style="justify-content:space-between;align-items:flex-start">
+    <div><strong>Solicitação para a Thomson Reuters</strong><div class="muted">Envie para a equipe Onvio BR API pedindo OAuth e acesso de leitura/listagem/download dos documentos do Client Center.</div></div>
+    <button class="btn soft" id="copyOnvioRequest" type="button">COPIAR SOLICITAÇÃO</button>
+   </div>
+   <div class="muted" id="onvioRequestHint" style="margin-top:7px">Destino: api.dominio@thomsonreuters.com</div>
+  </div>
+
+  <div class="integration-box" id="onvioCredentialsBox">
+   <strong>Credenciais OAuth</strong>
+   <div class="row integration-creds-row" style="margin-top:10px">
+    <div><label>client_id</label><input id="onvioClientId" autocomplete="off" placeholder="Cole o client_id recebido da Thomson Reuters"/></div>
+    <div><label>client_secret</label><input id="onvioClientSecret" type="password" autocomplete="new-password" placeholder="Cole o client_secret"/></div>
+   </div>
+   <div class="toolbar" style="margin-top:10px">
+    <button class="btn primary" id="saveOnvioCredentials" type="button">SALVAR CREDENCIAIS</button>
+    <span class="muted" id="onvioCredentialsMsg"></span>
+   </div>
+  </div>
+
+  <div class="integration-box">
+   <div class="toolbar integration-connect-actions">
+    <button class="btn primary" id="connectOnvioBtn" type="button">CONECTAR ONVIO</button>
+    <button class="btn soft" id="testOnvioBtn" type="button">TESTAR CONEXÃO</button>
+    <button class="btn soft" id="disconnectOnvioBtn" type="button">DESCONECTAR</button>
+   </div>
+   <div class="muted" id="onvioConnectionMsg" style="margin-top:8px"></div>
+  </div>
+
+  <div class="integration-box" id="onvioClientBox">
+   <strong>Empresa do Portal Onvio</strong>
+   <div class="muted">Depois da autorização, escolha qual empresa do seu Portal ficará ligada a esta empresa no Comando 360.</div>
+   <div class="toolbar integration-client-row" style="margin-top:10px">
+    <select id="onvioClientSelect"><option value="">Aguardando conexão...</option></select>
+    <button class="btn primary" id="saveOnvioClientBtn" type="button">VINCULAR EMPRESA</button>
+   </div>
+  </div>
+
+  <div class="integration-status-grid">
+   <div class="integration-stat"><span>OAuth</span><strong id="onvioOauthStatus">—</strong></div>
+   <div class="integration-stat"><span>Empresa Onvio</span><strong id="onvioSelectedClient">—</strong></div>
+   <div class="integration-stat"><span>Última conexão</span><strong id="onvioLastConnected">—</strong></div>
+   <div class="integration-stat"><span>Documentos importados</span><strong id="onvioImportedCount">0</strong></div>
+  </div>
+ </div>
+
+ <div class="card">
+  <div class="toolbar" style="justify-content:space-between"><div><h3 style="margin:0">📁 Documentos recebidos do Onvio</h3><div class="muted">Quando a sincronização documental estiver liberada, os arquivos aparecerão aqui e poderão ser vinculados ao RH ou à empresa.</div></div><span class="pill" id="onvioDocsState">Aguardando integração</span></div>
+  <div class="list" id="onvioDocsList" style="margin-top:12px"><div class="muted">Nenhum documento importado ainda.</div></div>
+ </div>
+</div>
 <div class="section" data-screen="ia" hidden="" id="ia"><div class="card chat"><h3>Assistente IA</h3><div class="muted">A IA avisará se a chave da OpenAI ainda não estiver configurada.</div><div class="chatbox" id="chatbox"></div><div class="toolbar" style="margin-top:10px"><input id="question" placeholder="Ex.: quais equipes estão atrasadas hoje?" style="flex:1;margin:0"/><button class="btn primary" id="sendAI">Enviar</button></div></div></div>
 </section></main>
 <script>
@@ -1824,7 +1946,7 @@ async function syncPoultryTruckOfflineItem(item){
   .map(x=>({barn_id:x?.barn_id||null,barn_number:normalizeAviaryNumber(x?.barn_number),birds:poN(x?.birds)}))
   .filter(x=>x.barn_number||x.barn_id);
 
- // Compatibilidade com itens offline criados antes da v6.52.
+ // Compatibilidade com itens offline criados antes da v6.53.
  if(!barnBreakdown.length&&item.barn_id){
   const oldId=String(item.barn_id).startsWith('offline:')?(refs.loading?.metadata?.default_barn_id||null):item.barn_id;
   const oldBarn=poultryBarns.find(b=>b.id===oldId);
@@ -1996,7 +2118,8 @@ async function enterApp(authUser){
   $('#logout').classList.remove('hidden');
   document.body.classList.add('app-ready');
   initScreenRouter();
-  await v2Go('inicio');
+  const onvioReturn=new URLSearchParams(location.search).get('onvio');
+  await v2Go(onvioReturn?'integracoes':'inicio');
   debug('');
   refreshAll().catch(function(e){console.warn('refresh',e)});
 }
@@ -4096,6 +4219,105 @@ async function confirmCrlvImport(){
 }
 
 
+
+let onvioState=null,onvioFiles={};
+
+async function onvioInvoke(action,extra={}){
+ const r=await authFetch('/functions/v1/comando360-onvio',{
+  method:'POST',
+  headers:{'Content-Type':'application/json'},
+  body:JSON.stringify({action,company_id:companyId,...extra})
+ },true);
+ return parseResponse(r);
+}
+function onvioStatusLabel(s){
+ return ({not_configured:'Não configurado',credentials_ready:'Credenciais salvas',authorizing:'Aguardando autorização',connected:'Conectado',syncing:'Sincronizando',error:'Erro',disconnected:'Desconectado'})[s]||s||'Não configurado';
+}
+function onvioStatusClass(s){return s==='connected'?'ok':s==='error'?'danger':(s==='credentials_ready'||s==='authorizing')?'warn':''}
+function onvioRequestText(callbackUrl){
+ const company=cleanCompanyName(companyProfile?.legal_name||companyProfile?.trade_name||'Empresa cliente');
+ return 'Olá, equipe Onvio BR API.\n\n'+
+  'Solicito as credenciais OAuth (client_id e client_secret) para integração da aplicação Comando 360 com o Onvio, conforme a documentação oficial da Thomson Reuters.\n\n'+
+  'Também precisamos da habilitação/documentação dos endpoints que permitam LISTAR e BAIXAR os documentos disponibilizados ao cliente no Onvio Client Center, para sincronização automática e somente leitura.\n\n'+
+  'Aplicação: Comando 360\n'+
+  'Empresa no Comando 360: '+company+'\n'+
+  'Callback URL: '+callbackUrl+'\n'+
+  'Objetivo: copiar automaticamente para o Comando 360 os documentos que o escritório contábil disponibilizar no Portal do Cliente, preservando o Onvio como origem.\n\n'+
+  'Por favor, enviem o client_id, client_secret e as orientações/escopos necessários para leitura dos documentos do Client Center.\n\nObrigado.';
+}
+async function loadIntegrations(){
+ const pill=$('#onvioStatusPill'),msg=$('#onvioConnectionMsg'),docs=$('#onvioDocsList');
+ try{
+  if(pill){pill.className='pill';pill.textContent='Carregando...'}
+  const st=await onvioInvoke('status');
+  onvioState=st;
+  const integration=st.integration||{},cfg=integration.config||{},status=integration.status||'not_configured';
+  if(pill){pill.className='pill '+onvioStatusClass(status);pill.textContent=onvioStatusLabel(status)}
+  $('#onvioCallbackUrl').textContent=st.callback_url||'—';
+  $('#onvioOauthStatus').textContent=st.authorized?'Autorizado':st.credentials_configured?'Credenciais prontas':'Pendente';
+  $('#onvioSelectedClient').textContent=integration.external_account_name||'Não vinculado';
+  $('#onvioLastConnected').textContent=integration.last_connected_at?new Date(integration.last_connected_at).toLocaleString('pt-BR'):'—';
+  if(st.client_id&&!$('#onvioClientId').value)$('#onvioClientId').value=st.client_id;
+  $('#connectOnvioBtn').disabled=!st.credentials_configured;
+  $('#testOnvioBtn').disabled=!st.authorized;
+  $('#disconnectOnvioBtn').disabled=!st.authorized;
+
+  const clients=Array.isArray(cfg.accessible_clients)?cfg.accessible_clients:[];
+  const sel=$('#onvioClientSelect');
+  if(sel){
+   sel.innerHTML='<option value="">Selecione a empresa do Portal...</option>'+clients.map(x=>'<option value="'+esc(x.id||'')+'" data-name="'+esc(x.name||'')+'">'+esc(x.name||'Cliente Onvio')+(x.nationalIdentity?' • '+esc(x.nationalIdentity):'')+'</option>').join('');
+   sel.value=integration.external_account_id||'';
+  }
+
+  let imported=[];
+  try{
+   imported=await rest('v2_integration_documents','select=id,source_name,source_path,source_mime_type,source_size_bytes,status,file_id,employee_id,category,imported_at,created_at&company_id=eq.'+companyId+'&provider=eq.onvio&order=created_at.desc&limit=50');
+  }catch(e){console.warn('onvio docs',e)}
+  $('#onvioImportedCount').textContent=String(imported.filter(x=>x.status==='imported').length);
+  const docState=$('#onvioDocsState');
+  if(docState){
+    const docsReady=cfg.documents_api_enabled===true;
+    docState.className='pill '+(docsReady?'ok':'warn');
+    docState.textContent=docsReady?'Sincronização ativa':st.authorized?'OAuth OK • aguardando API de documentos':'Aguardando conexão';
+  }
+  if(docs){
+   docs.innerHTML=imported.length?imported.map(d=>'<div class="item"><div class="toolbar" style="justify-content:space-between"><div><strong>'+esc(d.source_name)+'</strong><div class="muted">'+esc(d.source_path||'Onvio')+(d.imported_at?' • importado '+new Date(d.imported_at).toLocaleString('pt-BR'):'')+'</div><span class="pill '+(d.status==='imported'?'ok':d.status==='error'?'danger':'warn')+'">'+esc(d.status.toUpperCase())+'</span></div></div></div>').join(''):'<div class="muted">Nenhum documento importado ainda.</div>';
+  }
+
+  const params=new URLSearchParams(location.search);
+  const ret=params.get('onvio');
+  if(ret){
+   const box=$('#onvioReturnMsg');if(box){box.classList.remove('hidden');box.innerHTML=ret==='connected'?'<strong>✓ Onvio autorizado com sucesso.</strong><div class="muted">Agora selecione a empresa do Portal e teste a conexão.</div>':'<strong>Não foi possível concluir a autorização.</strong><div class="muted">'+esc(params.get('onvio_msg')||'Tente novamente.')+'</div>'}
+   params.delete('onvio');params.delete('onvio_msg');history.replaceState({},'',location.pathname+(params.toString()?'?'+params.toString():'')+location.hash);
+  }
+  if(msg){
+   if(status==='connected')msg.textContent='OAuth conectado. Falta apenas a Thomson Reuters liberar/confirmar o acesso de leitura aos documentos do Client Center para ativarmos a cópia automática.';
+   else if(status==='error')msg.textContent=integration.last_error||'Falha na integração.';
+   else msg.textContent='';
+  }
+ }catch(e){
+  if(pill){pill.className='pill danger';pill.textContent='Erro'}
+  if(msg)msg.textContent=e.message||String(e);
+ }
+}
+async function saveOnvioCredentialsUi(){
+ const id=$('#onvioClientId').value.trim(),secret=$('#onvioClientSecret').value.trim(),m=$('#onvioCredentialsMsg'),b=$('#saveOnvioCredentials');
+ if(!id||!secret){m.textContent='Informe client_id e client_secret.';return}
+ try{b.disabled=true;m.textContent='Salvando com segurança...';await onvioInvoke('save_credentials',{client_id:id,client_secret:secret});$('#onvioClientSecret').value='';m.textContent='Credenciais salvas. Agora clique em CONECTAR ONVIO.';await loadIntegrations()}catch(e){m.textContent=e.message||String(e)}finally{b.disabled=false}
+}
+async function connectOnvioUi(){
+ const m=$('#onvioConnectionMsg'),b=$('#connectOnvioBtn');
+ try{b.disabled=true;m.textContent='Preparando autorização...';const r=await onvioInvoke('connect');if(!r.authorize_url)throw new Error('Link de autorização não recebido.');location.href=r.authorize_url}catch(e){m.textContent=e.message||String(e);b.disabled=false}
+}
+async function testOnvioUi(){
+ const m=$('#onvioConnectionMsg'),b=$('#testOnvioBtn');
+ try{b.disabled=true;m.textContent='Testando acesso oficial ao Onvio...';const r=await onvioInvoke('test');m.textContent='Conexão OAuth confirmada. '+(r.clients?.length||0)+' empresa(s) acessível(is) encontradas.';await loadIntegrations()}catch(e){m.textContent=e.message||String(e)}finally{b.disabled=false}
+}
+async function saveOnvioClientUi(){
+ const sel=$('#onvioClientSelect'),id=sel.value,opt=sel.options[sel.selectedIndex],name=opt?.dataset?.name||opt?.textContent||'',m=$('#onvioConnectionMsg');
+ if(!id){m.textContent='Selecione a empresa do Portal.';return}
+ try{await onvioInvoke('select_client',{external_account_id:id,external_account_name:name});m.textContent='Empresa do Onvio vinculada.';await loadIntegrations()}catch(e){m.textContent=e.message||String(e)}
+}
 let smartAlertsCache=[];
 function daysUntil(dateStr){if(!dateStr)return null;const a=new Date();a.setHours(0,0,0,0);const d=new Date(String(dateStr).slice(0,10)+'T00:00:00');return Math.ceil((d-a)/86400000)}
 function alertRank(a){return a.level==='danger'?0:a.level==='warn'?1:2}
@@ -4327,6 +4549,7 @@ async function v2Go(tab){
    else if(tab==='financeiro') await loadFinance();
    else if(tab==='relatorios') await loadReports();
    else if(tab==='alertas') await loadSmartAlerts();
+   else if(tab==='integracoes') await loadIntegrations();
    else if(tab==='ponto'){await loadSchedules();if(deviceMode)await loadTeamPoint();else await loadRHPoint();}
  }catch(e){console.warn('Falha ao carregar tela',tab,e)}
 }
@@ -4364,6 +4587,15 @@ document.addEventListener('click',async function(e){
   if(e.target.closest('#deleteVehicleDoc')){e.preventDefault();await deleteVehicleDocument();return}
   if(e.target.closest('#refreshVehicleDocs')){e.preventDefault();await loadVehicleDocs(document.getElementById('editVehicleId')?.value||'');return}
   if(e.target.closest('#refreshAlerts')){e.preventDefault();await loadSmartAlerts();return}
+  if(e.target.closest('#refreshIntegrations')){e.preventDefault();await loadIntegrations();return}
+  if(e.target.closest('#saveOnvioCredentials')){e.preventDefault();await saveOnvioCredentialsUi();return}
+  if(e.target.closest('#connectOnvioBtn')){e.preventDefault();await connectOnvioUi();return}
+  if(e.target.closest('#testOnvioBtn')){e.preventDefault();await testOnvioUi();return}
+  if(e.target.closest('#saveOnvioClientBtn')){e.preventDefault();await saveOnvioClientUi();return}
+  if(e.target.closest('#disconnectOnvioBtn')){e.preventDefault();if(!confirm('Desconectar o Onvio desta empresa? Os documentos já copiados serão preservados.'))return;await onvioInvoke('disconnect');await loadIntegrations();return}
+  if(e.target.closest('#copyOnvioCallback')){e.preventDefault();const t=$('#onvioCallbackUrl')?.textContent||'';await navigator.clipboard.writeText(t);e.target.closest('button').textContent='COPIADO ✓';setTimeout(()=>e.target.closest('button').textContent='COPIAR',1200);return}
+  if(e.target.closest('#copyOnvioRequest')){e.preventDefault();const t=onvioRequestText($('#onvioCallbackUrl')?.textContent||'');await navigator.clipboard.writeText(t);e.target.closest('button').textContent='COPIADO ✓';setTimeout(()=>e.target.closest('button').textContent='COPIAR SOLICITAÇÃO',1200);return}
+
   if(e.target.closest('#newEmpDocBtn')){e.preventDefault();openEmpDoc();return}
   if(e.target.closest('#cancelEmpDoc')){e.preventDefault();document.getElementById('empDocEditCard').style.display='none';return}
   if(e.target.closest('#saveEmpDoc')){e.preventDefault();await saveEmpDoc();return}
@@ -4448,7 +4680,7 @@ setInterval(()=>{
 },60000);
 if('serviceWorker' in navigator){
  window.addEventListener('load',()=>{
-  navigator.serviceWorker.register('./sw-v6-52.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
+  navigator.serviceWorker.register('./sw-v6-53.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
  });
 }
 
