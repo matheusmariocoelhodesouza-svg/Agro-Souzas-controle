@@ -8,7 +8,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
-<title>Comando 360 • v6.63</title>
+<title>Comando 360 • v6.64</title>
 <link rel="manifest" href="./comando360.webmanifest"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
@@ -725,13 +725,568 @@ body.device-mode .po-actions .btn{width:100%;min-height:47px}
 }
 
 .truck-barn-checks{display:grid;gap:7px;margin-top:5px}.truck-cata-row{display:grid;grid-template-columns:minmax(90px,1fr) minmax(110px,1fr) auto;gap:7px;align-items:center;padding:8px;border:1px solid #dbe4ee;border-radius:10px;background:#fff}.truck-cata-row input{margin:0!important;min-width:0}.truck-cata-remove{padding:7px 10px!important;min-width:38px}@media(max-width:520px){.truck-cata-row{grid-template-columns:1fr 1fr auto}}
+
+/* =========================================================
+   6.64 — COMANDO 360 • DESIGN SYSTEM PROFISSIONAL GLOBAL
+   ========================================================= */
+:root{
+ --c360-bg:#f4f7fb;
+ --c360-surface:#ffffff;
+ --c360-surface-2:#f8fafc;
+ --c360-ink:#13253d;
+ --c360-muted:#6c7f98;
+ --c360-line:#e2e9f2;
+ --c360-navy:#102b51;
+ --c360-navy-2:#0b1f3b;
+ --c360-blue:#1f68c9;
+ --c360-blue-soft:#eaf3ff;
+ --c360-green:#159a58;
+ --c360-green-soft:#e9f8f0;
+ --c360-amber:#d99308;
+ --c360-amber-soft:#fff6e4;
+ --c360-red:#c93840;
+ --c360-red-soft:#fff0f1;
+ --c360-shadow:0 6px 22px rgba(18,46,78,.055);
+ --c360-shadow-hover:0 10px 28px rgba(18,46,78,.09);
+ --c360-radius:16px;
+}
+html{background:var(--c360-bg)}
+body{
+ background:
+  radial-gradient(circle at 85% -10%,rgba(31,104,201,.055),transparent 26%),
+  var(--c360-bg);
+ color:var(--c360-ink);
+ font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+ font-size:14px;
+}
+
+/* Navegação principal */
+body.app-ready:not(.device-mode) .v2sidebar{
+ width:232px;
+ background:linear-gradient(180deg,#0d203c 0%,#0a1a31 100%);
+ border-right:1px solid rgba(255,255,255,.045);
+ padding:16px 11px 20px;
+ box-shadow:10px 0 30px rgba(10,26,49,.06);
+}
+body.app-ready:not(.device-mode) .v2logo{
+ padding:7px 9px 19px;
+ margin-bottom:10px;
+ border-bottom:1px solid rgba(255,255,255,.075);
+}
+body.app-ready:not(.device-mode) .v2brandicon{
+ width:42px;height:42px;border-radius:13px;
+ filter:drop-shadow(0 5px 10px rgba(0,0,0,.16));
+}
+body.app-ready:not(.device-mode) .v2logo strong{
+ font-size:15px;
+ letter-spacing:.1px;
+}
+body.app-ready:not(.device-mode) .v2logo strong span{color:#68a8ff}
+body.app-ready:not(.device-mode) .v2logo small{
+ color:#7f96b4;
+ font-size:8.5px;
+ letter-spacing:.55px;
+}
+body.app-ready:not(.device-mode) .v2group{
+ color:#637b9c;
+ font-size:9px;
+ letter-spacing:1.35px;
+ padding:15px 11px 6px;
+}
+body.app-ready:not(.device-mode) .v2navbtn{
+ position:relative;
+ color:#c7d4e6;
+ min-height:40px;
+ padding:10px 11px;
+ border-radius:10px;
+ margin:2px 0;
+ font-size:12px;
+ font-weight:720;
+ letter-spacing:.05px;
+ transition:background .15s ease,color .15s ease,transform .15s ease;
+}
+body.app-ready:not(.device-mode) .v2navbtn:hover{
+ background:rgba(255,255,255,.065);
+ color:#fff;
+ transform:translateX(1px);
+}
+body.app-ready:not(.device-mode) .v2navbtn.active{
+ background:linear-gradient(135deg,#1f68c9,#1959ad);
+ color:#fff;
+ box-shadow:0 6px 14px rgba(19,86,170,.26);
+}
+
+/* Barra superior */
+body.app-ready:not(.device-mode) header{
+ margin-left:232px;
+ width:calc(100% - 232px);
+ min-height:66px;
+ padding:10px 20px;
+ background:rgba(255,255,255,.96);
+ backdrop-filter:blur(12px);
+ border-bottom:1px solid var(--c360-line);
+ box-shadow:0 2px 12px rgba(18,46,78,.035);
+}
+body.app-ready:not(.device-mode) #app{padding-left:232px}
+body.app-ready:not(.device-mode) header .brand{
+ gap:10px;
+}
+body.app-ready:not(.device-mode) .header-brand-icon{
+ width:37px;height:37px;border-radius:11px;
+}
+body.app-ready:not(.device-mode) header .brand b{
+ color:#112947;
+ font-size:15px;
+}
+body.app-ready:not(.device-mode) header .brand360{color:#1e68c9}
+body.app-ready:not(.device-mode) header #companyName{
+ color:#7a8ca3;
+ font-size:10px;
+}
+body.app-ready:not(.device-mode) .v2topmeta{gap:8px}
+body.app-ready:not(.device-mode) .v2date{
+ padding-right:8px;
+ color:#8191a6;
+}
+body.app-ready:not(.device-mode) .v2date b{color:#263c58}
+body.app-ready:not(.device-mode) #themeToggle,
+body.app-ready:not(.device-mode) #logout{
+ min-width:38px;
+ min-height:36px;
+ border-radius:10px;
+}
+
+/* Área principal */
+body.app-ready:not(.device-mode) .wrap{
+ max-width:1680px;
+ margin:0 auto;
+ padding:21px 22px 30px;
+}
+body.app-ready:not(.device-mode) #screenHost>[data-screen]{
+ animation:c360ScreenIn .16s ease-out;
+}
+@keyframes c360ScreenIn{
+ from{opacity:.72;transform:translateY(3px)}
+ to{opacity:1;transform:none}
+}
+
+/* Heróis / cabeçalhos de módulo */
+body.app-ready:not(.device-mode) .v2hero{
+ margin:0 0 17px;
+ padding:3px 2px;
+ align-items:center;
+}
+body.app-ready:not(.device-mode) .v2hero h1{
+ color:#112641;
+ font-size:28px;
+ letter-spacing:-.55px;
+ font-weight:900;
+ line-height:1.1;
+}
+body.app-ready:not(.device-mode) .v2hero p{
+ color:#72839a;
+ font-size:12px;
+ line-height:1.45;
+}
+body.app-ready:not(.device-mode) .dashboard-eyebrow{
+ color:#2b67ad;
+ font-size:9px;
+ letter-spacing:1.35px;
+ font-weight:900;
+ margin-bottom:5px;
+}
+
+/* Cards e painéis */
+body.app-ready:not(.device-mode) #screenHost .card,
+body.app-ready:not(.device-mode) #screenHost .v2panel,
+body.app-ready:not(.device-mode) .offline-sync-box{
+ background:var(--c360-surface);
+ border:1px solid var(--c360-line);
+ border-radius:var(--c360-radius);
+ box-shadow:var(--c360-shadow);
+}
+body.app-ready:not(.device-mode) #screenHost .card{
+ padding:17px;
+ margin-bottom:13px;
+}
+body.app-ready:not(.device-mode) #screenHost .v2panel{
+ padding:16px;
+ margin-bottom:13px;
+}
+body.app-ready:not(.device-mode) #screenHost .v2panelhead{
+ min-height:38px;
+ margin-bottom:11px;
+}
+body.app-ready:not(.device-mode) #screenHost .v2panel h3,
+body.app-ready:not(.device-mode) #screenHost .card h3{
+ color:#172c48;
+ font-size:15px;
+ font-weight:900;
+ letter-spacing:-.12px;
+}
+body.app-ready:not(.device-mode) #screenHost .card>.toolbar:first-child{
+ gap:12px;
+}
+body.app-ready:not(.device-mode) #screenHost .card>.toolbar:first-child>div>.muted,
+body.app-ready:not(.device-mode) #screenHost .v2panelhead .muted{
+ margin-top:3px;
+ line-height:1.4;
+}
+
+/* Cards que funcionam como cabeçalho de módulos */
+body.app-ready:not(.device-mode) #manutencoes>.card:first-child,
+body.app-ready:not(.device-mode) #combustivel>.card:first-child,
+body.app-ready:not(.device-mode) #documentosrh>.card:first-child,
+body.app-ready:not(.device-mode) #financeiro>.card:first-child,
+body.app-ready:not(.device-mode) #alertas>.card:first-child{
+ padding:18px 19px;
+ border-color:#dfe7f1;
+}
+body.app-ready:not(.device-mode) #manutencoes>.card:first-child h3,
+body.app-ready:not(.device-mode) #combustivel>.card:first-child h3,
+body.app-ready:not(.device-mode) #documentosrh>.card:first-child h3,
+body.app-ready:not(.device-mode) #financeiro>.card:first-child h3,
+body.app-ready:not(.device-mode) #alertas>.card:first-child h3{
+ font-size:20px;
+ color:#122a47;
+}
+
+/* KPIs */
+body.app-ready:not(.device-mode) #screenHost .v2-kpis{
+ gap:11px;
+ margin-bottom:14px;
+}
+body.app-ready:not(.device-mode) #screenHost .v2kpi,
+body.app-ready:not(.device-mode) #screenHost .rh-kpi-card,
+body.app-ready:not(.device-mode) #screenHost .team-report-kpi{
+ background:#fff;
+ border:1px solid var(--c360-line);
+ border-radius:15px;
+ box-shadow:0 4px 14px rgba(18,46,78,.035);
+ min-height:100px;
+ padding:15px;
+}
+body.app-ready:not(.device-mode) #screenHost .v2kpi:hover,
+body.app-ready:not(.device-mode) #screenHost .rh-kpi-card:hover{
+ border-color:#d3deeb;
+}
+body.app-ready:not(.device-mode) #screenHost .v2kpi .v,
+body.app-ready:not(.device-mode) #screenHost .v2kpi strong,
+body.app-ready:not(.device-mode) #screenHost .rh-kpi-card .kpi{
+ color:#152c49!important;
+ font-weight:930;
+ letter-spacing:-.4px;
+}
+body.app-ready:not(.device-mode) #screenHost .v2kpi .t,
+body.app-ready:not(.device-mode) #screenHost .v2kpi span,
+body.app-ready:not(.device-mode) #screenHost .rh-kpi-card .label{
+ color:#71839b;
+ font-weight:750;
+}
+
+/* Listas e linhas */
+body.app-ready:not(.device-mode) #screenHost .list{gap:8px}
+body.app-ready:not(.device-mode) #screenHost .item{
+ background:#fff;
+ border:1px solid #e3eaf2;
+ border-radius:13px;
+ padding:12px 13px;
+ box-shadow:none;
+ transition:border-color .14s ease,box-shadow .14s ease,transform .14s ease;
+}
+body.app-ready:not(.device-mode) #screenHost .item:hover{
+ border-color:#cfdbe8;
+ box-shadow:0 5px 15px rgba(18,46,78,.045);
+}
+body.app-ready:not(.device-mode) #screenHost .item>strong,
+body.app-ready:not(.device-mode) #screenHost .item .toolbar strong{
+ color:#1a304c;
+ font-weight:850;
+}
+body.app-ready:not(.device-mode) .muted{
+ color:#71839a;
+}
+
+/* Botões */
+.btn{
+ border-radius:10px;
+ min-height:38px;
+ padding:9px 13px;
+ font-size:11px;
+ font-weight:800;
+ letter-spacing:.05px;
+ transition:transform .12s ease,box-shadow .12s ease,background .12s ease,border-color .12s ease;
+}
+.btn:hover{transform:translateY(-1px)}
+.btn:active{transform:none}
+.btn.primary,
+.nav button.active{
+ background:linear-gradient(135deg,#163d70,#102b51);
+ color:#fff;
+ border:1px solid #102b51;
+ box-shadow:0 4px 12px rgba(16,43,81,.12);
+}
+.btn.primary:hover{box-shadow:0 7px 16px rgba(16,43,81,.18)}
+.btn.soft{
+ background:#f0f4f8;
+ color:#294561;
+ border:1px solid #dde5ee;
+}
+.btn.soft:hover{
+ background:#e8eef5;
+ border-color:#d1dce8;
+}
+.btn.danger{
+ background:#c93c43;
+ border:1px solid #c93c43;
+ color:#fff;
+}
+.btn.danger:hover{background:#b83239}
+
+/* Campos */
+body.app-ready:not(.device-mode) #screenHost label,
+body.app-ready:not(.device-mode) .offline-sync-box label{
+ color:#5e718a;
+ font-size:10.5px;
+ font-weight:850;
+ letter-spacing:.05px;
+}
+body.app-ready:not(.device-mode) #screenHost input:not([type="checkbox"]):not([type="radio"]),
+body.app-ready:not(.device-mode) #screenHost select,
+body.app-ready:not(.device-mode) #screenHost textarea,
+body.app-ready:not(.device-mode) .offline-sync-box input,
+body.app-ready:not(.device-mode) .offline-sync-box select{
+ border:1px solid #d7e1ec;
+ border-radius:10px;
+ background:#fff;
+ color:#1b334f;
+ min-height:42px;
+ padding:10px 11px;
+ box-shadow:inset 0 1px 1px rgba(17,38,65,.015);
+}
+body.app-ready:not(.device-mode) #screenHost input:focus,
+body.app-ready:not(.device-mode) #screenHost select:focus,
+body.app-ready:not(.device-mode) #screenHost textarea:focus{
+ outline:3px solid rgba(31,104,201,.10);
+ border-color:#7ca9de;
+}
+body.app-ready:not(.device-mode) #screenHost input[readonly]{
+ background:#f5f7fa;
+ color:#536a84;
+}
+body.app-ready:not(.device-mode) #screenHost textarea{line-height:1.45}
+body.app-ready:not(.device-mode) #screenHost .row{
+ gap:11px;
+}
+
+/* Pills / estados */
+.pill{
+ border-radius:999px;
+ padding:4px 8px;
+ font-size:9.5px;
+ font-weight:850;
+ border:1px solid transparent;
+ letter-spacing:.03px;
+}
+.pill.ok{background:var(--c360-green-soft);color:#167246;border-color:#d7f0e2}
+.pill.warn{background:var(--c360-amber-soft);color:#92620a;border-color:#f5e7be}
+.pill.danger{background:var(--c360-red-soft);color:#9f2930;border-color:#f2d9db}
+#networkBadge.online{background:#eaf8f0;color:#147044;border:1px solid #d6efdf}
+
+/* Tabelas */
+body.app-ready:not(.device-mode) #screenHost table{
+ width:100%;
+ border-collapse:separate;
+ border-spacing:0;
+ border:1px solid var(--c360-line);
+ border-radius:12px;
+ overflow:hidden;
+ background:#fff;
+}
+body.app-ready:not(.device-mode) #screenHost th{
+ background:#f5f8fb;
+ color:#536b86;
+ font-size:9.5px;
+ text-transform:uppercase;
+ letter-spacing:.45px;
+ font-weight:900;
+ padding:10px 11px;
+ border-bottom:1px solid var(--c360-line);
+}
+body.app-ready:not(.device-mode) #screenHost td{
+ color:#2b4059;
+ font-size:11px;
+ padding:10px 11px;
+ border-bottom:1px solid #edf1f6;
+}
+body.app-ready:not(.device-mode) #screenHost tr:last-child td{border-bottom:0}
+
+/* Details / ferramentas RH */
+body.app-ready:not(.device-mode) #screenHost details.card{
+ padding:0;
+ overflow:hidden;
+}
+body.app-ready:not(.device-mode) #screenHost details.card>summary{
+ list-style:none;
+ cursor:pointer;
+ padding:15px 17px;
+ background:#fff;
+ display:flex;
+ justify-content:space-between;
+ gap:10px;
+ align-items:center;
+ color:#1b324e;
+ font-weight:850;
+}
+body.app-ready:not(.device-mode) #screenHost details.card>summary::-webkit-details-marker{display:none}
+body.app-ready:not(.device-mode) #screenHost details.card[open]>summary{
+ border-bottom:1px solid var(--c360-line);
+ background:#fbfcfe;
+}
+
+/* Forms/editors ficam visualmente separados da listagem */
+body.app-ready:not(.device-mode) #screenHost [id$="EditCard"][style*="display:none"],
+body.app-ready:not(.device-mode) #screenHost [id$="EditCard"][style*="display: none"]{
+ box-shadow:none;
+}
+body.app-ready:not(.device-mode) #screenHost #maintenanceEditCard,
+body.app-ready:not(.device-mode) #screenHost #fuelEditCard,
+body.app-ready:not(.device-mode) #screenHost #kmEditCard,
+body.app-ready:not(.device-mode) #screenHost #empDocEditCard,
+body.app-ready:not(.device-mode) #screenHost #finEditCard,
+body.app-ready:not(.device-mode) #screenHost #vehicleEditCard,
+body.app-ready:not(.device-mode) #screenHost #employeeEditCard{
+ border-top:3px solid #1f68c9;
+}
+
+/* Login administrativo / ativação */
+body:not(.app-ready) .wrap{max-width:100%;padding:20px}
+body:not(.app-ready) .team-entry{max-width:470px;margin:7vh auto}
+body:not(.app-ready) .team-entry .card{
+ border:1px solid #dce5ef;
+ border-radius:20px;
+ box-shadow:0 16px 45px rgba(13,32,60,.10);
+ padding:24px;
+}
+body:not(.app-ready) .team-entry-title h2,
+body:not(.app-ready) .admin-brand h2{
+ color:#132a47;
+ letter-spacing:-.4px;
+}
+body:not(.app-ready) .team-code-input{
+ border-radius:13px;
+ border-color:#cbd8e7;
+ background:#f9fbfd;
+}
+body:not(.app-ready) .team-entry .btn{min-height:44px}
+
+/* Modo campo — visual mais limpo e tocável */
+body.device-mode{
+ background:#f3f6fa;
+}
+body.device-mode header{
+ background:#fff;
+ border-bottom:1px solid #e1e8f1;
+ box-shadow:none;
+}
+body.device-mode .wrap{padding:10px}
+body.device-mode .team-mode-bar{
+ border-radius:14px;
+ border:1px solid #dce5ee;
+ box-shadow:0 4px 14px rgba(18,46,78,.04);
+}
+body.device-mode .team-home-head{
+ background:linear-gradient(135deg,#0e2a4e,#1855a0);
+ border-radius:19px;
+ box-shadow:0 10px 26px rgba(16,43,81,.16);
+}
+body.device-mode .team-tile{
+ border:1px solid #dde6ef;
+ border-radius:18px;
+ box-shadow:0 6px 17px rgba(18,46,78,.05);
+ min-height:142px;
+}
+body.device-mode .team-tile:hover{border-color:#c8d7e7}
+body.device-mode #screenHost .card,
+body.device-mode #screenHost .v2panel{
+ border-radius:16px;
+ border-color:#dfe7f0;
+ box-shadow:0 5px 17px rgba(18,46,78,.04);
+}
+
+/* Dark mode atualizado */
+.darkmode{
+ --c360-bg:#081322;
+ --c360-surface:#0f1d2e;
+ --c360-surface-2:#0b1828;
+ --c360-ink:#e9f0f9;
+ --c360-muted:#90a3ba;
+ --c360-line:#20334a;
+ background:#081322!important;
+ color:#e9f0f9;
+}
+.darkmode body{background:#081322!important}
+.darkmode #screenHost .card,
+.darkmode #screenHost .v2panel,
+.darkmode #screenHost .v2kpi,
+.darkmode #screenHost .item{
+ background:#0f1d2e!important;
+ border-color:#20334a!important;
+ color:#e9f0f9!important;
+}
+.darkmode #screenHost h1,
+.darkmode #screenHost h2,
+.darkmode #screenHost h3,
+.darkmode #screenHost strong{color:#edf4fd!important}
+.darkmode #screenHost input,
+.darkmode #screenHost select,
+.darkmode #screenHost textarea{
+ background:#0b1828!important;
+ border-color:#2a3d55!important;
+ color:#e9f0f9!important;
+}
+.darkmode #screenHost th{background:#0b1828!important;color:#9fb2c8!important}
+.darkmode #screenHost td{color:#c6d4e4!important;border-color:#1d2e43!important}
+.darkmode #screenHost table{background:#0f1d2e!important;border-color:#20334a!important}
+.darkmode #screenHost details.card>summary{background:#0f1d2e!important;color:#e9f0f9!important}
+.darkmode #screenHost details.card[open]>summary{background:#0b1828!important}
+
+/* Responsividade global */
+@media(min-width:901px) and (max-width:1180px){
+ body.app-ready:not(.device-mode) .v2sidebar{width:202px}
+ body.app-ready:not(.device-mode) header{margin-left:202px;width:calc(100% - 202px)}
+ body.app-ready:not(.device-mode) #app{padding-left:202px}
+ body.app-ready:not(.device-mode) .wrap{padding:16px}
+}
+@media(max-width:900px){
+ body.app-ready:not(.device-mode) header{
+  margin-left:0;
+  width:100%;
+  min-height:60px;
+  padding:9px 11px;
+ }
+ body.app-ready:not(.device-mode) #app{padding-left:0}
+ body.app-ready:not(.device-mode) .wrap{padding:10px}
+ body.app-ready:not(.device-mode) #screenHost .card{padding:14px}
+ body.app-ready:not(.device-mode) .v2hero h1{font-size:23px}
+ .v2topmeta{gap:5px}
+ #buildBadge{display:none}
+}
+@media(max-width:640px){
+ body.app-ready:not(.device-mode) header .brand small{display:none}
+ body.app-ready:not(.device-mode) #screenHost .card>.toolbar:first-child{
+  align-items:flex-start;
+ }
+ body.app-ready:not(.device-mode) #screenHost .v2panel{padding:13px}
+ .btn{min-height:41px}
+}
 </style>
 <script defer="" src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"></script>
 <script>
 (function(){
-  const BUILD='6.63';
+  const BUILD='6.64';
   try{
     const marker='controla_cache_cleanup_'+BUILD;
     if(!localStorage.getItem(marker)){
@@ -765,7 +1320,7 @@ body.device-mode .po-actions .btn{width:100%;min-height:47px}
 <div class="v2group">INTELIGÊNCIA</div>
 <button class="v2navbtn" data-v2tab="ia">✦   Assistente IA</button>
 </aside>
-<header><div class="brand"><img class="header-brand-icon" src="./comando360-icon.svg" alt="Comando 360"/><div><b>Comando <span class="brand360">360</span></b><div><small id="companyName">Empresa</small></div></div></div><div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.55</span><button class="btn soft" id="themeToggle" type="button">☾</button><button class="btn soft hidden" id="logout">Sair</button></div></header>
+<header><div class="brand"><img class="header-brand-icon" src="./comando360-icon.svg" alt="Comando 360"/><div><b>Comando <span class="brand360">360</span></b><div><small id="companyName">Empresa</small></div></div></div><div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.64</span><button class="btn soft" id="themeToggle" type="button">☾</button><button class="btn soft hidden" id="logout">Sair</button></div></header>
 <main class="wrap">
 <section class="login team-entry" id="login">
 <div class="card" id="deviceSetupCard">
@@ -782,7 +1337,7 @@ body.device-mode .po-actions .btn{width:100%;min-height:47px}
  <label>Senha</label><input autocomplete="current-password" id="password" type="password"/>
  <button class="btn primary" id="loginBtn">Entrar</button>
  <button class="btn soft" id="backDeviceSetup" type="button" style="margin-left:6px">Voltar</button>
- <div class="muted" id="loginMsg" style="margin-top:10px">Comando 360 • v6.55</div><div class="debug" id="debug"></div>
+ <div class="muted" id="loginMsg" style="margin-top:10px">Comando 360 • v6.64</div><div class="debug" id="debug"></div>
 </div>
 </section>
 <section class="hidden" id="app">
@@ -6075,7 +6630,7 @@ setInterval(()=>{
 },60000);
 if('serviceWorker' in navigator){
  window.addEventListener('load',()=>{
-  navigator.serviceWorker.register('./sw-v6-63.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
+  navigator.serviceWorker.register('./sw-v6-64.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
  });
 }
 
