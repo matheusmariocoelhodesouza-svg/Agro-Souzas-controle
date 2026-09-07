@@ -8,7 +8,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
-<title>Comando 360 • v6.79</title>
+<title>Comando 360 • v6.80</title>
 <link rel="manifest" href="./comando360.webmanifest"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
@@ -1516,7 +1516,7 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
  *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
 }
 
-/* 6.79 — Rastreamento MOVIT */
+/* 6.80 — Rastreamento MOVIT */
 .tracking-hero{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;margin-bottom:16px}
 .tracking-hero h1{margin:0;font-size:27px;color:#10233f}.tracking-hero p{margin:5px 0 0;color:#6b7d95;font-size:13px}
 .tracking-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:14px}
@@ -1532,7 +1532,7 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
 .darkmode .tracking-kpi,.darkmode .tracking-card{background:#101c2e;border-color:#203047}.darkmode .tracking-hero h1,.darkmode .tracking-kpi strong,.darkmode .tracking-card-main strong{color:#e7eef9}.darkmode .movit-security-note{background:#0d1b2e;border-color:#26394f;color:#9fb3cb}
 @media(max-width:1050px){.tracking-card{grid-template-columns:1fr 1fr}.tracking-actions{grid-column:1/-1;justify-content:flex-start}}
 @media(max-width:700px){.tracking-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.tracking-card{grid-template-columns:1fr}.tracking-actions{grid-column:auto}.tracking-hero{flex-direction:column}.tracking-hero .btn{width:100%}}
-/* 6.79 — Google Maps + rastreamento da frota */
+/* 6.80 — Google Maps + rastreamento da frota */
 .tracking-map-card{overflow:hidden}.tracking-map-head{padding-bottom:4px}
 .tracking-map-wrap{position:relative;margin-top:14px;border:1px solid #dce6f1;border-radius:18px;overflow:hidden;background:#eaf0f6}
 #movitMap{height:430px;width:100%;position:relative;overflow:hidden;background:#e8eef5}
@@ -1554,9 +1554,9 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
 .tracking-map-legend span{display:flex;align-items:center;gap:5px}.tracking-map-legend i{width:9px;height:9px;border-radius:50%;display:inline-block;background:#64748b}.tracking-map-legend i.move{background:#1976d2}.tracking-map-legend i.on{background:#16a34a}.tracking-map-legend i.stale{background:#d97706}
 .darkmode .tracking-map-wrap{border-color:#25384f;background:#0d1726}.darkmode .tracking-map-legend,.darkmode .google-map-provider,.darkmode .google-map-info{background:rgba(15,27,44,.95);border-color:#2a3b51;color:#a9bad0}.darkmode .google-map-controls button{background:rgba(15,27,44,.96);border-color:#2a3b51;color:#e8f1fb}.darkmode .google-fleet-marker .map-label{background:rgba(15,27,44,.96);border-color:#2a3b51;color:#e5eef9}.darkmode .google-map-info strong{color:#eef4fd}
 @media(max-width:700px){#movitMap{height:365px}.tracking-map-head{gap:10px}.tracking-map-head>.toolbar{width:100%}.tracking-map-head>.toolbar .btn{flex:1}.tracking-map-legend{left:8px;right:8px;bottom:8px;justify-content:center}.google-fleet-marker .map-label{max-width:120px}.google-map-info{top:8px;right:8px;width:calc(100% - 16px)}}
-/* 6.79 — rota até a condução */
+/* 6.80 — rota até a condução */
 
-/* 6.79 — relatório de abastecimento por condução */
+/* 6.80 — relatório de abastecimento por condução */
 .fuel-report-vehicle{border:1px solid #e1e8f0;border-radius:14px;overflow:hidden;background:#fff;margin-bottom:10px}
 .fuel-report-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;padding:12px 13px;background:#f7f9fc;border-bottom:1px solid #e4eaf2}
 .fuel-report-head strong{font-size:14px;color:#16304e}.fuel-report-head .plate{display:inline-block;margin-left:6px;padding:2px 6px;border-radius:6px;background:#eaf2fb;font-size:10px;font-weight:900;color:#27517e}
@@ -1565,7 +1565,7 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
 .fuel-report-table{width:100%;border-collapse:collapse;font-size:10.5px}.fuel-report-table th,.fuel-report-table td{padding:7px 8px;border-top:1px solid #edf1f5;text-align:left}.fuel-report-table th{font-size:9px;color:#708399;background:#fbfcfe}.fuel-report-table td.num{text-align:right;font-variant-numeric:tabular-nums}
 .darkmode .fuel-report-vehicle{background:#101c2e;border-color:#26374b}.darkmode .fuel-report-head{background:#0d1828;border-color:#26374b}.darkmode .fuel-report-head strong,.darkmode .fuel-report-total b{color:#e8f0fa}.darkmode .fuel-report-total{border-color:#26374b}.darkmode .fuel-report-table th{background:#0d1828;color:#8fa4bc}.darkmode .fuel-report-table th,.darkmode .fuel-report-table td{border-color:#26374b}
 @media(max-width:700px){.fuel-report-totals{grid-template-columns:1fr 1fr}.fuel-report-table{font-size:9.5px}.fuel-report-table th,.fuel-report-table td{padding:6px 5px}.fuel-report-head{flex-direction:column}}
-/* 6.79 — identificação e gestão de celulares de campo */
+/* 6.80 — identificação e gestão de celulares de campo */
 .device-admin-card{border:1px solid #dde6f0;border-radius:16px;padding:13px;background:#fff;margin-bottom:10px}
 .device-admin-main{display:flex;justify-content:space-between;gap:14px;align-items:flex-start}
 .device-admin-title{display:flex;align-items:center;gap:9px;flex-wrap:wrap}.device-admin-title strong{font-size:15px;color:#173451}
@@ -1597,7 +1597,7 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
 <script defer src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"></script>
 <script>
 (function(){
-  const BUILD='6.79';
+  const BUILD='6.80';
   try{
     const marker='controla_cache_cleanup_'+BUILD;
     if(!localStorage.getItem(marker)){
@@ -1662,7 +1662,7 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
   <div class="brand"><img class="header-brand-icon" src="./comando360-icon.svg" alt="Comando 360"/><div><b>Comando <span class="brand360">360</span></b><div><small id="companyName">Empresa</small></div></div></div>
  </div>
  <div class="header-module" id="headerModule"><span id="headerModuleTitle">Painel Geral</span><small id="headerModuleSubtitle">Central de gestão</small></div>
- <div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.79</span><button class="btn soft" id="themeToggle" type="button" aria-label="Alternar tema">☾</button><button class="btn soft hidden" id="logout">Sair</button></div>
+ <div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.80</span><button class="btn soft" id="themeToggle" type="button" aria-label="Alternar tema">☾</button><button class="btn soft hidden" id="logout">Sair</button></div>
 </header>
 <main class="wrap">
 <section class="login team-entry" id="login">
@@ -1680,7 +1680,7 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
  <label>Senha</label><input autocomplete="current-password" id="password" type="password"/>
  <button class="btn primary" id="loginBtn">Entrar</button>
  <button class="btn soft" id="backDeviceSetup" type="button" style="margin-left:6px">Voltar</button>
- <div class="muted" id="loginMsg" style="margin-top:10px">Comando 360 • v6.79</div><div class="debug" id="debug"></div>
+ <div class="muted" id="loginMsg" style="margin-top:10px">Comando 360 • v6.80</div><div class="debug" id="debug"></div>
 </div>
 </section>
 <section class="hidden" id="app">
@@ -2575,7 +2575,15 @@ function applyDeviceUi(){
  document.body.classList.add('device-mode');
  const logout=document.getElementById('logout');if(logout){logout.textContent='Trocar equipe';logout.classList.remove('hidden')}
  if(typeof setPointMethod==='function')setPointMethod('employee_number');
- const monthly=document.getElementById('monthlyEmployee');if(monthly&&monthly.closest('.card'))monthly.closest('.card').style.display='none';
+
+ // No celular de campo mostramos apenas o necessário para registrar e conferir as batidas.
+ // Cálculos de jornada, horas extras e espelhos ficam restritos ao administrativo.
+ const hideCardById=id=>{const el=document.getElementById(id);const card=el?.closest('.card');if(card)card.style.display='none'};
+ hideCardById('pointWorked');
+ hideCardById('pointOvertime');
+ hideCardById('monthlyEmployee');
+ hideCardById('timeMirrorList');
+
  const km=document.getElementById('newKmBtn');if(km)km.style.display='none';
 }
 async function enterDeviceApp(authUser){
@@ -7414,7 +7422,7 @@ function c360SetModule(tab){
  const m=C360_MODULES[tab]||[tab,'Comando 360'];
  const t=document.getElementById('headerModuleTitle'),s=document.getElementById('headerModuleSubtitle');
  if(t)t.textContent=m[0];if(s)s.textContent=m[1];
- document.title='Comando 360 • '+m[0]+' • v6.79';
+ document.title='Comando 360 • '+m[0]+' • v6.80';
  document.querySelectorAll('#mobileBottomNav [data-mobiletab]').forEach(b=>{
   const mt=b.dataset.mobiletab;
   b.classList.toggle('active',mt===tab||(mt==='more'&&!['inicio','operacoes','ponto','frota'].includes(tab)));
@@ -7659,7 +7667,7 @@ setInterval(()=>{
 },60000);
 if('serviceWorker' in navigator){
  window.addEventListener('load',()=>{
-  navigator.serviceWorker.register('./sw-v6-79.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
+  navigator.serviceWorker.register('./sw-v6-80.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
  });
 }
 
