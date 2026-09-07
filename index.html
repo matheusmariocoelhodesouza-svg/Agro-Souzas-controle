@@ -8,7 +8,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
-<title>Comando 360 • v6.59</title>
+<title>Comando 360 • v6.60</title>
 <link rel="manifest" href="./comando360.webmanifest"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
@@ -653,7 +653,7 @@ body.device-mode .po-actions .btn{width:100%;min-height:47px}
 <script defer src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"></script>
 <script>
 (function(){
-  const BUILD='6.59';
+  const BUILD='6.60';
   try{
     const marker='controla_cache_cleanup_'+BUILD;
     if(!localStorage.getItem(marker)){
@@ -4582,7 +4582,8 @@ async function autoReadPendingFleetCrlvs(){
  for(const d of docs){
   const v=(vehicleDocsVehicles||[]).find(x=>x.id===d.vehicle_id)||(window.__fleetVehicles||[]).find(x=>x.id===d.vehicle_id);
   if(!v)continue;
-  if(licensingStatusForVehicle(v,d).confirmed)continue;
+  const parsedVersion=Number(v?.metadata?.crlv?.licensing_parse_version||0);
+  if(licensingStatusForVehicle(v,d).confirmed&&parsedVersion>=2)continue;
   const key=d.file_id+'|'+d.vehicle_id;
   if(fleetCrlvAutoReadTried.has(key))continue;
   queue.push({doc:d,vehicle:v,key});
@@ -4726,8 +4727,9 @@ async function applyParsedCrlvToVehicle(vehicleId,parsed){
   color:d.color||oldCrlv.color||null,
   fuel:d.fuel||oldCrlv.fuel||null,
   year_fabrication:Number(d.yearFab)||oldCrlv.year_fabrication||null,
-  licensing_year:year||oldCrlv.licensing_year||null,
-  licensing_year_source:year?'crlv_document':(oldCrlv.licensing_year_source||'not_confirmed'),
+  licensing_year:year||null,
+  licensing_year_source:year?(d.licensingYearSource||'crlv_document'):'not_confirmed',
+  licensing_parse_version:Number(d.licensingParseVersion||0),
   licensing_state:parsed.uf||oldCrlv.licensing_state||'SP',
   licensing_category:parsed.category||oldCrlv.licensing_category||'regular',
   document_category:d.category||oldCrlv.document_category||null,
@@ -4807,6 +4809,73 @@ async function deleteVehicleDocument(){
  const id=document.getElementById('vehicleDocId').value;if(!id||!confirm('Excluir este documento definitivamente?'))return;
  try{const d=vehicleDocsCache.find(x=>x.id===id);await rest('v2_vehicle_documents','id=eq.'+id,'DELETE');if(d?.file_id)try{await rest('v2_files','id=eq.'+d.file_id,'PATCH',{archived_at:new Date().toISOString()})}catch{}document.getElementById('vehicleDocEditCard').style.display='none';await loadVehicleDocs(d?.vehicle_id||document.getElementById('editVehicleId')?.value||'');await loadVehicles()}catch(e){alert(e.message)}
 }
+function normalizeCrlvPdfToken(value){
+ return String(value||'').toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^A-Z0-9]/g,'');
+}
+async function extractCrlvExerciseByPosition(file){
+ if(!window.pdfjsLib)return null;
+ pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+ const pdf=await pdfjsLib.getDocument({data:await file.arrayBuffer()}).promise;
+
+ for(let pageNo=1;pageNo<=pdf.numPages;pageNo++){
+  const page=await pdf.getPage(pageNo);
+  const content=await page.getTextContent();
+  const items=(content.items||[]).filter(x=>String(x.str||'').trim()).map((x,idx)=>({
+   text:String(x.str||'').trim(),
+   norm:normalizeCrlvPdfToken(x.str),
+   x:Number(x.transform?.[4]||0),
+   y:Number(x.transform?.[5]||0),
+   width:Number(x.width||0),
+   height:Number(x.height||0),
+   idx
+  }));
+
+  const rows=[];
+  for(const item of items){
+   let row=rows.find(r=>Math.abs(r.y-item.y)<=3);
+   if(!row){row={y:item.y,items:[]};rows.push(row)}
+   row.items.push(item);
+  }
+
+  for(const row of rows){
+   row.items.sort((a,b)=>a.x-b.x);
+   const rowNorm=row.items.map(x=>x.norm).join('');
+   if(!rowNorm.includes('EXERCICIO'))continue;
+
+   let exerciseItems=row.items.filter(x=>x.norm.includes('EXERC')||x.norm==='ICIO'||x.norm.includes('EXERCICIO'));
+   if(!exerciseItems.length)exerciseItems=row.items;
+
+   const minX=Math.min(...exerciseItems.map(x=>x.x));
+   const maxX=Math.max(...exerciseItems.map(x=>x.x+x.width));
+   const center=(minX+maxX)/2;
+
+   const candidates=items.filter(x=>
+    /^20\d{2}$/.test(x.norm) &&
+    x.y < row.y-1 &&
+    row.y-x.y <= 95
+   ).map(x=>{
+    const cx=x.x+(x.width||0)/2;
+    const dx=Math.abs(cx-center);
+    const dy=row.y-x.y;
+    return {...x,dx,dy,score:(dx*1.8)+dy};
+   }).filter(x=>x.dx<=150)
+     .sort((a,b)=>a.score-b.score);
+
+   if(candidates.length){
+    return {
+     licensingYear:candidates[0].norm,
+     source:'pdf_position',
+     page:pageNo,
+     headerY:row.y,
+     valueY:candidates[0].y,
+     horizontalDistance:Math.round(candidates[0].dx)
+    };
+   }
+  }
+ }
+ return null;
+}
+
 async function extractPdfText(file){
  if(!window.pdfjsLib)throw new Error('Leitor de PDF ainda carregando. Aguarde alguns segundos.');
  pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
@@ -5032,25 +5101,48 @@ async function readDigitalCrlv(file){
  if(isPdf){
   let digitalText='';
   let digitalData={};
+  let preciseExercise=null;
+  try{
+   preciseExercise=await extractCrlvExerciseByPosition(file);
+  }catch(e){console.warn('Leitura posicional do EXERCÍCIO',e)}
   try{
    digitalText=await extractPdfText(file);
    if(digitalText&&digitalText.length>=40)digitalData=parseCrlvText(digitalText);
   }catch(e){console.warn('Leitura textual do CRLV',e)}
 
+  // Não confirma o ano só por proximidade textual: isso pode confundir ANO/MODELO com EXERCÍCIO.
+  if(preciseExercise?.licensingYear){
+   digitalData.licensingYear=preciseExercise.licensingYear;
+   digitalData.licensingYearSource='pdf_position';
+   digitalData.licensingParseVersion=2;
+  }else{
+   digitalData.licensingYear='';
+   digitalData.licensingYearSource='not_confirmed';
+  }
+
   if(digitalText&&digitalText.length>=40&&digitalData.plate&&digitalData.licensingYear){
    return {data:digitalData,text:digitalText,digital:true,ocr:false,reason:null};
   }
 
-  crlvOcrMessage(digitalText?'PDF lido. Buscando EXERCÍCIO pela imagem...':'PDF escaneado. Iniciando OCR...');
+  crlvOcrMessage(digitalText?'PDF lido. Confirmando EXERCÍCIO pela imagem...':'PDF escaneado. Iniciando OCR...');
   const ocrText=await ocrScannedPdf(file,2);
   const ocrData=parseCrlvText(ocrText);
+  if(ocrData.licensingYear){
+   ocrData.licensingYearSource='ocr';
+   ocrData.licensingParseVersion=2;
+  }
   const merged=mergeCrlvData(digitalData,ocrData);
+  if(!preciseExercise?.licensingYear&&ocrData.licensingYear){
+   merged.licensingYear=ocrData.licensingYear;
+   merged.licensingYearSource='ocr';
+   merged.licensingParseVersion=2;
+  }
   return {
    data:merged,
    text:[digitalText,ocrText].filter(Boolean).join('\n'),
    digital:!!(merged.plate||merged.renavam),
    ocr:true,
-   reason:merged.licensingYear?null:'Não encontrei o EXERCÍCIO. Anos encontrados no documento: '+((([digitalText,ocrText].join(' ').match(/\b20\d{2}\b/g)||[]).filter((v,i,a)=>a.indexOf(v)===i).join(', '))||'nenhum')
+   reason:merged.licensingYear?null:'Não consegui confirmar o campo EXERCÍCIO do CRLV.'
   };
  }
 
@@ -5058,6 +5150,7 @@ async function readDigitalCrlv(file){
   crlvOcrMessage('Imagem recebida. Iniciando OCR...');
   const ocrText=await ocrImageFile(file);
   const data=parseCrlvText(ocrText);
+  if(data.licensingYear){data.licensingYearSource='ocr';data.licensingParseVersion=2}
   return {
    data,
    text:ocrText,
@@ -5124,7 +5217,8 @@ async function confirmCrlvImport(options={}){
     year_fabrication:Number(document.getElementById('crlvYearFab').value)||null,
     expires_at:expires,
     licensing_year:Number(document.getElementById('crlvLicensingYear')?.value)||null,
-    licensing_year_source:Number(document.getElementById('crlvLicensingYear')?.value)?'crlv_document':'not_confirmed',
+    licensing_year_source:Number(document.getElementById('crlvLicensingYear')?.value)?(pendingCrlvData?.licensingYearSource||'crlv_document'):'not_confirmed',
+    licensing_parse_version:Number(pendingCrlvData?.licensingParseVersion||0),
     licensing_state:licenseState,
     licensing_category:licenseCategory,
     licensing_rule:licenseState==='SP'?'DETRAN-SP calendário anual por final de placa':'Calendário automático não configurado para '+licenseState,
@@ -5664,7 +5758,7 @@ setInterval(()=>{
 },60000);
 if('serviceWorker' in navigator){
  window.addEventListener('load',()=>{
-  navigator.serviceWorker.register('./sw-v6-59.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
+  navigator.serviceWorker.register('./sw-v6-60.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
  });
 }
 
