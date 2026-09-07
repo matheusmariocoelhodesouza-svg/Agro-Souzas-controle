@@ -8,7 +8,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
-<title>Comando 360 • v6.61</title>
+<title>Comando 360 • v6.62</title>
 <link rel="manifest" href="./comando360.webmanifest"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
@@ -653,7 +653,7 @@ body.device-mode .po-actions .btn{width:100%;min-height:47px}
 <script defer src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"></script>
 <script>
 (function(){
-  const BUILD='6.61';
+  const BUILD='6.62';
   try{
     const marker='controla_cache_cleanup_'+BUILD;
     if(!localStorage.getItem(marker)){
@@ -4441,18 +4441,57 @@ async function deleteTeam(id){
 }
 async function deleteVehicle(id){
  if(!id||!confirm('Excluir este veículo definitivamente?'))return;
- if(!confirm('CONFIRMAÇÃO FINAL: abastecimentos/manutenções vinculados podem impedir a exclusão.'))return;
+
  try{
+  const v=(window.__fleetVehicles||[]).find(x=>x.id===id)||{};
+  const [docs,fuelLogs]=await Promise.all([
+   rest('v2_vehicle_documents','select=id,file_id,document_type&vehicle_id=eq.'+id),
+   rest('v2_fuel_logs','select=id&vehicle_id=eq.'+id)
+  ]);
+
+  if(fuelLogs?.length){
+   const ok=confirm(
+    'ATENÇÃO: este veículo possui '+fuelLogs.length+' abastecimento(s) no histórico.\n\n'+
+    'Se continuar, esses abastecimentos também serão EXCLUÍDOS definitivamente.\n'+
+    'Cancelar mantém o histórico; nesse caso, use ARQUIVAR VEÍCULO.'
+   );
+   if(!ok)return;
+  }else if(!confirm('CONFIRMAÇÃO FINAL: o veículo e seus documentos serão apagados.')){
+   return;
+  }
+
+  // Desvincula a condução das equipes.
   const teams=window.__fleetTeams||[];
   for(const t of teams){
    if(t.metadata?.primary_vehicle_id===id){
     await rest('v2_teams','id=eq.'+t.id,'PATCH',{metadata:{...(t.metadata||{}),primary_vehicle_id:null}});
    }
   }
+
+  // Arquiva os arquivos físicos e remove os vínculos documentais antes do veículo.
+  for(const d of docs||[]){
+   if(d.file_id){
+    try{await rest('v2_files','id=eq.'+d.file_id,'PATCH',{archived_at:new Date().toISOString()})}catch(e){console.warn('archive vehicle file',e)}
+   }
+  }
+  if(docs?.length)await rest('v2_vehicle_documents','vehicle_id=eq.'+id,'DELETE');
+
+  // Combustível é RESTRICT no banco; só é apagado após confirmação explícita acima.
+  if(fuelLogs?.length)await rest('v2_fuel_logs','vehicle_id=eq.'+id,'DELETE');
+
+  // Manutenções/KM/rastreamento têm cascade; ordens de serviço ficam com veículo nulo.
   await rest('v2_vehicles','id=eq.'+id,'DELETE');
-  document.getElementById('vehicleEditCard').style.display='none';await loadVehicles();await loadTeams();
- }catch(e){alert('Não foi possível excluir: '+e.message)}
+
+  document.getElementById('vehicleEditCard').style.display='none';
+  await loadVehicles();
+  await loadTeams();
+  try{await loadSmartAlerts()}catch(_){}
+  alert('Veículo '+(v.description||v.plate||'')+' excluído com sucesso.');
+ }catch(e){
+  alert('Não foi possível excluir o veículo: '+(e.message||String(e)));
+ }
 }
+
 async function deleteEmployee(id){
  if(!id||!confirm('Excluir este funcionário definitivamente?'))return;
  try{
@@ -4617,7 +4656,8 @@ async function autoReadPendingFleetCrlvs(){
   const v=(vehicleDocsVehicles||[]).find(x=>x.id===d.vehicle_id)||(window.__fleetVehicles||[]).find(x=>x.id===d.vehicle_id);
   if(!v)continue;
   const parsedVersion=Number(v?.metadata?.crlv?.licensing_parse_version||0);
-  if(licensingStatusForVehicle(v,d).confirmed&&parsedVersion>=2)continue;
+  const hasRenavam=String(v?.renavam||'').replace(/\D/g,'').length>=9;
+  if(licensingStatusForVehicle(v,d).confirmed&&parsedVersion>=3&&hasRenavam)continue;
   const key=d.file_id+'|'+d.vehicle_id;
   if(fleetCrlvAutoReadTried.has(key))continue;
   queue.push({doc:d,vehicle:v,key});
@@ -4774,7 +4814,7 @@ async function applyParsedCrlvToVehicle(vehicleId,parsed){
   imported_at:new Date().toISOString()
  };
  const body={metadata:{...oldMeta,crlv:nextCrlv,licensing_state:nextCrlv.licensing_state,licensing_category:nextCrlv.licensing_category}};
- if(!v.renavam&&d.renavam)body.renavam=d.renavam;
+ if(String(v.renavam||'').replace(/\D/g,'').length<9&&d.renavam)body.renavam=d.renavam;
  if(!v.plate&&d.plate)body.plate=d.plate;
  if(!v.model_year&&(d.yearModel||d.yearFab))body.model_year=Number(d.yearModel||d.yearFab);
  const rows=await rest('v2_vehicles','id=eq.'+vehicleId,'PATCH',body);
@@ -4849,10 +4889,68 @@ async function deleteVehicleDocument(){
 function normalizeCrlvPdfToken(value){
  return String(value||'').toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^A-Z0-9]/g,'');
 }
-async function extractCrlvExerciseByPosition(file){
- if(!window.pdfjsLib)return null;
+function crlvPdfRows(items){
+ const rows=[];
+ for(const item of items){
+  let row=rows.find(r=>Math.abs(r.y-item.y)<=3);
+  if(!row){row={y:item.y,items:[]};rows.push(row)}
+  row.items.push(item);
+ }
+ for(const row of rows)row.items.sort((a,b)=>a.x-b.x);
+ return rows;
+}
+function crlvPositionValue(items,rows,headerTest,valueTest,{maxDy=100,maxDx=170}={}){
+ for(const row of rows){
+  const rowNorm=row.items.map(x=>x.norm).join('');
+  if(!headerTest(rowNorm,row.items))continue;
+
+  const headerItems=row.items.filter(x=>headerTest(x.norm,[x]));
+  const baseItems=headerItems.length?headerItems:row.items;
+  const minX=Math.min(...baseItems.map(x=>x.x));
+  const maxX=Math.max(...baseItems.map(x=>x.x+x.width));
+  const center=(minX+maxX)/2;
+
+  const rawCandidates=[];
+  for(const item of items){
+   if(item.y>=row.y-1||row.y-item.y>maxDy)continue;
+   const norm=item.norm;
+   if(valueTest(norm)){
+    const cx=item.x+(item.width||0)/2;
+    rawCandidates.push({value:norm,cx,y:item.y,dx:Math.abs(cx-center),dy:row.y-item.y});
+   }
+  }
+
+  // Alguns PDFs quebram o RENAVAM em mais de um item; tenta juntar itens da mesma linha.
+  const valueRows=crlvPdfRows(items.filter(x=>x.y<row.y-1&&row.y-x.y<=maxDy));
+  for(const vr of valueRows){
+   for(let i=0;i<vr.items.length;i++){
+    let joined='';
+    let startX=vr.items[i].x,endX=vr.items[i].x+(vr.items[i].width||0);
+    for(let j=i;j<Math.min(vr.items.length,i+3);j++){
+     joined+=vr.items[j].norm;
+     endX=vr.items[j].x+(vr.items[j].width||0);
+     if(valueTest(joined)){
+      const cx=(startX+endX)/2;
+      rawCandidates.push({value:joined,cx,y:vr.y,dx:Math.abs(cx-center),dy:row.y-vr.y});
+     }
+    }
+   }
+  }
+
+  const candidates=rawCandidates
+   .filter(x=>x.dx<=maxDx)
+   .map(x=>({...x,score:x.dx*1.9+x.dy}))
+   .sort((a,b)=>a.score-b.score);
+
+  if(candidates.length)return candidates[0];
+ }
+ return null;
+}
+async function extractCrlvIdentityByPosition(file){
+ if(!window.pdfjsLib)return {};
  pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
  const pdf=await pdfjsLib.getDocument({data:await file.arrayBuffer()}).promise;
+ const out={};
 
  for(let pageNo=1;pageNo<=pdf.numPages;pageNo++){
   const page=await pdf.getPage(pageNo);
@@ -4866,51 +4964,50 @@ async function extractCrlvExerciseByPosition(file){
    height:Number(x.height||0),
    idx
   }));
+  const rows=crlvPdfRows(items);
 
-  const rows=[];
-  for(const item of items){
-   let row=rows.find(r=>Math.abs(r.y-item.y)<=3);
-   if(!row){row={y:item.y,items:[]};rows.push(row)}
-   row.items.push(item);
+  if(!out.renavam){
+   const r=crlvPositionValue(
+    items,rows,
+    s=>s.includes('CODIGORENAVAM')||s==='RENAVAM'||s.includes('RENAVAM'),
+    s=>/^\d{9,11}$/.test(s),
+    {maxDy:105,maxDx:185}
+   );
+   if(r)out.renavam=r.value;
   }
 
-  for(const row of rows){
-   row.items.sort((a,b)=>a.x-b.x);
-   const rowNorm=row.items.map(x=>x.norm).join('');
-   if(!rowNorm.includes('EXERCICIO'))continue;
-
-   let exerciseItems=row.items.filter(x=>x.norm.includes('EXERC')||x.norm==='ICIO'||x.norm.includes('EXERCICIO'));
-   if(!exerciseItems.length)exerciseItems=row.items;
-
-   const minX=Math.min(...exerciseItems.map(x=>x.x));
-   const maxX=Math.max(...exerciseItems.map(x=>x.x+x.width));
-   const center=(minX+maxX)/2;
-
-   const candidates=items.filter(x=>
-    /^20\d{2}$/.test(x.norm) &&
-    x.y < row.y-1 &&
-    row.y-x.y <= 95
-   ).map(x=>{
-    const cx=x.x+(x.width||0)/2;
-    const dx=Math.abs(cx-center);
-    const dy=row.y-x.y;
-    return {...x,dx,dy,score:(dx*1.8)+dy};
-   }).filter(x=>x.dx<=150)
-     .sort((a,b)=>a.score-b.score);
-
-   if(candidates.length){
-    return {
-     licensingYear:candidates[0].norm,
-     source:'pdf_position',
-     page:pageNo,
-     headerY:row.y,
-     valueY:candidates[0].y,
-     horizontalDistance:Math.round(candidates[0].dx)
-    };
-   }
+  if(!out.plate){
+   const p=crlvPositionValue(
+    items,rows,
+    s=>s==='PLACA'||s.endsWith('PLACA'),
+    s=>/^[A-Z]{3}[0-9][A-Z0-9][0-9]{2}$/.test(s),
+    {maxDy:105,maxDx:130}
+   );
+   if(p)out.plate=p.value;
   }
+
+  if(!out.licensingYear){
+   const e=crlvPositionValue(
+    items,rows,
+    s=>s.includes('EXERCICIO'),
+    s=>/^20\d{2}$/.test(s),
+    {maxDy:95,maxDx:150}
+   );
+   if(e)out.licensingYear=e.value;
+  }
+
+  if(out.renavam&&out.plate&&out.licensingYear)break;
  }
- return null;
+ if(Object.keys(out).length){
+  out.source='pdf_position';
+  out.licensingParseVersion=3;
+ }
+ return out;
+}
+
+async function extractCrlvExerciseByPosition(file){
+ const x=await extractCrlvIdentityByPosition(file);
+ return x?.licensingYear?{licensingYear:x.licensingYear,source:'pdf_position'}:null;
 }
 
 async function extractPdfText(file){
@@ -5138,23 +5235,26 @@ async function readDigitalCrlv(file){
  if(isPdf){
   let digitalText='';
   let digitalData={};
-  let preciseExercise=null;
+  let preciseIdentity={};
   try{
-   preciseExercise=await extractCrlvExerciseByPosition(file);
-  }catch(e){console.warn('Leitura posicional do EXERCÍCIO',e)}
+   preciseIdentity=await extractCrlvIdentityByPosition(file);
+  }catch(e){console.warn('Leitura posicional do CRLV-e',e)}
   try{
    digitalText=await extractPdfText(file);
    if(digitalText&&digitalText.length>=40)digitalData=parseCrlvText(digitalText);
   }catch(e){console.warn('Leitura textual do CRLV',e)}
 
   // Não confirma o ano só por proximidade textual: isso pode confundir ANO/MODELO com EXERCÍCIO.
-  if(preciseExercise?.licensingYear){
-   digitalData.licensingYear=preciseExercise.licensingYear;
+  if(preciseIdentity?.plate)digitalData.plate=preciseIdentity.plate;
+  if(preciseIdentity?.renavam)digitalData.renavam=preciseIdentity.renavam;
+  if(preciseIdentity?.licensingYear){
+   digitalData.licensingYear=preciseIdentity.licensingYear;
    digitalData.licensingYearSource='pdf_position';
-   digitalData.licensingParseVersion=2;
+   digitalData.licensingParseVersion=3;
   }else{
    digitalData.licensingYear='';
    digitalData.licensingYearSource='not_confirmed';
+   digitalData.licensingParseVersion=3;
   }
 
   if(digitalText&&digitalText.length>=40&&digitalData.plate&&digitalData.licensingYear){
@@ -5169,10 +5269,10 @@ async function readDigitalCrlv(file){
    ocrData.licensingParseVersion=2;
   }
   const merged=mergeCrlvData(digitalData,ocrData);
-  if(!preciseExercise?.licensingYear&&ocrData.licensingYear){
+  if(!preciseIdentity?.licensingYear&&ocrData.licensingYear){
    merged.licensingYear=ocrData.licensingYear;
    merged.licensingYearSource='ocr';
-   merged.licensingParseVersion=2;
+   merged.licensingParseVersion=3;
   }
   return {
    data:merged,
@@ -5187,7 +5287,7 @@ async function readDigitalCrlv(file){
   crlvOcrMessage('Imagem recebida. Iniciando OCR...');
   const ocrText=await ocrImageFile(file);
   const data=parseCrlvText(ocrText);
-  if(data.licensingYear){data.licensingYearSource='ocr';data.licensingParseVersion=2}
+  if(data.licensingYear){data.licensingYearSource='ocr';data.licensingParseVersion=3}
   return {
    data,
    text:ocrText,
@@ -5798,7 +5898,7 @@ setInterval(()=>{
 },60000);
 if('serviceWorker' in navigator){
  window.addEventListener('load',()=>{
-  navigator.serviceWorker.register('./sw-v6-61.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
+  navigator.serviceWorker.register('./sw-v6-62.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
  });
 }
 
