@@ -2790,33 +2790,52 @@ async function loadTeamPoint(){
 async function loadRHPoint(){
  if(!companyId)return;
  try{
-   const employees=await rest('v2_employees','select=id,employee_number,full_name,primary_team,status&company_id=eq.'+companyId+'&status=eq.active&order=full_name.asc');
-   setTextSafe('rhActive',employees.length);
    const today=localDateBR();
    const bounds=saoPauloDayUtcBounds(today);
-   const days=await rest('v2_attendance_days','select=employee_id,status,worked_minutes,late_minutes,absence_minutes,work_date&company_id=eq.'+companyId+'&work_date=eq.'+today);
-   let events=await rest('v2_attendance_events','select=id,employee_id,occurred_at,event_type,method,accuracy_m,nsr,integrity_hash&company_id=eq.'+companyId+'&occurred_at=gte.'+encodeURIComponent(bounds.start)+'&occurred_at=lt.'+encodeURIComponent(bounds.end)+'&order=occurred_at.asc&limit=500');
-   const activeEmployeeIds=new Set(employees.map(e=>e.id));events=events.filter(ev=>activeEmployeeIds.has(ev.employee_id));
+   const [employees,teams,days,rawEvents]=await Promise.all([
+     rest('v2_employees','select=id,employee_number,full_name,primary_team,status&company_id=eq.'+companyId+'&status=eq.active&order=full_name.asc'),
+     rest('v2_teams','select=id,name,code,status&company_id=eq.'+companyId+'&order=name.asc'),
+     rest('v2_attendance_days','select=employee_id,status,worked_minutes,late_minutes,absence_minutes,work_date&company_id=eq.'+companyId+'&work_date=eq.'+today),
+     rest('v2_attendance_events','select=id,employee_id,occurred_at,event_type,method,accuracy_m,nsr,integrity_hash,work_team_id,device_access_id,metadata&company_id=eq.'+companyId+'&occurred_at=gte.'+encodeURIComponent(bounds.start)+'&occurred_at=lt.'+encodeURIComponent(bounds.end)+'&order=occurred_at.asc&limit=500')
+   ]);
+
+   setTextSafe('rhActive',employees.length);
+   const activeEmployeeIds=new Set(employees.map(e=>e.id));
+   const events=(rawEvents||[]).filter(ev=>activeEmployeeIds.has(ev.employee_id));
    const map=Object.fromEntries(employees.map(e=>[e.id,e]));
+   const teamMap=Object.fromEntries((teams||[]).map(t=>[t.id,t]));
    const byEmployee={};
    for(const ev of events)(byEmployee[ev.employee_id]??=[]).push(ev);
 
    const metricsByEmployee={};
+   const currentTeamByEmployee={};
+   const switchEventIds=new Set();
    let totalWorked=0,totalOvertime=0,withEvents=0;
+
    for(const e of employees){
-     const evs=byEmployee[e.id]||[];
+     const evs=(byEmployee[e.id]||[]).sort((a,b)=>new Date(a.occurred_at)-new Date(b.occurred_at));
+     let previousTeamId=null;
+     for(const ev of evs){
+       const tid=pointEventTeamId(ev);
+       if(tid&&previousTeamId&&tid!==previousTeamId)switchEventIds.add(ev.id);
+       if(tid)previousTeamId=tid;
+     }
+
+     const latestWithTeam=[...evs].reverse().find(x=>pointEventTeamId(x));
+     currentTeamByEmployee[e.id]=latestWithTeam?pointEventTeamName(latestWithTeam,teamMap):(e.primary_team||'Sem equipe');
+
      const metrics=computeDayMetrics(evs,{live:true,expectedMinutes:expectedMinutesFor(e.id)});
      const sch=getEmployeeSchedule(e.id);
-      let late=0;
-      if(evs.length&&sch?.start){
-        const firstIn=evs.find(x=>x.event_type==='in');
-        if(firstIn){
-          const diff=eventLocalMinutes(firstIn.occurred_at)-timeToMinutes(sch.start)-Number(sch.tolerance||0);
-          late=Math.max(0,diff);
-        }
-      }
-      metrics.late=late;
-      metricsByEmployee[e.id]=metrics;
+     let late=0;
+     if(evs.length&&sch?.start){
+       const firstIn=evs.find(x=>x.event_type==='in');
+       if(firstIn){
+         const diff=eventLocalMinutes(firstIn.occurred_at)-timeToMinutes(sch.start)-Number(sch.tolerance||0);
+         late=Math.max(0,diff);
+       }
+     }
+     metrics.late=late;
+     metricsByEmployee[e.id]=metrics;
      if(evs.length)withEvents++;
      totalWorked+=metrics.worked;
      totalOvertime+=metrics.overtime;
@@ -2828,7 +2847,8 @@ async function loadRHPoint(){
    setTextSafe('pointWorked',fmtMinutes(totalWorked));
    setTextSafe('pointOvertime',fmtMinutes(totalOvertime));
 
-   const presenceEl=$('#presenceList'); if(presenceEl) presenceEl.innerHTML=employees.map(e=>{
+   const presenceEl=$('#presenceList');
+   if(presenceEl)presenceEl.innerHTML=employees.map(e=>{
      const d=days.find(x=>x.employee_id===e.id);
      const mt=metricsByEmployee[e.id];
      const hasEvents=(byEmployee[e.id]||[]).length>0;
@@ -2836,34 +2856,45 @@ async function loadRHPoint(){
      const txt=status==='none'?'Sem registro hoje':(statusLabels[status]||status);
      const cls=status==='none'?'warn':(statusClass[status]||'');
      const mins=hasEvents?mt.worked:Number(d?.worked_minutes||0);
-     return `<div class="item"><strong>${esc(e.full_name)}</strong><span class="pill ${cls}">${esc(txt)}</span><div class="muted">${esc(e.primary_team||'Sem equipe')}${hasEvents||d?' • '+fmtMinutes(mins):''}</div></div>`
+     const teamToday=currentTeamByEmployee[e.id]||e.primary_team||'Sem equipe';
+     const cadastro=e.primary_team&&!sameTeamName(e.primary_team,teamToday)?' • Cadastro: '+esc(e.primary_team):'';
+     return '<div class="item"><strong>'+esc(e.full_name)+'</strong><span class="pill '+cls+'">'+esc(txt)+'</span><div class="muted"><b>Equipe hoje:</b> '+esc(teamToday)+cadastro+(hasEvents||d?' • '+fmtMinutes(mins):'')+'</div></div>';
    }).join('')||'<div class="muted">Sem funcionários ativos.</div>';
 
-   const mirrorEl=$('#timeMirrorList'); if(mirrorEl) mirrorEl.innerHTML=employees.map(e=>{
+   const mirrorEl=$('#timeMirrorList');
+   if(mirrorEl)mirrorEl.innerHTML=employees.map(e=>{
      const evs=byEmployee[e.id]||[];
      if(!evs.length)return '';
      const mt=metricsByEmployee[e.id];
      const first=evs[0],last=evs[evs.length-1];
      const fmt=t=>new Date(t).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',timeZone:'America/Sao_Paulo'});
      const status=statusLabels[mt.status]||mt.status;
-     return `<div class="item"><strong>${esc(e.full_name)}</strong><span class="pill ${statusClass[mt.status]||''}">${esc(status)}</span><div class="muted">Primeira batida: ${fmt(first.occurred_at)} • Última: ${fmt(last.occurred_at)}</div><div class="muted">Trabalhado: <b>${fmtMinutes(mt.worked)}</b> • Intervalo: ${fmtMinutes(mt.breakMinutes)} • Extra: <b>${fmtMinutes(mt.overtime)}</b>${mt.late?' • Atraso: <b>'+fmtMinutes(mt.late)+'</b>':''}</div></div>`
+     const teamToday=currentTeamByEmployee[e.id]||e.primary_team||'Sem equipe';
+     const cadastro=e.primary_team&&!sameTeamName(e.primary_team,teamToday)?' • Cadastro: '+esc(e.primary_team):'';
+     return '<div class="item"><strong>'+esc(e.full_name)+'</strong><span class="pill '+(statusClass[mt.status]||'')+'">'+esc(status)+'</span><div class="muted"><b>Equipe hoje:</b> '+esc(teamToday)+cadastro+'</div><div class="muted">Primeira batida: '+fmt(first.occurred_at)+' • Última: '+fmt(last.occurred_at)+'</div><div class="muted">Trabalhado: <b>'+fmtMinutes(mt.worked)+'</b> • Intervalo: '+fmtMinutes(mt.breakMinutes)+' • Extra: <b>'+fmtMinutes(mt.overtime)+'</b>'+(mt.late?' • Atraso: <b>'+fmtMinutes(mt.late)+'</b>':'')+'</div></div>';
    }).join('')||'<div class="muted">Nenhum registro de ponto hoje.</div>';
 
-   const pointListEl=$('#pointList'); if(pointListEl) pointListEl.innerHTML=[...events].reverse().slice(0,100).map(x=>{
+   const pointListEl=$('#pointList');
+   if(pointListEl)pointListEl.innerHTML=[...events].reverse().slice(0,100).map(x=>{
      const e=map[x.employee_id]||{};
      const dt=new Date(x.occurred_at).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo'});
-     return `<div class="item"><strong>${esc(e.full_name||'Funcionário')}</strong><span class="pill">${esc(pointLabels[x.event_type]||x.event_type)}</span><div class="muted">${esc(dt)} • ${esc(x.method||'método não informado')}${x.accuracy_m?' • GPS ±'+esc(x.accuracy_m)+' m':''}</div></div>`
+     const teamName=pointEventTeamName(x,teamMap)||e.primary_team||'Equipe não identificada';
+     const switched=switchEventIds.has(x.id);
+     return '<div class="item"><strong>'+esc(e.full_name||'Funcionário')+'</strong><span class="pill">'+esc(pointLabels[x.event_type]||x.event_type)+'</span>'+(switched?' <span class="pill warn">TROCA DE EQUIPE</span>':'')+'<div class="muted">'+esc(dt)+' • '+esc(x.method||'método não informado')+' • <b>'+esc(teamName)+'</b>'+(x.accuracy_m?' • GPS ±'+esc(x.accuracy_m)+' m':'')+'</div></div>';
    }).join('')||'<div class="muted">Nenhuma batida registrada hoje.</div>';
 
    const vacations=await rest('v2_vacation_alerts','select=employee_id,concession_deadline,status,alert_level,days&company_id=eq.'+companyId+'&order=concession_deadline.asc&limit=50');
    setTextSafe('rhVacation',vacations.filter(v=>v.alert_level&&v.alert_level!=='ok').length);
-   if($('#vacationList')) $('#vacationList').innerHTML=vacations.map(v=>{
+   if($('#vacationList'))$('#vacationList').innerHTML=vacations.map(v=>{
      const e=map[v.employee_id]||{};
      const cls=v.alert_level==='critical'?'danger':v.alert_level==='warning'?'warn':'ok';
-     return `<div class="item"><strong>${esc(e.full_name||'Funcionário')}</strong><span class="pill ${cls}">${esc(v.alert_level||v.status||'férias')}</span><div class="muted">Prazo: ${esc(v.concession_deadline||'-')} • ${esc(v.days||0)} dias</div></div>`
+     return '<div class="item"><strong>'+esc(e.full_name||'Funcionário')+'</strong><span class="pill '+cls+'">'+esc(v.alert_level||v.status||'férias')+'</span><div class="muted">Prazo: '+esc(v.concession_deadline||'-')+' • '+esc(v.days||0)+' dias</div></div>';
    }).join('')||'<div class="muted">Nenhum alerta de férias.</div>';
  }catch(e){
-   ['presenceList','pointList','vacationList','timeMirrorList'].forEach(id=>{const el=$('#'+id);if(el)el.innerHTML='<div class="error">'+esc(e.message)+'</div>'});
+   ['presenceList','pointList','vacationList','timeMirrorList'].forEach(id=>{
+     const el=$('#'+id);
+     if(el)el.innerHTML='<div class="error">'+esc(e.message||String(e))+'</div>';
+   });
  }
 }
 
