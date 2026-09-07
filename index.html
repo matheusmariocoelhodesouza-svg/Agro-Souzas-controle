@@ -8,7 +8,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
-<title>Comando 360 • v6.82</title>
+<title>Comando 360 • v6.83</title>
 <link rel="manifest" href="./comando360.webmanifest"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
@@ -4990,6 +4990,27 @@ function scheduleAutoSavePoultryFarm(){
  clearTimeout(poultryFarmAutoSaveTimer);
  poultryFarmAutoSaveTimer=setTimeout(autoSavePoultryFarm,650);
 }
+async function findExistingOpenPoultryOperation(teamId,farmId){
+ if(!teamId||!farmId||!navigator.onLine)return null;
+ try{
+  const ls=await rest('v2_poultry_loadings',
+   'select=id,operation_id,farm_id,team_id,status,reported_trucks,reported_birds&company_id=eq.'+encodeURIComponent(companyId)+
+   '&team_id=eq.'+encodeURIComponent(teamId)+
+   '&farm_id=eq.'+encodeURIComponent(farmId)+
+   '&status=in.(planned,in_progress)&order=created_at.desc&limit=5')||[];
+  const candidate=ls.find(x=>Number(x.reported_trucks||0)===0);
+  if(!candidate?.operation_id)return null;
+  const ops=await rest('v2_operations',
+   'select=id,title,customer_name,status,scheduled_start,metadata&company_id=eq.'+encodeURIComponent(companyId)+
+   '&id=eq.'+encodeURIComponent(candidate.operation_id)+'&limit=1')||[];
+  const op=ops[0];
+  if(!op||op.status==='completed'||op.status==='cancelled')return null;
+  return {operation:op,loading:candidate};
+ }catch(e){
+  console.warn('Verificação de apanha já aberta',e);
+  return null;
+ }
+}
 async function savePoultryOperation(){
  const t=poultryTeams.find(x=>x.id===$('#poTeam').value)||(deviceMode?deviceTeam:null);
  if(!t||!$('#poStart').value)return $('#poMsg').textContent='Selecione a equipe e informe o início.';
@@ -5027,6 +5048,21 @@ async function savePoultryOperation(){
  try{
   $('#poMsg').textContent='Salvando...';
   const {farm}=await ensureAviaryProfile();
+  const existingOpen=await findExistingOpenPoultryOperation(t.id,farm.id);
+  if(existingOpen){
+   $('#poMsg').textContent='Esta apanha já estava aberta. Abrindo o Caminhão 1...';
+   $('#poultryForm').classList.add('hidden');
+   if(deviceMode)await loadDevicePoultryContext();
+   await loadPoultryOps();
+   openNextTruckForm({
+    operationId:existingOpen.operation.id,
+    loadingId:existingOpen.loading.id,
+    farmId:farm.id,
+    name:farm.producer_name||existingOpen.operation.title||'Apanha',
+    sequence:1
+   });
+   return;
+  }
   const planned=isAdminGeneral?poN($('#poPlannedBirds')?.value):0;
   const price=isAdminGeneral?poN($('#poPricePerBird')?.value):0;
   const outlet=farm.metadata?.outlet_type||$('#poOutletType').value.trim()||null;
@@ -5107,6 +5143,14 @@ async function loadPoultryOps(renderUi=true){
    }
   }
 
+  if(deviceMode&&deviceAccess?.team_id){
+   const teamId=deviceAccess.team_id;
+   ops=ops.filter(o=>o.team_id===teamId);
+   const opIds=new Set(ops.map(o=>o.id));
+   loadings=loadings.filter(l=>l.team_id===teamId||opIds.has(l.operation_id));
+   const loadingIds=new Set(loadings.map(l=>l.id));
+   trucks=trucks.filter(t=>loadingIds.has(t.loading_id));
+  }
   poultryOpsCache=ops;poultryLoadings=loadings;poultryTruckLoads=trucks;
   if(!renderUi)return {ops,loadings,trucks};
 
@@ -5368,9 +5412,13 @@ function openNextTruckForm({operationId,loadingId,farmId,name,sequence}){
  $('#poTruckSheetPreviewWrap').classList.add('hidden');$('#poTruckSheetPreview').removeAttribute('src');$('#poTruckSheetFileName').textContent='';
  calcTruckSheetTotalHint();
  $('#poTruckMsg').textContent='';
- $('#poTruckCard').classList.remove('hidden');
+ const truckCard=$('#poTruckCard');
+ truckCard.classList.remove('hidden');
  loadTruckDriverPairs().catch(()=>{});
- setTimeout(()=>$('#poTruckDriver')?.focus(),50);
+ setTimeout(()=>{
+  truckCard.scrollIntoView({behavior:'smooth',block:'start'});
+  setTimeout(()=>$('#poTruckDriver')?.focus(),350);
+ },50);
 }
 
 async function saveTruckLoad(closeAfter=false){
@@ -7777,7 +7825,7 @@ setInterval(()=>{
 },60000);
 if('serviceWorker' in navigator){
  window.addEventListener('load',()=>{
-  navigator.serviceWorker.register('./sw-v6-82.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
+  navigator.serviceWorker.register('./sw-v6-83.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
  });
 }
 
