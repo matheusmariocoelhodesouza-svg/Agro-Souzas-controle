@@ -8,7 +8,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
-<title>Comando 360 • v6.81</title>
+<title>Comando 360 • v6.82</title>
 <link rel="manifest" href="./comando360.webmanifest"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
@@ -2054,17 +2054,15 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
   </div>
   <div class="field-calc-hint" id="poTruckCalcHint" style="margin-top:8px">Se quiser, abra “Conferência e perdas” para calcular pelas caixas.</div>
 
-  <details class="field-more-options">
-   <summary>Conferência e perdas (opcional)</summary>
-   <div class="field-more-inner">
-    <div class="row po-field-grid po-operation-grid">
-     <div><label>Nº de caixas</label><input id="poTruckBoxes" type="number" min="0" step="1" inputmode="numeric" placeholder="Ex.: 600"></div>
-     <div><label>Aves por caixa</label><input id="poTruckBirdsPerBox" type="number" min="0" step="0.01" inputmode="decimal" placeholder="Ex.: 7"></div>
-     <div><label>Caixas vazias</label><input id="poTruckEmptyBoxes" type="number" min="0" step="1" inputmode="numeric" placeholder="Ex.: 1"></div>
-     <div><label>Mortes no carregamento</label><input id="poTruckLoadingDeaths" type="number" min="0" step="1" inputmode="numeric" placeholder="Ex.: 0"></div>
-    </div>
+  <div style="margin-top:12px">
+   <div class="field-section-title compact"><span>📊</span><div><strong>Conferência e perdas</strong><div class="muted">Preencha normalmente junto com o carregamento.</div></div></div>
+   <div class="row po-field-grid po-operation-grid">
+    <div><label>Nº de caixas</label><input id="poTruckBoxes" type="number" min="0" step="1" inputmode="numeric" placeholder="Ex.: 600"></div>
+    <div><label>Aves por caixa</label><input id="poTruckBirdsPerBox" type="number" min="0" step="0.01" inputmode="decimal" placeholder="Ex.: 7"></div>
+    <div><label>Caixas vazias</label><input id="poTruckEmptyBoxes" type="number" min="0" step="1" inputmode="numeric" placeholder="Ex.: 1"></div>
+    <div><label>Mortes no carregamento</label><input id="poTruckLoadingDeaths" type="number" min="0" step="1" inputmode="numeric" placeholder="Ex.: 0"></div>
    </div>
-  </details>
+  </div>
  </div>
 
  <div class="field-section" id="poTruckContextSection">
@@ -7779,7 +7777,7 @@ setInterval(()=>{
 },60000);
 if('serviceWorker' in navigator){
  window.addEventListener('load',()=>{
-  navigator.serviceWorker.register('./sw-v6-81.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
+  navigator.serviceWorker.register('./sw-v6-82.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
  });
 }
 
