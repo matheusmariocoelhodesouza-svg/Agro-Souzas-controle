@@ -8,7 +8,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
-<title>Comando 360 • v6.67</title>
+<title>Comando 360 • v6.68</title>
 <link rel="manifest" href="./comando360.webmanifest"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
@@ -1504,13 +1504,30 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
 @media(prefers-reduced-motion:reduce){
  *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
 }
+
+/* 6.68 — Rastreamento MOVIT */
+.tracking-hero{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;margin-bottom:16px}
+.tracking-hero h1{margin:0;font-size:27px;color:#10233f}.tracking-hero p{margin:5px 0 0;color:#6b7d95;font-size:13px}
+.tracking-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:14px}
+.tracking-kpi{background:#fff;border:1px solid #e3eaf3;border-radius:16px;padding:15px 16px;min-height:92px;box-shadow:0 4px 14px rgba(22,50,82,.035)}
+.tracking-kpi span{font-size:10px;font-weight:900;letter-spacing:.45px;color:#6c7f98}.tracking-kpi strong{display:block;font-size:27px;color:#142641;margin-top:7px}
+.tracking-list{display:grid;gap:10px}.tracking-card{background:#fff;border:1px solid #e3eaf3;border-radius:16px;padding:14px 15px;display:grid;grid-template-columns:minmax(230px,1.1fr) minmax(210px,.9fr) minmax(210px,.9fr) auto;gap:14px;align-items:center}
+.tracking-card-main strong{font-size:16px;color:#132741}.tracking-card-main .plate{display:inline-block;margin-left:7px;padding:3px 7px;border-radius:7px;background:#eef4fb;color:#244362;font-size:11px;font-weight:900}
+.tracking-data{font-size:12px;color:#5f728b;line-height:1.55}.tracking-data b{color:#1f3855}
+.tracking-actions{display:flex;gap:7px;justify-content:flex-end;flex-wrap:wrap}.tracking-actions .btn{font-size:11px}
+.tracking-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;background:#94a3b8}.tracking-dot.on{background:#16a34a}.tracking-dot.move{background:#1976d2}.tracking-dot.stale{background:#d97706}
+.movit-security-note{padding:10px 12px;border-radius:12px;background:#f3f8ff;border:1px solid #dceafa;color:#35516f;font-size:12px;margin-top:10px}
+.movit-advanced{margin-top:12px;border-top:1px solid #e7edf5;padding-top:10px}.movit-advanced summary{cursor:pointer;font-weight:800;color:#405978}
+.darkmode .tracking-kpi,.darkmode .tracking-card{background:#101c2e;border-color:#203047}.darkmode .tracking-hero h1,.darkmode .tracking-kpi strong,.darkmode .tracking-card-main strong{color:#e7eef9}.darkmode .movit-security-note{background:#0d1b2e;border-color:#26394f;color:#9fb3cb}
+@media(max-width:1050px){.tracking-card{grid-template-columns:1fr 1fr}.tracking-actions{grid-column:1/-1;justify-content:flex-start}}
+@media(max-width:700px){.tracking-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.tracking-card{grid-template-columns:1fr}.tracking-actions{grid-column:auto}.tracking-hero{flex-direction:column}.tracking-hero .btn{width:100%}}
 </style>
 <script defer="" src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"></script>
 <script>
 (function(){
-  const BUILD='6.67';
+  const BUILD='6.68';
   try{
     const marker='controla_cache_cleanup_'+BUILD;
     if(!localStorage.getItem(marker)){
@@ -1535,6 +1552,7 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
 <button class="v2navbtn" data-v2tab="documentosrh">📁   Documentos RH</button>
 <button class="v2navbtn" data-v2tab="ponto">◷   RH &amp; Ponto</button>
 <button class="v2navbtn" data-v2tab="frota">▰   Frota</button>
+<button class="v2navbtn" data-v2tab="rastreamento">📍   Rastreamento</button>
 <button class="v2navbtn" data-v2tab="manutencoes">🔧   Manutenções</button>
 <button class="v2navbtn" data-v2tab="combustivel">⛽   Combustível & KM</button>
 <button class="v2navbtn" data-v2tab="financeiro">💰   Financeiro</button>
@@ -1560,7 +1578,7 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
   <div class="brand"><img class="header-brand-icon" src="./comando360-icon.svg" alt="Comando 360"/><div><b>Comando <span class="brand360">360</span></b><div><small id="companyName">Empresa</small></div></div></div>
  </div>
  <div class="header-module" id="headerModule"><span id="headerModuleTitle">Painel Geral</span><small id="headerModuleSubtitle">Central de gestão</small></div>
- <div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.67</span><button class="btn soft" id="themeToggle" type="button" aria-label="Alternar tema">☾</button><button class="btn soft hidden" id="logout">Sair</button></div>
+ <div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.68</span><button class="btn soft" id="themeToggle" type="button" aria-label="Alternar tema">☾</button><button class="btn soft hidden" id="logout">Sair</button></div>
 </header>
 <main class="wrap">
 <section class="login team-entry" id="login">
@@ -1578,7 +1596,7 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
  <label>Senha</label><input autocomplete="current-password" id="password" type="password"/>
  <button class="btn primary" id="loginBtn">Entrar</button>
  <button class="btn soft" id="backDeviceSetup" type="button" style="margin-left:6px">Voltar</button>
- <div class="muted" id="loginMsg" style="margin-top:10px">Comando 360 • v6.67</div><div class="debug" id="debug"></div>
+ <div class="muted" id="loginMsg" style="margin-top:10px">Comando 360 • v6.68</div><div class="debug" id="debug"></div>
 </div>
 </section>
 <section class="hidden" id="app">
@@ -2055,6 +2073,27 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
  <div class="muted" id="vehicleEditMsg" style="margin-top:8px"></div>
 </div>
 </div>
+
+<div class="section" data-screen="rastreamento" hidden="" id="rastreamento">
+ <div class="tracking-hero">
+  <div><div class="dashboard-eyebrow">FROTA EM TEMPO REAL</div><h1>📍 Rastreamento MOVIT</h1><p>Posição, velocidade, ignição e quilometragem das conduções vinculadas pela placa.</p></div>
+  <button class="btn primary" id="refreshMovitTracking" type="button">↻ ATUALIZAR POSIÇÕES</button>
+ </div>
+ <div class="tracking-kpis">
+  <div class="tracking-kpi"><span>RASTREADORES</span><strong id="movitKpiTotal">0</strong><div class="muted">recebidos do MOVIT</div></div>
+  <div class="tracking-kpi"><span>EM MOVIMENTO</span><strong id="movitKpiMoving">0</strong><div class="muted">velocidade acima de 2 km/h</div></div>
+  <div class="tracking-kpi"><span>IGNIÇÃO LIGADA</span><strong id="movitKpiIgnition">0</strong><div class="muted">veículos ligados</div></div>
+  <div class="tracking-kpi"><span>VINCULADOS À FROTA</span><strong id="movitKpiLinked">0</strong><div class="muted" id="movitKpiLinkedHint">por correspondência de placa</div></div>
+ </div>
+ <div class="card">
+  <div class="toolbar" style="justify-content:space-between;align-items:flex-start">
+   <div><h3 style="margin:0">Conduções no mapa</h3><div class="muted" id="movitTrackingStatus">Verificando integração...</div></div>
+   <button class="btn soft" type="button" data-jump="integracoes">⚙ CONFIGURAR MOVIT</button>
+  </div>
+  <div class="tracking-list" id="movitTrackingList" style="margin-top:13px"><div class="muted">Carregando posições...</div></div>
+ </div>
+</div>
+
 <div class="section" data-screen="manutencoes" hidden="" id="manutencoes">
 <div class="card"><div class="toolbar" style="justify-content:space-between"><div><h3 style="margin:0">🔧 Manutenção da Frota</h3><div class="muted">Controle preventivo por data e quilometragem.</div></div><button class="btn primary" id="newMaintenanceBtn" type="button">+ NOVA MANUTENÇÃO</button></div><div class="v2-kpis" id="maintenanceKpis" style="margin-top:14px"></div><div class="list" id="maintenanceList" style="margin-top:12px"></div></div>
 <div class="card" id="maintenanceEditCard" style="display:none"><div class="toolbar" style="justify-content:space-between"><div><h3 id="maintenanceEditTitle" style="margin:0">Nova manutenção</h3><div class="muted">Registre o último serviço e programe o próximo.</div></div><button class="btn soft" id="cancelMaintenanceEdit" type="button">Cancelar</button></div><input id="editMaintenanceId" type="hidden"/>
@@ -2131,6 +2170,52 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
  </div>
 
  <div id="onvioReturnMsg" class="card hidden integration-return"></div>
+
+ <div class="card integration-card" id="movitIntegrationCard">
+  <div class="integration-head">
+   <div class="integration-brandmark" style="background:#1565c0">M</div>
+   <div class="integration-head-copy">
+    <div class="toolbar" style="gap:8px"><h3 style="margin:0">MOVIT • Rastreamento STC</h3><span class="pill" id="movitStatusPill">Verificando...</span></div>
+    <div class="muted">Liga os rastreadores da frota ao Comando 360 e vincula cada condução automaticamente pela placa.</div>
+   </div>
+  </div>
+  <div class="integration-flow">
+   <div class="integration-step"><span class="integration-step-num">1</span><div><strong>Chave de integração STC</strong><div class="muted">Use a chave própria da sua conta MOVIT fornecida pela empresa de rastreamento.</div></div></div>
+   <div class="integration-step"><span class="integration-step-num">2</span><div><strong>Vínculo automático por placa</strong><div class="muted">Placas iguais no MOVIT e na Frota são conectadas sem cadastro duplicado.</div></div></div>
+   <div class="integration-step"><span class="integration-step-num">3</span><div><strong>KM e posição no Comando 360</strong><div class="muted">Quando disponíveis no rastreador, posição, ignição, velocidade e hodômetro passam a alimentar a frota.</div></div></div>
+  </div>
+  <div class="integration-box">
+   <strong>Dados da conta MOVIT</strong>
+   <div class="row integration-creds-row" style="margin-top:10px">
+    <div><label>Chave de integração</label><input id="movitClientKey" autocomplete="off" placeholder="Chave fornecida pela STC / rastreador"/></div>
+    <div><label>ID do usuário (opcional)</label><input id="movitUserId" type="number" min="1" step="1" placeholder="O sistema tenta identificar sozinho"/></div>
+   </div>
+   <div class="row integration-creds-row">
+    <div><label>Usuário MOVIT</label><input id="movitUsername" autocomplete="username" placeholder="Seu usuário do MOVIT"/></div>
+    <div><label>Senha MOVIT</label><input id="movitPassword" type="password" autocomplete="new-password" placeholder="Sua senha do MOVIT"/></div>
+   </div>
+   <div class="movit-security-note">🔒 A senha não é gravada no navegador nem no GitHub. Ela é enviada ao backend seguro e a configuração fica criptografada no servidor.</div>
+   <details class="movit-advanced">
+    <summary>Configuração avançada da API</summary>
+    <div class="row" style="margin-top:10px"><div><label>Campo do usuário</label><input id="movitLoginUserField" value="user"/></div><div><label>Campo da senha</label><input id="movitLoginPasswordField" value="password"/></div></div>
+    <div><label>Payload de login personalizado (JSON, opcional)</label><textarea id="movitLoginTemplate" rows="3" placeholder='{"key":"{{key}}","user":"{{username}}","password":"{{password}}","locale":"pt"}'></textarea></div>
+    <div><label>Payload da grade de rastreadores (JSON, opcional)</label><textarea id="movitGridTemplate" rows="3" placeholder='{"userId":"{{userId}}","key":"{{key}}","locale":"pt","page":1,"perPage":100}'></textarea></div>
+   </details>
+   <div class="toolbar" style="margin-top:12px">
+    <button class="btn primary" id="saveMovitConfig" type="button">CONECTAR MOVIT</button>
+    <button class="btn soft" id="testMovitConfig" type="button">TESTAR / SINCRONIZAR</button>
+    <button class="btn soft" id="disconnectMovit" type="button">DESCONECTAR</button>
+   </div>
+   <div class="muted" id="movitConfigMsg" style="margin-top:8px"></div>
+  </div>
+  <div class="integration-status-grid">
+   <div class="integration-stat"><span>Backend</span><strong id="movitBridgeVersion">—</strong></div>
+   <div class="integration-stat"><span>Rastreadores</span><strong id="movitTrackerCount">—</strong></div>
+   <div class="integration-stat"><span>Vinculados</span><strong id="movitLinkedCount">—</strong></div>
+   <div class="integration-stat"><span>Última atualização</span><strong id="movitLastSync">—</strong></div>
+  </div>
+ </div>
+
 
  <div class="card integration-card">
   <div class="integration-head">
@@ -6413,6 +6498,76 @@ async function confirmCrlvImport(options={}){
 
 
 
+
+let movitTrackingRows=[],movitTrackingTimer=null,movitLastStatus=null;
+async function movitInvoke(action,extra={}){
+ const r=await authFetch('/functions/v1/movit-bridge',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:action,company_id:companyId,...extra})},true);
+ return parseResponse(r);
+}
+function movitJsonValue(id,label){const raw=$(id)?.value?.trim();if(!raw)return null;try{return JSON.parse(raw)}catch(_){throw new Error(label+' contém JSON inválido.')}}
+function movitAge(iso){if(!iso)return{text:'Sem horário',stale:true};const ms=Date.now()-new Date(iso).getTime();if(!Number.isFinite(ms))return{text:'Horário inválido',stale:true};const min=Math.max(0,Math.round(ms/60000));if(min<1)return{text:'agora',stale:false};if(min<60)return{text:'há '+min+' min',stale:min>15};return{text:'há '+Math.round(min/60)+' h',stale:true}}
+function renderMovitTracking(){
+ const rows=movitTrackingRows||[];
+ if($('#movitKpiTotal'))$('#movitKpiTotal').textContent=String(rows.length);
+ if($('#movitKpiMoving'))$('#movitKpiMoving').textContent=String(rows.filter(x=>Number(x.speed_kmh||0)>2).length);
+ if($('#movitKpiIgnition'))$('#movitKpiIgnition').textContent=String(rows.filter(x=>x.ignition===true).length);
+ const linked=rows.filter(x=>x.linked!==false&&x.vehicle_id).length;
+ if($('#movitKpiLinked'))$('#movitKpiLinked').textContent=String(linked);
+ if($('#movitKpiLinkedHint'))$('#movitKpiLinkedHint').textContent=(rows.length-linked)+' sem vínculo • por placa';
+ const list=$('#movitTrackingList');if(!list)return;
+ if(!rows.length){list.innerHTML='<div class="item"><strong>Nenhuma posição recebida</strong><div class="muted">Se o MOVIT ainda não estiver conectado, abra Integrações e informe sua chave e conta.</div></div>';return}
+ list.innerHTML=rows.map(function(v){
+  const age=movitAge(v.recorded_at||v.gps_at||v.updated_at),lat=Number(v.latitude),lon=Number(v.longitude),hasPos=Number.isFinite(lat)&&Number.isFinite(lon),moving=Number(v.speed_kmh||0)>2;
+  const dot=age.stale?'stale':moving?'move':v.ignition===true?'on':'',status=age.stale?'GPS desatualizado':moving?'Em movimento':v.ignition===true?'Ligada':'Parada';
+  const name=v.vehicle_name||'Rastreador não vinculado',plate=v.license_plate||v.raw_data?.license_plate||'sem placa',km=v.odometer_km!=null?Number(v.odometer_km).toLocaleString('pt-BR')+' km':'—',address=v.address||v.raw_data?.address||'Endereço não informado';
+  const map=hasPos?'<a class="btn soft" target="_blank" rel="noopener" href="https://www.google.com/maps?q='+lat+','+lon+'">ABRIR NO MAPA</a>':'';
+  return '<div class="tracking-card"><div class="tracking-card-main"><strong>'+esc(name)+'</strong><span class="plate">'+esc(plate)+'</span><div class="muted" style="margin-top:7px"><span class="tracking-dot '+dot+'"></span>'+esc(status)+' • '+esc(age.text)+'</div></div><div class="tracking-data"><b>Velocidade:</b> '+Number(v.speed_kmh||0).toFixed(0)+' km/h<br><b>Ignição:</b> '+(v.ignition===true?'Ligada':v.ignition===false?'Desligada':'—')+'<br><b>Hodômetro:</b> '+km+'</div><div class="tracking-data"><b>Local:</b> '+esc(address)+'<br>'+(hasPos?esc(lat.toFixed(5)+', '+lon.toFixed(5)):'Sem coordenadas')+'</div><div class="tracking-actions">'+map+(v.vehicle_id?'':'<button class="btn soft" type="button" data-jump="frota">VER FROTA</button>')+'</div></div>';
+ }).join('');
+}
+async function loadMovitTracking(forceSync=true){
+ const status=$('#movitTrackingStatus');
+ try{
+  if(status)status.textContent=forceSync?'Consultando posições no MOVIT...':'Carregando posições...';
+  const st=await movitInvoke('status');movitLastStatus=st;
+  if(!st.configured){movitTrackingRows=[];renderMovitTracking();if(status)status.innerHTML='<span class="pill warn">MOVIT não configurado</span> • abra Integrações para conectar.';stopMovitTrackingPolling();return}
+  const data=await movitInvoke(forceSync?'sync':'current');movitTrackingRows=Array.isArray(data.vehicles)?data.vehicles:[];renderMovitTracking();
+  if(status)status.innerHTML='<span class="pill ok">Online</span> • '+movitTrackingRows.length+' rastreador(es) • atualizado '+new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+  startMovitTrackingPolling();
+ }catch(e){if(status)status.innerHTML='<span class="pill danger">Falha no MOVIT</span> • '+esc(e.message||String(e));renderMovitTracking()}
+}
+function startMovitTrackingPolling(){if(movitTrackingTimer)return;movitTrackingTimer=setInterval(function(){if(document.querySelector('#screenHost [data-screen="rastreamento"]'))loadMovitTracking(true).catch(()=>{})},60000)}
+function stopMovitTrackingPolling(){if(movitTrackingTimer){clearInterval(movitTrackingTimer);movitTrackingTimer=null}}
+async function loadMovitIntegrationUi(){
+ const pill=$('#movitStatusPill'),msg=$('#movitConfigMsg');if(!pill)return;
+ try{
+  pill.className='pill';pill.textContent='Verificando...';const st=await movitInvoke('status');movitLastStatus=st;
+  pill.className='pill '+(st.configured?'ok':'warn');pill.textContent=st.configured?'Conectado':'Não configurado';
+  if($('#movitBridgeVersion'))$('#movitBridgeVersion').textContent='v'+String(st.bridgeVersion||'—');
+  if(st.clientKey&&!$('#movitClientKey').value)$('#movitClientKey').value=st.clientKey;if(st.userId&&!$('#movitUserId').value)$('#movitUserId').value=st.userId;
+  $('#testMovitConfig').disabled=!st.configured;$('#disconnectMovit').disabled=!st.configured;
+  if(msg)msg.textContent=st.configured?'Integração salva com segurança. Use Testar / Sincronizar para conferir os rastreadores.':'Informe a chave da sua integração STC e os dados da conta MOVIT.';
+ }catch(e){pill.className='pill danger';pill.textContent='Erro';if(msg)msg.textContent=e.message||String(e)}
+}
+async function saveMovitConfigurationUi(){
+ const btn=$('#saveMovitConfig'),msg=$('#movitConfigMsg');
+ try{
+  const clientKey=$('#movitClientKey').value.trim(),username=$('#movitUsername').value.trim(),password=$('#movitPassword').value;if(!clientKey||!username||!password)throw new Error('Informe a chave de integração, o usuário e a senha do MOVIT.');
+  btn.disabled=true;if(msg)msg.textContent='Testando login e buscando rastreadores...';
+  const data=await movitInvoke('configure',{clientKey:clientKey,userId:Number($('#movitUserId').value||0),username:username,password:password,locale:'pt',loginUserField:$('#movitLoginUserField').value.trim()||'user',loginPasswordField:$('#movitLoginPasswordField').value.trim()||'password',loginTemplate:movitJsonValue('#movitLoginTemplate','Payload de login'),gridTemplate:movitJsonValue('#movitGridTemplate','Payload da grade')});
+  $('#movitPassword').value='';$('#movitTrackerCount').textContent=String(data.trackerCount??'—');$('#movitLastSync').textContent=new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+  if(msg)msg.textContent=data.message||'MOVIT conectado com sucesso.';c360Toast('MOVIT conectado','Rastreamento da frota ativado.','success');await loadMovitIntegrationUi();
+ }catch(e){if(msg)msg.textContent=e.message||String(e);c360Toast('Falha ao conectar MOVIT',e.message||String(e),'error',5000)}finally{btn.disabled=false}
+}
+async function testMovitIntegrationUi(){
+ const msg=$('#movitConfigMsg');
+ try{
+  if(msg)msg.textContent='Sincronizando posições...';const data=await movitInvoke('sync');movitTrackingRows=Array.isArray(data.vehicles)?data.vehicles:[];
+  $('#movitTrackerCount').textContent=String(data.count??movitTrackingRows.length);$('#movitLinkedCount').textContent=String(data.linked??movitTrackingRows.filter(x=>x.vehicle_id).length);$('#movitLastSync').textContent=new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+  if(msg)msg.textContent='✓ Sincronização concluída. '+String(data.linked??0)+' condução(ões) vinculada(s) pela placa'+(data.unlinked?' • '+data.unlinked+' rastreador(es) sem vínculo.':'.');c360Toast('MOVIT sincronizado',String(data.count??0)+' rastreador(es) recebidos.','success');
+ }catch(e){if(msg)msg.textContent=e.message||String(e);c360Toast('Falha no MOVIT',e.message||String(e),'error',5000)}
+}
+async function disconnectMovitUi(){if(!confirm('Desconectar o MOVIT desta empresa? As conduções continuarão cadastradas, mas o rastreamento deixará de atualizar.'))return;await movitInvoke('clear_config');movitTrackingRows=[];stopMovitTrackingPolling();$('#movitUsername').value='';$('#movitPassword').value='';await loadMovitIntegrationUi();c360Toast('MOVIT desconectado','','success')}
+
 let onvioState=null,onvioFiles={};
 
 async function onvioInvoke(action,extra={}){
@@ -6439,6 +6594,7 @@ function onvioRequestText(callbackUrl){
   'Por favor, enviem o client_id, client_secret e as orientações/escopos necessários para leitura dos documentos do Client Center.\n\nObrigado.';
 }
 async function loadIntegrations(){
+ try{await loadMovitIntegrationUi()}catch(e){console.warn('movit integration',e)}
  const pill=$('#onvioStatusPill'),msg=$('#onvioConnectionMsg'),docs=$('#onvioDocsList');
  try{
   if(pill){pill.className='pill';pill.textContent='Carregando...'}
@@ -6713,6 +6869,7 @@ const C360_MODULES={
  documentosrh:['Documentos RH','Validades e arquivos'],
  ponto:['RH & Ponto','Presença e jornada'],
  frota:['Frota','Conduções e CRLV'],
+ rastreamento:['Rastreamento','MOVIT e localização da frota'],
  manutencoes:['Manutenções','Preventiva e corretiva'],
  combustivel:['Combustível & KM','Abastecimentos e hodômetro'],
  financeiro:['Financeiro','Entradas, saídas e resultado'],
@@ -6727,7 +6884,7 @@ function c360SetModule(tab){
  const m=C360_MODULES[tab]||[tab,'Comando 360'];
  const t=document.getElementById('headerModuleTitle'),s=document.getElementById('headerModuleSubtitle');
  if(t)t.textContent=m[0];if(s)s.textContent=m[1];
- document.title='Comando 360 • '+m[0]+' • v6.67';
+ document.title='Comando 360 • '+m[0]+' • v6.68';
  document.querySelectorAll('#mobileBottomNav [data-mobiletab]').forEach(b=>{
   const mt=b.dataset.mobiletab;
   b.classList.toggle('active',mt===tab||(mt==='more'&&!['inicio','operacoes','ponto','frota'].includes(tab)));
@@ -6756,6 +6913,7 @@ function c360ToggleMobileMenu(){
  const b=document.getElementById('mobileMenuBtn');if(b)b.setAttribute('aria-expanded',open?'true':'false');
 }
 async function v2Go(tab){
+ if(tab!=='rastreamento')stopMovitTrackingPolling();
  if(tab==='documentosfrota')tab='frota';
  if(deviceMode&&!['equipehome','operacoes','ponto','combustivel','equipereport'].includes(tab))tab='equipehome';
  c360SetModule(tab);
@@ -6788,6 +6946,7 @@ async function v2Go(tab){
    else if(tab==='funcionarios'){await loadEmployees();await Promise.all([loadProfessionalProfile(),loadRHPoint()]);}
    else if(tab==='operacoes'){if(deviceMode)await loadDevicePoultryContext();else await loadPoultrySelectors();await loadPoultryOps();}
    else if(tab==='frota') await loadVehicles();
+   else if(tab==='rastreamento') await loadMovitTracking(true);
    else if(tab==='manutencoes') await loadMaintenances();
    else if(tab==='combustivel'){await loadFuel();if(deviceMode&&fuelVehicles.length===1){const s=$('#fuelVehicle');if(s)s.value=fuelVehicles[0].id}}
    else if(tab==='documentosrh') await loadEmpDocs();
@@ -6851,6 +7010,10 @@ document.addEventListener('click',async function(e){
   if(e.target.closest('#deleteVehicleDoc')){e.preventDefault();await deleteVehicleDocument();return}
   if(e.target.closest('#refreshVehicleDocs')){e.preventDefault();await loadVehicleDocs(document.getElementById('editVehicleId')?.value||'');return}
   if(e.target.closest('#refreshAlerts')){e.preventDefault();await loadSmartAlerts();return}
+  if(e.target.closest('#refreshMovitTracking')){e.preventDefault();await loadMovitTracking(true);return}
+  if(e.target.closest('#saveMovitConfig')){e.preventDefault();await saveMovitConfigurationUi();return}
+  if(e.target.closest('#testMovitConfig')){e.preventDefault();await testMovitIntegrationUi();return}
+  if(e.target.closest('#disconnectMovit')){e.preventDefault();await disconnectMovitUi();return}
   if(e.target.closest('#refreshIntegrations')){e.preventDefault();await loadIntegrations();return}
   if(e.target.closest('#saveOnvioCredentials')){e.preventDefault();await saveOnvioCredentialsUi();return}
   if(e.target.closest('#connectOnvioBtn')){e.preventDefault();await connectOnvioUi();return}
@@ -6962,7 +7125,7 @@ setInterval(()=>{
 },60000);
 if('serviceWorker' in navigator){
  window.addEventListener('load',()=>{
-  navigator.serviceWorker.register('./sw-v6-67.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
+  navigator.serviceWorker.register('./sw-v6-68.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
  });
 }
 
