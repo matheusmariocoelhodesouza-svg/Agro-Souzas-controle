@@ -1729,7 +1729,13 @@ async function previewNextPoint(){
       label.textContent=(pointLabels[next]||String(next))+' • offline';
       return;
     }
-    const emp=await rest('v2_employees','select=id,full_name,employee_number,cpf,primary_team&company_id=eq.'+companyId+'&employee_number=eq.'+encodeURIComponent(matricula)+'&status=eq.active&limit=1');
+    let emp=[];
+    if(deviceMode){
+      const all=await devicePointEmployees();
+      emp=all.filter(e=>String(e.employee_number||'').trim()===matricula);
+    }else{
+      emp=await rest('v2_employees','select=id,full_name,employee_number,cpf,primary_team&company_id=eq.'+companyId+'&employee_number=eq.'+encodeURIComponent(matricula)+'&status=eq.active&limit=1');
+    }
     if(!emp.length){label.textContent='Matrícula não encontrada';return}
     const next=await getNextPoint(emp[0].id);
     label.textContent=pointLabels[next]||String(next);
@@ -1870,8 +1876,8 @@ async function warmPointOfflineCache(){
  try{
   const bounds=saoPauloDayUtcBounds(localDateBR());
   const [employees,events]=await Promise.all([
-   rest('v2_employees','select=id,employee_number,full_name,primary_team,status&company_id=eq.'+companyId+'&status=eq.active&order=full_name.asc'),
-   rest('v2_attendance_events','select=id,employee_id,occurred_at,event_type,method,accuracy_m,offline_event_id&company_id=eq.'+companyId+'&occurred_at=gte.'+encodeURIComponent(bounds.start)+'&occurred_at=lt.'+encodeURIComponent(bounds.end)+'&order=occurred_at.asc&limit=500')
+   devicePointEmployees(),
+   rest('v2_attendance_events','select=id,employee_id,occurred_at,event_type,method,accuracy_m,offline_event_id,work_team_id,device_access_id,metadata&company_id=eq.'+companyId+'&occurred_at=gte.'+encodeURIComponent(bounds.start)+'&occurred_at=lt.'+encodeURIComponent(bounds.end)+'&order=occurred_at.asc&limit=500')
   ]);
   await cachePointContext(employees,events);
  }catch(e){console.warn('warm point offline cache',e)}
@@ -1941,7 +1947,8 @@ async function appendCachedOfflinePoint(payload){
  if(!events.some(x=>x.offline_event_id===payload.offline_event_id)){
   events.push({
    id:null,employee_id:payload.employee_id,occurred_at:payload.occurred_at,event_type:payload.event_type,
-   method:payload.method,accuracy_m:payload.accuracy_m,offline_event_id:payload.offline_event_id,offline_pending:true
+   method:payload.method,accuracy_m:payload.accuracy_m,offline_event_id:payload.offline_event_id,
+   work_team_id:payload.work_team_id||null,device_access_id:payload.device_access_id||null,metadata:payload.metadata||{},offline_pending:true
   });
   await offlineCacheSet(key,events);
  }
@@ -2127,7 +2134,8 @@ async function registerOfflinePointByNumber(matricula){
   company_id:companyId,employee_id:employee.id,occurred_at:occurredAt,event_type:nextEvent,
   latitude:gps.latitude,longitude:gps.longitude,accuracy_m:gps.accuracy_m,
   method:'employee_number',device_id:navigator.userAgent.slice(0,180),offline_event_id:offlineId,
-  metadata:{beta:true,source:'team_device_offline',identification_method:'employee_number',offline_captured:true,offline_captured_at:occurredAt},
+  work_team_id:deviceAccess?.team_id||null,device_access_id:deviceAccess?.id||null,
+  metadata:{beta:true,source:'team_device_offline',identification_method:'employee_number',offline_captured:true,offline_captured_at:occurredAt,work_team_id:deviceAccess?.team_id||null,work_team_name:deviceTeam?.name||null,device_access_id:deviceAccess?.id||null,device_name:deviceAccess?.device_name||null},
   created_by:userId
  };
  await offlineQueueAdd({id:offlineId,type:'attendance',company_id:companyId,team_id:deviceAccess?.team_id||null,created_at:occurredAt,payload});
@@ -2136,7 +2144,7 @@ async function registerOfflinePointByNumber(matricula){
  msg.className='okmsg';msg.textContent=receiptType+' salvo no celular para '+employee.full_name+'. Será sincronizado quando a internet voltar.';
  const receipt=$('#pointReceipt');
  receipt.className='card';
- receipt.innerHTML='<div class="label">COMPROVANTE DE PONTO • OFFLINE</div><div style="font-size:18px;font-weight:900;margin:3px 0">'+esc(receiptType)+'</div><strong>'+esc(employee.full_name)+'</strong><div class="muted">Matrícula '+esc(employee.employee_number)+' • '+esc(when)+'</div><div class="muted">GPS ±'+Math.round(Number(gps.accuracy_m||0))+' m • salvo neste aparelho</div><div class="pill warn" style="margin-top:8px">Aguardando sincronização ⟳</div>';
+ receipt.innerHTML='<div class="label">COMPROVANTE DE PONTO • OFFLINE</div><div style="font-size:18px;font-weight:900;margin:3px 0">'+esc(receiptType)+'</div><strong>'+esc(employee.full_name)+'</strong><div class="muted">Matrícula '+esc(employee.employee_number)+' • '+esc(when)+'</div><div class="muted"><b>Equipe trabalhada:</b> '+esc(deviceTeam?.name||'Equipe do aparelho')+'</div><div class="muted">GPS ±'+Math.round(Number(gps.accuracy_m||0))+' m • salvo neste aparelho</div><div class="pill warn" style="margin-top:8px">Aguardando sincronização ⟳</div>';
  $('#pointMatricula').value='';
  $('#nextPointLabel').textContent='Digite a matrícula';
  await updateOfflineQueueBadge();
