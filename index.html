@@ -8,7 +8,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
-<title>Comando 360 • v6.54</title>
+<title>Comando 360 • v6.55</title>
 <link rel="manifest" href="./comando360.webmanifest"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
@@ -652,7 +652,7 @@ body.device-mode .po-actions .btn{width:100%;min-height:47px}
 <script defer src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
 <script>
 (function(){
-  const BUILD='6.54';
+  const BUILD='6.55';
   try{
     const marker='controla_cache_cleanup_'+BUILD;
     if(!localStorage.getItem(marker)){
@@ -686,7 +686,7 @@ body.device-mode .po-actions .btn{width:100%;min-height:47px}
 <div class="v2group">INTELIGÊNCIA</div>
 <button class="v2navbtn" data-v2tab="ia">✦   Assistente IA</button>
 </aside>
-<header><div class="brand"><img class="header-brand-icon" src="./comando360-icon.svg" alt="Comando 360"/><div><b>Comando <span class="brand360">360</span></b><div><small id="companyName">Empresa</small></div></div></div><div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.54</span><button class="btn soft" id="themeToggle" type="button">☾</button><button class="btn soft hidden" id="logout">Sair</button></div></header>
+<header><div class="brand"><img class="header-brand-icon" src="./comando360-icon.svg" alt="Comando 360"/><div><b>Comando <span class="brand360">360</span></b><div><small id="companyName">Empresa</small></div></div></div><div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.55</span><button class="btn soft" id="themeToggle" type="button">☾</button><button class="btn soft hidden" id="logout">Sair</button></div></header>
 <main class="wrap">
 <section class="login team-entry" id="login">
 <div class="card" id="deviceSetupCard">
@@ -703,7 +703,7 @@ body.device-mode .po-actions .btn{width:100%;min-height:47px}
  <label>Senha</label><input autocomplete="current-password" id="password" type="password"/>
  <button class="btn primary" id="loginBtn">Entrar</button>
  <button class="btn soft" id="backDeviceSetup" type="button" style="margin-left:6px">Voltar</button>
- <div class="muted" id="loginMsg" style="margin-top:10px">Comando 360 • v6.54</div><div class="debug" id="debug"></div>
+ <div class="muted" id="loginMsg" style="margin-top:10px">Comando 360 • v6.55</div><div class="debug" id="debug"></div>
 </div>
 </section>
 <section class="hidden" id="app">
@@ -2003,7 +2003,7 @@ async function syncPoultryTruckOfflineItem(item){
   .map(x=>({barn_id:x?.barn_id||null,barn_number:normalizeAviaryNumber(x?.barn_number),birds:poN(x?.birds)}))
   .filter(x=>x.barn_number||x.barn_id);
 
- // Compatibilidade com itens offline criados antes da v6.54.
+ // Compatibilidade com itens offline criados antes da v6.55.
  if(!barnBreakdown.length&&item.barn_id){
   const oldId=String(item.barn_id).startsWith('offline:')?(refs.loading?.metadata?.default_barn_id||null):item.barn_id;
   const oldBarn=poultryBarns.find(b=>b.id===oldId);
@@ -2718,7 +2718,7 @@ async function loadRHPoint(){
    const today=localDateBR();
    const bounds=saoPauloDayUtcBounds(today);
    const days=await rest('v2_attendance_days','select=employee_id,status,worked_minutes,late_minutes,absence_minutes,work_date&company_id=eq.'+companyId+'&work_date=eq.'+today);
-   const events=await rest('v2_attendance_events','select=id,employee_id,occurred_at,event_type,method,accuracy_m,nsr,integrity_hash&company_id=eq.'+companyId+'&occurred_at=gte.'+encodeURIComponent(bounds.start)+'&occurred_at=lt.'+encodeURIComponent(bounds.end)+'&order=occurred_at.asc&limit=500');
+   let events=await rest('v2_attendance_events','select=id,employee_id,occurred_at,event_type,method,accuracy_m,nsr,integrity_hash&company_id=eq.'+companyId+'&occurred_at=gte.'+encodeURIComponent(bounds.start)+'&occurred_at=lt.'+encodeURIComponent(bounds.end)+'&order=occurred_at.asc&limit=500');
    const activeEmployeeIds=new Set(employees.map(e=>e.id));events=events.filter(ev=>activeEmployeeIds.has(ev.employee_id));
    const map=Object.fromEntries(employees.map(e=>[e.id,e]));
    const byEmployee={};
@@ -4737,7 +4737,7 @@ setInterval(()=>{
 },60000);
 if('serviceWorker' in navigator){
  window.addEventListener('load',()=>{
-  navigator.serviceWorker.register('./sw-v6-54.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
+  navigator.serviceWorker.register('./sw-v6-55.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
  });
 }
 
