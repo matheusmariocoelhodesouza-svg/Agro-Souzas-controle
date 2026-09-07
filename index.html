@@ -1108,7 +1108,7 @@ body.device-mode .po-actions .btn{width:100%;min-height:47px}
  </div>
  <div class="row" style="margin-top:12px"><div><label>Placa</label><input id="crlvPlate"/></div><div><label>RENAVAM</label><input id="crlvRenavam"/></div><div><label>Marca / Modelo</label><input id="crlvMakeModel"/></div></div>
  <div class="row"><div><label>Ano fabricação</label><input id="crlvYearFab" type="number"/></div><div><label>Ano modelo</label><input id="crlvYearModel" type="number"/></div><div><label>Chassi</label><input id="crlvChassis"/></div></div>
- <div class="row"><div><label>Proprietário</label><input id="crlvOwner"/></div><div><label>Cor</label><input id="crlvColor"/></div><div><label>Combustível</label><input id="crlvFuel"/></div></div>
+ <div class="row"><div><label>Proprietário</label><input id="crlvOwner"/></div><div><label>Cor</label><input id="crlvColor"/></div><div><label>Combustível</label><input id="crlvFuel"/></div><div><label>Vencimento do CRLV</label><input id="crlvExpires" type="date"/></div></div>
  <div class="toolbar"><button class="btn primary" id="confirmCrlvImport" type="button">CONFIRMAR E SALVAR</button><span class="muted" id="crlvImportMsg"></span></div>
  <div class="muted" style="margin-top:8px">O Comando 360 nunca grava os dados lidos sem esta confirmação. PDFs digitalizados como imagem podem precisar de preenchimento manual.</div>
 </div>
@@ -2524,7 +2524,68 @@ function vehiclePlaceholder(name='Veículo'){const t=(name||'V').trim().slice(0,
 async function vehiclePhotoObjectUrl(path){if(!path)return '';if(vehiclePhotoUrls[path])return vehiclePhotoUrls[path];try{const r=await authFetch('/storage/v1/object/employee-documents/'+path);if(!r.ok)throw new Error('Foto indisponível');const b=await r.blob();const u=URL.createObjectURL(b);vehiclePhotoUrls[path]=u;return u}catch(e){console.warn('vehicle photo',e);return ''}}
 async function uploadVehiclePhoto(file,vehicleId){const sess=session();const ext=file.type==='image/png'?'png':file.type==='image/webp'?'webp':'jpg';const path=companyId+'/vehicles/'+vehicleId+'/profile-'+Date.now()+'.'+ext;const r=await fetch(API_URL+'/storage/v1/object/employee-documents/'+path,{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+sess.access_token,'Content-Type':file.type||'image/jpeg','x-upsert':'false'},body:file});await parseResponse(r);return path}
 async function hydrateVehiclePhotos(){for(const v of (window.__fleetVehicles||[])){const img=document.querySelector(`[data-vehicle-photo="${v.id}"]`);if(!img)continue;img.src=vehiclePlaceholder(v.description);const p=v.metadata?.vehicle_photo_path;if(p){const u=await vehiclePhotoObjectUrl(p);if(u)img.src=u}}}
-async function loadVehicles(){try{const [r,t]=await Promise.all([rest('v2_vehicles','select=id,description,plate,make,model,model_year,renavam,current_odometer_km,status,metadata&company_id=eq.'+companyId+'&order=description.asc'),rest('v2_teams','select=id,name,status,metadata,supervisor_employee_id&company_id=eq.'+companyId+'&order=name.asc')]);window.__fleetVehicles=r;window.__fleetTeams=t;const list=$('#vehiclesList');if(!list)return;list.innerHTML=r.map(x=>{const team=t.find(z=>z.metadata?.primary_vehicle_id===x.id);const contractor=team?.metadata?.contractor_name||'';const st=x.status==='active'?'Ativo':x.status==='maintenance'?'Em manutenção':'Inativo';return `<div class="item"><div class="toolbar" style="justify-content:space-between;gap:10px"><div style="display:flex;align-items:center;gap:12px"><img data-vehicle-photo="${x.id}" style="width:78px;height:58px;object-fit:cover;border-radius:12px;border:1px solid #cbd5e1"/><div><strong>${esc(x.description||x.model||'Veículo')}</strong> <span class="pill ${x.status==='active'?'ok':'warn'}">${esc(st)}</span><div class="muted">${esc(x.plate||'Sem placa')} • ${esc([x.make,x.model,x.model_year].filter(Boolean).join(' ')||'Modelo não informado')} • ${Number(x.current_odometer_km||0).toLocaleString('pt-BR')} km</div>${team?`<div style="margin-top:5px"><span class="pill">👥 ${esc(team.name)}</span>${contractor?` <span class="pill">🏭 ${esc(contractor)}</span>`:''}</div>`:''}</div></div><button class="btn soft" type="button" onclick="openVehicleEdit('${x.id}')">Editar</button></div></div>`}).join('')||'<div class="muted">Sem conduções. Toque em + Novo veículo para cadastrar.</div>';hydrateVehiclePhotos()}catch(e){const l=$('#vehiclesList');if(l)l.innerHTML='<div class="error">'+esc(e.message)+'</div>'}}
+async function loadVehicles(){
+ try{
+  const [r,t,docs,files]=await Promise.all([
+   rest('v2_vehicles','select=id,description,plate,make,model,model_year,renavam,current_odometer_km,status,metadata&company_id=eq.'+companyId+'&order=description.asc'),
+   rest('v2_teams','select=id,name,status,metadata,supervisor_employee_id&company_id=eq.'+companyId+'&order=name.asc'),
+   rest('v2_vehicle_documents','select=id,vehicle_id,document_type,expires_at,status,file_id,created_at&company_id=eq.'+companyId+'&status=eq.active&order=created_at.desc'),
+   rest('v2_files','select=id,storage_bucket,storage_path,original_name,mime_type,size_bytes&company_id=eq.'+companyId+'&category=eq.vehicle_document&archived_at=is.null&order=created_at.desc')
+  ]);
+  window.__fleetVehicles=r||[];
+  window.__fleetTeams=t||[];
+  vehicleDocsCache=docs||[];
+  vehicleDocFiles=Object.fromEntries((files||[]).map(f=>[f.id,f]));
+
+  const list=$('#vehiclesList');
+  if(!list)return;
+
+  list.innerHTML=(r||[]).map(x=>{
+   const team=(t||[]).find(z=>z.metadata?.primary_vehicle_id===x.id);
+   const contractor=team?.metadata?.contractor_name||'';
+   const st=x.status==='active'?'Ativo':x.status==='maintenance'?'Em manutenção':'Inativo';
+   const crlv=(docs||[]).find(d=>d.vehicle_id===x.id&&isVehicleCrlv(d.document_type));
+   const crlvFile=crlv?.file_id?vehicleDocFiles[crlv.file_id]:null;
+   let crlvInfo='';
+
+   if(crlv){
+    const z=vehicleDocStatus(crlv.expires_at);
+    const dateText=crlv.expires_at?new Date(crlv.expires_at+'T00:00:00').toLocaleDateString('pt-BR'):'não informado';
+    const statusText=crlv.expires_at?z.label:'Informe o vencimento';
+    crlvInfo=
+     '<div class="toolbar" style="margin-top:8px;gap:7px;flex-wrap:wrap">'+
+       '<span class="pill '+z.cls+'">📄 CRLV • Vencimento: '+esc(dateText)+' • '+esc(statusText)+'</span>'+
+       (crlvFile
+        ?'<button class="btn soft vehicleDocView" data-file="'+crlvFile.id+'" type="button">📄 ABRIR CRLV</button>'
+        :'<button class="btn soft" type="button" disabled title="Cadastre o arquivo do CRLV">📄 CRLV SEM ARQUIVO</button>')+
+     '</div>';
+   }else{
+    crlvInfo=
+     '<div class="toolbar" style="margin-top:8px;gap:7px;flex-wrap:wrap">'+
+       '<span class="pill">📄 CRLV não cadastrado</span>'+
+       '<button class="btn soft" type="button" onclick="openVehicleEdit(\''+x.id+'\')">+ CADASTRAR CRLV</button>'+
+     '</div>';
+   }
+
+   return '<div class="item"><div class="toolbar" style="justify-content:space-between;gap:10px;align-items:flex-start">'+
+    '<div style="display:flex;align-items:center;gap:12px;min-width:0">'+
+      '<img data-vehicle-photo="'+x.id+'" style="width:78px;height:58px;object-fit:cover;border-radius:12px;border:1px solid #cbd5e1"/>'+
+      '<div style="min-width:0"><strong>'+esc(x.description||x.model||'Veículo')+'</strong> <span class="pill '+(x.status==='active'?'ok':'warn')+'">'+esc(st)+'</span>'+
+        '<div class="muted">'+esc(x.plate||'Sem placa')+' • '+esc([x.make,x.model,x.model_year].filter(Boolean).join(' ')||'Modelo não informado')+' • '+Number(x.current_odometer_km||0).toLocaleString('pt-BR')+' km</div>'+
+        (team?'<div style="margin-top:5px"><span class="pill">👥 '+esc(team.name)+'</span>'+(contractor?' <span class="pill">🏭 '+esc(contractor)+'</span>':'')+'</div>':'')+
+        crlvInfo+
+      '</div>'+
+    '</div>'+
+    '<button class="btn soft" type="button" onclick="openVehicleEdit(\''+x.id+'\')">Editar</button>'+
+   '</div></div>';
+  }).join('')||'<div class="muted">Sem conduções. Toque em + Novo veículo para cadastrar.</div>';
+
+  hydrateVehiclePhotos();
+ }catch(e){
+  const l=$('#vehiclesList');
+  if(l)l.innerHTML='<div class="error">'+esc(e.message)+'</div>';
+ }
+}
 function fillVehicleTeamSelect(vehicleId=''){const sel=$('#editVehicleTeam');if(!sel)return;const teams=(window.__fleetTeams||[]).filter(t=>t.status==='active'||t.metadata?.primary_vehicle_id===vehicleId);sel.innerHTML='<option value="">Sem equipe vinculada</option>'+teams.map(t=>`<option value="${t.id}">${esc(t.name)}</option>`).join('');const linked=teams.find(t=>t.metadata?.primary_vehicle_id===vehicleId);sel.value=linked?.id||'';updateVehicleContractor()}
 function updateVehicleContractor(){const t=(window.__fleetTeams||[]).find(x=>x.id===$('#editVehicleTeam')?.value);const el=$('#editVehicleContractor');if(el)el.textContent=t?.metadata?.contractor_name?'Contratante: '+t.metadata.contractor_name:''}
 window.openVehicleEdit=async function(id=''){const v=(window.__fleetVehicles||[]).find(x=>x.id===id)||{};$('#editVehicleId').value=v.id||'';$('#vehicleEditTitle').textContent=v.id?'Editar veículo':'Novo veículo';$('#editVehicleDescription').value=v.description||'';$('#editVehiclePlate').value=v.plate||'';$('#editVehicleMake').value=v.make||'';$('#editVehicleModel').value=v.model||'';$('#editVehicleYear').value=v.model_year||'';$('#editVehicleRenavam').value=v.renavam||'';$('#editVehicleKm').value=v.current_odometer_km||'';$('#editVehicleStatus').value=v.status||'active';window.__vehiclePhotoFile=null;window.__removeVehiclePhoto=false;const pp=$('#editVehiclePhotoPreview');pp.src=vehiclePlaceholder(v.description);const p=v.metadata?.vehicle_photo_path;if(p){const u=await vehiclePhotoObjectUrl(p);if(u)pp.src=u}fillVehicleTeamSelect(v.id||'');$('#archiveVehicleBtn').style.display=v.id?'':'none';$('#deleteVehicleBtn').style.display=v.id?'':'none';$('#vehicleEditMsg').textContent='';$('#vehicleEditCard').style.display='block';$('#vehicleDocEditCard').style.display='none';await loadVehicleDocs(v.id||'');$('#vehicleEditCard').scrollIntoView({behavior:'smooth',block:'start'})}
@@ -4378,6 +4439,10 @@ async function deletePoultryOperation(operationId,loadingId){
 let vehicleDocsCache=[],vehicleDocsVehicles=[],vehicleDocFiles={},pendingCrlvFile=null,pendingCrlvData=null;
 const VEHICLE_DOC_BUCKET='vehicle-documents';
 
+function isVehicleCrlv(type){
+ const s=String(type||'').toLowerCase();
+ return s.includes('crlv')||s.includes('licenciamento');
+}
 function vehicleDocStatus(expires){
  if(!expires)return{label:'Sem vencimento',cls:''};
  const a=new Date();a.setHours(0,0,0,0);const d=new Date(expires+'T00:00:00'),n=Math.ceil((d-a)/86400000);
@@ -4454,12 +4519,12 @@ async function saveVehicleDocument(){
   if(file){const fr=await uploadVehicleDocumentFile(file,vehicle_id);file_id=fr?.id||file_id}
   const b={company_id:companyId,vehicle_id,document_type:document.getElementById('vehicleDocType').value,expires_at:document.getElementById('vehicleDocExpires').value||null,status:'active',file_id};
   if(id)await rest('v2_vehicle_documents','id=eq.'+id,'PATCH',b);else await rest('v2_vehicle_documents','','POST',b);
-  document.getElementById('vehicleDocEditCard').style.display='none';await loadVehicleDocs(vehicle_id);
+  document.getElementById('vehicleDocEditCard').style.display='none';await loadVehicleDocs(vehicle_id);await loadVehicles();
  }catch(e){m.textContent=e.message||String(e)}
 }
 async function deleteVehicleDocument(){
  const id=document.getElementById('vehicleDocId').value;if(!id||!confirm('Excluir este documento definitivamente?'))return;
- try{const d=vehicleDocsCache.find(x=>x.id===id);await rest('v2_vehicle_documents','id=eq.'+id,'DELETE');if(d?.file_id)try{await rest('v2_files','id=eq.'+d.file_id,'PATCH',{archived_at:new Date().toISOString()})}catch{}document.getElementById('vehicleDocEditCard').style.display='none';await loadVehicleDocs(d?.vehicle_id||document.getElementById('editVehicleId')?.value||'')}catch(e){alert(e.message)}
+ try{const d=vehicleDocsCache.find(x=>x.id===id);await rest('v2_vehicle_documents','id=eq.'+id,'DELETE');if(d?.file_id)try{await rest('v2_files','id=eq.'+d.file_id,'PATCH',{archived_at:new Date().toISOString()})}catch{}document.getElementById('vehicleDocEditCard').style.display='none';await loadVehicleDocs(d?.vehicle_id||document.getElementById('editVehicleId')?.value||'');await loadVehicles()}catch(e){alert(e.message)}
 }
 async function extractPdfText(file){
  if(!window.pdfjsLib)throw new Error('Leitor de PDF ainda carregando. Aguarde alguns segundos.');
@@ -4487,6 +4552,7 @@ function parseCrlvText(raw){
 async function beginCrlvImport(file){
  const msg=document.getElementById('crlvImportMsg');pendingCrlvFile=file;pendingCrlvData={};
  document.getElementById('crlvPreviewCard').style.display='block';
+ if(document.getElementById('crlvExpires'))document.getElementById('crlvExpires').value='';
  try{
   msg.textContent='Lendo documento...';
   let d={};
@@ -4499,22 +4565,83 @@ async function beginCrlvImport(file){
  }catch(e){msg.textContent='Leitura automática não concluída: '+e.message+' Você ainda pode preencher os campos e salvar o arquivo.'}
 }
 async function confirmCrlvImport(){
- const msg=document.getElementById('crlvImportMsg'),plate=document.getElementById('crlvPlate').value.toUpperCase().replace(/[^A-Z0-9]/g,''),renavam=document.getElementById('crlvRenavam').value.replace(/\D/g,''),mm=document.getElementById('crlvMakeModel').value.trim();
+ const msg=document.getElementById('crlvImportMsg');
+ const plate=document.getElementById('crlvPlate').value.toUpperCase().replace(/[^A-Z0-9]/g,'');
+ const renavam=document.getElementById('crlvRenavam').value.replace(/\D/g,'');
+ const mm=document.getElementById('crlvMakeModel').value.trim();
+ const expires=document.getElementById('crlvExpires')?.value||null;
  if(!plate&&!renavam){msg.textContent='Informe pelo menos a placa ou o RENAVAM.';return}
+
  try{
-  msg.textContent='Verificando a frota...';await loadVehicleDocs();
-  let v=vehicleDocsVehicles.find(x=>(plate&&String(x.plate||'').replace(/[^A-Z0-9]/gi,'').toUpperCase()===plate)||(renavam&&String(x.renavam||'').replace(/\D/g,'')===renavam));
-  const parts=mm.split('/'),make=parts.length>1?parts[0].trim():'',model=parts.length>1?parts.slice(1).join('/').trim():mm;
-  const meta={...(v?.metadata||{}),crlv:{owner:document.getElementById('crlvOwner').value.trim()||null,chassis:document.getElementById('crlvChassis').value.trim()||null,color:document.getElementById('crlvColor').value.trim()||null,fuel:document.getElementById('crlvFuel').value.trim()||null,year_fabrication:Number(document.getElementById('crlvYearFab').value)||null,imported_at:new Date().toISOString()}};
-  const body={company_id:companyId,plate:plate||v?.plate||null,renavam:renavam||v?.renavam||null,make:make||v?.make||null,model:model||v?.model||null,model_year:Number(document.getElementById('crlvYearModel').value)||Number(document.getElementById('crlvYearFab').value)||v?.model_year||null,description:v?.description||(model||mm||plate||'Condução'),status:v?.status||'active',metadata:meta};
-  if(v){if(!confirm(`A condução ${v.description||v.plate} já existe. Atualizar com os dados conferidos do CRLV?`))return;const rows=await rest('v2_vehicles','id=eq.'+v.id,'PATCH',body);v=rows?.[0]||{...v,...body}}
-  else {if(!confirm(`Cadastrar nova condução ${plate||renavam} com os dados conferidos?`))return;const rows=await rest('v2_vehicles','','POST',body);v=rows?.[0]}
+  msg.textContent='Verificando a frota...';
+  await loadVehicleDocs();
+
+  let v=vehicleDocsVehicles.find(x=>
+   (plate&&String(x.plate||'').replace(/[^A-Z0-9]/gi,'').toUpperCase()===plate)||
+   (renavam&&String(x.renavam||'').replace(/\D/g,'')===renavam)
+  );
+
+  const parts=mm.split('/');
+  const make=parts.length>1?parts[0].trim():'';
+  const model=parts.length>1?parts.slice(1).join('/').trim():mm;
+  const meta={
+   ...(v?.metadata||{}),
+   crlv:{
+    owner:document.getElementById('crlvOwner').value.trim()||null,
+    chassis:document.getElementById('crlvChassis').value.trim()||null,
+    color:document.getElementById('crlvColor').value.trim()||null,
+    fuel:document.getElementById('crlvFuel').value.trim()||null,
+    year_fabrication:Number(document.getElementById('crlvYearFab').value)||null,
+    expires_at:expires,
+    imported_at:new Date().toISOString()
+   }
+  };
+  const body={
+   company_id:companyId,
+   plate:plate||v?.plate||null,
+   renavam:renavam||v?.renavam||null,
+   make:make||v?.make||null,
+   model:model||v?.model||null,
+   model_year:Number(document.getElementById('crlvYearModel').value)||Number(document.getElementById('crlvYearFab').value)||v?.model_year||null,
+   description:v?.description||(model||mm||plate||'Condução'),
+   status:v?.status||'active',
+   metadata:meta
+  };
+
+  if(v){
+   if(!confirm('A condução '+(v.description||v.plate)+' já existe. Atualizar com os dados conferidos do CRLV?'))return;
+   const rows=await rest('v2_vehicles','id=eq.'+v.id,'PATCH',body);
+   v=rows?.[0]||{...v,...body};
+  }else{
+   if(!confirm('Cadastrar nova condução '+(plate||renavam)+' com os dados conferidos?'))return;
+   const rows=await rest('v2_vehicles','','POST',body);
+   v=rows?.[0];
+  }
+
   if(!v?.id)throw new Error('Não foi possível obter o veículo cadastrado.');
-  msg.textContent='Salvando o documento...';const fr=pendingCrlvFile?await uploadVehicleDocumentFile(pendingCrlvFile,v.id):null;
-  await rest('v2_vehicle_documents','','POST',{company_id:companyId,vehicle_id:v.id,document_type:'Licenciamento / CRLV',expires_at:null,status:'active',file_id:fr?.id||null});
-  document.getElementById('crlvPreviewCard').style.display='none';pendingCrlvFile=null;pendingCrlvData=null;try{await loadVehicles();await openVehicleEdit(v.id)}catch{}
+
+  msg.textContent='Salvando o documento...';
+  const fr=pendingCrlvFile?await uploadVehicleDocumentFile(pendingCrlvFile,v.id):null;
+  const existingCrlv=vehicleDocsCache.find(d=>d.vehicle_id===v.id&&isVehicleCrlv(d.document_type)&&d.status==='active');
+  const docBody={
+   company_id:companyId,
+   vehicle_id:v.id,
+   document_type:'Licenciamento / CRLV',
+   expires_at:expires||existingCrlv?.expires_at||null,
+   status:'active',
+   file_id:fr?.id||existingCrlv?.file_id||null
+  };
+  if(existingCrlv)await rest('v2_vehicle_documents','id=eq.'+existingCrlv.id,'PATCH',docBody);
+  else await rest('v2_vehicle_documents','','POST',docBody);
+
+  document.getElementById('crlvPreviewCard').style.display='none';
+  pendingCrlvFile=null;
+  pendingCrlvData=null;
+  try{await loadVehicles();await openVehicleEdit(v.id)}catch{}
   alert('CRLV salvo e vinculado à condução com sucesso.');
- }catch(e){msg.textContent=e.message||String(e)}
+ }catch(e){
+  msg.textContent=e.message||String(e);
+ }
 }
 
 
