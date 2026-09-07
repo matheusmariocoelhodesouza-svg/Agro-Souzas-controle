@@ -8,7 +8,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
-<title>Comando 360 • v6.76</title>
+<title>Comando 360 • v6.77</title>
 <link rel="manifest" href="./comando360.webmanifest"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
@@ -1516,7 +1516,7 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
  *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
 }
 
-/* 6.76 — Rastreamento MOVIT */
+/* 6.77 — Rastreamento MOVIT */
 .tracking-hero{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;margin-bottom:16px}
 .tracking-hero h1{margin:0;font-size:27px;color:#10233f}.tracking-hero p{margin:5px 0 0;color:#6b7d95;font-size:13px}
 .tracking-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:14px}
@@ -1532,7 +1532,7 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
 .darkmode .tracking-kpi,.darkmode .tracking-card{background:#101c2e;border-color:#203047}.darkmode .tracking-hero h1,.darkmode .tracking-kpi strong,.darkmode .tracking-card-main strong{color:#e7eef9}.darkmode .movit-security-note{background:#0d1b2e;border-color:#26394f;color:#9fb3cb}
 @media(max-width:1050px){.tracking-card{grid-template-columns:1fr 1fr}.tracking-actions{grid-column:1/-1;justify-content:flex-start}}
 @media(max-width:700px){.tracking-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.tracking-card{grid-template-columns:1fr}.tracking-actions{grid-column:auto}.tracking-hero{flex-direction:column}.tracking-hero .btn{width:100%}}
-/* 6.76 — Google Maps + rastreamento da frota */
+/* 6.77 — Google Maps + rastreamento da frota */
 .tracking-map-card{overflow:hidden}.tracking-map-head{padding-bottom:4px}
 .tracking-map-wrap{position:relative;margin-top:14px;border:1px solid #dce6f1;border-radius:18px;overflow:hidden;background:#eaf0f6}
 #movitMap{height:430px;width:100%;position:relative;overflow:hidden;background:#e8eef5}
@@ -1554,9 +1554,9 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
 .tracking-map-legend span{display:flex;align-items:center;gap:5px}.tracking-map-legend i{width:9px;height:9px;border-radius:50%;display:inline-block;background:#64748b}.tracking-map-legend i.move{background:#1976d2}.tracking-map-legend i.on{background:#16a34a}.tracking-map-legend i.stale{background:#d97706}
 .darkmode .tracking-map-wrap{border-color:#25384f;background:#0d1726}.darkmode .tracking-map-legend,.darkmode .google-map-provider,.darkmode .google-map-info{background:rgba(15,27,44,.95);border-color:#2a3b51;color:#a9bad0}.darkmode .google-map-controls button{background:rgba(15,27,44,.96);border-color:#2a3b51;color:#e8f1fb}.darkmode .google-fleet-marker .map-label{background:rgba(15,27,44,.96);border-color:#2a3b51;color:#e5eef9}.darkmode .google-map-info strong{color:#eef4fd}
 @media(max-width:700px){#movitMap{height:365px}.tracking-map-head{gap:10px}.tracking-map-head>.toolbar{width:100%}.tracking-map-head>.toolbar .btn{flex:1}.tracking-map-legend{left:8px;right:8px;bottom:8px;justify-content:center}.google-fleet-marker .map-label{max-width:120px}.google-map-info{top:8px;right:8px;width:calc(100% - 16px)}}
-/* 6.76 — rota até a condução */
+/* 6.77 — rota até a condução */
 
-/* 6.76 — relatório de abastecimento por condução */
+/* 6.77 — relatório de abastecimento por condução */
 .fuel-report-vehicle{border:1px solid #e1e8f0;border-radius:14px;overflow:hidden;background:#fff;margin-bottom:10px}
 .fuel-report-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;padding:12px 13px;background:#f7f9fc;border-bottom:1px solid #e4eaf2}
 .fuel-report-head strong{font-size:14px;color:#16304e}.fuel-report-head .plate{display:inline-block;margin-left:6px;padding:2px 6px;border-radius:6px;background:#eaf2fb;font-size:10px;font-weight:900;color:#27517e}
@@ -1588,7 +1588,7 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
 <script defer src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"></script>
 <script>
 (function(){
-  const BUILD='6.76';
+  const BUILD='6.77';
   try{
     const marker='controla_cache_cleanup_'+BUILD;
     if(!localStorage.getItem(marker)){
@@ -1653,12 +1653,12 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
   <div class="brand"><img class="header-brand-icon" src="./comando360-icon.svg" alt="Comando 360"/><div><b>Comando <span class="brand360">360</span></b><div><small id="companyName">Empresa</small></div></div></div>
  </div>
  <div class="header-module" id="headerModule"><span id="headerModuleTitle">Painel Geral</span><small id="headerModuleSubtitle">Central de gestão</small></div>
- <div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.76</span><button class="btn soft" id="themeToggle" type="button" aria-label="Alternar tema">☾</button><button class="btn soft hidden" id="logout">Sair</button></div>
+ <div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.77</span><button class="btn soft" id="themeToggle" type="button" aria-label="Alternar tema">☾</button><button class="btn soft hidden" id="logout">Sair</button></div>
 </header>
 <main class="wrap">
 <section class="login team-entry" id="login">
 <div class="card" id="deviceSetupCard">
- <div class="team-entry-title"><img class="login-brand-icon" src="./comando360-icon.svg" alt="Comando 360"/><h2>Configurar celular da equipe</h2><div class="muted">Digite uma única vez o código gerado pelo administrador. O aparelho ficará vinculado à equipe e abrirá direto, sem login e senha.</div></div>
+ <div class="team-entry-title"><img class="login-brand-icon" src="./comando360-icon.svg" alt="Comando 360"/><h2 id="deviceSetupTitle">Configurar celular da equipe</h2><div class="muted" id="deviceSetupSubtitle">Digite uma única vez o código gerado pelo administrador. O aparelho ficará vinculado à equipe e abrirá direto, sem login e senha.</div></div>
  <label>Código de ativação</label>
  <input class="team-code-input" id="deviceCode" inputmode="text" maxlength="12" placeholder="AB12CD34"/>
  <button class="btn primary" id="deviceActivateBtn" style="width:100%;padding:14px">ATIVAR CELULAR</button>
@@ -1671,7 +1671,7 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
  <label>Senha</label><input autocomplete="current-password" id="password" type="password"/>
  <button class="btn primary" id="loginBtn">Entrar</button>
  <button class="btn soft" id="backDeviceSetup" type="button" style="margin-left:6px">Voltar</button>
- <div class="muted" id="loginMsg" style="margin-top:10px">Comando 360 • v6.76</div><div class="debug" id="debug"></div>
+ <div class="muted" id="loginMsg" style="margin-top:10px">Comando 360 • v6.77</div><div class="debug" id="debug"></div>
 </div>
 </section>
 <section class="hidden" id="app">
@@ -7218,7 +7218,7 @@ function c360SetModule(tab){
  const m=C360_MODULES[tab]||[tab,'Comando 360'];
  const t=document.getElementById('headerModuleTitle'),s=document.getElementById('headerModuleSubtitle');
  if(t)t.textContent=m[0];if(s)s.textContent=m[1];
- document.title='Comando 360 • '+m[0]+' • v6.76';
+ document.title='Comando 360 • '+m[0]+' • v6.77';
  document.querySelectorAll('#mobileBottomNav [data-mobiletab]').forEach(b=>{
   const mt=b.dataset.mobiletab;
   b.classList.toggle('active',mt===tab||(mt==='more'&&!['inicio','operacoes','ponto','frota'].includes(tab)));
@@ -7463,7 +7463,7 @@ setInterval(()=>{
 },60000);
 if('serviceWorker' in navigator){
  window.addEventListener('load',()=>{
-  navigator.serviceWorker.register('./sw-v6-76.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
+  navigator.serviceWorker.register('./sw-v6-77.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
  });
 }
 
@@ -7489,6 +7489,27 @@ $('#sendAI').addEventListener('click',async()=>{const q=$('#question').value.tri
 $('#question').addEventListener('keydown',e=>{if(e.key==='Enter')$('#sendAI').click()});
 window.addEventListener('error',e=>{if(!$('#app').classList.contains('hidden'))return;setMsg('Erro no navegador: '+e.message,'error');debug('Envie um print desta mensagem.')});
 (async()=>{try{
+ const fieldCode=new URLSearchParams(location.search).get('campo');
+ if(fieldCode){
+   clearSession();
+   document.body.classList.remove('app-ready','device-mode');
+   $('#app').classList.add('hidden');$('#login').classList.remove('hidden');
+   $('#adminLoginCard').classList.add('hidden');$('#deviceSetupCard').classList.remove('hidden');
+   const cleanCode=String(fieldCode||'').trim().toUpperCase();
+   if($('#deviceCode'))$('#deviceCode').value=cleanCode;
+   if($('#deviceSetupTitle'))$('#deviceSetupTitle').textContent='Ativando celular de campo';
+   if($('#deviceSetupSubtitle'))$('#deviceSetupSubtitle').textContent='Este link foi preparado para vincular o aparelho diretamente à equipe correta.';
+   const dm=$('#deviceMsg');if(dm){dm.className='muted';dm.textContent='Ativando acesso de campo...'}
+   try{
+     await activateDevice(cleanCode);
+     const u=new URL(location.href);u.searchParams.delete('campo');history.replaceState({},'',u.pathname+(u.searchParams.toString()?'?'+u.searchParams.toString():'')+u.hash);
+     return;
+   }catch(e){
+     if(dm){dm.className='error';dm.textContent=(e.message||String(e))+' • Você pode digitar outro código de ativação abaixo.'}
+     if($('#deviceSetupTitle'))$('#deviceSetupTitle').textContent='Configurar celular da equipe';
+     return;
+   }
+ }
  const ss=session();
  if(ss&&ss.access_token){
    const u=ss.user||await getUser();
