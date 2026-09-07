@@ -2579,7 +2579,7 @@ async function loadVehicles(){
        '<span class="pill '+licenseStatus.cls+'">📄 '+esc(licenseStatus.label)+'</span>'+
        '<span class="muted">'+esc(licenseStatus.detail)+'</span>'+
        (crlvFile
-        ?'<button class="btn soft vehicleDocView" data-file="'+crlvFile.id+'" type="button">📄 ABRIR CRLV</button>'
+        ?'<button class="btn soft vehicleDocView" data-file="'+crlvFile.id+'" type="button">📄 ABRIR CRLV</button>'+(licenseStatus.confirmed?'':' <button class="btn soft vehicleCrlvRead" data-file="'+crlvFile.id+'" data-vehicle="'+x.id+'" type="button">✨ LER DADOS DO CRLV</button>')
         :'<button class="btn soft" type="button" disabled title="Cadastre o arquivo do CRLV">📄 CRLV SEM ARQUIVO</button>')+
      '</div>';
    }else{
@@ -4538,6 +4538,36 @@ async function downloadVehicleDoc(fileId,download=false){
   setTimeout(()=>URL.revokeObjectURL(url),60000);
  }catch(e){alert(e.message)}
 }
+async function readStoredVehicleCrlv(fileId,vehicleId){
+ const f=vehicleDocFiles[fileId];
+ if(!f)throw new Error('Arquivo do CRLV não encontrado.');
+ const v=vehicleDocsVehicles.find(x=>x.id===vehicleId)||(window.__fleetVehicles||[]).find(x=>x.id===vehicleId);
+ if(!v)throw new Error('Veículo não encontrado.');
+ const s=session();
+ if(!s?.access_token)throw new Error('Sessão expirada.');
+ const r=await fetch(API_URL+'/storage/v1/object/authenticated/'+encodeURIComponent(f.storage_bucket)+'/'+f.storage_path.split('/').map(encodeURIComponent).join('/'),{headers:{apikey:KEY,Authorization:'Bearer '+s.access_token}});
+ if(!r.ok)throw new Error('Não foi possível ler o CRLV salvo.');
+ const blob=await r.blob();
+ const read=await readDigitalCrlv(new File([blob],f.original_name||'crlv.pdf',{type:f.mime_type||blob.type||'application/pdf'}));
+ if(!read.digital)throw new Error('Este arquivo não tem texto digital legível. '+(read.reason||''));
+ const d=read.data||{};
+ const vehiclePlate=String(v.plate||'').replace(/[^A-Z0-9]/gi,'').toUpperCase();
+ const docPlate=String(d.plate||'').replace(/[^A-Z0-9]/gi,'').toUpperCase();
+ if(vehiclePlate&&docPlate&&vehiclePlate!==docPlate)throw new Error('O CRLV salvo é da placa '+docPlate+', mas este veículo é '+vehiclePlate+'.');
+ const uf=(d.uf||v?.metadata?.licensing_state||'SP').toUpperCase();
+ const category=crlvLicensingCategoryFromData(d);
+ const due=uf==='SP'?spLicensingDueDate(docPlate||vehiclePlate,category,new Date().getFullYear()):null;
+ await applyParsedCrlvToVehicle(vehicleId,{data:d,uf,category,due});
+ const doc=vehicleDocsCache.find(x=>x.vehicle_id===vehicleId&&x.file_id===fileId&&isVehicleCrlv(x.document_type));
+ if(doc&&due)await rest('v2_vehicle_documents','id=eq.'+doc.id,'PATCH',{expires_at:due});
+ await loadVehicleDocs(vehicleId);
+ await loadVehicles();
+ try{await loadSmartAlerts()}catch(_){}
+ const year=Number(d.licensingYear||0);
+ if(!year)throw new Error('Li o CRLV, mas não consegui identificar o campo EXERCÍCIO.');
+ return {year,plate:d.plate||vehiclePlate,uf,category,due};
+}
+
 async function loadVehicleDocs(vehicleId=''){
  const [docs,vs,files]=await Promise.all([
   rest('v2_vehicle_documents','select=*&company_id=eq.'+companyId+'&order=expires_at.asc.nullslast,created_at.desc'),
@@ -5297,6 +5327,7 @@ document.addEventListener('click',async function(e){
   if(e.target.closest('#exportReportsCsv')){e.preventDefault();if(!adminReportCache)await loadReports();exportAdminReportsCsv();return}
   if(e.target.closest('#printReports')){e.preventDefault();if(!adminReportCache)await loadReports();printAdminReports();return}
   const aj=e.target.closest('.alertJump');if(aj){e.preventDefault();v2Go(aj.dataset.tab);return}
+  const crlvRead=e.target.closest('.vehicleCrlvRead');if(crlvRead){e.preventDefault();const b=crlvRead,old=b.textContent;b.disabled=true;b.textContent='LENDO...';try{const r=await readStoredVehicleCrlv(b.dataset.file,b.dataset.vehicle);alert('CRLV identificado: exercício '+r.year+' • placa '+r.plate+'.')}catch(err){alert(err.message||String(err))}finally{b.disabled=false;b.textContent=old}return}
   const vdocView=e.target.closest('.vehicleDocView');if(vdocView){e.preventDefault();await downloadVehicleDoc(vdocView.dataset.file,false);return}
   const vdocDown=e.target.closest('.vehicleDocDownload');if(vdocDown){e.preventDefault();await downloadVehicleDoc(vdocDown.dataset.file,true);return}
   const edoc=e.target.closest('.editVehicleDocBtn');if(edoc){e.preventDefault();openVehicleDoc(edoc.dataset.id);return}
