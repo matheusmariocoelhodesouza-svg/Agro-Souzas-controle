@@ -1408,6 +1408,10 @@ async function devicePointEmployees(){
  const rows=await rpc('v2_device_list_point_employees',{});
  return Array.isArray(rows)?rows:[];
 }
+async function devicePointEventsToday(){
+ const rows=await rpc('v2_device_point_events_today',{});
+ return Array.isArray(rows)?rows:[];
+}
 function pointEventTeamId(ev){return ev?.work_team_id||ev?.metadata?.work_team_id||null}
 function pointEventTeamName(ev,teamMap={}){
  const id=pointEventTeamId(ev);
@@ -1708,8 +1712,7 @@ function buildWorkSessions(events){
 
 async function getNextPoint(employeeId){
   if(deviceMode){
-    const bounds=saoPauloDayUtcBounds(localDateBR());
-    const evs=await rest('v2_attendance_events','select=event_type,occurred_at&company_id=eq.'+companyId+'&employee_id=eq.'+encodeURIComponent(employeeId)+'&occurred_at=gte.'+encodeURIComponent(bounds.start)+'&occurred_at=lt.'+encodeURIComponent(bounds.end)+'&order=occurred_at.asc');
+    const evs=(await devicePointEventsToday()).filter(x=>x.employee_id===employeeId);
     const last=evs&&evs.length?evs[evs.length-1].event_type:null;
     if(!last)return 'in';if(last==='in')return 'break_start';if(last==='break_start')return 'break_end';if(last==='break_end')return 'out';return 'finished';
   }
@@ -1874,10 +1877,9 @@ async function cachePointContext(employees,events){
 async function warmPointOfflineCache(){
  if(!deviceMode||!navigator.onLine||!companyId)return;
  try{
-  const bounds=saoPauloDayUtcBounds(localDateBR());
   const [employees,events]=await Promise.all([
    devicePointEmployees(),
-   rest('v2_attendance_events','select=id,employee_id,occurred_at,event_type,method,accuracy_m,offline_event_id,work_team_id,device_access_id,metadata&company_id=eq.'+companyId+'&occurred_at=gte.'+encodeURIComponent(bounds.start)+'&occurred_at=lt.'+encodeURIComponent(bounds.end)+'&order=occurred_at.asc&limit=500')
+   devicePointEventsToday()
   ]);
   await cachePointContext(employees,events);
  }catch(e){console.warn('warm point offline cache',e)}
@@ -2736,8 +2738,7 @@ async function loadTeamPoint(){
     events=events.concat(pending.filter(x=>!seen.has(x.offline_event_id)));
    }else{
     employees=await devicePointEmployees();
-    const bounds=saoPauloDayUtcBounds(day);
-    events=await rest('v2_attendance_events','select=id,employee_id,occurred_at,event_type,method,accuracy_m,offline_event_id,work_team_id,device_access_id,metadata&company_id=eq.'+companyId+'&occurred_at=gte.'+encodeURIComponent(bounds.start)+'&occurred_at=lt.'+encodeURIComponent(bounds.end)+'&order=occurred_at.asc&limit=500');
+    events=await devicePointEventsToday();
     await cachePointContext(employees,events);
    }
 
@@ -3044,8 +3045,7 @@ $('#registerPoint').addEventListener('click',async()=>{
 
   let teamChanged=false,previousTeamName=null;
   if(deviceMode&&deviceAccess?.team_id){
-    const bounds=saoPauloDayUtcBounds(localDateBR());
-    const previous=await rest('v2_attendance_events','select=event_type,occurred_at,work_team_id,metadata&company_id=eq.'+companyId+'&employee_id=eq.'+encodeURIComponent(employee.id)+'&occurred_at=gte.'+encodeURIComponent(bounds.start)+'&occurred_at=lt.'+encodeURIComponent(bounds.end)+'&order=occurred_at.asc');
+    const previous=(await devicePointEventsToday()).filter(x=>x.employee_id===employee.id);
     const lastWithTeam=[...(previous||[])].reverse().find(x=>pointEventTeamId(x));
     if(lastWithTeam&&pointEventTeamId(lastWithTeam)!==deviceAccess.team_id){
       teamChanged=true;
