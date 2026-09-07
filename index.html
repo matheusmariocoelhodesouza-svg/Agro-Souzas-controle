@@ -8,7 +8,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
-<title>Comando 360 • v6.55</title>
+<title>Comando 360 • v6.56</title>
 <link rel="manifest" href="./comando360.webmanifest"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
@@ -650,9 +650,10 @@ body.device-mode .po-actions .btn{width:100%;min-height:47px}
 </style>
 <script defer="" src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"></script>
 <script>
 (function(){
-  const BUILD='6.55';
+  const BUILD='6.56';
   try{
     const marker='controla_cache_cleanup_'+BUILD;
     if(!localStorage.getItem(marker)){
@@ -1110,7 +1111,7 @@ body.device-mode .po-actions .btn{width:100%;min-height:47px}
  <div class="row"><div><label>Ano fabricação</label><input id="crlvYearFab" type="number"/></div><div><label>Ano modelo</label><input id="crlvYearModel" type="number"/></div><div><label>Chassi</label><input id="crlvChassis"/></div></div>
  <div class="row"><div><label>Proprietário</label><input id="crlvOwner"/></div><div><label>Cor</label><input id="crlvColor"/></div><div><label>Combustível</label><input id="crlvFuel"/></div><div><label>Categoria para licenciamento</label><select id="crlvLicenseCategory"><option value="regular">Ônibus / van / carro / reboque</option><option value="truck">Caminhão / caminhão-trator</option></select></div></div><div class="row"><div><label>UF do licenciamento</label><input id="crlvLicenseState" value="SP" readonly aria-readonly="true"/></div><div><label>Ano do licenciamento no CRLV</label><input id="crlvLicensingYear" type="number" min="2000" max="2100" readonly aria-readonly="true" placeholder="Detectado no CRLV"/></div><div><label>Prazo calculado do ano atual</label><input id="crlvExpires" type="date" readonly aria-readonly="true"/></div></div><div class="muted" id="crlvExpiryRule">O prazo vem do calendário do Detran-SP; o ano do licenciamento é confirmado pelo próprio CRLV.</div>
  <div class="toolbar"><button class="btn primary" id="confirmCrlvImport" type="button">CONFIRMAR E SALVAR</button><span class="muted" id="crlvImportMsg"></span></div>
- <div class="muted" style="margin-top:8px">O Comando 360 lê automaticamente o CRLV digital em PDF. Fotos e PDFs escaneados não confirmam o EXERCÍCIO e ficam como situação não confirmada.</div>
+ <div class="muted" style="margin-top:8px">O Comando 360 lê CRLV digital, PDF escaneado e foto. Em imagem/scan, usa OCR automaticamente para reconhecer placa e EXERCÍCIO.</div>
 </div>
 
 <div class="card" id="vehicleEditCard" style="display:none">
@@ -4549,7 +4550,7 @@ async function readStoredVehicleCrlv(fileId,vehicleId){
  if(!r.ok)throw new Error('Não foi possível ler o CRLV salvo.');
  const blob=await r.blob();
  const read=await readDigitalCrlv(new File([blob],f.original_name||'crlv.pdf',{type:f.mime_type||blob.type||'application/pdf'}));
- if(!read.digital)throw new Error('Este arquivo não tem texto digital legível. '+(read.reason||''));
+ if(!read.digital)throw new Error((read.reason||'Não consegui reconhecer os dados do CRLV.')+' Tente um arquivo ou foto mais nítida.');
  const d=read.data||{};
  const vehiclePlate=String(v.plate||'').replace(/[^A-Z0-9]/gi,'').toUpperCase();
  const docPlate=String(d.plate||'').replace(/[^A-Z0-9]/gi,'').toUpperCase();
@@ -4632,7 +4633,7 @@ function configureVehicleDocTypeUi(){
  const info=document.getElementById('vehicleDocAutoInfo');
  const isCrlv=isVehicleCrlv(type);
  if(exp)exp.readOnly=isCrlv;
- if(info)info.textContent=isCrlv?'CRLV digital: o EXERCÍCIO e o prazo são lidos/calculados automaticamente.':'';
+ if(info)info.textContent=isCrlv?'CRLV digital, foto ou scan: placa e EXERCÍCIO são reconhecidos automaticamente; em imagem o sistema usa OCR.':'';
  if(isCrlv){
   const v=currentVehicleForDoc();
   if(v&&exp){
@@ -4648,7 +4649,7 @@ async function inspectVehicleDocCrlvFile(file){
  const read=await readDigitalCrlv(file);
  if(!read.digital){
   window.__pendingVehicleDocCrlv=null;
-  if(m)m.textContent='Arquivo salvo como documento, mas o ano do licenciamento não pôde ser confirmado: '+read.reason;
+  if(m)m.textContent='Não consegui reconhecer os dados do CRLV: '+(read.reason||'imagem sem leitura suficiente')+'. Tente uma foto/scan mais nítido.';
   return null;
  }
  const d=read.data||{};
@@ -4783,9 +4784,10 @@ function parseCrlvText(raw){
  const color=crlvMatch(text,[/\bCOR\s*[:\-]?\s*([A-ZÀ-Ú ]{3,20}?)(?=\s+(?:COMBUST[IÍ]VEL|CATEGORIA|ESP[EÉ]CIE|CHASSI|PLACA)\b)/]);
  const fuel=crlvMatch(text,[/\bCOMBUST[IÍ]VEL\s*[:\-]?\s*([A-ZÀ-Ú\/ ]{3,30}?)(?=\s+(?:COR|CATEGORIA|ESP[EÉ]CIE|CHASSI|PLACA|POT[EÊ]NCIA)\b)/]);
  const licensingYear=crlvMatch(text,[
-  /\bEXERC[IÍ]CIO\s*[:\-]?\s*(20\d{2})\b/,
-  /\bANO\s+(?:DO\s+)?EXERC[IÍ]CIO\s*[:\-]?\s*(20\d{2})\b/,
-  /\b(20\d{2})\s+EXERC[IÍ]CIO\b/,
+  /\bEXERC[ÍI1]C[ÍI1]O\s*[:\-]?\s*(20\d{2})\b/,
+  /\bANO\s+(?:DO\s+)?EXERC[ÍI1]C[ÍI1]O\s*[:\-]?\s*(20\d{2})\b/,
+  /\b(20\d{2})\s+EXERC[ÍI1]C[ÍI1]O\b/,
+  /\bEXERCICIO\s*[:\-]?\s*(20\d{2})\b/,
   /\bCRLV(?:E)?\s*[-–]?\s*(20\d{2})\b/
  ]);
  const uf=crlvMatch(text,[
@@ -4814,16 +4816,167 @@ function crlvDigitalSummary(d={}){
  if(d.speciesType)parts.push(d.speciesType);
  return parts.join(' • ');
 }
-async function readDigitalCrlv(file){
- if(!file)throw new Error('Selecione o CRLV digital.');
- if(!(file.type==='application/pdf'||String(file.name||'').toLowerCase().endsWith('.pdf'))){
-  return {data:{},text:'',digital:false,reason:'O arquivo não é PDF digital.'};
- }
- const text=await extractPdfText(file);
- if(!text||text.length<40)return {data:{},text:text||'',digital:false,reason:'O PDF não possui texto legível.'};
- const data=parseCrlvText(text);
- return {data,text,digital:true,reason:null};
+function crlvOcrMessage(message,progress=null){
+ const pct=progress===null?'':(' '+Math.round(progress*100)+'%');
+ const text=message+pct;
+ const a=document.getElementById('crlvImportMsg');
+ const b=document.getElementById('vehicleDocMsg');
+ if(a&&!document.getElementById('crlvPreviewCard')?.classList.contains('hidden'))a.textContent=text;
+ if(b&&document.getElementById('vehicleDocEditCard')?.style.display!=='none')b.textContent=text;
 }
+function ocrProgressLabel(status){
+ return ({
+  'loading tesseract core':'Preparando leitor OCR...',
+  'initializing tesseract':'Inicializando OCR...',
+  'loading language traineddata':'Carregando idioma do OCR...',
+  'initializing api':'Preparando reconhecimento...',
+  'recognizing text':'Lendo o CRLV por imagem...'
+ })[status]||'Lendo CRLV...';
+}
+async function ensureTesseractReady(){
+ if(window.Tesseract?.recognize)return true;
+ await new Promise((resolve,reject)=>{
+  const existing=[...document.scripts].find(s=>String(s.src||'').includes('tesseract'));
+  if(existing){
+   const started=Date.now();
+   const poll=setInterval(()=>{
+    if(window.Tesseract?.recognize){clearInterval(poll);resolve()}
+    else if(Date.now()-started>15000){clearInterval(poll);reject(new Error('Leitor OCR não carregou. Verifique a internet e tente novamente.'))}
+   },150);
+   return;
+  }
+  const s=document.createElement('script');
+  s.src='https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js';
+  s.onload=()=>resolve();
+  s.onerror=()=>reject(new Error('Não foi possível carregar o leitor OCR.'));
+  document.head.appendChild(s);
+ });
+ return true;
+}
+function prepareOcrCanvas(source,maxSide=2800){
+ const sw=source.width||source.videoWidth||source.naturalWidth||1;
+ const sh=source.height||source.videoHeight||source.naturalHeight||1;
+ const ratio=Math.min(1,maxSide/Math.max(sw,sh));
+ const canvas=document.createElement('canvas');
+ canvas.width=Math.max(1,Math.round(sw*ratio));
+ canvas.height=Math.max(1,Math.round(sh*ratio));
+ const ctx=canvas.getContext('2d',{willReadFrequently:true});
+ ctx.imageSmoothingEnabled=true;
+ ctx.imageSmoothingQuality='high';
+ ctx.filter='grayscale(1) contrast(1.45)';
+ ctx.drawImage(source,0,0,canvas.width,canvas.height);
+ ctx.filter='none';
+ return canvas;
+}
+async function imageFileToOcrCanvas(file){
+ const url=URL.createObjectURL(file);
+ try{
+  const img=await new Promise((resolve,reject)=>{
+   const i=new Image();
+   i.onload=()=>resolve(i);
+   i.onerror=()=>reject(new Error('Não consegui abrir a imagem do CRLV.'));
+   i.src=url;
+  });
+  return prepareOcrCanvas(img);
+ }finally{
+  URL.revokeObjectURL(url);
+ }
+}
+async function pdfPageToOcrCanvas(pdf,pageNumber){
+ const page=await pdf.getPage(pageNumber);
+ const base=page.getViewport({scale:1});
+ let scale=Math.min(3,2800/Math.max(base.width,base.height));
+ scale=Math.max(scale,1.8);
+ const viewport=page.getViewport({scale});
+ const raw=document.createElement('canvas');
+ raw.width=Math.round(viewport.width);
+ raw.height=Math.round(viewport.height);
+ await page.render({canvasContext:raw.getContext('2d'),viewport}).promise;
+ return prepareOcrCanvas(raw);
+}
+async function ocrCanvasText(canvas){
+ await ensureTesseractReady();
+ const result=await Tesseract.recognize(canvas,'por',{
+  logger:m=>{
+   if(m?.status)crlvOcrMessage(ocrProgressLabel(m.status),typeof m.progress==='number'?m.progress:null);
+  }
+ });
+ return String(result?.data?.text||'').replace(/\r/g,'\n').trim();
+}
+async function ocrImageFile(file){
+ crlvOcrMessage('Preparando foto do CRLV...');
+ const canvas=await imageFileToOcrCanvas(file);
+ return await ocrCanvasText(canvas);
+}
+async function ocrScannedPdf(file,maxPages=2){
+ if(!window.pdfjsLib)throw new Error('Leitor de PDF ainda carregando.');
+ pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+ const pdf=await pdfjsLib.getDocument({data:await file.arrayBuffer()}).promise;
+ let all='';
+ const pages=Math.min(pdf.numPages,maxPages);
+ for(let i=1;i<=pages;i++){
+  crlvOcrMessage('Preparando página '+i+' de '+pages+' do CRLV...');
+  const canvas=await pdfPageToOcrCanvas(pdf,i);
+  const text=await ocrCanvasText(canvas);
+  all+='\n'+text;
+  const parsed=parseCrlvText(all);
+  if(parsed.plate&&parsed.licensingYear)break;
+ }
+ return all.replace(/\s+/g,' ').trim();
+}
+function mergeCrlvData(primary={},secondary={}){
+ const out={...secondary,...primary};
+ for(const k of ['plate','renavam','chassis','yearFab','yearModel','makeModel','owner','color','fuel','licensingYear','uf','category','speciesType']){
+  if(!primary?.[k]&&secondary?.[k])out[k]=secondary[k];
+ }
+ return out;
+}
+async function readDigitalCrlv(file){
+ if(!file)throw new Error('Selecione o CRLV.');
+ const isPdf=file.type==='application/pdf'||String(file.name||'').toLowerCase().endsWith('.pdf');
+ const isImage=/^image\//i.test(file.type||'')||/\.(jpe?g|png|webp)$/i.test(String(file.name||''));
+
+ if(isPdf){
+  let digitalText='';
+  let digitalData={};
+  try{
+   digitalText=await extractPdfText(file);
+   if(digitalText&&digitalText.length>=40)digitalData=parseCrlvText(digitalText);
+  }catch(e){console.warn('Leitura textual do CRLV',e)}
+
+  if(digitalText&&digitalText.length>=40&&digitalData.plate&&digitalData.licensingYear){
+   return {data:digitalData,text:digitalText,digital:true,ocr:false,reason:null};
+  }
+
+  crlvOcrMessage(digitalText?'PDF lido. Buscando EXERCÍCIO pela imagem...':'PDF escaneado. Iniciando OCR...');
+  const ocrText=await ocrScannedPdf(file,2);
+  const ocrData=parseCrlvText(ocrText);
+  const merged=mergeCrlvData(digitalData,ocrData);
+  return {
+   data:merged,
+   text:[digitalText,ocrText].filter(Boolean).join('\n'),
+   digital:!!(merged.plate||merged.renavam),
+   ocr:true,
+   reason:merged.licensingYear?null:'OCR concluído, mas o campo EXERCÍCIO não foi identificado.'
+  };
+ }
+
+ if(isImage){
+  crlvOcrMessage('Imagem recebida. Iniciando OCR...');
+  const ocrText=await ocrImageFile(file);
+  const data=parseCrlvText(ocrText);
+  return {
+   data,
+   text:ocrText,
+   digital:!!(data.plate||data.renavam),
+   ocr:true,
+   reason:data.licensingYear?null:'OCR concluído, mas o campo EXERCÍCIO não foi identificado.'
+  };
+ }
+
+ return {data:{},text:'',digital:false,ocr:false,reason:'Formato não suportado. Use PDF, JPG, PNG ou WEBP.'};
+}
+
 async function beginCrlvImport(file){
  const msg=document.getElementById('crlvImportMsg');pendingCrlvFile=file;pendingCrlvData={};
  document.getElementById('crlvPreviewCard').style.display='block';
@@ -4833,14 +4986,13 @@ async function beginCrlvImport(file){
  if(document.getElementById('crlvExpires'))document.getElementById('crlvExpires').value='';
  try{
   msg.textContent='Lendo documento...';
-  let d={};
-  if(file.type==='application/pdf'||file.name.toLowerCase().endsWith('.pdf')){const txt=await extractPdfText(file);d=parseCrlvText(txt);if(!txt||txt.length<40)msg.textContent='Este PDF parece ser uma imagem/scan. Use o CRLV digital original para o Comando 360 confirmar automaticamente o EXERCÍCIO.'}
-  else msg.textContent='Foto/imagem anexada. O arquivo pode ser salvo, mas o EXERCÍCIO não será confirmado automaticamente; prefira o CRLV digital em PDF.';
+  const read=await readDigitalCrlv(file);
+  const d=read.data||{};
   pendingCrlvData=d;
   document.getElementById('crlvPlate').value=d.plate||'';document.getElementById('crlvRenavam').value=d.renavam||'';document.getElementById('crlvMakeModel').value=d.makeModel||'';document.getElementById('crlvYearFab').value=d.yearFab||'';document.getElementById('crlvYearModel').value=d.yearModel||'';document.getElementById('crlvChassis').value=d.chassis||'';document.getElementById('crlvOwner').value=d.owner||'';document.getElementById('crlvColor').value=d.color||'';document.getElementById('crlvFuel').value=d.fuel||'';if(document.getElementById('crlvLicensingYear'))document.getElementById('crlvLicensingYear').value=d.licensingYear||'';if(document.getElementById('crlvLicenseState'))document.getElementById('crlvLicenseState').value=d.uf||'SP';if(document.getElementById('crlvLicenseCategory'))document.getElementById('crlvLicenseCategory').value=crlvLicensingCategoryFromData(d);
   updateCrlvAutoExpiry();
-  if(d.plate||d.renavam)msg.textContent=(d.licensingYear?'CRLV digital identificado: '+crlvDigitalSummary(d)+'. ':'Não consegui confirmar o EXERCÍCIO no PDF. ')+'Confira e toque em CONFIRMAR E SALVAR.';
-  else if(file.type==='application/pdf')msg.textContent='Não consegui identificar placa/RENAVAM automaticamente. Confira e preencha antes de salvar.';
+  if(d.plate||d.renavam)msg.textContent=(d.licensingYear?'✓ CRLV identificado'+(read.ocr?' por OCR':'')+': '+crlvDigitalSummary(d)+'. ':'Li o CRLV'+(read.ocr?' por OCR':'')+', mas ainda não consegui confirmar o EXERCÍCIO. ')+'Confira e toque em CONFIRMAR E SALVAR.';
+  else msg.textContent=(read.reason||'Não consegui identificar placa/RENAVAM automaticamente.')+' Tente uma imagem mais nítida ou confira os campos.';
  }catch(e){msg.textContent='Leitura automática não concluída: '+e.message+' Você ainda pode preencher os campos e salvar o arquivo.'}
 }
 async function confirmCrlvImport(){
@@ -5409,7 +5561,7 @@ setInterval(()=>{
 },60000);
 if('serviceWorker' in navigator){
  window.addEventListener('load',()=>{
-  navigator.serviceWorker.register('./sw-v6-55.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
+  navigator.serviceWorker.register('./sw-v6-56.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
  });
 }
 
