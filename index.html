@@ -8,7 +8,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
-<title>Comando 360 • v6.62</title>
+<title>Comando 360 • v6.63</title>
 <link rel="manifest" href="./comando360.webmanifest"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
@@ -47,6 +47,84 @@ header .brand b{font-size:16px}
 .v2alert{padding:10px 0;border-bottom:1px solid #eef2f7;font-size:12px}.v2alert:last-child{border:0}
 .v2status{font-size:10px;padding:4px 7px;border-radius:999px;font-weight:850;background:#eaf3ff;color:#1565c0}
 .v2-empty{color:#94a3b8;font-size:12px;padding:18px 4px}
+
+/* 6.63 — Frota profissional */
+#frota{--fleet-navy:#0f2747;--fleet-blue:#1d5fbf;--fleet-line:#e3eaf3;--fleet-soft:#f7f9fc}
+#frota .fleet-page{max-width:1500px;margin:0 auto}
+#frota .fleet-hero{display:flex;justify-content:space-between;align-items:center;gap:18px;margin:4px 0 18px;padding:6px 2px}
+#frota .fleet-title-wrap{display:flex;align-items:center;gap:14px}
+#frota .fleet-title-icon{width:52px;height:52px;border-radius:16px;background:linear-gradient(145deg,#eaf3ff,#dbeafe);color:#1556a8;display:grid;place-items:center;font-size:27px;border:1px solid #d7e5f6}
+#frota .fleet-hero h1{margin:0;font-size:30px;letter-spacing:-.6px;color:#10233f}
+#frota .fleet-hero p{margin:5px 0 0;color:#6b7d95;font-size:13px}
+#frota .fleet-hero-actions{display:flex;gap:9px;flex-wrap:wrap}
+#frota .fleet-new-btn{background:#102b51!important;border:1px solid #102b51!important;padding:12px 17px;box-shadow:0 5px 14px rgba(16,43,81,.18)}
+#frota .fleet-import-btn{background:#fff;border:1px solid #d7e1ed;color:#193654;padding:12px 16px}
+#frota .fleet-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:14px}
+#frota .fleet-kpi{background:#fff;border:1px solid var(--fleet-line);border-radius:16px;padding:15px 16px;display:flex;align-items:center;gap:13px;min-height:82px;box-shadow:0 4px 14px rgba(22,50,82,.035)}
+#frota .fleet-kpi-icon{width:43px;height:43px;border-radius:13px;display:grid;place-items:center;font-weight:900}
+#frota .fleet-kpi-icon.blue{background:#eaf3ff;color:#1e5fb8;font-size:22px}
+#frota .fleet-kpi-icon.green{background:#e6f8ef;color:#12a45a}
+#frota .fleet-kpi-icon.amber{background:#fff5df;color:#e49b09}
+#frota .fleet-kpi-icon.red{background:#ffeded;color:#d53b42}
+#frota .fleet-kpi b{display:block;font-size:25px;line-height:1;color:#142641}
+#frota .fleet-kpi span{display:block;color:#6c7f98;font-size:12px;margin-top:5px}
+#frota .fleet-controls{background:#fff;border:1px solid var(--fleet-line);border-radius:16px;padding:11px;display:grid;grid-template-columns:minmax(260px,1fr) 190px 210px 160px;gap:9px;align-items:center;box-shadow:0 4px 14px rgba(22,50,82,.03)}
+#frota .fleet-search{position:relative;display:flex;align-items:center}
+#frota .fleet-search span{position:absolute;left:13px;color:#71859e;font-size:20px;pointer-events:none}
+#frota .fleet-search input,#frota .fleet-controls select{width:100%;height:43px;border:1px solid #d9e2ed;border-radius:11px;background:#fff;color:#243b58;padding:0 12px;font:inherit;font-size:12px;margin:0}
+#frota .fleet-search input{padding-left:39px}
+#frota .fleet-search input:focus,#frota .fleet-controls select:focus{outline:2px solid #d7e9ff;border-color:#76a9e7}
+#frota .fleet-result-meta{display:flex;justify-content:space-between;align-items:center;padding:13px 3px 8px;font-size:12px;color:#3d536e}
+#frota .fleet-list{display:grid;gap:10px}
+#frota .fleet-card{background:#fff;border:1px solid var(--fleet-line);border-radius:16px;min-height:124px;display:grid;grid-template-columns:minmax(360px,1.2fr) minmax(310px,.8fr) 180px;align-items:center;gap:14px;padding:14px 15px;box-shadow:0 5px 18px rgba(18,46,78,.035);transition:.15s ease}
+#frota .fleet-card:hover{border-color:#cbd8e7;box-shadow:0 8px 22px rgba(18,46,78,.07);transform:translateY(-1px)}
+#frota .fleet-main{display:flex;align-items:center;gap:13px;min-width:0}
+#frota .fleet-photo{width:80px;height:68px;object-fit:cover;border-radius:14px;border:1px solid #dce5ef;background:linear-gradient(145deg,#e9f2ff,#f6f9fd);flex:0 0 auto}
+#frota .fleet-name{font-size:17px;font-weight:900;color:#132741;line-height:1.2}
+#frota .fleet-status{display:inline-flex;align-items:center;gap:5px;margin-left:6px;vertical-align:2px}
+#frota .fleet-status::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+#frota .fleet-meta{font-size:12px;color:#70839b;margin-top:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#frota .fleet-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+#frota .fleet-tag{background:#eef4fb;color:#244362;border:1px solid #e0e9f3;border-radius:999px;padding:4px 8px;font-size:10px;font-weight:800}
+#frota .fleet-license{border-left:1px solid #e4eaf2;padding-left:16px;min-height:82px;display:flex;align-items:center}
+#frota .fleet-license-box{width:100%;border-radius:12px;padding:12px 13px;border:1px solid transparent}
+#frota .fleet-license-box.ok{background:#eafaf1;border-color:#d2f0df;color:#17653f}
+#frota .fleet-license-box.warn{background:#fff7e6;border-color:#f6e6bb;color:#8a5a00}
+#frota .fleet-license-box.danger{background:#fff0f0;border-color:#f2d4d6;color:#9d262b}
+#frota .fleet-license-box.neutral{background:#f5f7fa;border-color:#e5e9ef;color:#52657c}
+#frota .fleet-license-title{font-size:12px;font-weight:900;display:flex;gap:7px;align-items:center}
+#frota .fleet-license-detail{font-size:11px;line-height:1.35;margin-top:5px;color:inherit;opacity:.9}
+#frota .fleet-actions{display:flex;justify-content:flex-end;gap:7px;flex-wrap:wrap}
+#frota .fleet-actions .btn{min-height:40px;border-radius:10px;font-size:11px;padding:9px 12px}
+#frota .fleet-open-crlv{background:#eef4fb!important;color:#163b69!important;border:1px solid #d5e0ed!important}
+#frota .fleet-edit-btn{background:#102b51!important;color:#fff!important;border:1px solid #102b51!important}
+#frota .fleet-empty{background:#fff;border:1px dashed #cfd9e5;border-radius:16px;padding:34px;text-align:center;color:#70839b}
+#frota #crlvPreviewCard,#frota #vehicleEditCard{margin-top:16px;border-radius:18px;box-shadow:0 7px 22px rgba(18,46,78,.05)}
+@media(max-width:1180px){
+ #frota .fleet-controls{grid-template-columns:1fr 1fr}
+ #frota .fleet-card{grid-template-columns:minmax(320px,1fr) minmax(260px,.8fr)}
+ #frota .fleet-actions{grid-column:1/-1;justify-content:flex-end;border-top:1px solid #edf1f6;padding-top:10px}
+}
+@media(max-width:760px){
+ #frota .fleet-hero{align-items:flex-start;flex-direction:column}
+ #frota .fleet-hero-actions{width:100%}
+ #frota .fleet-hero-actions .btn{flex:1}
+ #frota .fleet-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+ #frota .fleet-controls{grid-template-columns:1fr}
+ #frota .fleet-result-meta{align-items:flex-start;gap:5px;flex-direction:column}
+ #frota .fleet-card{grid-template-columns:1fr;padding:12px}
+ #frota .fleet-license{border-left:0;border-top:1px solid #edf1f6;padding:11px 0 0;min-height:0}
+ #frota .fleet-actions{grid-column:auto;justify-content:stretch}
+ #frota .fleet-actions .btn{flex:1}
+ #frota .fleet-photo{width:66px;height:60px}
+ #frota .fleet-name{font-size:15px}
+}
+@media(max-width:460px){
+ #frota .fleet-kpis{grid-template-columns:1fr 1fr;gap:8px}
+ #frota .fleet-kpi{padding:11px;min-height:72px}
+ #frota .fleet-kpi-icon{width:36px;height:36px}
+ #frota .fleet-kpi b{font-size:21px}
+}
 .darkmode{--bg:#08111f;--card:#101c2e;--ink:#e7eef9;--muted:#8fa4bf;--line:#203047;background:#08111f;color:#e7eef9}
 .darkmode header{background:#0e1a2b;color:#e7eef9;border-color:#203047}.darkmode header .v2date b{color:#e7eef9}
 .darkmode .wrap,.darkmode body{background:#08111f}.darkmode .v2kpi,.darkmode .v2panel,.darkmode .card,.darkmode .item{background:#101c2e;border-color:#203047;color:#e7eef9}.darkmode .v2mini{background:#0b1727;border-color:#203047}.darkmode .v2hero p,.darkmode .v2date,.darkmode .v2kpi .t,.darkmode .v2kpi .s{color:#8fa4bf}
@@ -653,7 +731,7 @@ body.device-mode .po-actions .btn{width:100%;min-height:47px}
 <script defer src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"></script>
 <script>
 (function(){
-  const BUILD='6.62';
+  const BUILD='6.63';
   try{
     const marker='controla_cache_cleanup_'+BUILD;
     if(!localStorage.getItem(marker)){
@@ -1090,16 +1168,53 @@ body.device-mode .po-actions .btn{width:100%;min-height:47px}
 <div class="v2panel"><div class="v2panelhead"><div><h3>Apanhas cadastradas</h3><div class="muted">Registre cada caminhão conforme for sendo carregado.</div></div><button class="btn soft" id="refreshPoultry">Atualizar</button></div><div class="list" id="poultryList"></div></div>
 </div>
 <div class="section" data-screen="frota" hidden="" id="frota">
-<div class="card">
- <div class="toolbar" style="justify-content:space-between;align-items:flex-start">
-  <div><h3 style="margin:0">Frota</h3><div class="muted">Cadastre e gerencie ônibus, vans e demais conduções.</div></div>
-  <div class="toolbar">
-   <button class="btn primary" id="newVehicleBtn" type="button">+ NOVO VEÍCULO</button>
-   <button class="btn soft" id="importCrlvBtn" type="button">✨ LER CRLV</button>
+<div class="fleet-page">
+ <div class="fleet-hero">
+  <div class="fleet-title-wrap">
+   <div class="fleet-title-icon">🚐</div>
+   <div>
+    <h1>Frota</h1>
+    <p>Visão completa das conduções, documentos e situação de licenciamento.</p>
+   </div>
+  </div>
+  <div class="fleet-hero-actions">
+   <button class="btn soft fleet-import-btn" id="importCrlvBtn" type="button">📄 Importar CRLV</button>
+   <button class="btn primary fleet-new-btn" id="newVehicleBtn" type="button">＋ Cadastrar veículo</button>
   </div>
  </div>
+
+ <div class="fleet-kpis">
+  <div class="fleet-kpi"><div class="fleet-kpi-icon blue">🚐</div><div><b id="fleetKpiTotal">0</b><span>Veículos cadastrados</span></div></div>
+  <div class="fleet-kpi"><div class="fleet-kpi-icon green">●</div><div><b id="fleetKpiActive">0</b><span>Ativos</span></div></div>
+  <div class="fleet-kpi"><div class="fleet-kpi-icon amber">●</div><div><b id="fleetKpiMaintenance">0</b><span>Em manutenção</span></div></div>
+  <div class="fleet-kpi"><div class="fleet-kpi-icon red">●</div><div><b id="fleetKpiInactive">0</b><span>Inativos</span></div></div>
+ </div>
+
+ <div class="fleet-controls">
+  <div class="fleet-search"><span>⌕</span><input id="fleetSearch" type="search" placeholder="Buscar por nome, placa, modelo ou RENAVAM..."/></div>
+  <select id="fleetStatusFilter" aria-label="Filtrar por status">
+   <option value="all">Todos os status</option>
+   <option value="active">Ativos</option>
+   <option value="maintenance">Em manutenção</option>
+   <option value="inactive">Inativos</option>
+  </select>
+  <select id="fleetLicenseFilter" aria-label="Filtrar por licenciamento">
+   <option value="all">Todos os documentos</option>
+   <option value="ok">Licenciamento em dia</option>
+   <option value="warn">Atenção</option>
+   <option value="danger">Atrasado / verificar</option>
+   <option value="missing">Sem CRLV</option>
+  </select>
+  <select id="fleetSort" aria-label="Ordenar frota">
+   <option value="name">Nome A–Z</option>
+   <option value="plate">Placa</option>
+   <option value="status">Status</option>
+  </select>
+ </div>
+
  <input id="crlvImportFile" type="file" accept="application/pdf,image/jpeg,image/png,image/webp" hidden/>
- <div class="list" id="vehiclesList" style="margin-top:12px"></div>
+ <div class="fleet-result-meta"><span id="fleetResultCount">0 veículos</span><span class="muted">Clique no veículo para editar dados e documentos.</span></div>
+ <div class="fleet-list" id="vehiclesList"></div>
 </div>
 
 <div class="card" id="crlvPreviewCard" style="display:none;border:2px solid #1976d2">
@@ -2572,6 +2687,107 @@ function licensingStatusForVehicle(v,crlv){
  return {cls:'warn',label:'SITUAÇÃO NÃO CONFIRMADA',detail:'Ano do CRLV não confirmado • prazo '+currentYear+(fallbackDeadline?' até '+fallbackText:''),deadline:fallbackDeadline,confirmedYear:null,cycleYear:currentYear,confirmed:false};
 }
 
+function fleetLicenseTone(status,hasCrlv){
+ if(!hasCrlv)return 'neutral';
+ return ['ok','warn','danger'].includes(status?.cls)?status.cls:'neutral';
+}
+function fleetLicenseIcon(tone){
+ return tone==='ok'?'✓':tone==='warn'?'!':tone==='danger'?'!':'📄';
+}
+function updateFleetKpis(vehicles=[]){
+ const total=vehicles.length;
+ const active=vehicles.filter(v=>v.status==='active').length;
+ const maintenance=vehicles.filter(v=>v.status==='maintenance').length;
+ const inactive=vehicles.filter(v=>v.status==='inactive').length;
+ setTextSafe('fleetKpiTotal',total);
+ setTextSafe('fleetKpiActive',active);
+ setTextSafe('fleetKpiMaintenance',maintenance);
+ setTextSafe('fleetKpiInactive',inactive);
+}
+function renderFleetVehicles(){
+ const vehicles=[...(window.__fleetVehicles||[])];
+ const teams=window.__fleetTeams||[];
+ const docs=vehicleDocsCache||[];
+ const search=String(document.getElementById('fleetSearch')?.value||'').trim().toLowerCase();
+ const statusFilter=document.getElementById('fleetStatusFilter')?.value||'all';
+ const licenseFilter=document.getElementById('fleetLicenseFilter')?.value||'all';
+ const sort=document.getElementById('fleetSort')?.value||'name';
+
+ updateFleetKpis(vehicles);
+
+ let rows=vehicles.map(v=>{
+  const team=teams.find(t=>t.metadata?.primary_vehicle_id===v.id);
+  const crlv=docs.find(d=>d.vehicle_id===v.id&&isVehicleCrlv(d.document_type));
+  const crlvFile=crlv?.file_id?vehicleDocFiles[crlv.file_id]:null;
+  const licenseStatus=licensingStatusForVehicle(v,crlv);
+  return {v,team,crlv,crlvFile,licenseStatus};
+ });
+
+ if(search){
+  rows=rows.filter(({v,team})=>{
+   const hay=[v.description,v.plate,v.make,v.model,v.model_year,v.renavam,team?.name,team?.metadata?.contractor_name].filter(Boolean).join(' ').toLowerCase();
+   return hay.includes(search);
+  });
+ }
+ if(statusFilter!=='all')rows=rows.filter(({v})=>v.status===statusFilter);
+ if(licenseFilter!=='all'){
+  rows=rows.filter(({crlv,licenseStatus})=>{
+   if(licenseFilter==='missing')return !crlv;
+   return !!crlv&&licenseStatus.cls===licenseFilter;
+  });
+ }
+
+ rows.sort((a,b)=>{
+  if(sort==='plate')return String(a.v.plate||'').localeCompare(String(b.v.plate||''),'pt-BR');
+  if(sort==='status')return String(a.v.status||'').localeCompare(String(b.v.status||''),'pt-BR')||String(a.v.description||'').localeCompare(String(b.v.description||''),'pt-BR');
+  return String(a.v.description||a.v.model||'').localeCompare(String(b.v.description||b.v.model||''),'pt-BR');
+ });
+
+ setTextSafe('fleetResultCount',rows.length+' veículo'+(rows.length===1?'':'s'));
+
+ const list=document.getElementById('vehiclesList');
+ if(!list)return;
+
+ list.innerHTML=rows.map(({v,team,crlv,crlvFile,licenseStatus})=>{
+  const contractor=team?.metadata?.contractor_name||'';
+  const statusText=v.status==='active'?'Ativo':v.status==='maintenance'?'Em manutenção':'Inativo';
+  const statusCls=v.status==='active'?'ok':v.status==='maintenance'?'warn':'danger';
+  const tone=fleetLicenseTone(licenseStatus,!!crlv);
+  const model=[v.make,v.model,v.model_year].filter(Boolean).join(' ')||'Modelo não informado';
+  const meta=[v.plate||'Sem placa',model,Number(v.current_odometer_km||0).toLocaleString('pt-BR')+' km'].join(' • ');
+  const licenseTitle=crlv?licenseStatus.label:'CRLV não cadastrado';
+  const licenseDetail=crlv?licenseStatus.detail:'Cadastre o documento para acompanhar exercício e próxima renovação.';
+  const tags=(team?'<span class="fleet-tag">👥 '+esc(team.name)+'</span>':'')+(contractor?'<span class="fleet-tag">🏭 '+esc(contractor)+'</span>':'')+(v.renavam?'<span class="fleet-tag">RENAVAM '+esc(v.renavam)+'</span>':'');
+  const crlvAction=crlvFile
+   ?'<button class="btn soft fleet-open-crlv vehicleDocView" data-file="'+crlvFile.id+'" type="button">📄 Abrir CRLV</button>'
+   :'<button class="btn soft" type="button" onclick="openVehicleEdit(\''+v.id+'\')">＋ Cadastrar CRLV</button>';
+  const retry=(crlvFile&&!licenseStatus.confirmed)
+   ?'<button class="btn soft vehicleCrlvRead" data-file="'+crlvFile.id+'" data-vehicle="'+v.id+'" type="button">↻ Tentar leitura</button>'
+   :'';
+
+  return '<div class="fleet-card" data-fleet-vehicle="'+v.id+'">'+
+   '<div class="fleet-main">'+
+    '<img class="fleet-photo" data-vehicle-photo="'+v.id+'" alt="Foto de '+esc(v.description||v.model||'veículo')+'"/>'+
+    '<div style="min-width:0">'+
+     '<div><span class="fleet-name">'+esc(v.description||v.model||'Veículo')+'</span><span class="pill '+statusCls+' fleet-status">'+esc(statusText)+'</span></div>'+
+     '<div class="fleet-meta">'+esc(meta)+'</div>'+
+     '<div class="fleet-tags">'+tags+'</div>'+
+    '</div>'+
+   '</div>'+
+   '<div class="fleet-license">'+
+    '<div class="fleet-license-box '+tone+'">'+
+     '<div class="fleet-license-title"><span>'+fleetLicenseIcon(tone)+'</span><span>'+esc(licenseTitle)+'</span></div>'+
+     '<div class="fleet-license-detail">'+esc(licenseDetail)+'</div>'+
+    '</div>'+
+   '</div>'+
+   '<div class="fleet-actions">'+crlvAction+retry+
+    '<button class="btn fleet-edit-btn" type="button" onclick="openVehicleEdit(\''+v.id+'\')">Editar</button>'+
+   '</div>'+
+  '</div>';
+ }).join('')||'<div class="fleet-empty"><strong>Nenhum veículo encontrado</strong><div class="muted" style="margin-top:6px">Ajuste os filtros ou cadastre uma nova condução.</div></div>';
+
+ hydrateVehiclePhotos();
+}
 async function loadVehicles(){
  try{
   const [r,t,docs,files]=await Promise.all([
@@ -2584,57 +2800,14 @@ async function loadVehicles(){
   window.__fleetTeams=t||[];
   vehicleDocsCache=docs||[];
   vehicleDocFiles=Object.fromEntries((files||[]).map(f=>[f.id,f]));
-
-  const list=$('#vehiclesList');
-  if(!list)return;
-
-  list.innerHTML=(r||[]).map(x=>{
-   const team=(t||[]).find(z=>z.metadata?.primary_vehicle_id===x.id);
-   const contractor=team?.metadata?.contractor_name||'';
-   const st=x.status==='active'?'Ativo':x.status==='maintenance'?'Em manutenção':'Inativo';
-   const crlv=(docs||[]).find(d=>d.vehicle_id===x.id&&isVehicleCrlv(d.document_type));
-   const crlvFile=crlv?.file_id?vehicleDocFiles[crlv.file_id]:null;
-   let crlvInfo='';
-
-   const licenseStatus=licensingStatusForVehicle(x,crlv);
-   if(crlv){
-    crlvInfo=
-     '<div class="toolbar" style="margin-top:8px;gap:7px;flex-wrap:wrap">'+
-       '<span class="pill '+licenseStatus.cls+'">📄 '+esc(licenseStatus.label)+'</span>'+
-       '<span class="muted">'+esc(licenseStatus.detail)+'</span>'+
-       (crlvFile
-        ?'<button class="btn soft vehicleDocView" data-file="'+crlvFile.id+'" type="button">📄 ABRIR CRLV</button>'+(licenseStatus.confirmed?'':' <button class="btn soft vehicleCrlvRead" data-file="'+crlvFile.id+'" data-vehicle="'+x.id+'" type="button">↻ TENTAR NOVAMENTE</button>')
-        :'<button class="btn soft" type="button" disabled title="Cadastre o arquivo do CRLV">📄 CRLV SEM ARQUIVO</button>')+
-     '</div>';
-   }else{
-    crlvInfo=
-     '<div class="toolbar" style="margin-top:8px;gap:7px;flex-wrap:wrap">'+
-       '<span class="pill '+licenseStatus.cls+'">📄 '+esc(licenseStatus.label)+'</span>'+
-       '<span class="muted">'+esc(licenseStatus.detail)+'</span>'+
-       '<button class="btn soft" type="button" onclick="openVehicleEdit(\''+x.id+'\')">+ CADASTRAR CRLV</button>'+
-     '</div>';
-   }
-
-   return '<div class="item"><div class="toolbar" style="justify-content:space-between;gap:10px;align-items:flex-start">'+
-    '<div style="display:flex;align-items:center;gap:12px;min-width:0">'+
-      '<img data-vehicle-photo="'+x.id+'" style="width:78px;height:58px;object-fit:cover;border-radius:12px;border:1px solid #cbd5e1"/>'+
-      '<div style="min-width:0"><strong>'+esc(x.description||x.model||'Veículo')+'</strong> <span class="pill '+(x.status==='active'?'ok':'warn')+'">'+esc(st)+'</span>'+
-        '<div class="muted">'+esc(x.plate||'Sem placa')+' • '+esc([x.make,x.model,x.model_year].filter(Boolean).join(' ')||'Modelo não informado')+' • '+Number(x.current_odometer_km||0).toLocaleString('pt-BR')+' km</div>'+
-        (team?'<div style="margin-top:5px"><span class="pill">👥 '+esc(team.name)+'</span>'+(contractor?' <span class="pill">🏭 '+esc(contractor)+'</span>':'')+'</div>':'')+
-        crlvInfo+
-      '</div>'+
-    '</div>'+
-    '<button class="btn soft" type="button" onclick="openVehicleEdit(\''+x.id+'\')">Editar</button>'+
-   '</div></div>';
-  }).join('')||'<div class="muted">Sem conduções. Toque em + Novo veículo para cadastrar.</div>';
-
-  hydrateVehiclePhotos();
+  renderFleetVehicles();
   scheduleAutomaticCrlvRead();
  }catch(e){
-  const l=$('#vehiclesList');
+  const l=document.getElementById('vehiclesList');
   if(l)l.innerHTML='<div class="error">'+esc(e.message)+'</div>';
  }
 }
+
 function fillVehicleTeamSelect(vehicleId=''){const sel=$('#editVehicleTeam');if(!sel)return;const teams=(window.__fleetTeams||[]).filter(t=>t.status==='active'||t.metadata?.primary_vehicle_id===vehicleId);sel.innerHTML='<option value="">Sem equipe vinculada</option>'+teams.map(t=>`<option value="${t.id}">${esc(t.name)}</option>`).join('');const linked=teams.find(t=>t.metadata?.primary_vehicle_id===vehicleId);sel.value=linked?.id||'';updateVehicleContractor()}
 function updateVehicleContractor(){const t=(window.__fleetTeams||[]).find(x=>x.id===$('#editVehicleTeam')?.value);const el=$('#editVehicleContractor');if(el)el.textContent=t?.metadata?.contractor_name?'Contratante: '+t.metadata.contractor_name:''}
 window.openVehicleEdit=async function(id=''){const v=(window.__fleetVehicles||[]).find(x=>x.id===id)||{};$('#editVehicleId').value=v.id||'';$('#vehicleEditTitle').textContent=v.id?'Editar veículo':'Novo veículo';$('#editVehicleDescription').value=v.description||'';$('#editVehiclePlate').value=v.plate||'';$('#editVehicleMake').value=v.make||'';$('#editVehicleModel').value=v.model||'';$('#editVehicleYear').value=v.model_year||'';$('#editVehicleRenavam').value=v.renavam||'';$('#editVehicleKm').value=v.current_odometer_km||'';$('#editVehicleStatus').value=v.status||'active';window.__vehiclePhotoFile=null;window.__removeVehiclePhoto=false;const pp=$('#editVehiclePhotoPreview');pp.src=vehiclePlaceholder(v.description);const p=v.metadata?.vehicle_photo_path;if(p){const u=await vehiclePhotoObjectUrl(p);if(u)pp.src=u}fillVehicleTeamSelect(v.id||'');$('#archiveVehicleBtn').style.display=v.id?'':'none';$('#deleteVehicleBtn').style.display=v.id?'':'none';$('#vehicleEditMsg').textContent='';$('#vehicleEditCard').style.display='block';$('#vehicleDocEditCard').style.display='none';await loadVehicleDocs(v.id||'');$('#vehicleEditCard').scrollIntoView({behavior:'smooth',block:'start'})}
@@ -5847,7 +6020,11 @@ document.addEventListener('click',async function(e){
     }
   }
 });
+document.addEventListener('input',function(e){
+ if(e.target?.id==='fleetSearch'){renderFleetVehicles();return}
+});
 document.addEventListener('change',async function(e){
+ if(['fleetStatusFilter','fleetLicenseFilter','fleetSort'].includes(e.target?.id)){renderFleetVehicles();return}
  if(e.target?.id==='crlvLicenseCategory'){updateCrlvAutoExpiry();return}
  if(e.target?.id==='vehicleDocType'){window.__pendingVehicleDocCrlv=null;configureVehicleDocTypeUi();return}
  if(e.target?.id==='vehicleDocFile'){
@@ -5898,7 +6075,7 @@ setInterval(()=>{
 },60000);
 if('serviceWorker' in navigator){
  window.addEventListener('load',()=>{
-  navigator.serviceWorker.register('./sw-v6-62.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
+  navigator.serviceWorker.register('./sw-v6-63.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
  });
 }
 
