@@ -8,7 +8,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
-<title>Comando 360 • v6.60</title>
+<title>Comando 360 • v6.61</title>
 <link rel="manifest" href="./comando360.webmanifest"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
@@ -653,7 +653,7 @@ body.device-mode .po-actions .btn{width:100%;min-height:47px}
 <script defer src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"></script>
 <script>
 (function(){
-  const BUILD='6.60';
+  const BUILD='6.61';
   try{
     const marker='controla_cache_cleanup_'+BUILD;
     if(!localStorage.getItem(marker)){
@@ -2526,27 +2526,50 @@ async function vehiclePhotoObjectUrl(path){if(!path)return '';if(vehiclePhotoUrl
 async function uploadVehiclePhoto(file,vehicleId){const sess=session();const ext=file.type==='image/png'?'png':file.type==='image/webp'?'webp':'jpg';const path=companyId+'/vehicles/'+vehicleId+'/profile-'+Date.now()+'.'+ext;const r=await fetch(API_URL+'/storage/v1/object/employee-documents/'+path,{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+sess.access_token,'Content-Type':file.type||'image/jpeg','x-upsert':'false'},body:file});await parseResponse(r);return path}
 async function hydrateVehiclePhotos(){for(const v of (window.__fleetVehicles||[])){const img=document.querySelector(`[data-vehicle-photo="${v.id}"]`);if(!img)continue;img.src=vehiclePlaceholder(v.description);const p=v.metadata?.vehicle_photo_path;if(p){const u=await vehiclePhotoObjectUrl(p);if(u)img.src=u}}}
 function licensingStatusForVehicle(v,crlv){
- const currentYear=new Date().getFullYear();
  const category=inferVehicleLicenseCategory(v);
- const deadline=spLicensingDueDate(v?.plate,category,currentYear);
  const confirmedYear=Number(v?.metadata?.crlv?.licensing_year||0);
+ const currentYear=new Date().getFullYear();
+ const cycleYear=confirmedYear>0?confirmedYear+1:currentYear;
+ const deadline=spLicensingDueDate(v?.plate,category,cycleYear);
  const today=new Date();today.setHours(0,0,0,0);
  const due=deadline?new Date(deadline+'T00:00:00'):null;
  const deadlineText=deadline?due.toLocaleDateString('pt-BR'):'não calculado';
+ const days=due?Math.ceil((due-today)/86400000):null;
 
- if(confirmedYear>=currentYear){
-  return {cls:'ok',label:'LICENCIADO '+confirmedYear,detail:'Ano do CRLV confirmado • prazo '+deadlineText,deadline,confirmedYear,confirmed:true};
- }
  if(confirmedYear>0){
-  if(due&&today>due){
-   return {cls:'danger',label:'ATRASADO',detail:'Último CRLV confirmado: '+confirmedYear+' • prazo '+currentYear+' encerrou em '+deadlineText,deadline,confirmedYear,confirmed:true};
+  if(days!==null&&days<0){
+   return {
+    cls:'danger',
+    label:'LICENCIAMENTO ATRASADO',
+    detail:'CRLV exercício '+confirmedYear+' • renovação '+cycleYear+' venceu em '+deadlineText,
+    deadline,confirmedYear,cycleYear,confirmed:true
+   };
   }
-  return {cls:'warn',label:'CRLV '+confirmedYear,detail:'Ainda não confirmado para '+currentYear+' • prazo até '+deadlineText,deadline,confirmedYear,confirmed:true};
+  if(days!==null&&days<=30){
+   return {
+    cls:'warn',
+    label:'LICENCIADO '+confirmedYear,
+    detail:'Próxima renovação '+cycleYear+' até '+deadlineText+' • faltam '+days+' dia(s)',
+    deadline,confirmedYear,cycleYear,confirmed:true
+   };
+  }
+  return {
+   cls:'ok',
+   label:'LICENCIADO '+confirmedYear,
+   detail:'Próxima renovação '+cycleYear+(deadline?' até '+deadlineText:''),
+   deadline,confirmedYear,cycleYear,confirmed:true
+  };
  }
- if(due&&today>due){
-  return {cls:'danger',label:'VERIFICAR LICENCIAMENTO',detail:'Prazo '+currentYear+' encerrou em '+deadlineText+' • ano do CRLV não confirmado',deadline,confirmedYear:null,confirmed:false};
+
+ const fallbackDeadline=spLicensingDueDate(v?.plate,category,currentYear);
+ const fallbackDue=fallbackDeadline?new Date(fallbackDeadline+'T00:00:00'):null;
+ const fallbackDays=fallbackDue?Math.ceil((fallbackDue-today)/86400000):null;
+ const fallbackText=fallbackDeadline?fallbackDue.toLocaleDateString('pt-BR'):'não calculado';
+
+ if(fallbackDays!==null&&fallbackDays<0){
+  return {cls:'danger',label:'VERIFICAR LICENCIAMENTO',detail:'Ano do CRLV não confirmado • prazo '+currentYear+' encerrou em '+fallbackText,deadline:fallbackDeadline,confirmedYear:null,cycleYear:currentYear,confirmed:false};
  }
- return {cls:'warn',label:'SITUAÇÃO NÃO CONFIRMADA',detail:'Prazo '+currentYear+' até '+deadlineText+' • falta confirmar o ano do CRLV',deadline,confirmedYear:null,confirmed:false};
+ return {cls:'warn',label:'SITUAÇÃO NÃO CONFIRMADA',detail:'Ano do CRLV não confirmado • prazo '+currentYear+(fallbackDeadline?' até '+fallbackText:''),deadline:fallbackDeadline,confirmedYear:null,cycleYear:currentYear,confirmed:false};
 }
 
 async function loadVehicles(){
@@ -4489,6 +4512,14 @@ function spLicensingDueDate(plate,category='regular',year=new Date().getFullYear
  const month=(category==='truck'?truckMonths:regularMonths)[final];
  return month?lastDayIso(year,month):null;
 }
+function crlvNextLicensingCycleYear(licensingYear){
+ const y=Number(licensingYear||0);
+ return y>0?y+1:new Date().getFullYear();
+}
+function crlvNextDueDate(plate,category='regular',licensingYear=null){
+ const cycleYear=crlvNextLicensingCycleYear(licensingYear);
+ return spLicensingDueDate(plate,category,cycleYear);
+}
 function spLicensingLabel(plate,category='regular',year=new Date().getFullYear()){
  const due=spLicensingDueDate(plate,category,year);
  if(!due)return 'Placa sem final numérico válido';
@@ -4500,11 +4531,13 @@ function updateCrlvAutoExpiry(){
  const plate=document.getElementById('crlvPlate')?.value||'';
  const cat=document.getElementById('crlvLicenseCategory')?.value||'regular';
  const uf=(document.getElementById('crlvLicenseState')?.value||'SP').toUpperCase();
- const due=uf==='SP'?spLicensingDueDate(plate,cat,new Date().getFullYear()):null;
+ const exercise=Number(document.getElementById('crlvLicensingYear')?.value||0)||null;
+ const cycleYear=crlvNextLicensingCycleYear(exercise);
+ const due=uf==='SP'?spLicensingDueDate(plate,cat,cycleYear):null;
  const input=document.getElementById('crlvExpires');
  const rule=document.getElementById('crlvExpiryRule');
  if(input)input.value=due||'';
- if(rule)rule.textContent=uf==='SP'?(due?spLicensingLabel(plate,cat,new Date().getFullYear()):'Informe uma placa válida para calcular o vencimento pelo Detran-SP.'):'CRLV identificado como UF '+uf+'. O cálculo automático de calendário está configurado para SP.';
+ if(rule)rule.textContent=uf==='SP'?(due?(exercise?'CRLV exercício '+exercise+' • próxima renovação '+cycleYear+' • '+spLicensingLabel(plate,cat,cycleYear):spLicensingLabel(plate,cat,cycleYear)):'Informe uma placa válida para calcular o vencimento pelo Detran-SP.'):'CRLV identificado como UF '+uf+'. O cálculo automático de calendário está configurado para SP.';
 }
 function isVehicleCrlv(type){
  const s=String(type||'').toLowerCase();
@@ -4558,7 +4591,8 @@ async function readStoredVehicleCrlv(fileId,vehicleId){
  if(vehiclePlate&&docPlate&&vehiclePlate!==docPlate)throw new Error('O CRLV salvo é da placa '+docPlate+', mas este veículo é '+vehiclePlate+'.');
  const uf=(d.uf||v?.metadata?.licensing_state||'SP').toUpperCase();
  const category=crlvLicensingCategoryFromData(d);
- const due=uf==='SP'?spLicensingDueDate(docPlate||vehiclePlate,category,new Date().getFullYear()):null;
+ const exercise=Number(d.licensingYear||0)||null;
+ const due=uf==='SP'?crlvNextDueDate(docPlate||vehiclePlate,category,exercise):null;
  await applyParsedCrlvToVehicle(vehicleId,{data:d,uf,category,due});
  const doc=vehicleDocsCache.find(x=>x.vehicle_id===vehicleId&&x.file_id===fileId&&isVehicleCrlv(x.document_type));
  if(doc&&due)await rest('v2_vehicle_documents','id=eq.'+doc.id,'PATCH',{expires_at:due});
@@ -4645,9 +4679,10 @@ async function loadVehicleDocs(vehicleId=''){
   const z=isCrlv?licensingStatusForVehicle(v,d):vehicleDocStatus(d.expires_at);
   const f=vehicleDocFiles[d.file_id];
   const currentYear=new Date().getFullYear();
-  const due=isCrlv?spLicensingDueDate(v?.plate,inferVehicleLicenseCategory(v),currentYear):d.expires_at;
-  const dateText=due?'Prazo '+new Date(due+'T00:00:00').toLocaleDateString('pt-BR'):'Sem vencimento';
   const exercise=isCrlv?Number(v?.metadata?.crlv?.licensing_year||0):0;
+  const cycleYear=isCrlv?crlvNextLicensingCycleYear(exercise):currentYear;
+  const due=isCrlv?spLicensingDueDate(v?.plate,inferVehicleLicenseCategory(v),cycleYear):d.expires_at;
+  const dateText=due?'Próxima renovação '+cycleYear+' até '+new Date(due+'T00:00:00').toLocaleDateString('pt-BR'):'Sem vencimento';
   const detail=isCrlv?(exercise?'EXERCÍCIO '+exercise+' • '+dateText:'Exercício não confirmado • '+dateText):dateText;
   return '<div class="item vehicle-doc-row"><div class="toolbar" style="justify-content:space-between;align-items:flex-start"><div><strong>'+esc(d.document_type)+'</strong><div class="muted">'+esc(detail)+(v?.renavam?' • RENAVAM '+esc(v.renavam):'')+'</div><div style="margin-top:6px"><span class="pill '+z.cls+'">'+esc(z.label)+'</span>'+(f?' <span class="pill ok">📎 '+esc(f.original_name||'arquivo')+'</span>':' <span class="pill">Sem arquivo</span>')+'</div></div><div class="toolbar">'+(f?'<button class="btn soft vehicleDocView" data-file="'+f.id+'" type="button">👁️ Abrir</button><button class="btn soft vehicleDocDownload" data-file="'+f.id+'" type="button">⬇️ Baixar</button>':'')+'<button class="btn soft editVehicleDocBtn" data-id="'+d.id+'" type="button">Editar</button></div></div></div>';
  }).join('')||'<div class="muted vehicle-doc-empty">Nenhum documento cadastrado nesta condução.</div>';
@@ -4683,7 +4718,8 @@ function configureVehicleDocTypeUi(){
  if(isCrlv){
   const v=currentVehicleForDoc();
   if(v&&exp){
-   const due=String(v?.metadata?.licensing_state||'SP').toUpperCase()==='SP'?spLicensingDueDate(v.plate,inferVehicleLicenseCategory(v),new Date().getFullYear()):null;
+   const exercise=Number(v?.metadata?.crlv?.licensing_year||0)||null;
+   const due=String(v?.metadata?.licensing_state||'SP').toUpperCase()==='SP'?crlvNextDueDate(v.plate,inferVehicleLicenseCategory(v),exercise):null;
    if(due)exp.value=due;
   }
  }
@@ -4707,7 +4743,8 @@ async function inspectVehicleDocCrlvFile(file){
  }
  const uf=(d.uf||v?.metadata?.licensing_state||'SP').toUpperCase();
  const cat=crlvLicensingCategoryFromData(d);
- const due=uf==='SP'?spLicensingDueDate(docPlate||vehiclePlate,cat,new Date().getFullYear()):null;
+ const exercise=Number(d.licensingYear||0)||null;
+ const due=uf==='SP'?crlvNextDueDate(docPlate||vehiclePlate,cat,exercise):null;
  window.__pendingVehicleDocCrlv={data:d,uf,category:cat,due};
  const exp=document.getElementById('vehicleDocExpires');
  if(exp)exp.value=due||'';
@@ -5191,9 +5228,11 @@ async function confirmCrlvImport(options={}){
  const mm=document.getElementById('crlvMakeModel').value.trim();
  const licenseCategory=document.getElementById('crlvLicenseCategory')?.value||'regular';
  const licenseState=(document.getElementById('crlvLicenseState')?.value||'SP').toUpperCase();
- const expires=licenseState==='SP'?spLicensingDueDate(plate,licenseCategory,new Date().getFullYear()):null;
+ const licensingYear=Number(document.getElementById('crlvLicensingYear')?.value||0)||null;
+ const cycleYear=crlvNextLicensingCycleYear(licensingYear);
+ const expires=licenseState==='SP'?spLicensingDueDate(plate,licenseCategory,cycleYear):null;
  if(!plate&&!renavam){msg.textContent='Informe pelo menos a placa ou o RENAVAM.';return}
- if(licenseState==='SP'&&!expires){msg.textContent='Não consegui calcular o vencimento. Confira se a placa termina com número.';return}
+ if(licenseState==='SP'&&!expires){msg.textContent='Não consegui calcular o próximo prazo. Confira se a placa termina com número.';return}
 
  try{
   msg.textContent='Verificando a frota...';
@@ -5216,7 +5255,8 @@ async function confirmCrlvImport(options={}){
     fuel:document.getElementById('crlvFuel').value.trim()||null,
     year_fabrication:Number(document.getElementById('crlvYearFab').value)||null,
     expires_at:expires,
-    licensing_year:Number(document.getElementById('crlvLicensingYear')?.value)||null,
+    next_licensing_cycle_year:cycleYear,
+    licensing_year:licensingYear,
     licensing_year_source:Number(document.getElementById('crlvLicensingYear')?.value)?(pendingCrlvData?.licensingYearSource||'crlv_document'):'not_confirmed',
     licensing_parse_version:Number(pendingCrlvData?.licensingParseVersion||0),
     licensing_state:licenseState,
@@ -5758,7 +5798,7 @@ setInterval(()=>{
 },60000);
 if('serviceWorker' in navigator){
  window.addEventListener('load',()=>{
-  navigator.serviceWorker.register('./sw-v6-60.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
+  navigator.serviceWorker.register('./sw-v6-61.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
  });
 }
 
