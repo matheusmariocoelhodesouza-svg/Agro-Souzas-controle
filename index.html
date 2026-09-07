@@ -8,7 +8,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
-<title>Comando 360 • v6.56</title>
+<title>Comando 360 • v6.57</title>
 <link rel="manifest" href="./comando360.webmanifest"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
@@ -653,7 +653,7 @@ body.device-mode .po-actions .btn{width:100%;min-height:47px}
 <script defer src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"></script>
 <script>
 (function(){
-  const BUILD='6.56';
+  const BUILD='6.57';
   try{
     const marker='controla_cache_cleanup_'+BUILD;
     if(!localStorage.getItem(marker)){
@@ -2580,7 +2580,7 @@ async function loadVehicles(){
        '<span class="pill '+licenseStatus.cls+'">📄 '+esc(licenseStatus.label)+'</span>'+
        '<span class="muted">'+esc(licenseStatus.detail)+'</span>'+
        (crlvFile
-        ?'<button class="btn soft vehicleDocView" data-file="'+crlvFile.id+'" type="button">📄 ABRIR CRLV</button>'+(licenseStatus.confirmed?'':' <button class="btn soft vehicleCrlvRead" data-file="'+crlvFile.id+'" data-vehicle="'+x.id+'" type="button">✨ LER DADOS DO CRLV</button>')
+        ?'<button class="btn soft vehicleDocView" data-file="'+crlvFile.id+'" type="button">📄 ABRIR CRLV</button>'+(licenseStatus.confirmed?'':' <button class="btn soft vehicleCrlvRead" data-file="'+crlvFile.id+'" data-vehicle="'+x.id+'" type="button">↻ TENTAR NOVAMENTE</button>')
         :'<button class="btn soft" type="button" disabled title="Cadastre o arquivo do CRLV">📄 CRLV SEM ARQUIVO</button>')+
      '</div>';
    }else{
@@ -2606,6 +2606,7 @@ async function loadVehicles(){
   }).join('')||'<div class="muted">Sem conduções. Toque em + Novo veículo para cadastrar.</div>';
 
   hydrateVehiclePhotos();
+  scheduleAutomaticCrlvRead();
  }catch(e){
   const l=$('#vehiclesList');
   if(l)l.innerHTML='<div class="error">'+esc(e.message)+'</div>';
@@ -4569,6 +4570,49 @@ async function readStoredVehicleCrlv(fileId,vehicleId){
  return {year,plate:d.plate||vehiclePlate,uf,category,due};
 }
 
+let fleetCrlvAutoReadRunning=false;
+const fleetCrlvAutoReadTried=new Set();
+
+async function autoReadPendingFleetCrlvs(){
+ if(fleetCrlvAutoReadRunning||!navigator.onLine||!companyId)return;
+
+ const docs=(vehicleDocsCache||[]).filter(d=>isVehicleCrlv(d.document_type)&&d.status==='active'&&d.file_id);
+ const queue=[];
+
+ for(const d of docs){
+  const v=(vehicleDocsVehicles||[]).find(x=>x.id===d.vehicle_id)||(window.__fleetVehicles||[]).find(x=>x.id===d.vehicle_id);
+  if(!v)continue;
+  if(licensingStatusForVehicle(v,d).confirmed)continue;
+  const key=d.file_id+'|'+d.vehicle_id;
+  if(fleetCrlvAutoReadTried.has(key))continue;
+  queue.push({doc:d,vehicle:v,key});
+ }
+
+ if(!queue.length)return;
+ fleetCrlvAutoReadRunning=true;
+
+ try{
+  for(const item of queue){
+   fleetCrlvAutoReadTried.add(item.key);
+   try{
+    await readStoredVehicleCrlv(item.doc.file_id,item.vehicle.id);
+   }catch(err){
+    console.warn('Leitura automática do CRLV',item.vehicle.description||item.vehicle.plate,err);
+   }
+  }
+ }finally{
+  fleetCrlvAutoReadRunning=false;
+ }
+}
+
+function scheduleAutomaticCrlvRead(){
+ if(!navigator.onLine||!companyId)return;
+ clearTimeout(window.__fleetCrlvAutoTimer);
+ window.__fleetCrlvAutoTimer=setTimeout(()=>{
+  autoReadPendingFleetCrlvs().catch(e=>console.warn('Leitura automática de CRLV',e));
+ },650);
+}
+
 async function loadVehicleDocs(vehicleId=''){
  const [docs,vs,files]=await Promise.all([
   rest('v2_vehicle_documents','select=*&company_id=eq.'+companyId+'&order=expires_at.asc.nullslast,created_at.desc'),
@@ -4606,6 +4650,7 @@ async function loadVehicleDocs(vehicleId=''){
   const detail=isCrlv?(exercise?'EXERCÍCIO '+exercise+' • '+dateText:'Exercício não confirmado • '+dateText):dateText;
   return '<div class="item vehicle-doc-row"><div class="toolbar" style="justify-content:space-between;align-items:flex-start"><div><strong>'+esc(d.document_type)+'</strong><div class="muted">'+esc(detail)+(v?.renavam?' • RENAVAM '+esc(v.renavam):'')+'</div><div style="margin-top:6px"><span class="pill '+z.cls+'">'+esc(z.label)+'</span>'+(f?' <span class="pill ok">📎 '+esc(f.original_name||'arquivo')+'</span>':' <span class="pill">Sem arquivo</span>')+'</div></div><div class="toolbar">'+(f?'<button class="btn soft vehicleDocView" data-file="'+f.id+'" type="button">👁️ Abrir</button><button class="btn soft vehicleDocDownload" data-file="'+f.id+'" type="button">⬇️ Baixar</button>':'')+'<button class="btn soft editVehicleDocBtn" data-id="'+d.id+'" type="button">Editar</button></div></div></div>';
  }).join('')||'<div class="muted vehicle-doc-empty">Nenhum documento cadastrado nesta condução.</div>';
+ scheduleAutomaticCrlvRead();
 }
 function openVehicleDoc(id=''){
  const d=vehicleDocsCache.find(x=>x.id===id),f=d?.file_id?vehicleDocFiles[d.file_id]:null;
@@ -5543,7 +5588,7 @@ function updateNetworkBadge(){
  el.classList.toggle('online',online);
  el.classList.toggle('offline',!online);
 }
-window.addEventListener('online',()=>{updateNetworkBadge();setTimeout(()=>syncOfflineQueue().catch(e=>console.warn('sync online',e)),400)});
+window.addEventListener('online',()=>{updateNetworkBadge();fleetCrlvAutoReadTried.clear();setTimeout(()=>{syncOfflineQueue().catch(e=>console.warn('sync online',e));scheduleAutomaticCrlvRead()},400)});
 window.addEventListener('offline',updateNetworkBadge);
 updateNetworkBadge();
 setInterval(()=>{if(navigator.onLine&&session()?.refresh_token)ensureFreshAccessToken(180).catch(e=>console.warn('renovação de sessão',e))},5*60*1000);
@@ -5561,7 +5606,7 @@ setInterval(()=>{
 },60000);
 if('serviceWorker' in navigator){
  window.addEventListener('load',()=>{
-  navigator.serviceWorker.register('./sw-v6-56.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
+  navigator.serviceWorker.register('./sw-v6-57.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
  });
 }
 
