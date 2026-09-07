@@ -5063,6 +5063,40 @@ async function savePoultryOperation(){
    });
    return;
   }
+  // No celular de campo, cria operação + carregamento juntos no servidor.
+  // Assim não sobra apanha sem carregamento vinculado quando uma gravação falha.
+  if(deviceMode){
+   const syncId=makeOfflineId('online-apanha');
+   const res=await rpc('v2_device_sync_poultry_operation',{
+    p_company_id:companyId,
+    p_offline_event_id:syncId,
+    p_integrated:farm.producer_name||$('#poIntegratedName').value.trim(),
+    p_city:farm.city||farm.address?.city||$('#poCity').value.trim(),
+    p_farm_name:farm.farm_name||$('#poFarmName').value.trim()||null,
+    p_aviary:null,
+    p_outlet_type:farm.metadata?.outlet_type||$('#poOutletType').value.trim()||null,
+    p_energy_type:farm.metadata?.energy_type||$('#poEnergyType').value.trim()||null,
+    p_scheduled_start:new Date($('#poStart').value).toISOString(),
+    p_scheduled_end:$('#poEnd').value?new Date($('#poEnd').value).toISOString():null,
+    p_notes:$('#poNotes').value.trim()||null
+   });
+   const row=Array.isArray(res)?res[0]:res;
+   if(!row?.operation_id||!row?.loading_id)throw new Error('Não foi possível criar a apanha completa. Tente novamente.');
+   $('#poMsg').textContent='Apanha salva ✓ Agora registre o Caminhão 1.';
+   $('#poultryForm').classList.add('hidden');
+   await loadDevicePoultryContext();
+   await loadPoultryOps();
+   const syncedLoading=poultryLoadings.find(x=>x.id===row.loading_id);
+   openNextTruckForm({
+    operationId:row.operation_id,
+    loadingId:row.loading_id,
+    farmId:syncedLoading?.farm_id||farm.id,
+    name:farm.producer_name||'Apanha',
+    sequence:1
+   });
+   return;
+  }
+
   const planned=isAdminGeneral?poN($('#poPlannedBirds')?.value):0;
   const price=isAdminGeneral?poN($('#poPricePerBird')?.value):0;
   const outlet=farm.metadata?.outlet_type||$('#poOutletType').value.trim()||null;
