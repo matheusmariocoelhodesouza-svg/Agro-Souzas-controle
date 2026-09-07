@@ -8,7 +8,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
-<title>Comando 360 • v6.58</title>
+<title>Comando 360 • v6.59</title>
 <link rel="manifest" href="./comando360.webmanifest"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
@@ -653,7 +653,7 @@ body.device-mode .po-actions .btn{width:100%;min-height:47px}
 <script defer src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"></script>
 <script>
 (function(){
-  const BUILD='6.58';
+  const BUILD='6.59';
   try{
     const marker='controla_cache_cleanup_'+BUILD;
     if(!localStorage.getItem(marker)){
@@ -1104,14 +1104,14 @@ body.device-mode .po-actions .btn{width:100%;min-height:47px}
 
 <div class="card" id="crlvPreviewCard" style="display:none;border:2px solid #1976d2">
  <div class="toolbar" style="justify-content:space-between">
-  <div><h3 style="margin:0">✨ Dados encontrados no CRLV</h3><div class="muted">Confira antes de cadastrar ou atualizar a condução.</div></div>
+  <div><h3 style="margin:0">✨ Dados encontrados no CRLV</h3><div class="muted">Ao identificar placa ou RENAVAM, o Comando 360 cadastra ou atualiza a condução automaticamente.</div></div>
   <button class="btn soft" id="cancelCrlvImport" type="button">Cancelar</button>
  </div>
  <div class="row" style="margin-top:12px"><div><label>Placa</label><input id="crlvPlate"/></div><div><label>RENAVAM</label><input id="crlvRenavam"/></div><div><label>Marca / Modelo</label><input id="crlvMakeModel"/></div></div>
  <div class="row"><div><label>Ano fabricação</label><input id="crlvYearFab" type="number"/></div><div><label>Ano modelo</label><input id="crlvYearModel" type="number"/></div><div><label>Chassi</label><input id="crlvChassis"/></div></div>
  <div class="row"><div><label>Proprietário</label><input id="crlvOwner"/></div><div><label>Cor</label><input id="crlvColor"/></div><div><label>Combustível</label><input id="crlvFuel"/></div><div><label>Categoria para licenciamento</label><select id="crlvLicenseCategory"><option value="regular">Ônibus / van / carro / reboque</option><option value="truck">Caminhão / caminhão-trator</option></select></div></div><div class="row"><div><label>UF do licenciamento</label><input id="crlvLicenseState" value="SP" readonly aria-readonly="true"/></div><div><label>Ano do licenciamento no CRLV</label><input id="crlvLicensingYear" type="number" min="2000" max="2100" readonly aria-readonly="true" placeholder="Detectado no CRLV"/></div><div><label>Prazo calculado do ano atual</label><input id="crlvExpires" type="date" readonly aria-readonly="true"/></div></div><div class="muted" id="crlvExpiryRule">O prazo vem do calendário do Detran-SP; o ano do licenciamento é confirmado pelo próprio CRLV.</div>
  <div class="toolbar"><button class="btn primary" id="confirmCrlvImport" type="button">CONFIRMAR E SALVAR</button><span class="muted" id="crlvImportMsg"></span></div>
- <div class="muted" style="margin-top:8px">O Comando 360 lê CRLV digital, PDF escaneado e foto. Em imagem/scan, usa OCR automaticamente para reconhecer placa e EXERCÍCIO.</div>
+ <div class="muted" style="margin-top:8px">Fluxo automático: envie o CRLV → leitura dos dados → cadastro/atualização da condução → vínculo do documento. O botão CONFIRMAR E SALVAR fica como plano B se a leitura automática não completar.</div>
 </div>
 
 <div class="card" id="vehicleEditCard" style="display:none">
@@ -5084,11 +5084,14 @@ async function beginCrlvImport(file){
   pendingCrlvData=d;
   document.getElementById('crlvPlate').value=d.plate||'';document.getElementById('crlvRenavam').value=d.renavam||'';document.getElementById('crlvMakeModel').value=d.makeModel||'';document.getElementById('crlvYearFab').value=d.yearFab||'';document.getElementById('crlvYearModel').value=d.yearModel||'';document.getElementById('crlvChassis').value=d.chassis||'';document.getElementById('crlvOwner').value=d.owner||'';document.getElementById('crlvColor').value=d.color||'';document.getElementById('crlvFuel').value=d.fuel||'';if(document.getElementById('crlvLicensingYear'))document.getElementById('crlvLicensingYear').value=d.licensingYear||'';if(document.getElementById('crlvLicenseState'))document.getElementById('crlvLicenseState').value=d.uf||'SP';if(document.getElementById('crlvLicenseCategory'))document.getElementById('crlvLicenseCategory').value=crlvLicensingCategoryFromData(d);
   updateCrlvAutoExpiry();
-  if(d.plate||d.renavam)msg.textContent=(d.licensingYear?'✓ CRLV identificado'+(read.ocr?' por OCR':'')+': '+crlvDigitalSummary(d)+'. ':'Li o CRLV'+(read.ocr?' por OCR':'')+', mas ainda não consegui confirmar o EXERCÍCIO. ')+'Confira e toque em CONFIRMAR E SALVAR.';
-  else msg.textContent=(read.reason||'Não consegui identificar placa/RENAVAM automaticamente.')+' Tente uma imagem mais nítida ou confira os campos.';
+  if(d.plate||d.renavam){
+   msg.textContent=(d.licensingYear?'✓ CRLV identificado'+(read.ocr?' por OCR':'')+': '+crlvDigitalSummary(d)+'. ':'CRLV identificado. ')+'Cadastrando a condução automaticamente...';
+   await confirmCrlvImport({automatic:true});
+  }else msg.textContent=(read.reason||'Não consegui identificar placa/RENAVAM automaticamente.')+' Tente uma imagem mais nítida ou confira os campos e use CONFIRMAR E SALVAR.';
  }catch(e){msg.textContent='Leitura automática não concluída: '+e.message+' Você ainda pode preencher os campos e salvar o arquivo.'}
 }
-async function confirmCrlvImport(){
+async function confirmCrlvImport(options={}){
+ const automatic=options?.automatic===true;
  const msg=document.getElementById('crlvImportMsg');
  const plate=document.getElementById('crlvPlate').value.toUpperCase().replace(/[^A-Z0-9]/g,'');
  const renavam=document.getElementById('crlvRenavam').value.replace(/\D/g,'');
@@ -5142,12 +5145,13 @@ async function confirmCrlvImport(){
    metadata:{...meta,licensing_state:licenseState,licensing_category:licenseCategory}
   };
 
+  const wasExisting=!!v;
   if(v){
-   if(!confirm('A condução '+(v.description||v.plate)+' já existe. Atualizar com os dados conferidos do CRLV?'))return;
+   if(!automatic&&!confirm('A condução '+(v.description||v.plate)+' já existe. Atualizar com os dados conferidos do CRLV?'))return;
    const rows=await rest('v2_vehicles','id=eq.'+v.id,'PATCH',body);
    v=rows?.[0]||{...v,...body};
   }else{
-   if(!confirm('Cadastrar nova condução '+(plate||renavam)+' com os dados conferidos?'))return;
+   if(!automatic&&!confirm('Cadastrar nova condução '+(plate||renavam)+' com os dados conferidos?'))return;
    const rows=await rest('v2_vehicles','','POST',body);
    v=rows?.[0];
   }
@@ -5171,8 +5175,14 @@ async function confirmCrlvImport(){
   document.getElementById('crlvPreviewCard').style.display='none';
   pendingCrlvFile=null;
   pendingCrlvData=null;
-  try{await loadVehicles();await openVehicleEdit(v.id)}catch{}
-  alert('CRLV salvo e vinculado à condução com sucesso.');
+  try{await loadVehicles()}catch{}
+  if(automatic){
+   console.info('Condução '+(wasExisting?'atualizada':'cadastrada')+' automaticamente pelo CRLV:',v.plate||v.renavam||v.id);
+  }else{
+   try{await openVehicleEdit(v.id)}catch{}
+   alert('CRLV salvo e vinculado à condução com sucesso.');
+  }
+  return v;
  }catch(e){
   msg.textContent=e.message||String(e);
  }
@@ -5654,7 +5664,7 @@ setInterval(()=>{
 },60000);
 if('serviceWorker' in navigator){
  window.addEventListener('load',()=>{
-  navigator.serviceWorker.register('./sw-v6-58.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
+  navigator.serviceWorker.register('./sw-v6-59.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
  });
 }
 
