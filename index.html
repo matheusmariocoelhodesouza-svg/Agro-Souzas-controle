@@ -834,7 +834,7 @@ body.device-mode .po-actions .btn{width:100%;min-height:47px}
 </div>
 <div class="section" data-screen="funcionarios" hidden="" id="funcionarios">
 <div class="v2hero"><div><div class="dashboard-eyebrow">GESTÃO DE PESSOAS</div><h1>RH & Pessoas</h1><p>Funcionários, dados profissionais, jornada, biometria e férias em uma única área.</p></div></div>
-<div class="card rh-employer-card"><div class="toolbar"><div><strong>🏢 Dados do empregador</strong><div class="muted">Usados nos documentos, recibos e comprovantes do ponto.</div></div></div><div class="row"><div><label>Razão social</label><input id="companyLegalName"/></div><div><label>Nome fantasia</label><input id="companyTradeName"/></div><div><label>CNPJ / CPF</label><input id="companyTaxId" inputmode="numeric" placeholder="00.000.000/0000-00"/></div></div><button class="btn primary" id="saveCompanyProfile" style="margin-top:10px">Salvar empregador</button><div class="muted" id="companyProfileMsg"></div></div><div class="card" id="employeeEditCard" style="display:none"><div class="toolbar"><div><h3 style="margin:0">Editar funcionário</h3><div class="muted" id="employeeEditSubtitle">Atualize o cadastro sem perder o histórico.</div></div><button class="btn soft" id="cancelEmployeeEdit" type="button">Cancelar</button></div><input id="editEmployeeId" type="hidden"/><div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin:12px 0 16px"><img id="editEmployeePhotoPreview" alt="Foto do funcionário" style="width:112px;height:112px;object-fit:cover;border-radius:18px;border:1px solid #cbd5e1;background:#f8fafc"/><div><div style="font-weight:800;margin-bottom:8px">Foto de perfil</div><div class="toolbar"><button class="btn primary" id="takeEmployeePhoto" type="button">📷 TIRAR FOTO</button><button class="btn soft" id="chooseEmployeePhoto" type="button">🖼️ GALERIA</button><button class="btn soft" id="removeEmployeePhoto" type="button">REMOVER</button></div><input accept="image/jpeg,image/png,image/webp" capture="user" class="hidden" id="employeePhotoCamera" type="file"/><input accept="image/jpeg,image/png,image/webp" class="hidden" id="employeePhotoGallery" type="file"/><div class="muted" style="margin-top:7px"><b>Foto oficial do colaborador.</b> Ao salvar uma nova foto, o app também usa esta mesma imagem como referência do reconhecimento facial do Ponto 2.0.</div></div></div><div class="row"><div><label>Nome completo</label><input id="editEmployeeName"/></div><div><label>Matrícula</label><input id="editEmployeeNumber" inputmode="numeric"/></div><div><label>CPF</label><input id="editEmployeeCpf" inputmode="numeric"/></div></div><div class="row"><div><label>RG</label><input id="editEmployeeRg"/></div><div><label>Data de nascimento</label><input id="editEmployeeBirth" type="date"/></div><div><label>Telefone</label><input id="editEmployeePhone"/></div></div><div class="row"><div><label>Cargo / função</label><input id="editEmployeeJob"/></div><div><label>Equipe</label><input id="editEmployeeTeam" placeholder="Ex.: Equipe 1"/></div><div><label>Data de admissão</label><input id="editEmployeeAdmission" type="date"/></div></div><div><label>Endereço</label><input id="editEmployeeAddress" placeholder="Rua, número, bairro, cidade..."/></div><div class="row" style="margin-top:12px"><button class="btn primary" id="saveEmployeeEdit" type="button">SALVAR ALTERAÇÕES</button><button class="btn soft" id="archiveEmployee" type="button">ARQUIVAR FUNCIONÁRIO</button><button class="btn danger" id="deleteEmployee" type="button">EXCLUIR DEFINITIVAMENTE</button></div><div class="muted" id="employeeEditMsg" style="margin-top:8px"></div></div>
+<div class="card rh-employer-card"><div class="toolbar"><div><strong>🏢 Dados do empregador</strong><div class="muted">Preenchidos automaticamente e usados nos documentos, recibos e comprovantes do ponto.</div></div></div><div class="row"><div><label>Razão social</label><input id="companyLegalName" value="Nágila Severino de Araújo Apanha de Aves Vivas" readonly aria-readonly="true"/></div><div><label>CNPJ</label><input id="companyTaxId" value="53.422.038/0001-19" readonly aria-readonly="true"/></div></div><input id="companyTradeName" type="hidden" value=""/><div class="muted" id="companyProfileMsg">Dados do empregador definidos pelo administrador.</div></div><div class="card" id="employeeEditCard" style="display:none"><div class="toolbar"><div><h3 style="margin:0">Editar funcionário</h3><div class="muted" id="employeeEditSubtitle">Atualize o cadastro sem perder o histórico.</div></div><button class="btn soft" id="cancelEmployeeEdit" type="button">Cancelar</button></div><input id="editEmployeeId" type="hidden"/><div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin:12px 0 16px"><img id="editEmployeePhotoPreview" alt="Foto do funcionário" style="width:112px;height:112px;object-fit:cover;border-radius:18px;border:1px solid #cbd5e1;background:#f8fafc"/><div><div style="font-weight:800;margin-bottom:8px">Foto de perfil</div><div class="toolbar"><button class="btn primary" id="takeEmployeePhoto" type="button">📷 TIRAR FOTO</button><button class="btn soft" id="chooseEmployeePhoto" type="button">🖼️ GALERIA</button><button class="btn soft" id="removeEmployeePhoto" type="button">REMOVER</button></div><input accept="image/jpeg,image/png,image/webp" capture="user" class="hidden" id="employeePhotoCamera" type="file"/><input accept="image/jpeg,image/png,image/webp" class="hidden" id="employeePhotoGallery" type="file"/><div class="muted" style="margin-top:7px"><b>Foto oficial do colaborador.</b> Ao salvar uma nova foto, o app também usa esta mesma imagem como referência do reconhecimento facial do Ponto 2.0.</div></div></div><div class="row"><div><label>Nome completo</label><input id="editEmployeeName"/></div><div><label>Matrícula</label><input id="editEmployeeNumber" inputmode="numeric"/></div><div><label>CPF</label><input id="editEmployeeCpf" inputmode="numeric"/></div></div><div class="row"><div><label>RG</label><input id="editEmployeeRg"/></div><div><label>Data de nascimento</label><input id="editEmployeeBirth" type="date"/></div><div><label>Telefone</label><input id="editEmployeePhone"/></div></div><div class="row"><div><label>Cargo / função</label><input id="editEmployeeJob"/></div><div><label>Equipe</label><input id="editEmployeeTeam" placeholder="Ex.: Equipe 1"/></div><div><label>Data de admissão</label><input id="editEmployeeAdmission" type="date"/></div></div><div><label>Endereço</label><input id="editEmployeeAddress" placeholder="Rua, número, bairro, cidade..."/></div><div class="row" style="margin-top:12px"><button class="btn primary" id="saveEmployeeEdit" type="button">SALVAR ALTERAÇÕES</button><button class="btn soft" id="archiveEmployee" type="button">ARQUIVAR FUNCIONÁRIO</button><button class="btn danger" id="deleteEmployee" type="button">EXCLUIR DEFINITIVAMENTE</button></div><div class="muted" id="employeeEditMsg" style="margin-top:8px"></div></div>
 <div class="rh-kpi-grid">
 <div class="card rh-kpi-card"><div class="kpi" id="rhActive">0</div><div class="label">Funcionários ativos</div></div>
 <div class="card rh-kpi-card"><div class="kpi" id="rhWorking">0</div><div class="label">Com ponto hoje</div></div>
@@ -1310,6 +1310,8 @@ body.device-mode .po-actions .btn{width:100%;min-height:47px}
 'use strict';
 const API_URL='https://aycbrqziusxtxhsdfqjk.supabase.co';
 const KEY='sb_publishable_OGJX3NBA__JxoyjB3IZNvQ_0nNwh_Xc';
+const OFFICIAL_EMPLOYER={legal_name:'Nágila Severino de Araújo Apanha de Aves Vivas',tax_id:'53422038000119'};
+const withOfficialEmployer=(profile={})=>({...profile,legal_name:OFFICIAL_EMPLOYER.legal_name,tax_id:OFFICIAL_EMPLOYER.tax_id});
 let companyId=null, conversationId=null, scheduleCache={}, companyProfile={}, currentRoleCode=null, isAdminGeneral=false, deviceMode=false, deviceAccess=null, deviceTeam=null, deviceVehicleInfo=null;
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
@@ -1434,8 +1436,8 @@ async function enterDeviceApp(authUser){
   try{await rpc('v2_touch_device',{})}catch(e){console.warn('Não foi possível atualizar último acesso do aparelho',e)}
   try{
    const companies=await v2Rest('v2_companies','select=id,legal_name,trade_name,tax_id,timezone&id=eq.'+encodeURIComponent(companyId)+'&limit=1');
-   companyProfile=companies&&companies[0]?companies[0]:(cachedIdentity?.companyProfile||{id:companyId,trade_name:"Empresa"});
-  }catch(_){companyProfile=cachedIdentity?.companyProfile||{id:companyId,trade_name:"Empresa"}}
+   companyProfile=withOfficialEmployer(companies&&companies[0]?companies[0]:(cachedIdentity?.companyProfile||{id:companyId,trade_name:"Empresa"}));
+  }catch(_){companyProfile=withOfficialEmployer(cachedIdentity?.companyProfile||{id:companyId,trade_name:"Empresa"})}
   try{
    const teams=await v2Rest('v2_teams','select=id,name,code,metadata,status,supervisor_employee_id&id=eq.'+encodeURIComponent(access.team_id)+'&limit=1');
    deviceTeam=teams&&teams[0]?teams[0]:(cachedIdentity?.deviceTeam||{id:access.team_id,name:'Equipe'});
@@ -1457,7 +1459,7 @@ async function enterDeviceApp(authUser){
   deviceVehicleInfo=vehicleInfo||null;
   await offlineCacheSet('device_identity:'+user.id,{access,companyProfile,deviceTeam,vehicleInfo,supervisorInfo,cached_at:new Date().toISOString()});
  }else{
-  companyProfile=cachedIdentity?.companyProfile||{id:companyId,trade_name:"Empresa"};
+  companyProfile=withOfficialEmployer(cachedIdentity?.companyProfile||{id:companyId,trade_name:"Empresa"});
   deviceTeam=cachedIdentity?.deviceTeam||{id:access.team_id,name:'Equipe'};
   vehicleInfo=cachedIdentity?.vehicleInfo||null;
   deviceVehicleInfo=vehicleInfo||null;
@@ -2160,7 +2162,7 @@ async function enterApp(authUser){
   })||(companies||[])[0];
   if(!realCompany)throw new Error('Empresa não encontrada.');
   companyId=realCompany.id;
-  companyProfile=realCompany;
+  companyProfile=withOfficialEmployer(realCompany);
   const activeMember=(members||[]).find(function(x){return x.company_id===companyId});
   if(activeMember&&activeMember.role_id){
     try{
@@ -4869,17 +4871,16 @@ async function loadProfessionalProfile(){
   if(sel){sel.innerHTML='<option value="">Selecione...</option>'+emps.map(e=>`<option value="${e.id}">${esc(e.full_name)} • ${esc(e.employee_number||'')}</option>`).join('');
    sel.onchange=()=>{const e=emps.find(x=>x.id===sel.value);document.getElementById('profJobTitle').value=e?.job_title||'';document.getElementById('profAdmissionDate').value=e?.admission_date||''}
   }
-  const c=(await rest('v2_companies','select=id,legal_name,trade_name,tax_id&id=eq.'+companyId))[0];
-  if(c){if($('#companyLegalName'))$('#companyLegalName').value=c.legal_name||'';if($('#companyTradeName'))$('#companyTradeName').value=c.trade_name||'';if($('#companyTaxId'))$('#companyTaxId').value=c.tax_id||''}
+  if($('#companyLegalName'))$('#companyLegalName').value=OFFICIAL_EMPLOYER.legal_name;
+  if($('#companyTradeName'))$('#companyTradeName').value='';
+  if($('#companyTaxId'))$('#companyTaxId').value='53.422.038/0001-19';
  }catch(e){console.warn('professional profile',e)}
 }
 if(document.getElementById('saveProfessional'))document.getElementById('saveProfessional').addEventListener('click',async()=>{
  const id=$('#profEmployee').value;if(!id)return $('#profMsg').textContent='Selecione o funcionário.';
  try{await rest('v2_employees','id=eq.'+id,'PATCH',{job_title:$('#profJobTitle').value.trim()||null,admission_date:$('#profAdmissionDate').value||null});$('#profMsg').textContent='Dados profissionais salvos.';await loadEmployees()}catch(e){$('#profMsg').textContent=e.message}
 });
-if(document.getElementById('saveCompanyProfile'))document.getElementById('saveCompanyProfile').addEventListener('click',async()=>{
- try{await rest('v2_companies','id=eq.'+companyId,'PATCH',{legal_name:$('#companyLegalName').value.trim(),trade_name:$('#companyTradeName').value.trim()||null,tax_id:$('#companyTaxId').value.replace(/\D/g,'')||null});$('#companyProfileMsg').textContent='Dados do empregador salvos.';await loadDashboard()}catch(e){$('#companyProfileMsg').textContent=e.message}
-});
+// Dados do empregador são fixos e não podem ser alterados nesta tela.
 // Perfil profissional é carregado somente ao abrir RH & Pessoas para manter o dashboard leve.
 
 function isPointScreenMounted(){return !!document.querySelector('#screenHost [data-screen="ponto"]')}
