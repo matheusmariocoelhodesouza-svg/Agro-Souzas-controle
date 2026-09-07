@@ -8,13 +8,14 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
-<title>Comando 360 • v6.69</title>
+<title>Comando 360 • v6.70</title>
 <link rel="manifest" href="./comando360.webmanifest"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
 <meta name="application-name" content="Comando 360"/>
 <meta name="apple-mobile-web-app-title" content="Comando 360"/>
 <link rel="icon" type="image/svg+xml" href="./comando360-icon.svg"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css"/>
 <style>
 :root{--bg:#f3f6fb;--card:#fff;--ink:#0f172a;--muted:#64748b;--line:#e2e8f0;--accent:#0f172a}*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--ink)}header{position:sticky;top:0;z-index:20;background:linear-gradient(135deg,var(--accent),#1e293b);color:#fff;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 8px 24px rgba(15,23,42,.18)}.wrap{max-width:1200px;margin:auto;padding:12px}.card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:12px;box-shadow:0 4px 18px rgba(15,23,42,.045)}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:10px}.kpi{font-size:28px;font-weight:900}.label,.muted{font-size:12px;color:var(--muted)}.nav{display:flex;gap:8px;overflow:auto;padding:12px 0;scrollbar-width:none}.nav::-webkit-scrollbar{display:none}.nav button,.btn{border:0;border-radius:12px;padding:11px 14px;font-weight:800;white-space:nowrap;cursor:pointer}.nav button{background:#fff;border:1px solid var(--line);color:#334155}.nav button.active,.btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}.btn.soft{background:#e2e8f0}.btn.danger{background:#b91c1c;color:#fff}.btn.danger:hover{background:#991b1b}.hidden{display:none!important}.login{max-width:430px;margin:55px auto}.login input,.chat input{width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:10px;margin:6px 0 10px;font:inherit}.section{display:none}.section.active{display:block}.list{display:grid;gap:8px}.item{background:#fff;border:1px solid var(--line);border-radius:13px;padding:12px}.item strong{display:block}.pill{display:inline-block;padding:4px 8px;border-radius:999px;font-size:11px;font-weight:800;background:#e2e8f0}.pill.ok{background:#dcfce7;color:#166534}.pill.warn{background:#fef3c7;color:#92400e}.pill.danger{background:#fee2e2;color:#991b1b}#networkBadge.online{background:#dcfce7;color:#166534}#networkBadge.offline{background:#fee2e2;color:#991b1b}.toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.chatbox{min-height:220px;max-height:52vh;overflow:auto;background:#fff;border:1px solid var(--line);border-radius:14px;padding:10px}.msg{padding:10px 12px;border-radius:12px;margin:8px 0;max-width:88%;white-space:pre-wrap}.msg.user{margin-left:auto;background:#e2e8f0}.msg.ai{background:#fff7ed;border:1px solid #fed7aa}.brand{display:flex;gap:10px;align-items:center}.logo{width:38px;height:38px;border-radius:10px;background:white;color:#0f172a;display:grid;place-items:center;font-weight:900}.error{color:#b91c1c;font-size:13px}.okmsg{color:#166534;font-size:13px}.debug{margin-top:8px;font-size:11px;color:#64748b;word-break:break-word}@media(max-width:640px){.wrap{padding:9px}.kpi{font-size:25px}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}header{padding:12px}.nav{position:sticky;top:66px;z-index:15;background:var(--bg);margin:0 -9px;padding:9px}}
 
@@ -1505,7 +1506,7 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
  *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
 }
 
-/* 6.69 — Rastreamento MOVIT */
+/* 6.70 — Rastreamento MOVIT */
 .tracking-hero{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;margin-bottom:16px}
 .tracking-hero h1{margin:0;font-size:27px;color:#10233f}.tracking-hero p{margin:5px 0 0;color:#6b7d95;font-size:13px}
 .tracking-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:14px}
@@ -1521,13 +1522,29 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
 .darkmode .tracking-kpi,.darkmode .tracking-card{background:#101c2e;border-color:#203047}.darkmode .tracking-hero h1,.darkmode .tracking-kpi strong,.darkmode .tracking-card-main strong{color:#e7eef9}.darkmode .movit-security-note{background:#0d1b2e;border-color:#26394f;color:#9fb3cb}
 @media(max-width:1050px){.tracking-card{grid-template-columns:1fr 1fr}.tracking-actions{grid-column:1/-1;justify-content:flex-start}}
 @media(max-width:700px){.tracking-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.tracking-card{grid-template-columns:1fr}.tracking-actions{grid-column:auto}.tracking-hero{flex-direction:column}.tracking-hero .btn{width:100%}}
+/* 6.70 — mapa profissional da frota */
+.tracking-map-card{overflow:hidden}.tracking-map-head{padding-bottom:4px}
+.tracking-map-wrap{position:relative;margin-top:14px;border:1px solid #dce6f1;border-radius:18px;overflow:hidden;background:#eaf0f6}
+#movitMap{height:430px;width:100%;z-index:1}
+.tracking-map-legend{position:absolute;left:14px;bottom:14px;z-index:450;display:flex;gap:10px;flex-wrap:wrap;background:rgba(255,255,255,.94);backdrop-filter:blur(8px);border:1px solid #dbe5ef;border-radius:12px;padding:8px 10px;box-shadow:0 5px 16px rgba(17,38,63,.12);font-size:10px;font-weight:800;color:#405978}
+.tracking-map-legend span{display:flex;align-items:center;gap:5px}.tracking-map-legend i{width:9px;height:9px;border-radius:50%;display:inline-block;background:#64748b}.tracking-map-legend i.move{background:#1976d2}.tracking-map-legend i.on{background:#16a34a}.tracking-map-legend i.stale{background:#d97706}
+.c360-map-icon{background:transparent!important;border:0!important}
+.c360-map-marker{display:flex;align-items:center;gap:6px;white-space:nowrap;transform:translate(-7px,-7px)}
+.c360-map-marker .pin{width:18px;height:18px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:#64748b;border:3px solid #fff;box-shadow:0 2px 8px rgba(15,23,42,.28);flex:0 0 auto}
+.c360-map-marker .pin.move{background:#1976d2}.c360-map-marker .pin.on{background:#16a34a}.c360-map-marker .pin.stale{background:#d97706}
+.c360-map-marker .map-label{transform:translateY(-1px);background:rgba(255,255,255,.96);border:1px solid #dce6f1;border-radius:8px;padding:5px 7px;box-shadow:0 3px 9px rgba(15,23,42,.12);font-size:10px;font-weight:900;color:#15304e;max-width:170px;overflow:hidden;text-overflow:ellipsis}
+.c360-map-popup{min-width:205px}.c360-map-popup strong{font-size:14px;color:#132741}.c360-map-popup .plate{display:inline-block;margin-left:5px;padding:2px 5px;background:#eef4fb;border-radius:5px;font-size:10px;font-weight:900}.c360-map-popup .meta{margin-top:7px;font-size:11px;line-height:1.55;color:#526b86}
+.darkmode .tracking-map-wrap{border-color:#25384f;background:#0d1726}.darkmode .tracking-map-legend{background:rgba(15,27,44,.95);border-color:#2a3b51;color:#a9bad0}.darkmode .c360-map-marker .map-label{background:rgba(15,27,44,.96);border-color:#2a3b51;color:#e5eef9}
+@media(max-width:700px){#movitMap{height:365px}.tracking-map-head{gap:10px}.tracking-map-head>.toolbar{width:100%}.tracking-map-head>.toolbar .btn{flex:1}.tracking-map-legend{left:8px;right:8px;bottom:8px;justify-content:center}.c360-map-marker .map-label{max-width:120px}}
+
 </style>
 <script defer="" src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 (function(){
-  const BUILD='6.69';
+  const BUILD='6.70';
   try{
     const marker='controla_cache_cleanup_'+BUILD;
     if(!localStorage.getItem(marker)){
@@ -1578,7 +1595,7 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
   <div class="brand"><img class="header-brand-icon" src="./comando360-icon.svg" alt="Comando 360"/><div><b>Comando <span class="brand360">360</span></b><div><small id="companyName">Empresa</small></div></div></div>
  </div>
  <div class="header-module" id="headerModule"><span id="headerModuleTitle">Painel Geral</span><small id="headerModuleSubtitle">Central de gestão</small></div>
- <div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.69</span><button class="btn soft" id="themeToggle" type="button" aria-label="Alternar tema">☾</button><button class="btn soft hidden" id="logout">Sair</button></div>
+ <div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.70</span><button class="btn soft" id="themeToggle" type="button" aria-label="Alternar tema">☾</button><button class="btn soft hidden" id="logout">Sair</button></div>
 </header>
 <main class="wrap">
 <section class="login team-entry" id="login">
@@ -1596,7 +1613,7 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
  <label>Senha</label><input autocomplete="current-password" id="password" type="password"/>
  <button class="btn primary" id="loginBtn">Entrar</button>
  <button class="btn soft" id="backDeviceSetup" type="button" style="margin-left:6px">Voltar</button>
- <div class="muted" id="loginMsg" style="margin-top:10px">Comando 360 • v6.69</div><div class="debug" id="debug"></div>
+ <div class="muted" id="loginMsg" style="margin-top:10px">Comando 360 • v6.70</div><div class="debug" id="debug"></div>
 </div>
 </section>
 <section class="hidden" id="app">
@@ -2083,12 +2100,21 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
   <div class="tracking-kpi"><span>RASTREADORES</span><strong id="movitKpiTotal">0</strong><div class="muted">recebidos do MOVIT</div></div>
   <div class="tracking-kpi"><span>EM MOVIMENTO</span><strong id="movitKpiMoving">0</strong><div class="muted">velocidade acima de 2 km/h</div></div>
   <div class="tracking-kpi"><span>IGNIÇÃO LIGADA</span><strong id="movitKpiIgnition">0</strong><div class="muted">veículos ligados</div></div>
-  <div class="tracking-kpi"><span>VINCULADOS À FROTA</span><strong id="movitKpiLinked">0</strong><div class="muted" id="movitKpiLinkedHint">por correspondência de placa</div></div>
+  <div class="tracking-kpi"><span>VINCULADOS À FROTA</span><strong id="movitKpiLinked">0</strong><div class="muted" id="movitKpiLinkedHint">placa atual ou antiga</div></div>
+ </div>
+ <div class="card tracking-map-card">
+  <div class="toolbar tracking-map-head" style="justify-content:space-between;align-items:flex-start">
+   <div><h3 style="margin:0">Mapa da frota</h3><div class="muted" id="movitTrackingStatus">Verificando integração...</div></div>
+   <div class="toolbar"><button class="btn soft" id="centerMovitMap" type="button">◎ CENTRALIZAR FROTA</button><button class="btn soft" type="button" data-jump="integracoes">⚙ CONFIGURAR MOVIT</button></div>
+  </div>
+  <div class="tracking-map-wrap">
+   <div id="movitMap" aria-label="Mapa com a posição atual da frota"></div>
+   <div class="tracking-map-legend"><span><i class="move"></i>Em movimento</span><span><i class="on"></i>Ligado</span><span><i class="stopped"></i>Parado</span><span><i class="stale"></i>Desatualizado</span></div>
+  </div>
  </div>
  <div class="card">
   <div class="toolbar" style="justify-content:space-between;align-items:flex-start">
-   <div><h3 style="margin:0">Conduções no mapa</h3><div class="muted" id="movitTrackingStatus">Verificando integração...</div></div>
-   <button class="btn soft" type="button" data-jump="integracoes">⚙ CONFIGURAR MOVIT</button>
+   <div><h3 style="margin:0">Detalhes das conduções</h3><div class="muted">Clique no veículo no mapa ou use os cartões abaixo para conferir posição, velocidade e ignição.</div></div>
   </div>
   <div class="tracking-list" id="movitTrackingList" style="margin-top:13px"><div class="muted">Carregando posições...</div></div>
  </div>
@@ -2181,7 +2207,7 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
   </div>
   <div class="integration-flow">
    <div class="integration-step"><span class="integration-step-num">1</span><div><strong>Chave de integração STC</strong><div class="muted">Use a chave própria da sua conta MOVIT fornecida pela empresa de rastreamento.</div></div></div>
-   <div class="integration-step"><span class="integration-step-num">2</span><div><strong>Vínculo automático por placa</strong><div class="muted">Placas iguais no MOVIT e na Frota são conectadas sem cadastro duplicado.</div></div></div>
+   <div class="integration-step"><span class="integration-step-num">2</span><div><strong>Vínculo automático por placa</strong><div class="muted">Placas iguais, inclusive placa cinza antiga e Mercosul equivalente, são conectadas sem cadastro duplicado.</div></div></div>
    <div class="integration-step"><span class="integration-step-num">3</span><div><strong>KM e posição no Comando 360</strong><div class="muted">Quando disponíveis no rastreador, posição, ignição, velocidade e hodômetro passam a alimentar a frota.</div></div></div>
   </div>
   <div class="integration-box">
@@ -6516,13 +6542,49 @@ function applyMovitCompanyPreset(){
  return p;
 }
 
-let movitTrackingRows=[],movitTrackingTimer=null,movitLastStatus=null;
+let movitTrackingRows=[],movitTrackingTimer=null,movitLastStatus=null,movitMap=null,movitMapMarkers=null,movitMapHasFit=false;
 async function movitInvoke(action,extra={}){
  const r=await authFetch('/functions/v1/movit-bridge',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:action,company_id:companyId,...extra})},true);
  return parseResponse(r);
 }
 function movitJsonValue(id,label){const raw=$(id)?.value?.trim();if(!raw)return null;try{return JSON.parse(raw)}catch(_){throw new Error(label+' contém JSON inválido.')}}
 function movitAge(iso){if(!iso)return{text:'Sem horário',stale:true};const ms=Date.now()-new Date(iso).getTime();if(!Number.isFinite(ms))return{text:'Horário inválido',stale:true};const min=Math.max(0,Math.round(ms/60000));if(min<1)return{text:'agora',stale:false};if(min<60)return{text:'há '+min+' min',stale:min>15};return{text:'há '+Math.round(min/60)+' h',stale:true}}
+function movitMapState(v){
+ const age=movitAge(v.recorded_at||v.gps_at||v.updated_at),moving=Number(v.speed_kmh||0)>2;
+ if(age.stale)return{cls:'stale',label:'GPS desatualizado'};
+ if(moving)return{cls:'move',label:'Em movimento'};
+ if(v.ignition===true)return{cls:'on',label:'Ligado'};
+ return{cls:'stopped',label:'Parado'};
+}
+function ensureMovitMap(){
+ const el=$('#movitMap');if(!el||!window.L)return null;
+ if(!movitMap){
+  movitMap=L.map(el,{zoomControl:true,attributionControl:true}).setView([-23.0,-47.9],8);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; OpenStreetMap'}).addTo(movitMap);
+  movitMapMarkers=L.layerGroup().addTo(movitMap);
+ }
+ setTimeout(()=>{try{movitMap.invalidateSize()}catch(_){}},80);
+ return movitMap;
+}
+function renderMovitMap(forceFit=false){
+ const map=ensureMovitMap();if(!map||!movitMapMarkers)return;
+ movitMapMarkers.clearLayers();
+ const bounds=[];
+ for(const v of (movitTrackingRows||[])){
+  const lat=Number(v.latitude),lon=Number(v.longitude);if(!Number.isFinite(lat)||!Number.isFinite(lon))continue;
+  const state=movitMapState(v),name=v.vehicle_name||'Rastreador',plate=v.license_plate||v.raw_data?.license_plate||'';
+  const icon=L.divIcon({className:'c360-map-icon',html:'<div class="c360-map-marker"><span class="pin '+state.cls+'"></span><span class="map-label">'+esc(name)+(plate?' • '+esc(plate):'')+'</span></div>',iconSize:[190,32],iconAnchor:[9,18]});
+  const age=movitAge(v.recorded_at||v.gps_at||v.updated_at),km=v.odometer_km!=null?Number(v.odometer_km).toLocaleString('pt-BR')+' km':'—',address=v.address||v.raw_data?.address||'Endereço não informado';
+  const popup='<div class="c360-map-popup"><strong>'+esc(name)+'</strong>'+(plate?'<span class="plate">'+esc(plate)+'</span>':'')+'<div class="meta"><b>'+esc(state.label)+'</b> • '+esc(age.text)+'<br>Velocidade: '+Number(v.speed_kmh||0).toFixed(0)+' km/h<br>Ignição: '+(v.ignition===true?'Ligada':v.ignition===false?'Desligada':'—')+'<br>Hodômetro: '+km+'<br>'+esc(address)+'</div></div>';
+  L.marker([lat,lon],{icon}).addTo(movitMapMarkers).bindPopup(popup,{maxWidth:290});
+  bounds.push([lat,lon]);
+ }
+ if(bounds.length&&(forceFit||!movitMapHasFit)){
+  if(bounds.length===1)map.setView(bounds[0],15);
+  else map.fitBounds(bounds,{padding:[45,45],maxZoom:15});
+  movitMapHasFit=true;
+ }
+}
 function renderMovitTracking(){
  const rows=movitTrackingRows||[];
  if($('#movitKpiTotal'))$('#movitKpiTotal').textContent=String(rows.length);
@@ -6530,9 +6592,9 @@ function renderMovitTracking(){
  if($('#movitKpiIgnition'))$('#movitKpiIgnition').textContent=String(rows.filter(x=>x.ignition===true).length);
  const linked=rows.filter(x=>x.linked!==false&&x.vehicle_id).length;
  if($('#movitKpiLinked'))$('#movitKpiLinked').textContent=String(linked);
- if($('#movitKpiLinkedHint'))$('#movitKpiLinkedHint').textContent=(rows.length-linked)+' sem vínculo • por placa';
+ if($('#movitKpiLinkedHint'))$('#movitKpiLinkedHint').textContent=(rows.length-linked)+' sem vínculo • placa atual/antiga';
  const list=$('#movitTrackingList');if(!list)return;
- if(!rows.length){list.innerHTML='<div class="item"><strong>Nenhuma posição recebida</strong><div class="muted">Se o MOVIT ainda não estiver conectado, abra Integrações e informe sua chave e conta.</div></div>';return}
+ if(!rows.length){list.innerHTML='<div class="item"><strong>Nenhuma posição recebida</strong><div class="muted">Se o MOVIT ainda não estiver conectado, abra Integrações e informe sua chave e conta.</div></div>';renderMovitMap(false);return}
  list.innerHTML=rows.map(function(v){
   const age=movitAge(v.recorded_at||v.gps_at||v.updated_at),lat=Number(v.latitude),lon=Number(v.longitude),hasPos=Number.isFinite(lat)&&Number.isFinite(lon),moving=Number(v.speed_kmh||0)>2;
   const dot=age.stale?'stale':moving?'move':v.ignition===true?'on':'',status=age.stale?'GPS desatualizado':moving?'Em movimento':v.ignition===true?'Ligada':'Parada';
@@ -6540,6 +6602,7 @@ function renderMovitTracking(){
   const map=hasPos?'<a class="btn soft" target="_blank" rel="noopener" href="https://www.google.com/maps?q='+lat+','+lon+'">ABRIR NO MAPA</a>':'';
   return '<div class="tracking-card"><div class="tracking-card-main"><strong>'+esc(name)+'</strong><span class="plate">'+esc(plate)+'</span><div class="muted" style="margin-top:7px"><span class="tracking-dot '+dot+'"></span>'+esc(status)+' • '+esc(age.text)+'</div></div><div class="tracking-data"><b>Velocidade:</b> '+Number(v.speed_kmh||0).toFixed(0)+' km/h<br><b>Ignição:</b> '+(v.ignition===true?'Ligada':v.ignition===false?'Desligada':'—')+'<br><b>Hodômetro:</b> '+km+'</div><div class="tracking-data"><b>Local:</b> '+esc(address)+'<br>'+(hasPos?esc(lat.toFixed(5)+', '+lon.toFixed(5)):'Sem coordenadas')+'</div><div class="tracking-actions">'+map+(v.vehicle_id?'':'<button class="btn soft" type="button" data-jump="frota">VER FROTA</button>')+'</div></div>';
  }).join('');
+ setTimeout(()=>renderMovitMap(false),0);
 }
 async function loadMovitTracking(forceSync=true){
  const status=$('#movitTrackingStatus');
@@ -6901,7 +6964,7 @@ function c360SetModule(tab){
  const m=C360_MODULES[tab]||[tab,'Comando 360'];
  const t=document.getElementById('headerModuleTitle'),s=document.getElementById('headerModuleSubtitle');
  if(t)t.textContent=m[0];if(s)s.textContent=m[1];
- document.title='Comando 360 • '+m[0]+' • v6.69';
+ document.title='Comando 360 • '+m[0]+' • v6.70';
  document.querySelectorAll('#mobileBottomNav [data-mobiletab]').forEach(b=>{
   const mt=b.dataset.mobiletab;
   b.classList.toggle('active',mt===tab||(mt==='more'&&!['inicio','operacoes','ponto','frota'].includes(tab)));
@@ -7028,6 +7091,7 @@ document.addEventListener('click',async function(e){
   if(e.target.closest('#refreshVehicleDocs')){e.preventDefault();await loadVehicleDocs(document.getElementById('editVehicleId')?.value||'');return}
   if(e.target.closest('#refreshAlerts')){e.preventDefault();await loadSmartAlerts();return}
   if(e.target.closest('#refreshMovitTracking')){e.preventDefault();await loadMovitTracking(true);return}
+  if(e.target.closest('#centerMovitMap')){e.preventDefault();renderMovitMap(true);return}
   if(e.target.closest('#saveMovitConfig')){e.preventDefault();await saveMovitConfigurationUi();return}
   if(e.target.closest('#testMovitConfig')){e.preventDefault();await testMovitIntegrationUi();return}
   if(e.target.closest('#disconnectMovit')){e.preventDefault();await disconnectMovitUi();return}
@@ -7142,7 +7206,7 @@ setInterval(()=>{
 },60000);
 if('serviceWorker' in navigator){
  window.addEventListener('load',()=>{
-  navigator.serviceWorker.register('./sw-v6-69.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
+  navigator.serviceWorker.register('./sw-v6-70.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
  });
 }
 
