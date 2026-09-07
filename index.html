@@ -8,7 +8,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
-<title>Comando 360 • v6.77</title>
+<title>Comando 360 • v6.78</title>
 <link rel="manifest" href="./comando360.webmanifest"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
@@ -1516,7 +1516,7 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
  *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
 }
 
-/* 6.77 — Rastreamento MOVIT */
+/* 6.78 — Rastreamento MOVIT */
 .tracking-hero{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;margin-bottom:16px}
 .tracking-hero h1{margin:0;font-size:27px;color:#10233f}.tracking-hero p{margin:5px 0 0;color:#6b7d95;font-size:13px}
 .tracking-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:14px}
@@ -1532,7 +1532,7 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
 .darkmode .tracking-kpi,.darkmode .tracking-card{background:#101c2e;border-color:#203047}.darkmode .tracking-hero h1,.darkmode .tracking-kpi strong,.darkmode .tracking-card-main strong{color:#e7eef9}.darkmode .movit-security-note{background:#0d1b2e;border-color:#26394f;color:#9fb3cb}
 @media(max-width:1050px){.tracking-card{grid-template-columns:1fr 1fr}.tracking-actions{grid-column:1/-1;justify-content:flex-start}}
 @media(max-width:700px){.tracking-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.tracking-card{grid-template-columns:1fr}.tracking-actions{grid-column:auto}.tracking-hero{flex-direction:column}.tracking-hero .btn{width:100%}}
-/* 6.77 — Google Maps + rastreamento da frota */
+/* 6.78 — Google Maps + rastreamento da frota */
 .tracking-map-card{overflow:hidden}.tracking-map-head{padding-bottom:4px}
 .tracking-map-wrap{position:relative;margin-top:14px;border:1px solid #dce6f1;border-radius:18px;overflow:hidden;background:#eaf0f6}
 #movitMap{height:430px;width:100%;position:relative;overflow:hidden;background:#e8eef5}
@@ -1554,9 +1554,9 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
 .tracking-map-legend span{display:flex;align-items:center;gap:5px}.tracking-map-legend i{width:9px;height:9px;border-radius:50%;display:inline-block;background:#64748b}.tracking-map-legend i.move{background:#1976d2}.tracking-map-legend i.on{background:#16a34a}.tracking-map-legend i.stale{background:#d97706}
 .darkmode .tracking-map-wrap{border-color:#25384f;background:#0d1726}.darkmode .tracking-map-legend,.darkmode .google-map-provider,.darkmode .google-map-info{background:rgba(15,27,44,.95);border-color:#2a3b51;color:#a9bad0}.darkmode .google-map-controls button{background:rgba(15,27,44,.96);border-color:#2a3b51;color:#e8f1fb}.darkmode .google-fleet-marker .map-label{background:rgba(15,27,44,.96);border-color:#2a3b51;color:#e5eef9}.darkmode .google-map-info strong{color:#eef4fd}
 @media(max-width:700px){#movitMap{height:365px}.tracking-map-head{gap:10px}.tracking-map-head>.toolbar{width:100%}.tracking-map-head>.toolbar .btn{flex:1}.tracking-map-legend{left:8px;right:8px;bottom:8px;justify-content:center}.google-fleet-marker .map-label{max-width:120px}.google-map-info{top:8px;right:8px;width:calc(100% - 16px)}}
-/* 6.77 — rota até a condução */
+/* 6.78 — rota até a condução */
 
-/* 6.77 — relatório de abastecimento por condução */
+/* 6.78 — relatório de abastecimento por condução */
 .fuel-report-vehicle{border:1px solid #e1e8f0;border-radius:14px;overflow:hidden;background:#fff;margin-bottom:10px}
 .fuel-report-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;padding:12px 13px;background:#f7f9fc;border-bottom:1px solid #e4eaf2}
 .fuel-report-head strong{font-size:14px;color:#16304e}.fuel-report-head .plate{display:inline-block;margin-left:6px;padding:2px 6px;border-radius:6px;background:#eaf2fb;font-size:10px;font-weight:900;color:#27517e}
@@ -1565,6 +1565,15 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
 .fuel-report-table{width:100%;border-collapse:collapse;font-size:10.5px}.fuel-report-table th,.fuel-report-table td{padding:7px 8px;border-top:1px solid #edf1f5;text-align:left}.fuel-report-table th{font-size:9px;color:#708399;background:#fbfcfe}.fuel-report-table td.num{text-align:right;font-variant-numeric:tabular-nums}
 .darkmode .fuel-report-vehicle{background:#101c2e;border-color:#26374b}.darkmode .fuel-report-head{background:#0d1828;border-color:#26374b}.darkmode .fuel-report-head strong,.darkmode .fuel-report-total b{color:#e8f0fa}.darkmode .fuel-report-total{border-color:#26374b}.darkmode .fuel-report-table th{background:#0d1828;color:#8fa4bc}.darkmode .fuel-report-table th,.darkmode .fuel-report-table td{border-color:#26374b}
 @media(max-width:700px){.fuel-report-totals{grid-template-columns:1fr 1fr}.fuel-report-table{font-size:9.5px}.fuel-report-table th,.fuel-report-table td{padding:6px 5px}.fuel-report-head{flex-direction:column}}
+/* 6.78 — identificação e gestão de celulares de campo */
+.device-admin-card{border:1px solid #dde6f0;border-radius:16px;padding:13px;background:#fff;margin-bottom:10px}
+.device-admin-main{display:flex;justify-content:space-between;gap:14px;align-items:flex-start}
+.device-admin-title{display:flex;align-items:center;gap:9px;flex-wrap:wrap}.device-admin-title strong{font-size:15px;color:#173451}
+.device-admin-meta{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px 14px;margin-top:10px;font-size:11px;color:#657b92}
+.device-admin-meta b{display:block;color:#274763;font-size:10px;margin-bottom:2px}
+.device-admin-id{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-weight:900;letter-spacing:.5px}
+.darkmode .device-admin-card{background:#101c2e;border-color:#26374b}.darkmode .device-admin-title strong,.darkmode .device-admin-meta b{color:#e8f0fa}
+@media(max-width:700px){.device-admin-main{flex-direction:column}.device-admin-main .btn{width:100%}.device-admin-meta{grid-template-columns:1fr 1fr}}
 .route-choice-backdrop{position:fixed;inset:0;background:rgba(8,17,31,.48);backdrop-filter:blur(2px);z-index:120}
 .route-choice-sheet{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:121;width:min(520px,calc(100% - 28px));background:#fff;border:1px solid #dde6f0;border-radius:22px;padding:12px 16px 16px;box-shadow:0 24px 70px rgba(8,17,31,.28)}
 .route-choice-handle{width:44px;height:4px;border-radius:99px;background:#d5dee9;margin:0 auto 10px}
@@ -1588,7 +1597,7 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
 <script defer src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"></script>
 <script>
 (function(){
-  const BUILD='6.77';
+  const BUILD='6.78';
   try{
     const marker='controla_cache_cleanup_'+BUILD;
     if(!localStorage.getItem(marker)){
@@ -1653,7 +1662,7 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
   <div class="brand"><img class="header-brand-icon" src="./comando360-icon.svg" alt="Comando 360"/><div><b>Comando <span class="brand360">360</span></b><div><small id="companyName">Empresa</small></div></div></div>
  </div>
  <div class="header-module" id="headerModule"><span id="headerModuleTitle">Painel Geral</span><small id="headerModuleSubtitle">Central de gestão</small></div>
- <div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.77</span><button class="btn soft" id="themeToggle" type="button" aria-label="Alternar tema">☾</button><button class="btn soft hidden" id="logout">Sair</button></div>
+ <div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.78</span><button class="btn soft" id="themeToggle" type="button" aria-label="Alternar tema">☾</button><button class="btn soft hidden" id="logout">Sair</button></div>
 </header>
 <main class="wrap">
 <section class="login team-entry" id="login">
@@ -1671,7 +1680,7 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
  <label>Senha</label><input autocomplete="current-password" id="password" type="password"/>
  <button class="btn primary" id="loginBtn">Entrar</button>
  <button class="btn soft" id="backDeviceSetup" type="button" style="margin-left:6px">Voltar</button>
- <div class="muted" id="loginMsg" style="margin-top:10px">Comando 360 • v6.77</div><div class="debug" id="debug"></div>
+ <div class="muted" id="loginMsg" style="margin-top:10px">Comando 360 • v6.78</div><div class="debug" id="debug"></div>
 </div>
 </section>
 <section class="hidden" id="app">
@@ -1784,7 +1793,7 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
 <div class="card"><div class="toolbar" style="justify-content:space-between"><div><h3 style="margin:0">Equipes</h3><div class="muted">Organize equipes, contratantes e conduções.</div></div><div class="toolbar"><button class="btn primary" id="newTeamBtn" type="button">+ NOVA EQUIPE</button><button class="btn soft" id="refreshTeams" type="button">Atualizar</button></div></div><div class="list" id="teamsList" style="margin-top:12px"></div></div>
 <div class="card" id="teamDevicesCard">
 <div class="toolbar" style="justify-content:space-between">
- <div><h3 style="margin:0">📱 Celulares das equipes</h3><div class="muted">Veja quais aparelhos estão vinculados, quando acessaram pela última vez e revogue um aparelho quando precisar trocar.</div></div>
+ <div><h3 style="margin:0">📱 Celulares das equipes</h3><div class="muted">Veja qual aparelho está em cada equipe, modelo/sistema quando o celular informar, data do vínculo e último acesso. Você pode desvincular a qualquer momento.</div></div>
  <button class="btn soft" id="refreshTeamDevices" type="button">Atualizar</button>
 </div>
 <div class="list" id="teamDevicesList" style="margin-top:12px"><div class="muted">Carregando celulares...</div></div>
@@ -2491,7 +2500,7 @@ async function anonymousLogin(){
  const data=await parseResponse(r);saveSession(data);return data;
 }
 async function loadDeviceAccess(userId){
- const rows=await v2Rest('v2_device_access','select=id,company_id,team_id,device_name,permissions,active,paired_at&user_id=eq.'+encodeURIComponent(userId)+'&active=eq.true&limit=1');
+ const rows=await v2Rest('v2_device_access','select=id,company_id,team_id,device_name,device_info,permissions,active,paired_at,last_seen_at&user_id=eq.'+encodeURIComponent(userId)+'&active=eq.true&limit=1');
  return rows&&rows[0]?rows[0]:null;
 }
 async function devicePointEmployees(){
@@ -2509,6 +2518,55 @@ function pointEventTeamName(ev,teamMap={}){
 }
 function sameTeamName(a,b){return String(a||'').trim().toLowerCase()===String(b||'').trim().toLowerCase()}
 
+function c360DeviceLocalId(){
+ let id='';
+ try{
+   id=localStorage.getItem('c360_device_public_id')||'';
+   if(!id){
+     id=(globalThis.crypto?.randomUUID?globalThis.crypto.randomUUID().replaceAll('-','').slice(0,8):Math.random().toString(36).slice(2,10)).toUpperCase();
+     localStorage.setItem('c360_device_public_id',id);
+   }
+ }catch(_){id=Math.random().toString(36).slice(2,10).toUpperCase()}
+ return id;
+}
+function c360BrowserInfo(){
+ const ua=navigator.userAgent||'';
+ if(/EdgA?\//i.test(ua))return {name:'Edge',version:(ua.match(/EdgA?\/([\d.]+)/i)||[])[1]||''};
+ if(/OPR\//i.test(ua))return {name:'Opera',version:(ua.match(/OPR\/([\d.]+)/i)||[])[1]||''};
+ if(/CriOS\//i.test(ua))return {name:'Chrome',version:(ua.match(/CriOS\/([\d.]+)/i)||[])[1]||''};
+ if(/Chrome\//i.test(ua))return {name:'Chrome',version:(ua.match(/Chrome\/([\d.]+)/i)||[])[1]||''};
+ if(/FxiOS\//i.test(ua))return {name:'Firefox',version:(ua.match(/FxiOS\/([\d.]+)/i)||[])[1]||''};
+ if(/Firefox\//i.test(ua))return {name:'Firefox',version:(ua.match(/Firefox\/([\d.]+)/i)||[])[1]||''};
+ if(/Safari\//i.test(ua))return {name:'Safari',version:(ua.match(/Version\/([\d.]+)/i)||[])[1]||''};
+ return {name:'Navegador',version:''};
+}
+async function c360CollectDeviceIdentity(){
+ const ua=navigator.userAgent||'',browser=c360BrowserInfo(),publicId=c360DeviceLocalId();
+ let platform=navigator.userAgentData?.platform||navigator.platform||'',platformVersion='',model='';
+ try{
+   if(navigator.userAgentData?.getHighEntropyValues){
+     const h=await navigator.userAgentData.getHighEntropyValues(['model','platform','platformVersion']);
+     model=String(h.model||'').trim();
+     platform=String(h.platform||platform||'').trim();
+     platformVersion=String(h.platformVersion||'').trim();
+   }
+ }catch(_){}
+ if(!model){
+   const androidModel=ua.match(/Android[^;]*;\s*([^;)]+?)(?:\s+Build\/|;|\))/i);
+   if(androidModel)model=String(androidModel[1]||'').replace(/^wv\s+/i,'').trim();
+ }
+ if(!model){
+   if(/iPhone/i.test(ua))model='iPhone';
+   else if(/iPad/i.test(ua))model='iPad';
+   else if(/Android/i.test(ua))model='Android';
+   else if(/Windows/i.test(ua))model='Computador Windows';
+   else model='Aparelho';
+ }
+ if(/Android/i.test(ua)&&!platform)platform='Android';
+ if(/iPhone|iPad/i.test(ua))platform='iOS';
+ const name=[model,browser.name,'#'+publicId].filter(Boolean).join(' • ').slice(0,120);
+ return {name,info:{model,platform,platform_version:platformVersion,browser:browser.name,browser_version:browser.version,device_code:publicId}};
+}
 function applyDeviceUi(){
  document.body.classList.add('device-mode');
  const logout=document.getElementById('logout');if(logout){logout.textContent='Trocar equipe';logout.classList.remove('hidden')}
@@ -2538,7 +2596,15 @@ async function enterDeviceApp(authUser){
  deviceMode=true;deviceAccess=access;companyId=access.company_id;currentRoleCode='device';isAdminGeneral=false;
 
  if(navigator.onLine){
-  try{await rpc('v2_touch_device',{})}catch(e){console.warn('Não foi possível atualizar último acesso do aparelho',e)}
+  try{
+   const identity=await c360CollectDeviceIdentity();
+   await rpc('v2_update_device_identity',{p_device_name:identity.name,p_device_info:identity.info});
+   access.device_name=identity.name;
+   access.device_info=identity.info;
+  }catch(e){
+   console.warn('Não foi possível atualizar identificação do aparelho',e);
+   try{await rpc('v2_touch_device',{})}catch(x){console.warn('Não foi possível atualizar último acesso do aparelho',x)}
+  }
   try{
    const companies=await v2Rest('v2_companies','select=id,legal_name,trade_name,tax_id,timezone&id=eq.'+encodeURIComponent(companyId)+'&limit=1');
    companyProfile=withOfficialEmployer(companies&&companies[0]?companies[0]:(cachedIdentity?.companyProfile||{id:companyId,trade_name:"Empresa"}));
@@ -2592,6 +2658,7 @@ async function activateDevice(code){
  if(!code||code.trim().length<4)throw new Error('Digite o código de ativação.');
  clearSession();
  const pairingCode=code.trim().toUpperCase();
+ const identity=await c360CollectDeviceIdentity();
  const r=await fetchTimeout(API_URL+'/functions/v1/comando360-device-activate',{
    method:'POST',
    headers:{
@@ -2601,7 +2668,7 @@ async function activateDevice(code){
    },
    body:JSON.stringify({
      code:pairingCode,
-     device_name:'Tablet/Celular '+(navigator.platform||'equipe')
+     device_name:identity.name
    })
  },18000);
  const data=await parseResponse(r);
@@ -3545,7 +3612,7 @@ async function loadTeams(){
    rest('v2_teams','select=id,name,code,status,supervisor_employee_id,metadata&company_id=eq.'+companyId+'&order=name.asc'),
    rest('v2_vehicles','select=id,description,plate,status&company_id=eq.'+companyId+'&order=description.asc'),
    rest('v2_employees','select=id,full_name,employee_number,phone,primary_team,status&company_id=eq.'+companyId+'&status=eq.active&order=full_name.asc'),
-   rest('v2_device_access','select=id,team_id,device_name,active,paired_at,last_seen_at,permissions&company_id=eq.'+companyId+'&order=paired_at.desc')
+   rest('v2_device_access','select=id,team_id,device_name,device_info,active,paired_at,last_seen_at,permissions&company_id=eq.'+companyId+'&order=paired_at.desc')
   ]);
   window.__teams=r||[];window.__teamVehicles=v||[];window.__teamEmployees=e||[];window.__teamDevices=d||[];
   const contractors=[...new Set((r||[]).map(x=>(x.metadata?.contractor_name||'').trim()).filter(Boolean))].sort();
@@ -3570,19 +3637,37 @@ function deviceTimeLabel(v){
  if(!v)return 'Nunca acessou';
  try{return new Date(v).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo'})}catch(_){return String(v)}
 }
+function deviceSeenLabel(v){
+ if(!v)return 'Nunca acessou';
+ const ms=Date.now()-new Date(v).getTime();
+ if(ms<5*60000)return 'Agora há pouco';
+ if(ms<60*60000)return Math.max(1,Math.floor(ms/60000))+' min atrás';
+ if(ms<24*3600000)return Math.max(1,Math.floor(ms/3600000))+' h atrás';
+ return deviceTimeLabel(v);
+}
 function renderTeamDevices(devices,teams){
  const list=$('#teamDevicesList');if(!list)return;
- if(!devices.length){list.innerHTML='<div class="muted">Nenhum celular vinculado ainda. Amanhã, ao ativar os aparelhos, eles aparecerão aqui.</div>';return}
+ if(!devices.length){list.innerHTML='<div class="muted">Nenhum celular vinculado ainda. Ao ativar um aparelho de campo, ele aparecerá aqui.</div>';return}
  list.innerHTML=devices.map(d=>{
-  const team=teams.find(t=>t.id===d.team_id),active=!!d.active;
-  return `<div class="item"><div class="toolbar" style="justify-content:space-between;gap:12px"><div><strong>${esc(d.device_name||'Celular da equipe')}</strong><div style="margin-top:5px"><span class="pill ${active?'ok':'warn'}">${active?'ATIVO':'REVOGADO'}</span> <span class="pill">${esc(team?.name||'Equipe')}</span></div><div class="muted" style="margin-top:7px">Vinculado em: ${esc(deviceTimeLabel(d.paired_at))}<br>Último acesso: ${esc(deviceTimeLabel(d.last_seen_at))}</div></div>${active?`<button class="btn danger revokeTeamDevice" type="button" data-id="${d.id}" data-name="${esc(d.device_name||team?.name||'celular')}">REVOGAR</button>`:''}</div></div>`;
+  const team=teams.find(t=>t.id===d.team_id),active=!!d.active,info=d.device_info||{};
+  const model=info.model||d.device_name||'Celular da equipe';
+  const system=[info.platform,info.platform_version].filter(Boolean).join(' ')||'Não informado';
+  const browser=[info.browser,info.browser_version?String(info.browser_version).split('.')[0]:''].filter(Boolean).join(' ')||'Não informado';
+  const code=info.device_code||String(d.id||'').slice(0,8).toUpperCase();
+  return '<div class="device-admin-card"><div class="device-admin-main"><div style="flex:1"><div class="device-admin-title"><strong>📱 '+esc(model)+'</strong><span class="pill '+(active?'ok':'warn')+'">'+(active?'VINCULADO':'DESVINCULADO')+'</span><span class="pill">'+esc(team?.name||'Equipe')+'</span></div>'+
+   '<div class="muted" style="margin-top:5px">'+esc(d.device_name||model)+'</div>'+
+   '<div class="device-admin-meta"><div><b>CÓDIGO DO APARELHO</b><span class="device-admin-id">#'+esc(code)+'</span></div><div><b>SISTEMA / NAVEGADOR</b>'+esc(system)+' • '+esc(browser)+'</div><div><b>VINCULADO EM</b>'+esc(deviceTimeLabel(d.paired_at))+'</div><div><b>ÚLTIMO ACESSO</b>'+esc(deviceSeenLabel(d.last_seen_at))+'</div></div></div>'+
+   (active?'<button class="btn danger revokeTeamDevice" type="button" data-id="'+esc(d.id)+'" data-name="'+esc(model)+'">DESVINCULAR</button>':'')+'</div></div>';
  }).join('');
 }
 async function revokeTeamDevice(id,name){
  if(!id)return;
- if(!confirm('Revogar o acesso de '+(name||'este celular')+'? O aparelho deixará de acessar a equipe e precisará de um novo código para ser ativado novamente.'))return;
- try{await rest('v2_device_access','id=eq.'+encodeURIComponent(id),'PATCH',{active:false});await loadTeams()}
- catch(e){alert('Não foi possível revogar o celular: '+(e.message||String(e)))}
+ if(!confirm('Desvincular '+(name||'este celular')+'? Ele perderá o acesso à equipe assim que voltar a se conectar e precisará de uma nova ativação para entrar novamente.'))return;
+ try{
+   await rest('v2_device_access','id=eq.'+encodeURIComponent(id),'PATCH',{active:false});
+   c360Toast('Celular desvinculado',(name||'O aparelho')+' não tem mais acesso à equipe.','success');
+   await loadTeams();
+ }catch(e){alert('Não foi possível desvincular o celular: '+(e.message||String(e)))}
 }
 async function createDevicePairingCode(teamId,teamName){
  const card=$('#teamDeviceCodeCard'),codeEl=$('#teamDeviceCode'),nameEl=$('#teamDeviceCodeName');
@@ -7218,7 +7303,7 @@ function c360SetModule(tab){
  const m=C360_MODULES[tab]||[tab,'Comando 360'];
  const t=document.getElementById('headerModuleTitle'),s=document.getElementById('headerModuleSubtitle');
  if(t)t.textContent=m[0];if(s)s.textContent=m[1];
- document.title='Comando 360 • '+m[0]+' • v6.77';
+ document.title='Comando 360 • '+m[0]+' • v6.78';
  document.querySelectorAll('#mobileBottomNav [data-mobiletab]').forEach(b=>{
   const mt=b.dataset.mobiletab;
   b.classList.toggle('active',mt===tab||(mt==='more'&&!['inicio','operacoes','ponto','frota'].includes(tab)));
@@ -7463,7 +7548,7 @@ setInterval(()=>{
 },60000);
 if('serviceWorker' in navigator){
  window.addEventListener('load',()=>{
-  navigator.serviceWorker.register('./sw-v6-77.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
+  navigator.serviceWorker.register('./sw-v6-78.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
  });
 }
 
