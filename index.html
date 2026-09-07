@@ -8,14 +8,13 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
-<title>Comando 360 • v6.72</title>
+<title>Comando 360 • v6.73</title>
 <link rel="manifest" href="./comando360.webmanifest"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
 <meta name="application-name" content="Comando 360"/>
 <meta name="apple-mobile-web-app-title" content="Comando 360"/>
 <link rel="icon" type="image/svg+xml" href="./comando360-icon.svg"/>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css"/>
 <style>
 :root{--bg:#f3f6fb;--card:#fff;--ink:#0f172a;--muted:#64748b;--line:#e2e8f0;--accent:#0f172a}*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--ink)}header{position:sticky;top:0;z-index:20;background:linear-gradient(135deg,var(--accent),#1e293b);color:#fff;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 8px 24px rgba(15,23,42,.18)}.wrap{max-width:1200px;margin:auto;padding:12px}.card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:12px;box-shadow:0 4px 18px rgba(15,23,42,.045)}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:10px}.kpi{font-size:28px;font-weight:900}.label,.muted{font-size:12px;color:var(--muted)}.nav{display:flex;gap:8px;overflow:auto;padding:12px 0;scrollbar-width:none}.nav::-webkit-scrollbar{display:none}.nav button,.btn{border:0;border-radius:12px;padding:11px 14px;font-weight:800;white-space:nowrap;cursor:pointer}.nav button{background:#fff;border:1px solid var(--line);color:#334155}.nav button.active,.btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}.btn.soft{background:#e2e8f0}.btn.danger{background:#b91c1c;color:#fff}.btn.danger:hover{background:#991b1b}.hidden{display:none!important}.login{max-width:430px;margin:55px auto}.login input,.chat input{width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:10px;margin:6px 0 10px;font:inherit}.section{display:none}.section.active{display:block}.list{display:grid;gap:8px}.item{background:#fff;border:1px solid var(--line);border-radius:13px;padding:12px}.item strong{display:block}.pill{display:inline-block;padding:4px 8px;border-radius:999px;font-size:11px;font-weight:800;background:#e2e8f0}.pill.ok{background:#dcfce7;color:#166534}.pill.warn{background:#fef3c7;color:#92400e}.pill.danger{background:#fee2e2;color:#991b1b}#networkBadge.online{background:#dcfce7;color:#166534}#networkBadge.offline{background:#fee2e2;color:#991b1b}.toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.chatbox{min-height:220px;max-height:52vh;overflow:auto;background:#fff;border:1px solid var(--line);border-radius:14px;padding:10px}.msg{padding:10px 12px;border-radius:12px;margin:8px 0;max-width:88%;white-space:pre-wrap}.msg.user{margin-left:auto;background:#e2e8f0}.msg.ai{background:#fff7ed;border:1px solid #fed7aa}.brand{display:flex;gap:10px;align-items:center}.logo{width:38px;height:38px;border-radius:10px;background:white;color:#0f172a;display:grid;place-items:center;font-weight:900}.error{color:#b91c1c;font-size:13px}.okmsg{color:#166534;font-size:13px}.debug{margin-top:8px;font-size:11px;color:#64748b;word-break:break-word}@media(max-width:640px){.wrap{padding:9px}.kpi{font-size:25px}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}header{padding:12px}.nav{position:sticky;top:66px;z-index:15;background:var(--bg);margin:0 -9px;padding:9px}}
 
@@ -1517,7 +1516,7 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
  *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
 }
 
-/* 6.72 — Rastreamento MOVIT */
+/* 6.73 — Rastreamento MOVIT */
 .tracking-hero{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;margin-bottom:16px}
 .tracking-hero h1{margin:0;font-size:27px;color:#10233f}.tracking-hero p{margin:5px 0 0;color:#6b7d95;font-size:13px}
 .tracking-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:14px}
@@ -1533,29 +1532,31 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
 .darkmode .tracking-kpi,.darkmode .tracking-card{background:#101c2e;border-color:#203047}.darkmode .tracking-hero h1,.darkmode .tracking-kpi strong,.darkmode .tracking-card-main strong{color:#e7eef9}.darkmode .movit-security-note{background:#0d1b2e;border-color:#26394f;color:#9fb3cb}
 @media(max-width:1050px){.tracking-card{grid-template-columns:1fr 1fr}.tracking-actions{grid-column:1/-1;justify-content:flex-start}}
 @media(max-width:700px){.tracking-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.tracking-card{grid-template-columns:1fr}.tracking-actions{grid-column:auto}.tracking-hero{flex-direction:column}.tracking-hero .btn{width:100%}}
-/* 6.72 — mapa profissional da frota */
+/* 6.73 — Google Maps + rastreamento da frota */
 .tracking-map-card{overflow:hidden}.tracking-map-head{padding-bottom:4px}
 .tracking-map-wrap{position:relative;margin-top:14px;border:1px solid #dce6f1;border-radius:18px;overflow:hidden;background:#eaf0f6}
-#movitMap{height:430px;width:100%;z-index:1}
-.tracking-map-legend{position:absolute;left:14px;bottom:14px;z-index:450;display:flex;gap:10px;flex-wrap:wrap;background:rgba(255,255,255,.94);backdrop-filter:blur(8px);border:1px solid #dbe5ef;border-radius:12px;padding:8px 10px;box-shadow:0 5px 16px rgba(17,38,63,.12);font-size:10px;font-weight:800;color:#405978}
+#movitMap{height:430px;width:100%;position:relative;overflow:hidden;background:#e8eef5}
+#movitGoogleFrame{position:absolute;inset:0;width:100%;height:100%;border:0;z-index:1;pointer-events:none}
+#movitGoogleOverlay{position:absolute;inset:0;z-index:4;pointer-events:none}
+.google-map-provider{position:absolute;right:12px;bottom:12px;z-index:7;background:rgba(255,255,255,.95);border:1px solid #dbe5ef;border-radius:8px;padding:5px 8px;font-size:10px;font-weight:900;color:#3b556f;box-shadow:0 3px 10px rgba(15,23,42,.12)}
+.google-fleet-marker{position:absolute;transform:translate(-10px,-18px);display:flex;align-items:center;gap:6px;background:transparent;border:0;padding:0;cursor:pointer;pointer-events:auto;white-space:nowrap;z-index:5}
+.google-fleet-marker .pin{width:20px;height:20px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:#64748b;border:3px solid #fff;box-shadow:0 2px 8px rgba(15,23,42,.30);flex:0 0 auto}
+.google-fleet-marker .pin.move{background:#1976d2}.google-fleet-marker .pin.on{background:#16a34a}.google-fleet-marker .pin.stale{background:#d97706}
+.google-fleet-marker .map-label{background:rgba(255,255,255,.97);border:1px solid #dce6f1;border-radius:8px;padding:5px 7px;box-shadow:0 3px 9px rgba(15,23,42,.14);font-size:10px;font-weight:900;color:#15304e;max-width:175px;overflow:hidden;text-overflow:ellipsis}
+.google-map-info{position:absolute;right:14px;top:14px;z-index:8;width:min(310px,calc(100% - 28px));background:rgba(255,255,255,.97);backdrop-filter:blur(8px);border:1px solid #dbe5ef;border-radius:14px;padding:12px 13px;box-shadow:0 8px 24px rgba(15,23,42,.18);font-size:11px;color:#526b86}
+.google-map-info strong{font-size:14px;color:#132741}.google-map-info .plate{display:inline-block;margin-left:5px;padding:2px 5px;background:#eef4fb;border-radius:5px;font-size:10px;font-weight:900}.google-map-info .meta{margin-top:7px;line-height:1.55}.google-map-info .btn{margin-top:9px}
+.tracking-map-legend{position:absolute;left:14px;bottom:14px;z-index:6;display:flex;gap:10px;flex-wrap:wrap;background:rgba(255,255,255,.94);backdrop-filter:blur(8px);border:1px solid #dbe5ef;border-radius:12px;padding:8px 10px;box-shadow:0 5px 16px rgba(17,38,63,.12);font-size:10px;font-weight:800;color:#405978}
 .tracking-map-legend span{display:flex;align-items:center;gap:5px}.tracking-map-legend i{width:9px;height:9px;border-radius:50%;display:inline-block;background:#64748b}.tracking-map-legend i.move{background:#1976d2}.tracking-map-legend i.on{background:#16a34a}.tracking-map-legend i.stale{background:#d97706}
-.c360-map-icon{background:transparent!important;border:0!important}
-.c360-map-marker{display:flex;align-items:center;gap:6px;white-space:nowrap;transform:translate(-7px,-7px)}
-.c360-map-marker .pin{width:18px;height:18px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:#64748b;border:3px solid #fff;box-shadow:0 2px 8px rgba(15,23,42,.28);flex:0 0 auto}
-.c360-map-marker .pin.move{background:#1976d2}.c360-map-marker .pin.on{background:#16a34a}.c360-map-marker .pin.stale{background:#d97706}
-.c360-map-marker .map-label{transform:translateY(-1px);background:rgba(255,255,255,.96);border:1px solid #dce6f1;border-radius:8px;padding:5px 7px;box-shadow:0 3px 9px rgba(15,23,42,.12);font-size:10px;font-weight:900;color:#15304e;max-width:170px;overflow:hidden;text-overflow:ellipsis}
-.c360-map-popup{min-width:205px}.c360-map-popup strong{font-size:14px;color:#132741}.c360-map-popup .plate{display:inline-block;margin-left:5px;padding:2px 5px;background:#eef4fb;border-radius:5px;font-size:10px;font-weight:900}.c360-map-popup .meta{margin-top:7px;font-size:11px;line-height:1.55;color:#526b86}
-.darkmode .tracking-map-wrap{border-color:#25384f;background:#0d1726}.darkmode .tracking-map-legend{background:rgba(15,27,44,.95);border-color:#2a3b51;color:#a9bad0}.darkmode .c360-map-marker .map-label{background:rgba(15,27,44,.96);border-color:#2a3b51;color:#e5eef9}
-@media(max-width:700px){#movitMap{height:365px}.tracking-map-head{gap:10px}.tracking-map-head>.toolbar{width:100%}.tracking-map-head>.toolbar .btn{flex:1}.tracking-map-legend{left:8px;right:8px;bottom:8px;justify-content:center}.c360-map-marker .map-label{max-width:120px}}
+.darkmode .tracking-map-wrap{border-color:#25384f;background:#0d1726}.darkmode .tracking-map-legend,.darkmode .google-map-provider,.darkmode .google-map-info{background:rgba(15,27,44,.95);border-color:#2a3b51;color:#a9bad0}.darkmode .google-fleet-marker .map-label{background:rgba(15,27,44,.96);border-color:#2a3b51;color:#e5eef9}.darkmode .google-map-info strong{color:#eef4fd}
+@media(max-width:700px){#movitMap{height:365px}.tracking-map-head{gap:10px}.tracking-map-head>.toolbar{width:100%}.tracking-map-head>.toolbar .btn{flex:1}.tracking-map-legend{left:8px;right:8px;bottom:8px;justify-content:center}.google-fleet-marker .map-label{max-width:120px}.google-map-info{top:8px;right:8px;width:calc(100% - 16px)}}
 
 </style>
 <script defer="" src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"></script>
-<script defer src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 (function(){
-  const BUILD='6.72';
+  const BUILD='6.73';
   try{
     const marker='controla_cache_cleanup_'+BUILD;
     if(!localStorage.getItem(marker)){
@@ -1606,7 +1607,7 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
   <div class="brand"><img class="header-brand-icon" src="./comando360-icon.svg" alt="Comando 360"/><div><b>Comando <span class="brand360">360</span></b><div><small id="companyName">Empresa</small></div></div></div>
  </div>
  <div class="header-module" id="headerModule"><span id="headerModuleTitle">Painel Geral</span><small id="headerModuleSubtitle">Central de gestão</small></div>
- <div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.72</span><button class="btn soft" id="themeToggle" type="button" aria-label="Alternar tema">☾</button><button class="btn soft hidden" id="logout">Sair</button></div>
+ <div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.73</span><button class="btn soft" id="themeToggle" type="button" aria-label="Alternar tema">☾</button><button class="btn soft hidden" id="logout">Sair</button></div>
 </header>
 <main class="wrap">
 <section class="login team-entry" id="login">
@@ -1624,7 +1625,7 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
  <label>Senha</label><input autocomplete="current-password" id="password" type="password"/>
  <button class="btn primary" id="loginBtn">Entrar</button>
  <button class="btn soft" id="backDeviceSetup" type="button" style="margin-left:6px">Voltar</button>
- <div class="muted" id="loginMsg" style="margin-top:10px">Comando 360 • v6.72</div><div class="debug" id="debug"></div>
+ <div class="muted" id="loginMsg" style="margin-top:10px">Comando 360 • v6.73</div><div class="debug" id="debug"></div>
 </div>
 </section>
 <section class="hidden" id="app">
@@ -2115,11 +2116,16 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
  </div>
  <div class="card tracking-map-card">
   <div class="toolbar tracking-map-head" style="justify-content:space-between;align-items:flex-start">
-   <div><h3 style="margin:0">Mapa da frota</h3><div class="muted" id="movitTrackingStatus">Verificando integração...</div></div>
+   <div><h3 style="margin:0">Google Maps • Frota em tempo real</h3><div class="muted" id="movitTrackingStatus">Verificando integração...</div></div>
    <div class="toolbar"><button class="btn soft" id="centerMovitMap" type="button">◎ CENTRALIZAR FROTA</button><button class="btn soft" type="button" data-jump="integracoes">⚙ CONFIGURAR MOVIT</button></div>
   </div>
   <div class="tracking-map-wrap">
-   <div id="movitMap" aria-label="Mapa com a posição atual da frota"></div>
+   <div id="movitMap" aria-label="Google Maps com a posição atual da frota">
+    <iframe id="movitGoogleFrame" title="Google Maps da frota" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+    <div id="movitGoogleOverlay" aria-hidden="false"></div>
+    <div id="movitGoogleInfo" class="google-map-info hidden"></div>
+    <div class="google-map-provider">Google Maps</div>
+   </div>
    <div class="tracking-map-legend"><span><i class="move"></i>Em movimento</span><span><i class="on"></i>Ligado</span><span><i class="stopped"></i>Parado</span><span><i class="stale"></i>Desatualizado</span></div>
   </div>
  </div>
@@ -6585,7 +6591,7 @@ function applyMovitCompanyPreset(){
  return p;
 }
 
-let movitTrackingRows=[],movitTrackingTimer=null,movitLastStatus=null,movitMap=null,movitMapMarkers=null,movitMapHasFit=false;
+let movitTrackingRows=[],movitTrackingTimer=null,movitLastStatus=null,movitMapHasFit=false,movitGoogleView={lat:-23.0,lon:-47.9,zoom:8},movitGoogleSelectedId=null;
 async function movitInvoke(action,extra={}){
  const r=await authFetch('/functions/v1/movit-bridge',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:action,company_id:companyId,...extra})},true);
  return parseResponse(r);
@@ -6600,37 +6606,78 @@ function movitMapState(v){
  return{cls:'stopped',label:'Parado'};
 }
 function ensureMovitMap(){
- const el=$('#movitMap');if(!el||!window.L)return null;
- if(!movitMap){
-  movitMap=L.map(el,{zoomControl:true,attributionControl:true}).setView([-23.0,-47.9],8);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; OpenStreetMap'}).addTo(movitMap);
-  movitMapMarkers=L.layerGroup().addTo(movitMap);
+ const el=$('#movitMap'),frame=$('#movitGoogleFrame'),overlay=$('#movitGoogleOverlay'),info=$('#movitGoogleInfo');
+ if(!el||!frame||!overlay||!info)return null;
+ return{el,frame,overlay,info};
+}
+function googleMercatorPoint(lat,lon,zoom){
+ const safeLat=Math.max(-85.05112878,Math.min(85.05112878,Number(lat)));
+ const scale=256*Math.pow(2,zoom);
+ const x=(Number(lon)+180)/360*scale;
+ const sin=Math.sin(safeLat*Math.PI/180);
+ const y=(0.5-Math.log((1+sin)/(1-sin))/(4*Math.PI))*scale;
+ return{x,y};
+}
+function googleFleetFit(points,width,height){
+ if(!points.length)return{lat:-23.0,lon:-47.9,zoom:8};
+ if(points.length===1)return{lat:points[0].lat,lon:points[0].lon,zoom:16};
+ const lats=points.map(p=>p.lat),lons=points.map(p=>p.lon);
+ const lat=(Math.min(...lats)+Math.max(...lats))/2,lon=(Math.min(...lons)+Math.max(...lons))/2;
+ let best=4;
+ for(let z=4;z<=16;z++){
+  const ps=points.map(p=>googleMercatorPoint(p.lat,p.lon,z));
+  const xs=ps.map(p=>p.x),ys=ps.map(p=>p.y);
+  const spanX=Math.max(...xs)-Math.min(...xs),spanY=Math.max(...ys)-Math.min(...ys);
+  if(spanX<=Math.max(120,width-150)&&spanY<=Math.max(120,height-140))best=z;else break;
  }
- setTimeout(()=>{try{movitMap.invalidateSize()}catch(_){}},80);
- return movitMap;
+ return{lat,lon,zoom:best};
+}
+function googleMapEmbedUrl(view){
+ return 'https://maps.google.com/maps?ll='+encodeURIComponent(view.lat+','+view.lon)+'&z='+encodeURIComponent(view.zoom)+'&t=m&output=embed';
+}
+function selectMovitGoogleVehicle(vehicleId){
+ movitGoogleSelectedId=vehicleId||null;
+ const ui=ensureMovitMap();if(!ui)return;
+ const v=(movitTrackingRows||[]).find(x=>x.vehicle_id===vehicleId||String(x.movit_vehicle_id||'')===String(vehicleId||''));
+ if(!v){ui.info.classList.add('hidden');ui.info.innerHTML='';return}
+ const lat=Number(v.latitude),lon=Number(v.longitude),state=movitMapState(v),name=v.vehicle_name||'Rastreador',plate=v.license_plate||v.raw_data?.license_plate||'',trackerPlate=v.tracker_plate||v.raw_data?.tracker_plate||'';
+ const plateChanged=trackerPlate&&String(trackerPlate).replace(/[^A-Z0-9]/gi,'').toUpperCase()!==String(plate).replace(/[^A-Z0-9]/gi,'').toUpperCase();
+ const age=movitAge(v.recorded_at||v.gps_at||v.updated_at),km=v.odometer_km!=null?Number(v.odometer_km).toLocaleString('pt-BR')+' km':'—',address=v.address||v.raw_data?.address||'Endereço não informado';
+ const mapUrl=Number.isFinite(lat)&&Number.isFinite(lon)?'https://www.google.com/maps?q='+lat+','+lon:'https://www.google.com/maps';
+ ui.info.innerHTML='<strong>'+esc(name)+'</strong>'+(plate?'<span class="plate">'+esc(plate)+'</span>':'')+'<div class="meta"><b>'+esc(state.label)+'</b> • '+esc(age.text)+'<br>Velocidade: '+Number(v.speed_kmh||0).toFixed(0)+' km/h<br>Ignição: '+(v.ignition===true?'Ligada':v.ignition===false?'Desligada':'—')+'<br>Hodômetro: '+km+(plateChanged?'<br>Placa no MOVIT: '+esc(trackerPlate):'')+'<br>'+esc(address)+'</div><a class="btn primary" target="_blank" rel="noopener" href="'+mapUrl+'">ABRIR NO GOOGLE MAPS</a>';
+ ui.info.classList.remove('hidden');
 }
 function renderMovitMap(forceFit=false){
- const map=ensureMovitMap();if(!map||!movitMapMarkers)return;
- movitMapMarkers.clearLayers();
- const bounds=[];let focusMarker=null,focusPoint=null;
- for(const v of (movitTrackingRows||[])){
-  const lat=Number(v.latitude),lon=Number(v.longitude);if(!Number.isFinite(lat)||!Number.isFinite(lon))continue;
-  const state=movitMapState(v),name=v.vehicle_name||'Rastreador',plate=v.license_plate||v.raw_data?.license_plate||'',trackerPlate=v.tracker_plate||v.raw_data?.tracker_plate||'';
-  const plateChanged=trackerPlate&&String(trackerPlate).replace(/[^A-Z0-9]/gi,'').toUpperCase()!==String(plate).replace(/[^A-Z0-9]/gi,'').toUpperCase();
-  const icon=L.divIcon({className:'c360-map-icon',html:'<div class="c360-map-marker"><span class="pin '+state.cls+'"></span><span class="map-label">'+esc(name)+(plate?' • '+esc(plate):'')+'</span></div>',iconSize:[190,32],iconAnchor:[9,18]});
-  const age=movitAge(v.recorded_at||v.gps_at||v.updated_at),km=v.odometer_km!=null?Number(v.odometer_km).toLocaleString('pt-BR')+' km':'—',address=v.address||v.raw_data?.address||'Endereço não informado';
-  const popup='<div class="c360-map-popup"><strong>'+esc(name)+'</strong>'+(plate?'<span class="plate">'+esc(plate)+'</span>':'')+'<div class="meta"><b>'+esc(state.label)+'</b> • '+esc(age.text)+'<br>Velocidade: '+Number(v.speed_kmh||0).toFixed(0)+' km/h<br>Ignição: '+(v.ignition===true?'Ligada':v.ignition===false?'Desligada':'—')+'<br>Hodômetro: '+km+(plateChanged?'<br>Placa no MOVIT: '+esc(trackerPlate):'')+'<br>'+esc(address)+'</div></div>';
-  const marker=L.marker([lat,lon],{icon}).addTo(movitMapMarkers).bindPopup(popup,{maxWidth:290});
-  if(window.__movitFocusVehicleId&&v.vehicle_id===window.__movitFocusVehicleId){focusMarker=marker;focusPoint=[lat,lon]}
-  bounds.push([lat,lon]);
- }
- if(focusPoint){map.setView(focusPoint,16);setTimeout(()=>{try{focusMarker&&focusMarker.openPopup()}catch(_){}},120);window.__movitFocusVehicleId=null;movitMapHasFit=true;return}
- if(bounds.length&&(forceFit||!movitMapHasFit)){
-  if(bounds.length===1)map.setView(bounds[0],15);
-  else map.fitBounds(bounds,{padding:[45,45],maxZoom:15});
+ const ui=ensureMovitMap();if(!ui)return;
+ const points=(movitTrackingRows||[]).map(v=>({v,lat:Number(v.latitude),lon:Number(v.longitude)})).filter(p=>Number.isFinite(p.lat)&&Number.isFinite(p.lon));
+ if(!points.length){ui.overlay.innerHTML='';ui.info.classList.add('hidden');return}
+ const focusId=window.__movitFocusVehicleId||null;
+ const focus=focusId?points.find(p=>p.v.vehicle_id===focusId):null;
+ if(focus){
+  movitGoogleView={lat:focus.lat,lon:focus.lon,zoom:16};
+  movitGoogleSelectedId=focus.v.vehicle_id||focus.v.movit_vehicle_id||null;
+  window.__movitFocusVehicleId=null;
+  movitMapHasFit=true;
+ }else if(forceFit||!movitMapHasFit){
+  movitGoogleView=googleFleetFit(points,ui.el.clientWidth||900,ui.el.clientHeight||430);
   movitMapHasFit=true;
  }
+ const src=googleMapEmbedUrl(movitGoogleView);
+ if(ui.frame.dataset.src!==src){ui.frame.dataset.src=src;ui.frame.src=src}
+ const center=googleMercatorPoint(movitGoogleView.lat,movitGoogleView.lon,movitGoogleView.zoom);
+ const w=ui.el.clientWidth||900,h=ui.el.clientHeight||430;
+ ui.overlay.innerHTML=points.map(p=>{
+  const pt=googleMercatorPoint(p.lat,p.lon,movitGoogleView.zoom),x=w/2+(pt.x-center.x),y=h/2+(pt.y-center.y);
+  if(x<-80||x>w+80||y<-50||y>h+50)return'';
+  const v=p.v,state=movitMapState(v),name=v.vehicle_name||'Rastreador',plate=v.license_plate||v.raw_data?.license_plate||'',id=v.vehicle_id||v.movit_vehicle_id||'';
+  return '<button class="google-fleet-marker" type="button" style="left:'+x.toFixed(1)+'px;top:'+y.toFixed(1)+'px" data-google-vehicle="'+esc(id)+'" title="'+esc(name+(plate?' • '+plate:''))+'"><span class="pin '+state.cls+'"></span><span class="map-label">'+esc(name)+(plate?' • '+esc(plate):'')+'</span></button>';
+ }).join('');
+ if(movitGoogleSelectedId)selectMovitGoogleVehicle(movitGoogleSelectedId);
 }
+document.addEventListener('click',function(e){
+ const marker=e.target.closest('.google-fleet-marker[data-google-vehicle]');
+ if(marker){e.preventDefault();selectMovitGoogleVehicle(marker.dataset.googleVehicle)}
+});
 function renderMovitTracking(){
  const rows=movitTrackingRows||[];
  if($('#movitKpiTotal'))$('#movitKpiTotal').textContent=String(rows.length);
@@ -7010,7 +7057,7 @@ function c360SetModule(tab){
  const m=C360_MODULES[tab]||[tab,'Comando 360'];
  const t=document.getElementById('headerModuleTitle'),s=document.getElementById('headerModuleSubtitle');
  if(t)t.textContent=m[0];if(s)s.textContent=m[1];
- document.title='Comando 360 • '+m[0]+' • v6.72';
+ document.title='Comando 360 • '+m[0]+' • v6.73';
  document.querySelectorAll('#mobileBottomNav [data-mobiletab]').forEach(b=>{
   const mt=b.dataset.mobiletab;
   b.classList.toggle('active',mt===tab||(mt==='more'&&!['inicio','operacoes','ponto','frota'].includes(tab)));
@@ -7252,7 +7299,7 @@ setInterval(()=>{
 },60000);
 if('serviceWorker' in navigator){
  window.addEventListener('load',()=>{
-  navigator.serviceWorker.register('./sw-v6-72.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
+  navigator.serviceWorker.register('./sw-v6-73.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
  });
 }
 
