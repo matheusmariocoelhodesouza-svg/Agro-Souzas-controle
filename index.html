@@ -8,7 +8,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
-<title>Comando 360 • v6.75</title>
+<title>Comando 360 • v6.76</title>
 <link rel="manifest" href="./comando360.webmanifest"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
@@ -1516,7 +1516,7 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
  *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
 }
 
-/* 6.75 — Rastreamento MOVIT */
+/* 6.76 — Rastreamento MOVIT */
 .tracking-hero{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;margin-bottom:16px}
 .tracking-hero h1{margin:0;font-size:27px;color:#10233f}.tracking-hero p{margin:5px 0 0;color:#6b7d95;font-size:13px}
 .tracking-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:14px}
@@ -1532,7 +1532,7 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
 .darkmode .tracking-kpi,.darkmode .tracking-card{background:#101c2e;border-color:#203047}.darkmode .tracking-hero h1,.darkmode .tracking-kpi strong,.darkmode .tracking-card-main strong{color:#e7eef9}.darkmode .movit-security-note{background:#0d1b2e;border-color:#26394f;color:#9fb3cb}
 @media(max-width:1050px){.tracking-card{grid-template-columns:1fr 1fr}.tracking-actions{grid-column:1/-1;justify-content:flex-start}}
 @media(max-width:700px){.tracking-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.tracking-card{grid-template-columns:1fr}.tracking-actions{grid-column:auto}.tracking-hero{flex-direction:column}.tracking-hero .btn{width:100%}}
-/* 6.75 — Google Maps + rastreamento da frota */
+/* 6.76 — Google Maps + rastreamento da frota */
 .tracking-map-card{overflow:hidden}.tracking-map-head{padding-bottom:4px}
 .tracking-map-wrap{position:relative;margin-top:14px;border:1px solid #dce6f1;border-radius:18px;overflow:hidden;background:#eaf0f6}
 #movitMap{height:430px;width:100%;position:relative;overflow:hidden;background:#e8eef5}
@@ -1554,7 +1554,17 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
 .tracking-map-legend span{display:flex;align-items:center;gap:5px}.tracking-map-legend i{width:9px;height:9px;border-radius:50%;display:inline-block;background:#64748b}.tracking-map-legend i.move{background:#1976d2}.tracking-map-legend i.on{background:#16a34a}.tracking-map-legend i.stale{background:#d97706}
 .darkmode .tracking-map-wrap{border-color:#25384f;background:#0d1726}.darkmode .tracking-map-legend,.darkmode .google-map-provider,.darkmode .google-map-info{background:rgba(15,27,44,.95);border-color:#2a3b51;color:#a9bad0}.darkmode .google-map-controls button{background:rgba(15,27,44,.96);border-color:#2a3b51;color:#e8f1fb}.darkmode .google-fleet-marker .map-label{background:rgba(15,27,44,.96);border-color:#2a3b51;color:#e5eef9}.darkmode .google-map-info strong{color:#eef4fd}
 @media(max-width:700px){#movitMap{height:365px}.tracking-map-head{gap:10px}.tracking-map-head>.toolbar{width:100%}.tracking-map-head>.toolbar .btn{flex:1}.tracking-map-legend{left:8px;right:8px;bottom:8px;justify-content:center}.google-fleet-marker .map-label{max-width:120px}.google-map-info{top:8px;right:8px;width:calc(100% - 16px)}}
-/* 6.75 — rota até a condução */
+/* 6.76 — rota até a condução */
+
+/* 6.76 — relatório de abastecimento por condução */
+.fuel-report-vehicle{border:1px solid #e1e8f0;border-radius:14px;overflow:hidden;background:#fff;margin-bottom:10px}
+.fuel-report-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;padding:12px 13px;background:#f7f9fc;border-bottom:1px solid #e4eaf2}
+.fuel-report-head strong{font-size:14px;color:#16304e}.fuel-report-head .plate{display:inline-block;margin-left:6px;padding:2px 6px;border-radius:6px;background:#eaf2fb;font-size:10px;font-weight:900;color:#27517e}
+.fuel-report-totals{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;padding:10px 12px}
+.fuel-report-total{border:1px solid #e5ebf2;border-radius:10px;padding:8px 9px}.fuel-report-total span{display:block;font-size:9px;color:#71849a;font-weight:800}.fuel-report-total b{display:block;margin-top:3px;font-size:13px;color:#183452}
+.fuel-report-table{width:100%;border-collapse:collapse;font-size:10.5px}.fuel-report-table th,.fuel-report-table td{padding:7px 8px;border-top:1px solid #edf1f5;text-align:left}.fuel-report-table th{font-size:9px;color:#708399;background:#fbfcfe}.fuel-report-table td.num{text-align:right;font-variant-numeric:tabular-nums}
+.darkmode .fuel-report-vehicle{background:#101c2e;border-color:#26374b}.darkmode .fuel-report-head{background:#0d1828;border-color:#26374b}.darkmode .fuel-report-head strong,.darkmode .fuel-report-total b{color:#e8f0fa}.darkmode .fuel-report-total{border-color:#26374b}.darkmode .fuel-report-table th{background:#0d1828;color:#8fa4bc}.darkmode .fuel-report-table th,.darkmode .fuel-report-table td{border-color:#26374b}
+@media(max-width:700px){.fuel-report-totals{grid-template-columns:1fr 1fr}.fuel-report-table{font-size:9.5px}.fuel-report-table th,.fuel-report-table td{padding:6px 5px}.fuel-report-head{flex-direction:column}}
 .route-choice-backdrop{position:fixed;inset:0;background:rgba(8,17,31,.48);backdrop-filter:blur(2px);z-index:120}
 .route-choice-sheet{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:121;width:min(520px,calc(100% - 28px));background:#fff;border:1px solid #dde6f0;border-radius:22px;padding:12px 16px 16px;box-shadow:0 24px 70px rgba(8,17,31,.28)}
 .route-choice-handle{width:44px;height:4px;border-radius:99px;background:#d5dee9;margin:0 auto 10px}
@@ -1578,7 +1588,7 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
 <script defer src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"></script>
 <script>
 (function(){
-  const BUILD='6.75';
+  const BUILD='6.76';
   try{
     const marker='controla_cache_cleanup_'+BUILD;
     if(!localStorage.getItem(marker)){
@@ -1643,7 +1653,7 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
   <div class="brand"><img class="header-brand-icon" src="./comando360-icon.svg" alt="Comando 360"/><div><b>Comando <span class="brand360">360</span></b><div><small id="companyName">Empresa</small></div></div></div>
  </div>
  <div class="header-module" id="headerModule"><span id="headerModuleTitle">Painel Geral</span><small id="headerModuleSubtitle">Central de gestão</small></div>
- <div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.75</span><button class="btn soft" id="themeToggle" type="button" aria-label="Alternar tema">☾</button><button class="btn soft hidden" id="logout">Sair</button></div>
+ <div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.76</span><button class="btn soft" id="themeToggle" type="button" aria-label="Alternar tema">☾</button><button class="btn soft hidden" id="logout">Sair</button></div>
 </header>
 <main class="wrap">
 <section class="login team-entry" id="login">
@@ -1661,7 +1671,7 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
  <label>Senha</label><input autocomplete="current-password" id="password" type="password"/>
  <button class="btn primary" id="loginBtn">Entrar</button>
  <button class="btn soft" id="backDeviceSetup" type="button" style="margin-left:6px">Voltar</button>
- <div class="muted" id="loginMsg" style="margin-top:10px">Comando 360 • v6.75</div><div class="debug" id="debug"></div>
+ <div class="muted" id="loginMsg" style="margin-top:10px">Comando 360 • v6.76</div><div class="debug" id="debug"></div>
 </div>
 </section>
 <section class="hidden" id="app">
@@ -2236,7 +2246,7 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
   <div class="v2panel"><div class="v2panelhead"><div><h3>🚚 Operação</h3><div class="muted">Indicadores de apanha e caminhões.</div></div></div><div id="reportsSummary" class="list"></div></div>
  </div>
  <div>
-  <div class="v2panel"><div class="v2panelhead"><div><h3>⛽ Combustível por condução</h3><div class="muted">Litros e custo registrados no mês.</div></div></div><div id="reportsFuel" class="list"></div></div>
+  <div class="v2panel"><div class="v2panelhead" style="gap:10px"><div><h3>⛽ Abastecimento por condução</h3><div class="muted">Cada condução tem seu próprio relatório, com abastecimentos, KM, litros e custos.</div></div><select id="reportsFuelVehicle" aria-label="Filtrar relatório de abastecimento por condução" style="max-width:220px"><option value="all">Todas as conduções</option></select></div><div id="reportsFuel" class="list"></div></div>
   <div class="v2panel"><div class="v2panelhead"><div><h3>💰 Financeiro</h3><div class="muted">Entradas, saídas e saldo.</div></div></div><div id="reportsFinance" class="v2stats"></div></div>
   <div class="v2panel"><div class="v2panelhead"><div><h3>⏱️ Ponto</h3><div class="muted">Horas, atrasos e funcionários com movimento.</div></div></div><div id="reportsAttendance" class="v2stats"></div></div>
  </div>
@@ -7070,6 +7080,24 @@ function reportMonthLabel(m){
  const [y,mo]=String(m).split('-').map(Number);
  return new Date(y,mo-1,1).toLocaleDateString('pt-BR',{month:'long',year:'numeric'});
 }
+function renderFuelReportByVehicle(fuels=[],filter='all'){
+ const host=$('#reportsFuel');if(!host)return;
+ const rows=filter==='all'?fuels:fuels.filter(x=>String(x.vehicle_id||'sem-veiculo')===String(filter));
+ if(!rows.length){host.innerHTML='<div class="v2-empty">Nenhum abastecimento registrado para esta condução no período.</div>';return}
+ host.innerHTML=rows.map(g=>{
+  const avg=g.liters?g.cost/g.liters:0;
+  const kms=g.entries.map(e=>Number(e.odometer_km||0)).filter(x=>x>0);
+  const minKm=kms.length?Math.min(...kms):0,maxKm=kms.length?Math.max(...kms):0,kmRange=(minKm&&maxKm&&maxKm>=minKm)?maxKm-minKm:0;
+  const details=g.entries.map(e=>{
+   const date=e.fueled_at?new Date(e.fueled_at).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo',day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'}):'—';
+   const liters=poN(e.liters),cost=poN(e.total_amount),price=liters?cost/liters:0,driver=e.metadata?.driver_name||e.metadata?.driver||'';
+   return '<tr><td>'+esc(date)+'</td><td>'+esc(e.station_name||'—')+(driver?'<div class="muted">'+esc(driver)+'</div>':'')+'</td><td class="num">'+(e.odometer_km?Number(e.odometer_km).toLocaleString('pt-BR'):'—')+'</td><td class="num">'+liters.toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:2})+' L</td><td class="num">'+money(price)+'</td><td class="num"><b>'+money(cost)+'</b></td></tr>';
+  }).join('');
+  return '<div class="fuel-report-vehicle"><div class="fuel-report-head"><div><strong>'+esc(g.name)+'</strong>'+(g.plate?'<span class="plate">'+esc(g.plate)+'</span>':'')+'<div class="muted">'+g.logs+' abastecimento(s) no período</div></div><div><b>'+g.liters.toLocaleString('pt-BR',{maximumFractionDigits:2})+' L</b><div class="muted">'+money(g.cost)+'</div></div></div>'+
+   '<div class="fuel-report-totals"><div class="fuel-report-total"><span>TOTAL LITROS</span><b>'+g.liters.toLocaleString('pt-BR',{maximumFractionDigits:2})+' L</b></div><div class="fuel-report-total"><span>CUSTO TOTAL</span><b>'+money(g.cost)+'</b></div><div class="fuel-report-total"><span>MÉDIA R$/L</span><b>'+money(avg)+'</b></div><div class="fuel-report-total"><span>KM ENTRE REGISTROS</span><b>'+(kmRange?kmRange.toLocaleString('pt-BR')+' km':'—')+'</b></div></div>'+
+   '<div style="overflow:auto"><table class="fuel-report-table"><thead><tr><th>Data</th><th>Posto / motorista</th><th style="text-align:right">KM</th><th style="text-align:right">Litros</th><th style="text-align:right">R$/L</th><th style="text-align:right">Total</th></tr></thead><tbody>'+details+'</tbody></table></div></div>';
+ }).join('');
+}
 async function loadReports(){
  const month=$('#reportsMonth')?.value||new Date().toISOString().slice(0,7);
  if($('#reportsMonth')&&!$('#reportsMonth').value)$('#reportsMonth').value=month;
@@ -7082,7 +7110,7 @@ async function loadReports(){
   dashSafe('v2_operations','select=id,team_id,customer_name,title,status,scheduled_start,actual_birds,planned_birds,actual_revenue,actual_cost&company_id=eq.'+companyId+'&operation_type=eq.poultry_catching&scheduled_start=gte.'+encodeURIComponent(bounds.start)+'&scheduled_start=lt.'+encodeURIComponent(bounds.end)),
   dashSafe('v2_teams','select=id,name,status&company_id=eq.'+companyId),
   dashSafe('v2_vehicles','select=id,description,plate,model&company_id=eq.'+companyId),
-  dashSafe('v2_fuel_logs','select=id,vehicle_id,fueled_at,liters,total_amount&company_id=eq.'+companyId+'&fueled_at=gte.'+encodeURIComponent(bounds.start)+'&fueled_at=lt.'+encodeURIComponent(bounds.end)),
+  dashSafe('v2_fuel_logs','select=id,vehicle_id,fueled_at,odometer_km,liters,total_amount,station_name,metadata&company_id=eq.'+companyId+'&fueled_at=gte.'+encodeURIComponent(bounds.start)+'&fueled_at=lt.'+encodeURIComponent(bounds.end)+'&order=fueled_at.asc'),
   dashSafe('v2_poultry_truck_loads','select=id,birds,is_cata,created_at&company_id=eq.'+companyId+'&created_at=gte.'+encodeURIComponent(bounds.start)+'&created_at=lt.'+encodeURIComponent(bounds.end))
  ]);
  const f=finView?.[0]||{},o=opsView?.[0]||{},p=poultryView?.[0]||{},a=attView?.[0]||{};
@@ -7109,9 +7137,20 @@ async function loadReports(){
  $('#reportsByCustomer').innerHTML=biRows(byCustomer,x=>x.birds,x=>x.name+' • '+x.ops+' apanha(s)');
 
  const fuelMap={};
- fuel.forEach(x=>{const v=vehicles.find(v=>v.id===x.vehicle_id),name=v?(v.description||v.model||'Condução')+(v.plate?' • '+v.plate:''):'Condução';if(!fuelMap[name])fuelMap[name]={name,liters:0,cost:0,logs:0};fuelMap[name].liters+=poN(x.liters);fuelMap[name].cost+=poN(x.total_amount);fuelMap[name].logs++});
- const fuels=Object.values(fuelMap).sort((x,y)=>y.liters-x.liters);
- $('#reportsFuel').innerHTML=fuels.length?fuels.map(x=>'<div class="item"><div class="toolbar" style="justify-content:space-between"><strong>'+esc(x.name)+'</strong><b>'+x.liters.toLocaleString('pt-BR',{maximumFractionDigits:1})+' L</b></div><div class="muted">'+x.logs+' abastecimento(s) • '+money(x.cost)+(x.liters?(' • '+money(x.cost/x.liters)+'/L'):'')+'</div></div>').join(''):'<div class="v2-empty">Nenhum abastecimento registrado no período.</div>';
+ fuel.forEach(x=>{
+  const v=vehicles.find(v=>v.id===x.vehicle_id)||{};
+  const key=x.vehicle_id||'sem-veiculo';
+  if(!fuelMap[key])fuelMap[key]={vehicle_id:x.vehicle_id||null,name:v.description||v.model||'Condução',plate:v.plate||'',liters:0,cost:0,logs:0,entries:[]};
+  const g=fuelMap[key];g.liters+=poN(x.liters);g.cost+=poN(x.total_amount);g.logs++;g.entries.push(x);
+ });
+ const fuels=Object.values(fuelMap).sort((x,y)=>String(x.name).localeCompare(String(y.name),'pt-BR'));
+ const fuelSel=$('#reportsFuelVehicle');
+ if(fuelSel){
+  const prev=fuelSel.value||'all';
+  fuelSel.innerHTML='<option value="all">Todas as conduções</option>'+fuels.map(x=>'<option value="'+esc(x.vehicle_id||'sem-veiculo')+'">'+esc(x.name+(x.plate?' • '+x.plate:''))+'</option>').join('');
+  fuelSel.value=[...fuelSel.options].some(o=>o.value===prev)?prev:'all';
+ }
+ renderFuelReportByVehicle(fuels,fuelSel?.value||'all');
 
  $('#reportsFinance').innerHTML=[
   ['Entradas',money(f.income||revenue)],['Saídas',money(f.expense||cost)],['Saldo',money(f.balance||result)],['Lançamentos',Number(f.entries||0).toLocaleString('pt-BR')]
@@ -7135,7 +7174,7 @@ function exportAdminReportsCsv(){
  const lines=[['Relatório Comando 360',r.label],['Empresa',r.company],[],['Indicador','Valor'],['Aves',r.birds],['Apanhas',r.loadings],['Caminhões',r.trucks],['Faturamento',r.revenue],['Custos',r.cost],['Resultado',r.result],[],['Produção por equipe','Aves']];
  r.byTeam.forEach(x=>lines.push([x.name,x.birds]));
  lines.push([],['Produção por integrado','Aves']);r.byCustomer.forEach(x=>lines.push([x.name,x.birds]));
- lines.push([],['Combustível por condução','Litros','Custo']);r.fuels.forEach(x=>lines.push([x.name,x.liters,x.cost]));
+ lines.push([],['ABASTECIMENTOS POR CONDUÇÃO']);r.fuels.forEach(g=>{lines.push([],['Condução',g.name],['Placa',g.plate||''],['Abastecimentos',g.logs],['Litros',g.liters],['Custo total',g.cost],['Média R$/L',g.liters?g.cost/g.liters:0],['Data','Posto','KM','Litros','R$/L','Total']);g.entries.forEach(e=>{const l=poN(e.liters),c=poN(e.total_amount);lines.push([e.fueled_at?new Date(e.fueled_at).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo'}):'',e.station_name||'',e.odometer_km||'',l,l?c/l:0,c])})});
  const csv='\ufeff'+lines.map(row=>row.map(v=>'"'+String(v??'').replaceAll('"','""')+'"').join(';')).join('\n');
  downloadText('Comando_360_Relatorio_'+r.month+'.csv',csv,'text/csv;charset=utf-8');
 }
@@ -7143,14 +7182,14 @@ function printAdminReports(){
  const r=adminReportCache;if(!r)return alert('Gere o relatório primeiro.');
  const team=r.byTeam.map(x=>'<tr><td>'+esc(x.name)+'</td><td>'+x.ops+'</td><td>'+x.birds.toLocaleString('pt-BR')+'</td></tr>').join('');
  const cust=r.byCustomer.map(x=>'<tr><td>'+esc(x.name)+'</td><td>'+x.ops+'</td><td>'+x.birds.toLocaleString('pt-BR')+'</td></tr>').join('');
- const fuel=r.fuels.map(x=>'<tr><td>'+esc(x.name)+'</td><td>'+x.liters.toLocaleString('pt-BR',{maximumFractionDigits:1})+'</td><td>'+money(x.cost)+'</td></tr>').join('');
+ const fuel=r.fuels.map(g=>{const rows=g.entries.map(e=>{const l=poN(e.liters),c=poN(e.total_amount);return '<tr><td>'+(e.fueled_at?new Date(e.fueled_at).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo'}):'—')+'</td><td>'+esc(e.station_name||'—')+'</td><td>'+(e.odometer_km?Number(e.odometer_km).toLocaleString('pt-BR'):'—')+'</td><td>'+l.toLocaleString('pt-BR',{maximumFractionDigits:2})+'</td><td>'+money(l?c/l:0)+'</td><td>'+money(c)+'</td></tr>'}).join('');return '<div class="fuel-section"><h3>'+esc(g.name)+(g.plate?' • '+esc(g.plate):'')+'</h3><div class="fuel-summary">Abastecimentos: <b>'+g.logs+'</b> • Litros: <b>'+g.liters.toLocaleString('pt-BR',{maximumFractionDigits:2})+' L</b> • Total: <b>'+money(g.cost)+'</b> • Média: <b>'+money(g.liters?g.cost/g.liters:0)+'/L</b></div><table><tr><th>Data</th><th>Posto</th><th>KM</th><th>Litros</th><th>R$/L</th><th>Total</th></tr>'+rows+'</table></div>'}).join('');
  const w=window.open('','_blank');if(!w)return alert('Permita pop-ups para gerar o PDF.');
- w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>Relatório '+esc(r.label)+'</title><style>@page{size:A4;margin:12mm}body{font-family:Arial,sans-serif;color:#111;font-size:11px}h1{margin:0;font-size:22px}h2{font-size:14px;margin:18px 0 6px;border-bottom:1px solid #222;padding-bottom:4px}.head{border-bottom:2px solid #111;padding-bottom:10px}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin:12px 0}.k{border:1px solid #bbb;padding:8px}.k span{display:block;font-size:9px;color:#555}.k b{font-size:15px}table{width:100%;border-collapse:collapse;margin-top:5px}th,td{border-bottom:1px solid #ddd;padding:6px;text-align:left}th{background:#f4f4f4}.footer{margin-top:18px;border-top:1px solid #aaa;padding-top:6px;color:#555;font-size:9px}</style></head><body>'+
+ w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>Relatório '+esc(r.label)+'</title><style>@page{size:A4;margin:12mm}body{font-family:Arial,sans-serif;color:#111;font-size:11px}h1{margin:0;font-size:22px}h2{font-size:14px;margin:18px 0 6px;border-bottom:1px solid #222;padding-bottom:4px}.fuel-section{break-inside:avoid;margin:10px 0 18px}.fuel-section h3{margin:8px 0 4px;font-size:13px}.fuel-summary{font-size:10px;margin-bottom:5px}.head{border-bottom:2px solid #111;padding-bottom:10px}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin:12px 0}.k{border:1px solid #bbb;padding:8px}.k span{display:block;font-size:9px;color:#555}.k b{font-size:15px}table{width:100%;border-collapse:collapse;margin-top:5px}th,td{border-bottom:1px solid #ddd;padding:6px;text-align:left}th{background:#f4f4f4}.footer{margin-top:18px;border-top:1px solid #aaa;padding-top:6px;color:#555;font-size:9px}</style></head><body>'+
  '<div class="head"><h1>'+esc(r.company)+' — RELATÓRIO GERENCIAL</h1><div>'+esc(r.label)+' • Emitido '+new Date().toLocaleString('pt-BR')+'</div></div>'+
  '<div class="grid"><div class="k"><span>AVES</span><b>'+r.birds.toLocaleString('pt-BR')+'</b></div><div class="k"><span>APANHAS</span><b>'+r.loadings+'</b></div><div class="k"><span>CAMINHÕES</span><b>'+r.trucks+'</b></div><div class="k"><span>MÉDIA/CAMINHÃO</span><b>'+r.avgTruck.toLocaleString('pt-BR')+'</b></div><div class="k"><span>FATURAMENTO</span><b>'+money(r.revenue)+'</b></div><div class="k"><span>CUSTOS</span><b>'+money(r.cost)+'</b></div><div class="k"><span>RESULTADO</span><b>'+money(r.result)+'</b></div><div class="k"><span>HORAS PONTO</span><b>'+fmtMinutes(r.attendance.worked_minutes||0)+'</b></div></div>'+
  '<h2>Produção por equipe</h2><table><tr><th>Equipe</th><th>Apanhas</th><th>Aves</th></tr>'+team+'</table>'+
  '<h2>Produção por integrado</h2><table><tr><th>Integrado</th><th>Apanhas</th><th>Aves</th></tr>'+cust+'</table>'+
- '<h2>Combustível por condução</h2><table><tr><th>Condução</th><th>Litros</th><th>Custo</th></tr>'+fuel+'</table>'+
+ '<h2>Abastecimentos por condução</h2>'+fuel+
  '<h2>Ponto</h2><p>Funcionários com movimento: <b>'+Number(r.attendance.employees||0)+'</b> • Horas trabalhadas: <b>'+fmtMinutes(r.attendance.worked_minutes||0)+'</b> • Atrasos: <b>'+fmtMinutes(r.attendance.late_minutes||0)+'</b> • Ausências: <b>'+fmtMinutes(r.attendance.absence_minutes||0)+'</b></p>'+
  '<div class="footer">Comando 360 • relatório gerencial baseado nos registros existentes no sistema.</div><script>window.onload=()=>window.print();<\/script></body></html>');
  w.document.close();
@@ -7179,7 +7218,7 @@ function c360SetModule(tab){
  const m=C360_MODULES[tab]||[tab,'Comando 360'];
  const t=document.getElementById('headerModuleTitle'),s=document.getElementById('headerModuleSubtitle');
  if(t)t.textContent=m[0];if(s)s.textContent=m[1];
- document.title='Comando 360 • '+m[0]+' • v6.75';
+ document.title='Comando 360 • '+m[0]+' • v6.76';
  document.querySelectorAll('#mobileBottomNav [data-mobiletab]').forEach(b=>{
   const mt=b.dataset.mobiletab;
   b.classList.toggle('active',mt===tab||(mt==='more'&&!['inicio','operacoes','ponto','frota'].includes(tab)));
@@ -7271,6 +7310,9 @@ document.addEventListener('click',function(e){
  if(side&&window.innerWidth<=900)c360CloseMobileMenu();
 });
 document.addEventListener('keydown',e=>{if(e.key==='Escape')c360CloseMobileMenu()});
+document.addEventListener('change',function(e){
+ if(e.target?.id==='reportsFuelVehicle'&&adminReportCache)renderFuelReportByVehicle(adminReportCache.fuels,e.target.value||'all');
+});
 document.addEventListener('click',async function(e){
   if(e.target.closest('#newFuelBtn')){
    e.preventDefault();
@@ -7421,7 +7463,7 @@ setInterval(()=>{
 },60000);
 if('serviceWorker' in navigator){
  window.addEventListener('load',()=>{
-  navigator.serviceWorker.register('./sw-v6-75.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
+  navigator.serviceWorker.register('./sw-v6-76.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
  });
 }
 
