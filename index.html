@@ -8,7 +8,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
-<title>Comando 360 • v6.53</title>
+<title>Comando 360 • v6.54</title>
 <link rel="manifest" href="./comando360.webmanifest"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
@@ -604,13 +604,55 @@ body.device-mode .po-actions .btn{width:100%;min-height:47px}
 @media(max-width:850px){.integration-flow{grid-template-columns:1fr}.integration-status-grid{grid-template-columns:1fr 1fr}}
 @media(max-width:620px){.integration-creds-row{grid-template-columns:1fr}.integration-client-row{grid-template-columns:1fr}.integration-client-row .btn{width:100%}.integration-connect-actions{display:grid;grid-template-columns:1fr}.integration-connect-actions .btn{width:100%}}
 @media(max-width:430px){.integration-status-grid{grid-template-columns:1fr 1fr}.integration-head{align-items:flex-start}.integration-brandmark{width:46px;height:46px}}
+/* 6.54 — RH mais enxuto e indicadores corretos */
+.rh-kpi-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:12px 0}
+.rh-kpi-card{min-height:112px;display:flex;flex-direction:column;justify-content:center}
+.rh-kpi-card .kpi{font-size:34px;font-weight:950;line-height:1;color:#10213d}
+.rh-kpi-card .label{margin-top:7px;font-size:11px;font-weight:800;color:#78889d}
+.darkmode .rh-kpi-card .kpi{color:#eef5ff}
+.rh-employer-card .row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:12px}
+.rh-employer-card .row>div{min-width:0}
+.rh-employer-card label{display:block;font-size:11px;font-weight:850;color:#64748b;margin-bottom:6px}
+.rh-employer-card input{display:block;width:100%;min-width:0;box-sizing:border-box;border:1px solid #cbd5e1;border-radius:10px;padding:11px 12px;background:#fff;color:#172033;font:inherit}
+.darkmode .rh-employer-card label{color:#9eb0c6}
+.darkmode .rh-employer-card input{background:#0b1727;color:#eef5ff;border-color:#314158}
+.rh-list-card #employeesList{margin-top:12px}
+.rh-tool-card{padding:0!important;overflow:hidden}
+.rh-tool-card summary{list-style:none;cursor:pointer;padding:15px 17px;display:flex;align-items:center;justify-content:space-between;gap:12px;font-weight:900}
+.rh-tool-card summary::-webkit-details-marker{display:none}
+.rh-tool-card summary:after{content:"›";font-size:24px;color:#91a3b8;transition:transform .15s ease}
+.rh-tool-card[open] summary:after{transform:rotate(90deg)}
+.rh-tool-card summary span{font-size:15px}
+.rh-tool-card summary small{margin-left:auto;font-size:10px;font-weight:600;color:#8290a2}
+.rh-tool-body{padding:0 17px 17px;border-top:1px solid #e7edf4}
+.darkmode .rh-tool-body{border-color:#203047}
+#employeeEditCard{overflow:hidden}
+#employeeEditCard>.toolbar:first-child{justify-content:space-between;align-items:flex-start}
+#employeeEditCard .row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+#employeeEditCard .row>div{min-width:0}
+#employeeEditCard label{display:block;font-size:11px;font-weight:850;color:#64748b;margin-bottom:6px}
+#employeeEditCard input,#employeeEditCard select{display:block;width:100%;min-width:0;box-sizing:border-box;border:1px solid #cbd5e1;border-radius:10px;padding:11px 12px;background:#fff;color:#172033;font:inherit}
+.darkmode #employeeEditCard label{color:#9eb0c6}
+.darkmode #employeeEditCard input,.darkmode #employeeEditCard select{background:#0b1727;color:#eef5ff;border-color:#314158}
+@media(max-width:780px){
+ .rh-kpi-grid{grid-template-columns:1fr 1fr}
+ .rh-employer-card .row,#employeeEditCard .row{grid-template-columns:1fr}
+ .rh-tool-card summary small{display:none}
+}
+@media(max-width:480px){
+ .rh-kpi-grid{grid-template-columns:1fr}
+ .rh-kpi-card{min-height:92px}
+ .rh-tool-card summary{padding:14px}
+ .rh-tool-body{padding:0 14px 14px}
+}
+
 .truck-barn-checks{display:grid;gap:7px;margin-top:5px}.truck-cata-row{display:grid;grid-template-columns:minmax(90px,1fr) minmax(110px,1fr) auto;gap:7px;align-items:center;padding:8px;border:1px solid #dbe4ee;border-radius:10px;background:#fff}.truck-cata-row input{margin:0!important;min-width:0}.truck-cata-remove{padding:7px 10px!important;min-width:38px}@media(max-width:520px){.truck-cata-row{grid-template-columns:1fr 1fr auto}}
 </style>
 <script defer="" src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
 <script>
 (function(){
-  const BUILD='6.53';
+  const BUILD='6.54';
   try{
     const marker='controla_cache_cleanup_'+BUILD;
     if(!localStorage.getItem(marker)){
@@ -644,7 +686,7 @@ body.device-mode .po-actions .btn{width:100%;min-height:47px}
 <div class="v2group">INTELIGÊNCIA</div>
 <button class="v2navbtn" data-v2tab="ia">✦   Assistente IA</button>
 </aside>
-<header><div class="brand"><img class="header-brand-icon" src="./comando360-icon.svg" alt="Comando 360"/><div><b>Comando <span class="brand360">360</span></b><div><small id="companyName">Empresa</small></div></div></div><div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.53</span><button class="btn soft" id="themeToggle" type="button">☾</button><button class="btn soft hidden" id="logout">Sair</button></div></header>
+<header><div class="brand"><img class="header-brand-icon" src="./comando360-icon.svg" alt="Comando 360"/><div><b>Comando <span class="brand360">360</span></b><div><small id="companyName">Empresa</small></div></div></div><div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.54</span><button class="btn soft" id="themeToggle" type="button">☾</button><button class="btn soft hidden" id="logout">Sair</button></div></header>
 <main class="wrap">
 <section class="login team-entry" id="login">
 <div class="card" id="deviceSetupCard">
@@ -661,7 +703,7 @@ body.device-mode .po-actions .btn{width:100%;min-height:47px}
  <label>Senha</label><input autocomplete="current-password" id="password" type="password"/>
  <button class="btn primary" id="loginBtn">Entrar</button>
  <button class="btn soft" id="backDeviceSetup" type="button" style="margin-left:6px">Voltar</button>
- <div class="muted" id="loginMsg" style="margin-top:10px">Comando 360 • v6.53</div><div class="debug" id="debug"></div>
+ <div class="muted" id="loginMsg" style="margin-top:10px">Comando 360 • v6.54</div><div class="debug" id="debug"></div>
 </div>
 </section>
 <section class="hidden" id="app">
@@ -790,14 +832,19 @@ body.device-mode .po-actions .btn{width:100%;min-height:47px}
 <div class="row"><div><label>Telefone do encarregado</label><input id="editTeamSupervisorPhone" inputmode="tel" placeholder="Ex.: (15) 99999-9999"/><div class="muted" style="margin-top:5px">Este número sairá automaticamente no relatório entregue ao granjeiro.</div></div></div>
 <div style="margin-top:16px"><div class="toolbar" style="justify-content:space-between"><div><label style="font-size:15px">Funcionários da equipe</label><div class="muted">Marque para adicionar. Desmarque para retirar. Se o funcionário estiver em outra equipe, ele será transferido.</div></div><span class="pill" id="teamMembersCount">0 selecionado(s)</span></div><div id="teamMembersList" class="list" style="margin-top:10px;max-height:360px;overflow:auto"></div></div><div class="toolbar" style="margin-top:12px"><button class="btn primary" id="saveTeamEdit" type="button">SALVAR EQUIPE</button><button class="btn soft" id="archiveTeamBtn" type="button">ARQUIVAR EQUIPE</button><button class="btn danger" id="deleteTeamBtn" type="button">EXCLUIR EQUIPE</button></div><div class="muted" id="teamEditMsg" style="margin-top:8px"></div></div>
 </div>
-<div class="section" data-screen="funcionarios" hidden="" id="funcionarios"><div class="card"><div class="toolbar"><div><strong>Dados do empregador</strong><div class="muted">Usados nos documentos e comprovantes do ponto.</div></div></div><div class="row"><div><label>Razão social</label><input id="companyLegalName"/></div><div><label>Nome fantasia</label><input id="companyTradeName"/></div><div><label>CNPJ / CPF</label><input id="companyTaxId" inputmode="numeric" placeholder="00.000.000/0000-00"/></div></div><button class="btn primary" id="saveCompanyProfile" style="margin-top:10px">Salvar empregador</button><div class="muted" id="companyProfileMsg"></div></div><div class="card"><strong>Dados profissionais do trabalhador</strong><div class="muted">Cargo/função e data de admissão passam a integrar o cadastro profissional e o espelho de ponto.</div><div class="row" style="margin-top:10px"><div><label>Funcionário</label><select id="profEmployee"></select></div><div><label>Cargo / função</label><input id="profJobTitle" placeholder="Ex.: Apanhador de aves"/></div><div><label>Data de admissão</label><input id="profAdmissionDate" type="date"/></div></div><button class="btn primary" id="saveProfessional" style="margin-top:10px">Salvar dados profissionais</button><div class="muted" id="profMsg"></div></div>
-<div class="card" id="employeeEditCard" style="display:none"><div class="toolbar"><div><h3 style="margin:0">Editar funcionário</h3><div class="muted" id="employeeEditSubtitle">Atualize o cadastro sem perder o histórico.</div></div><button class="btn soft" id="cancelEmployeeEdit" type="button">Cancelar</button></div><input id="editEmployeeId" type="hidden"/><div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin:12px 0 16px"><img id="editEmployeePhotoPreview" alt="Foto do funcionário" style="width:112px;height:112px;object-fit:cover;border-radius:18px;border:1px solid #cbd5e1;background:#f8fafc"/><div><div style="font-weight:800;margin-bottom:8px">Foto de perfil</div><div class="toolbar"><button class="btn primary" id="takeEmployeePhoto" type="button">📷 TIRAR FOTO</button><button class="btn soft" id="chooseEmployeePhoto" type="button">🖼️ GALERIA</button><button class="btn soft" id="removeEmployeePhoto" type="button">REMOVER</button></div><input accept="image/jpeg,image/png,image/webp" capture="user" class="hidden" id="employeePhotoCamera" type="file"/><input accept="image/jpeg,image/png,image/webp" class="hidden" id="employeePhotoGallery" type="file"/><div class="muted" style="margin-top:7px"><b>Foto oficial do colaborador.</b> Ao salvar uma nova foto, o app também usa esta mesma imagem como referência do reconhecimento facial do Ponto 2.0.</div></div></div><div class="row"><div><label>Nome completo</label><input id="editEmployeeName"/></div><div><label>Matrícula</label><input id="editEmployeeNumber" inputmode="numeric"/></div><div><label>CPF</label><input id="editEmployeeCpf" inputmode="numeric"/></div></div><div class="row"><div><label>RG</label><input id="editEmployeeRg"/></div><div><label>Data de nascimento</label><input id="editEmployeeBirth" type="date"/></div><div><label>Telefone</label><input id="editEmployeePhone"/></div></div><div class="row"><div><label>Cargo / função</label><input id="editEmployeeJob"/></div><div><label>Equipe</label><input id="editEmployeeTeam" placeholder="Ex.: Equipe 1"/></div><div><label>Data de admissão</label><input id="editEmployeeAdmission" type="date"/></div></div><div><label>Endereço</label><input id="editEmployeeAddress" placeholder="Rua, número, bairro, cidade..."/></div><div class="row" style="margin-top:12px"><button class="btn primary" id="saveEmployeeEdit" type="button">SALVAR ALTERAÇÕES</button><button class="btn soft" id="archiveEmployee" type="button">ARQUIVAR FUNCIONÁRIO</button><button class="btn danger" id="deleteEmployee" type="button">EXCLUIR DEFINITIVAMENTE</button></div><div class="muted" id="employeeEditMsg" style="margin-top:8px"></div></div>
-<div class="grid">
-<div class="card"><div class="kpi" id="rhActive">0</div><div class="label">Funcionários ativos</div></div>
-<div class="card"><div class="kpi" id="rhWorking">0</div><div class="label">Com ponto hoje</div></div>
-<div class="card"><div class="kpi" id="rhVacation">0</div><div class="label">Alertas de férias</div></div>
+<div class="section" data-screen="funcionarios" hidden="" id="funcionarios">
+<div class="v2hero"><div><div class="dashboard-eyebrow">GESTÃO DE PESSOAS</div><h1>RH & Pessoas</h1><p>Funcionários, dados profissionais, jornada, biometria e férias em uma única área.</p></div></div>
+<div class="card rh-employer-card"><div class="toolbar"><div><strong>🏢 Dados do empregador</strong><div class="muted">Usados nos documentos, recibos e comprovantes do ponto.</div></div></div><div class="row"><div><label>Razão social</label><input id="companyLegalName"/></div><div><label>Nome fantasia</label><input id="companyTradeName"/></div><div><label>CNPJ / CPF</label><input id="companyTaxId" inputmode="numeric" placeholder="00.000.000/0000-00"/></div></div><button class="btn primary" id="saveCompanyProfile" style="margin-top:10px">Salvar empregador</button><div class="muted" id="companyProfileMsg"></div></div><div class="card" id="employeeEditCard" style="display:none"><div class="toolbar"><div><h3 style="margin:0">Editar funcionário</h3><div class="muted" id="employeeEditSubtitle">Atualize o cadastro sem perder o histórico.</div></div><button class="btn soft" id="cancelEmployeeEdit" type="button">Cancelar</button></div><input id="editEmployeeId" type="hidden"/><div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin:12px 0 16px"><img id="editEmployeePhotoPreview" alt="Foto do funcionário" style="width:112px;height:112px;object-fit:cover;border-radius:18px;border:1px solid #cbd5e1;background:#f8fafc"/><div><div style="font-weight:800;margin-bottom:8px">Foto de perfil</div><div class="toolbar"><button class="btn primary" id="takeEmployeePhoto" type="button">📷 TIRAR FOTO</button><button class="btn soft" id="chooseEmployeePhoto" type="button">🖼️ GALERIA</button><button class="btn soft" id="removeEmployeePhoto" type="button">REMOVER</button></div><input accept="image/jpeg,image/png,image/webp" capture="user" class="hidden" id="employeePhotoCamera" type="file"/><input accept="image/jpeg,image/png,image/webp" class="hidden" id="employeePhotoGallery" type="file"/><div class="muted" style="margin-top:7px"><b>Foto oficial do colaborador.</b> Ao salvar uma nova foto, o app também usa esta mesma imagem como referência do reconhecimento facial do Ponto 2.0.</div></div></div><div class="row"><div><label>Nome completo</label><input id="editEmployeeName"/></div><div><label>Matrícula</label><input id="editEmployeeNumber" inputmode="numeric"/></div><div><label>CPF</label><input id="editEmployeeCpf" inputmode="numeric"/></div></div><div class="row"><div><label>RG</label><input id="editEmployeeRg"/></div><div><label>Data de nascimento</label><input id="editEmployeeBirth" type="date"/></div><div><label>Telefone</label><input id="editEmployeePhone"/></div></div><div class="row"><div><label>Cargo / função</label><input id="editEmployeeJob"/></div><div><label>Equipe</label><input id="editEmployeeTeam" placeholder="Ex.: Equipe 1"/></div><div><label>Data de admissão</label><input id="editEmployeeAdmission" type="date"/></div></div><div><label>Endereço</label><input id="editEmployeeAddress" placeholder="Rua, número, bairro, cidade..."/></div><div class="row" style="margin-top:12px"><button class="btn primary" id="saveEmployeeEdit" type="button">SALVAR ALTERAÇÕES</button><button class="btn soft" id="archiveEmployee" type="button">ARQUIVAR FUNCIONÁRIO</button><button class="btn danger" id="deleteEmployee" type="button">EXCLUIR DEFINITIVAMENTE</button></div><div class="muted" id="employeeEditMsg" style="margin-top:8px"></div></div>
+<div class="rh-kpi-grid">
+<div class="card rh-kpi-card"><div class="kpi" id="rhActive">0</div><div class="label">Funcionários ativos</div></div>
+<div class="card rh-kpi-card"><div class="kpi" id="rhWorking">0</div><div class="label">Com ponto hoje</div></div>
+<div class="card rh-kpi-card"><div class="kpi" id="rhVacation">0</div><div class="label">Alertas de férias</div></div>
 </div>
-<div class="card"><div class="toolbar"><h3 style="margin:0">Funcionários</h3><button class="btn soft" id="refreshRH">Atualizar</button></div><div class="list" id="employeesList"></div></div><div class="card">
+<div class="card rh-list-card"><div class="toolbar" style="justify-content:space-between"><div><h3 style="margin:0">Funcionários</h3><div class="muted">Cadastro principal, equipe, cargo, admissão e biometria.</div></div><button class="btn soft" id="refreshRH">Atualizar</button></div><div class="list" id="employeesList"></div></div>
+
+<details class="card rh-tool-card">
+<summary><span>🕒 Jornada / Escala</span><small>Horários previstos, carga diária e tolerância</small></summary>
+<div class="rh-tool-body">
 <h3>Jornada / Escala</h3>
 <div class="muted">Defina a carga diária e os horários previstos de cada funcionário. A configuração fica salva no banco de dados e acompanha o funcionário em qualquer aparelho.</div>
 <label>Funcionário</label><select id="scheduleEmployee" style="width:100%;padding:12px;margin:6px 0 10px;border:1px solid #cbd5e1;border-radius:10px"></select>
@@ -811,8 +858,18 @@ body.device-mode .po-actions .btn{width:100%;min-height:47px}
 </div>
 <div class="toolbar" style="margin-top:12px"><button class="btn primary" id="saveSchedule">SALVAR JORNADA</button></div>
 <div class="muted" id="scheduleMsg" style="margin-top:8px"></div>
-</div><div class="card"><h3>Biometria facial</h3><div class="muted">A foto de perfil é a referência facial padrão. Use esta área para ativar uma foto de perfil antiga ou recadastrar manualmente quando necessário.</div><label>Funcionário</label><select id="faceEmployee" style="width:100%;padding:12px;margin:6px 0 10px;border:1px solid #cbd5e1;border-radius:10px"></select><div class="toolbar" style="margin:8px 0 12px"><button class="btn primary" id="useProfileFace" type="button">USAR FOTO DE PERFIL</button></div><label>Ou tire uma nova foto somente para recadastro facial</label><input accept="image/*" capture="user" id="faceReference" style="width:100%;padding:10px;margin:6px 0 10px" type="file"/><button class="btn soft" id="saveFaceReference">RECADASTRAR COM ESTA FOTO</button><div class="muted" id="faceEnrollMsg" style="margin-top:10px"></div><div class="list" id="faceEnrollmentList" style="margin-top:12px"></div></div>
-<div class="card"><h3>Férias e vencimentos</h3><div class="list" id="vacationList"></div></div>
+</div>
+</details>
+
+<details class="card rh-tool-card">
+<summary><span>🙂 Biometria facial</span><small>Foto de referência do reconhecimento facial</small></summary>
+<div class="rh-tool-body"><h3>Biometria facial</h3><div class="muted">A foto de perfil é a referência facial padrão. Use esta área para ativar uma foto de perfil antiga ou recadastrar manualmente quando necessário.</div><label>Funcionário</label><select id="faceEmployee" style="width:100%;padding:12px;margin:6px 0 10px;border:1px solid #cbd5e1;border-radius:10px"></select><div class="toolbar" style="margin:8px 0 12px"><button class="btn primary" id="useProfileFace" type="button">USAR FOTO DE PERFIL</button></div><label>Ou tire uma nova foto somente para recadastro facial</label><input accept="image/*" capture="user" id="faceReference" style="width:100%;padding:10px;margin:6px 0 10px" type="file"/><button class="btn soft" id="saveFaceReference">RECADASTRAR COM ESTA FOTO</button><div class="muted" id="faceEnrollMsg" style="margin-top:10px"></div><div class="list" id="faceEnrollmentList" style="margin-top:12px"></div></div>
+</details>
+
+<details class="card rh-tool-card">
+<summary><span>🏖️ Férias e vencimentos</span><small>Prazos e alertas dos funcionários</small></summary>
+<div class="rh-tool-body"><h3>Férias e vencimentos</h3><div class="list" id="vacationList"></div></div>
+</details>
 </div>
 <div class="section" data-screen="ponto" hidden="" id="ponto">
 <div class="grid">
@@ -1946,7 +2003,7 @@ async function syncPoultryTruckOfflineItem(item){
   .map(x=>({barn_id:x?.barn_id||null,barn_number:normalizeAviaryNumber(x?.barn_number),birds:poN(x?.birds)}))
   .filter(x=>x.barn_number||x.barn_id);
 
- // Compatibilidade com itens offline criados antes da v6.53.
+ // Compatibilidade com itens offline criados antes da v6.54.
  if(!barnBreakdown.length&&item.barn_id){
   const oldId=String(item.barn_id).startsWith('offline:')?(refs.loading?.metadata?.default_barn_id||null):item.barn_id;
   const oldBarn=poultryBarns.find(b=>b.id===oldId);
@@ -4540,7 +4597,7 @@ async function v2Go(tab){
    else if(tab==='equipereport'){await loadTeamReport();}
    else if(tab==='inicio'){await loadPoultrySelectors();await loadDashboard();await loadPoultryDashboard();}
    else if(tab==='equipes') await loadTeams();
-   else if(tab==='funcionarios'){await loadEmployees();await loadProfessionalProfile();}
+   else if(tab==='funcionarios'){await loadEmployees();await Promise.all([loadProfessionalProfile(),loadRHPoint()]);}
    else if(tab==='operacoes'){if(deviceMode)await loadDevicePoultryContext();else await loadPoultrySelectors();await loadPoultryOps();}
    else if(tab==='frota') await loadVehicles();
    else if(tab==='manutencoes') await loadMaintenances();
@@ -4680,7 +4737,7 @@ setInterval(()=>{
 },60000);
 if('serviceWorker' in navigator){
  window.addEventListener('load',()=>{
-  navigator.serviceWorker.register('./sw-v6-53.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
+  navigator.serviceWorker.register('./sw-v6-54.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
  });
 }
 
