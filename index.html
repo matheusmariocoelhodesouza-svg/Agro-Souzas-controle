@@ -8,7 +8,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
-<title>Comando 360 • v6.64</title>
+<title>Comando 360 • v6.65</title>
 <link rel="manifest" href="./comando360.webmanifest"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
@@ -1280,13 +1280,81 @@ body.device-mode #screenHost .v2panel{
  body.app-ready:not(.device-mode) #screenHost .v2panel{padding:13px}
  .btn{min-height:41px}
 }
+
+/* 6.65 — Painel Geral executivo */
+#inicio .dash-action-strip{
+ display:grid;
+ grid-template-columns:repeat(6,minmax(0,1fr));
+ gap:9px;
+ margin:0 0 15px;
+}
+#inicio .dash-action-strip>button{
+ appearance:none;
+ border:1px solid #e1e9f2;
+ background:#fff;
+ border-radius:14px;
+ min-height:66px;
+ padding:10px 11px;
+ display:flex;
+ align-items:center;
+ gap:10px;
+ text-align:left;
+ cursor:pointer;
+ color:#17304d;
+ box-shadow:0 4px 14px rgba(18,46,78,.03);
+ transition:.15s ease;
+}
+#inicio .dash-action-strip>button:hover{
+ border-color:#cad8e7;
+ box-shadow:0 7px 18px rgba(18,46,78,.07);
+ transform:translateY(-1px);
+}
+#inicio .dash-action-strip>button>span{
+ width:36px;height:36px;border-radius:11px;
+ background:#eef5fd;
+ display:grid;place-items:center;
+ font-size:18px;
+ flex:0 0 auto;
+}
+#inicio .dash-action-strip b{display:block;font-size:11px;color:#17304d}
+#inicio .dash-action-strip small{display:block;font-size:9px;color:#7b8da3;margin-top:2px}
+#inicio .dash-section-label{
+ display:flex;
+ align-items:baseline;
+ gap:8px;
+ margin:1px 2px 8px;
+}
+#inicio .dash-section-label span{
+ font-size:9px;font-weight:900;letter-spacing:1px;color:#526b88
+}
+#inicio .dash-section-label small{font-size:10px;color:#8a9aae}
+#inicio .dash-health{grid-template-columns:repeat(5,minmax(0,1fr));margin-bottom:18px}
+#inicio .dashboard-kpis .v2kpi{min-height:112px}
+#inicio .dashboard-kpis .v2ico{background:#eef5fd;color:#214f7e}
+@media(max-width:1300px){
+ #inicio .dash-action-strip{grid-template-columns:repeat(3,minmax(0,1fr))}
+ #inicio .dash-health{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(max-width:760px){
+ #inicio .dash-action-strip{grid-template-columns:repeat(2,minmax(0,1fr))}
+ #inicio .dash-health{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:420px){
+ #inicio .dash-action-strip{grid-template-columns:1fr 1fr}
+ #inicio .dash-action-strip>button{min-height:61px;padding:9px}
+ #inicio .dash-action-strip>button>span{width:32px;height:32px}
+ #inicio .dash-health{grid-template-columns:1fr}
+}
+.darkmode #inicio .dash-action-strip>button{background:#0f1d2e;border-color:#20334a;color:#e9f0f9}
+.darkmode #inicio .dash-action-strip b{color:#edf4fd}
+.darkmode #inicio .dash-action-strip>button>span{background:#13263b}
 </style>
 <script defer="" src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"></script>
 <script>
 (function(){
-  const BUILD='6.64';
+  const BUILD='6.65';
   try{
     const marker='controla_cache_cleanup_'+BUILD;
     if(!localStorage.getItem(marker)){
@@ -1320,7 +1388,7 @@ body.device-mode #screenHost .v2panel{
 <div class="v2group">INTELIGÊNCIA</div>
 <button class="v2navbtn" data-v2tab="ia">✦   Assistente IA</button>
 </aside>
-<header><div class="brand"><img class="header-brand-icon" src="./comando360-icon.svg" alt="Comando 360"/><div><b>Comando <span class="brand360">360</span></b><div><small id="companyName">Empresa</small></div></div></div><div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.64</span><button class="btn soft" id="themeToggle" type="button">☾</button><button class="btn soft hidden" id="logout">Sair</button></div></header>
+<header><div class="brand"><img class="header-brand-icon" src="./comando360-icon.svg" alt="Comando 360"/><div><b>Comando <span class="brand360">360</span></b><div><small id="companyName">Empresa</small></div></div></div><div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.65</span><button class="btn soft" id="themeToggle" type="button">☾</button><button class="btn soft hidden" id="logout">Sair</button></div></header>
 <main class="wrap">
 <section class="login team-entry" id="login">
 <div class="card" id="deviceSetupCard">
@@ -1337,7 +1405,7 @@ body.device-mode #screenHost .v2panel{
  <label>Senha</label><input autocomplete="current-password" id="password" type="password"/>
  <button class="btn primary" id="loginBtn">Entrar</button>
  <button class="btn soft" id="backDeviceSetup" type="button" style="margin-left:6px">Voltar</button>
- <div class="muted" id="loginMsg" style="margin-top:10px">Comando 360 • v6.64</div><div class="debug" id="debug"></div>
+ <div class="muted" id="loginMsg" style="margin-top:10px">Comando 360 • v6.65</div><div class="debug" id="debug"></div>
 </div>
 </section>
 <section class="hidden" id="app">
@@ -1385,7 +1453,17 @@ body.device-mode #screenHost .v2panel{
  <div class="toolbar"><button class="btn v2new" id="refreshBtn" type="button">↻ ATUALIZAR PAINEL</button></div>
 </div>
 
+<div class="dash-action-strip" id="dashboardActions">
+ <button type="button" data-jump="operacoes"><span>🐔</span><div><b>Nova apanha</b><small>Operação de campo</small></div></button>
+ <button type="button" data-jump="ponto"><span>⏱️</span><div><b>Abrir ponto</b><small>Presença de hoje</small></div></button>
+ <button type="button" data-jump="frota"><span>🚌</span><div><b>Frota</b><small>CRLV e conduções</small></div></button>
+ <button type="button" data-jump="manutencoes"><span>🔧</span><div><b>Manutenção</b><small>Planos e vencimentos</small></div></button>
+ <button type="button" data-jump="combustivel"><span>⛽</span><div><b>Abastecer</b><small>Combustível e KM</small></div></button>
+ <button type="button" data-jump="financeiro"><span>💰</span><div><b>Financeiro</b><small>Entradas e saídas</small></div></button>
+</div>
+
 <div class="v2-kpis dashboard-kpis" id="kpis"></div>
+<div class="dash-section-label"><span>SITUAÇÃO AGORA</span><small>Prioridades que podem exigir ação</small></div>
 <div class="dash-health" id="dashboardHealth"></div>
 
 <div class="v2panel" id="poultryDashboardPanel">
@@ -1433,17 +1511,6 @@ body.device-mode #screenHost .v2panel{
    <div class="v2stats" id="v2OpsSummary"></div>
   </div>
 
-  <div class="v2panel">
-   <h3 style="margin-top:0">Acessos rápidos</h3>
-   <div class="toolbar dash-quick-grid" style="gap:8px;flex-wrap:wrap">
-    <button class="btn primary" data-jump="operacoes" type="button">🐔 <span>Apanhas</span></button>
-    <button class="btn soft" data-jump="funcionarios" type="button">👥 <span>Funcionários</span></button>
-    <button class="btn soft" data-jump="frota" type="button">🚌 <span>Frota</span></button>
-    <button class="btn soft" data-jump="manutencoes" type="button">🔧 <span>Manutenção</span></button>
-    <button class="btn soft" data-jump="combustivel" type="button">⛽ <span>Combustível</span></button>
-    <button class="btn soft" data-jump="financeiro" type="button">💰 <span>Financeiro</span></button>
-   </div>
-  </div>
  </div>
 </div>
 </div>
@@ -2967,10 +3034,11 @@ async function loadDashboard(){
   const b=dashLocalBounds();
   if($('#todayList'))$('#todayList').innerHTML='<div class="v2-empty">Atualizando painel...</div>';
 
-  const [employees,teams,vehicles,opsMonth,fuelMonth,financeMonth,maintenance,attendanceToday,devices]=await Promise.all([
+  const [employees,teams,vehicles,vehicleDocs,opsMonth,fuelMonth,financeMonth,maintenance,attendanceToday,devices]=await Promise.all([
    dashSafe('v2_employees','select=id,full_name,primary_team,status&company_id=eq.'+companyId+'&status=eq.active'),
    dashSafe('v2_teams','select=id,name,code,supervisor_employee_id,status,metadata&company_id=eq.'+companyId+'&status=eq.active&order=name.asc'),
-   dashSafe('v2_vehicles','select=id,description,plate,model,current_odometer_km,status,metadata&company_id=eq.'+companyId+'&status=eq.active&order=description.asc'),
+   dashSafe('v2_vehicles','select=id,description,plate,model,current_odometer_km,status,renavam,metadata&company_id=eq.'+companyId+'&status=eq.active&order=description.asc'),
+   dashSafe('v2_vehicle_documents','select=id,vehicle_id,document_type,expires_at,status&company_id=eq.'+companyId+'&status=eq.active'),
    dashSafe('v2_operations','select=id,team_id,title,customer_name,location_name,scheduled_start,actual_start,actual_end,status,planned_birds,actual_birds,actual_revenue,actual_cost&company_id=eq.'+companyId+'&operation_type=eq.poultry_catching&scheduled_start=gte.'+encodeURIComponent(b.monthStart)+'&scheduled_start=lt.'+encodeURIComponent(b.nextMonth)+'&order=scheduled_start.desc'),
    dashSafe('v2_fuel_logs','select=id,vehicle_id,fueled_at,liters,total_amount,odometer_km&company_id=eq.'+companyId+'&fueled_at=gte.'+encodeURIComponent(b.monthStart)+'&fueled_at=lt.'+encodeURIComponent(b.nextMonth)),
    dashSafe('v2_financial_entries','select=id,entry_type,amount,status,competence_date,paid_at&company_id=eq.'+companyId+'&competence_date=gte.'+b.monthDate+'&competence_date=lt.'+b.nextMonthDate+'&status=neq.cancelled'),
@@ -2999,6 +3067,25 @@ async function loadDashboard(){
    const byDate=p.next_due_at&&new Date(String(p.next_due_at).slice(0,10)+'T23:59:59').getTime()<now;
    return byKm||byDate;
   }).length;
+  const upcomingMaintenance=maintenance.filter(p=>{
+   const v=vehicles.find(x=>x.id===p.vehicle_id),cur=poN(v?.current_odometer_km),due=poN(p.next_due_odometer_km);
+   const kmLeft=due>0?due-cur:null;
+   const days=p.next_due_at?daysUntil(p.next_due_at):null;
+   const overdue=(kmLeft!==null&&kmLeft<=0)||(days!==null&&days<0);
+   return !overdue&&((kmLeft!==null&&kmLeft<=1000)||(days!==null&&days<=30));
+  }).length;
+
+  const activeCrlvByVehicle={};
+  (vehicleDocs||[]).forEach(d=>{if(isVehicleCrlv(d.document_type)&&!activeCrlvByVehicle[d.vehicle_id])activeCrlvByVehicle[d.vehicle_id]=d});
+  let licensingDanger=0,licensingWarn=0,missingCrlv=0;
+  vehicles.forEach(v=>{
+   const d=activeCrlvByVehicle[v.id];
+   if(!d){missingCrlv++;return}
+   const s=licensingStatusForVehicle(v,d);
+   if(s.cls==='danger')licensingDanger++;
+   else if(s.cls==='warn')licensingWarn++;
+  });
+  const fleetAttention=licensingDanger+licensingWarn+missingCrlv;
 
   const completedToday=todayOps.filter(o=>o.status==='completed').length;
   const opsCompletionPct=todayOps.length?Math.round(completedToday/todayOps.length*100):100;
@@ -3008,14 +3095,15 @@ async function loadDashboard(){
   if(health)health.innerHTML=[
    ['Operação do dia',todayOps.length?opsCompletionPct+'% concluída':'Sem apanhas hoje',todayOps.length?(completedToday+' de '+todayOps.length+' concluídas'):'Nenhuma operação programada','operacoes',opsCompletionPct>=100?'ok':opsCompletionPct>0?'warn':'neutral'],
    ['Ponto hoje',pointPct+'%',pointedEmployees+' de '+employees.length+' funcionários','ponto',pointPct>=90?'ok':pointPct>0?'warn':'neutral'],
-   ['Equipes com aparelho',deviceCoveragePct+'%',devices.length+' aparelho(s) ativo(s)','equipes',deviceCoveragePct>=100?'ok':'warn'],
-   ['Manutenção',overdueMaintenance?overdueMaintenance+' vencida(s)':'Em dia',overdueMaintenance?'Requer atenção':'Nenhuma vencida','manutencoes',overdueMaintenance?'danger':'ok']
+   ['Frota & CRLV',fleetAttention?fleetAttention+' atenção(ões)':'Tudo em dia',licensingDanger?licensingDanger+' crítica(s)':missingCrlv?missingCrlv+' sem CRLV':licensingWarn?licensingWarn+' pendente(s)':'Documentação confirmada','frota',licensingDanger?'danger':fleetAttention?'warn':'ok'],
+   ['Manutenção',overdueMaintenance?overdueMaintenance+' vencida(s)':upcomingMaintenance?upcomingMaintenance+' próxima(s)':'Em dia',overdueMaintenance?'Requer atenção':upcomingMaintenance?'Até 30 dias / 1.000 km':'Nenhuma pendência','manutencoes',overdueMaintenance?'danger':upcomingMaintenance?'warn':'ok'],
+   ['Equipes com aparelho',deviceCoveragePct+'%',devices.length+' aparelho(s) ativo(s)','equipes',deviceCoveragePct>=100?'ok':'warn']
   ].map(x=>'<button class="dash-health-card '+x[5]+'" data-jump="'+x[4]+'" type="button"><span class="dash-health-label">'+esc(x[0])+'</span><strong>'+esc(x[1])+'</strong><small>'+esc(x[2])+'</small><span class="dash-health-arrow">›</span></button>').join('');
 
   const cards=[
    ['FUNCIONÁRIOS',employees.length,'ativos','👥'],
    ['EQUIPES',teams.length,devices.length+' celular(es) ativo(s)','📱'],
-   ['CONDUÇÕES',vehicles.length,overdueMaintenance+' manutenção(ões) vencida(s)','🚌'],
+   ['CONDUÇÕES',vehicles.length,(fleetAttention?fleetAttention+' alerta(s) de documento':'documentos em dia'),'🚌'],
    ['APANHAS HOJE',todayOps.length,completedToday+' concluída(s)','🐔'],
    ['AVES HOJE',birdsToday.toLocaleString('pt-BR'),birdsMonth.toLocaleString('pt-BR')+' no mês','▣'],
    ['SALDO DO MÊS',money(balance),'Entradas '+money(income),'💰']
@@ -6630,7 +6718,7 @@ setInterval(()=>{
 },60000);
 if('serviceWorker' in navigator){
  window.addEventListener('load',()=>{
-  navigator.serviceWorker.register('./sw-v6-64.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
+  navigator.serviceWorker.register('./sw-v6-65.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
  });
 }
 
