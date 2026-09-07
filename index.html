@@ -1401,9 +1401,20 @@ async function anonymousLogin(){
  const data=await parseResponse(r);saveSession(data);return data;
 }
 async function loadDeviceAccess(userId){
- const rows=await v2Rest('v2_device_access','select=company_id,team_id,device_name,permissions,active,paired_at&user_id=eq.'+encodeURIComponent(userId)+'&active=eq.true&limit=1');
+ const rows=await v2Rest('v2_device_access','select=id,company_id,team_id,device_name,permissions,active,paired_at&user_id=eq.'+encodeURIComponent(userId)+'&active=eq.true&limit=1');
  return rows&&rows[0]?rows[0]:null;
 }
+async function devicePointEmployees(){
+ const rows=await rpc('v2_device_list_point_employees',{});
+ return Array.isArray(rows)?rows:[];
+}
+function pointEventTeamId(ev){return ev?.work_team_id||ev?.metadata?.work_team_id||null}
+function pointEventTeamName(ev,teamMap={}){
+ const id=pointEventTeamId(ev);
+ return (id&&teamMap[id]?.name)||ev?.metadata?.work_team_name||null;
+}
+function sameTeamName(a,b){return String(a||'').trim().toLowerCase()===String(b||'').trim().toLowerCase()}
+
 function applyDeviceUi(){
  document.body.classList.add('device-mode');
  const logout=document.getElementById('logout');if(logout){logout.textContent='Trocar equipe';logout.classList.remove('hidden')}
