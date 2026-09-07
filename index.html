@@ -8,7 +8,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
-<title>Comando 360 • v6.68</title>
+<title>Comando 360 • v6.69</title>
 <link rel="manifest" href="./comando360.webmanifest"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
@@ -1505,7 +1505,7 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
  *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
 }
 
-/* 6.68 — Rastreamento MOVIT */
+/* 6.69 — Rastreamento MOVIT */
 .tracking-hero{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;margin-bottom:16px}
 .tracking-hero h1{margin:0;font-size:27px;color:#10233f}.tracking-hero p{margin:5px 0 0;color:#6b7d95;font-size:13px}
 .tracking-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:14px}
@@ -1527,7 +1527,7 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
 <script defer src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"></script>
 <script>
 (function(){
-  const BUILD='6.68';
+  const BUILD='6.69';
   try{
     const marker='controla_cache_cleanup_'+BUILD;
     if(!localStorage.getItem(marker)){
@@ -1578,7 +1578,7 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
   <div class="brand"><img class="header-brand-icon" src="./comando360-icon.svg" alt="Comando 360"/><div><b>Comando <span class="brand360">360</span></b><div><small id="companyName">Empresa</small></div></div></div>
  </div>
  <div class="header-module" id="headerModule"><span id="headerModuleTitle">Painel Geral</span><small id="headerModuleSubtitle">Central de gestão</small></div>
- <div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.68</span><button class="btn soft" id="themeToggle" type="button" aria-label="Alternar tema">☾</button><button class="btn soft hidden" id="logout">Sair</button></div>
+ <div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.69</span><button class="btn soft" id="themeToggle" type="button" aria-label="Alternar tema">☾</button><button class="btn soft hidden" id="logout">Sair</button></div>
 </header>
 <main class="wrap">
 <section class="login team-entry" id="login">
@@ -1596,7 +1596,7 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
  <label>Senha</label><input autocomplete="current-password" id="password" type="password"/>
  <button class="btn primary" id="loginBtn">Entrar</button>
  <button class="btn soft" id="backDeviceSetup" type="button" style="margin-left:6px">Voltar</button>
- <div class="muted" id="loginMsg" style="margin-top:10px">Comando 360 • v6.68</div><div class="debug" id="debug"></div>
+ <div class="muted" id="loginMsg" style="margin-top:10px">Comando 360 • v6.69</div><div class="debug" id="debug"></div>
 </div>
 </section>
 <section class="hidden" id="app">
@@ -2187,18 +2187,18 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
   <div class="integration-box">
    <strong>Dados da conta MOVIT</strong>
    <div class="row integration-creds-row" style="margin-top:10px">
-    <div><label>Chave de integração</label><input id="movitClientKey" autocomplete="off" placeholder="Chave fornecida pela STC / rastreador"/></div>
-    <div><label>ID do usuário (opcional)</label><input id="movitUserId" type="number" min="1" step="1" placeholder="O sistema tenta identificar sozinho"/></div>
+    <div><label>Base / chave STC</label><input id="movitClientKey" autocomplete="off" placeholder="Ex.: tnasistemas"/></div>
+    <div><label>ID do usuário STC</label><input id="movitUserId" type="number" min="1" step="1" placeholder="Ex.: 187"/></div>
    </div>
    <div class="row integration-creds-row">
     <div><label>Usuário MOVIT</label><input id="movitUsername" autocomplete="username" placeholder="Seu usuário do MOVIT"/></div>
     <div><label>Senha MOVIT</label><input id="movitPassword" type="password" autocomplete="new-password" placeholder="Sua senha do MOVIT"/></div>
    </div>
-   <div class="movit-security-note">🔒 A senha não é gravada no navegador nem no GitHub. Ela é enviada ao backend seguro e a configuração fica criptografada no servidor.</div>
+   <div id="movitDetectedPortal" class="movit-security-note" style="margin-bottom:8px">🔎 O Comando 360 pode preencher automaticamente os dados conhecidos do seu portal STC.</div><div class="movit-security-note">🔒 A senha não é gravada no navegador nem no GitHub. Ela é enviada ao backend seguro e a configuração fica criptografada no servidor.</div>
    <details class="movit-advanced">
     <summary>Configuração avançada da API</summary>
-    <div class="row" style="margin-top:10px"><div><label>Campo do usuário</label><input id="movitLoginUserField" value="user"/></div><div><label>Campo da senha</label><input id="movitLoginPasswordField" value="password"/></div></div>
-    <div><label>Payload de login personalizado (JSON, opcional)</label><textarea id="movitLoginTemplate" rows="3" placeholder='{"key":"{{key}}","user":"{{username}}","password":"{{password}}","locale":"pt"}'></textarea></div>
+    <div class="row" style="margin-top:10px"><div><label>Campo do usuário</label><input id="movitLoginUserField" value="user"/></div><div><label>Campo da senha</label><input id="movitLoginPasswordField" value="pass"/></div></div>
+    <div><label>Payload de login personalizado (JSON, opcional)</label><textarea id="movitLoginTemplate" rows="3" placeholder='{"key":"{{key}}","user":"{{username}}","pass":"{{password}}","locale":"pt","variables":{}}'></textarea></div>
     <div><label>Payload da grade de rastreadores (JSON, opcional)</label><textarea id="movitGridTemplate" rows="3" placeholder='{"userId":"{{userId}}","key":"{{key}}","locale":"pt","page":1,"perPage":100}'></textarea></div>
    </details>
    <div class="toolbar" style="margin-top:12px">
@@ -6499,6 +6499,23 @@ async function confirmCrlvImport(options={}){
 
 
 
+const MOVIT_COMPANY_PRESETS={
+ 'bb06c7a1-1bbd-42b6-b481-680a9ef5b597':{
+  clientKey:'tnasistemas',
+  userId:187,
+  portal:'https://ap3.stc.srv.br/webcliente/tnasistemas'
+ }
+};
+function applyMovitCompanyPreset(){
+ const p=MOVIT_COMPANY_PRESETS[companyId];if(!p)return null;
+ const key=$('#movitClientKey'),uid=$('#movitUserId'),passField=$('#movitLoginPasswordField'),note=$('#movitDetectedPortal');
+ if(key&&!key.value)key.value=p.clientKey;
+ if(uid&&!uid.value)uid.value=String(p.userId);
+ if(passField&&(!passField.value||passField.value==='password'))passField.value='pass';
+ if(note)note.innerHTML='✓ Portal STC identificado: <b>'+esc(p.clientKey)+'</b> • User ID <b>'+esc(p.userId)+'</b>. Agora informe somente seu usuário e sua senha do MOVIT.';
+ return p;
+}
+
 let movitTrackingRows=[],movitTrackingTimer=null,movitLastStatus=null;
 async function movitInvoke(action,extra={}){
  const r=await authFetch('/functions/v1/movit-bridge',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:action,company_id:companyId,...extra})},true);
@@ -6538,22 +6555,22 @@ async function loadMovitTracking(forceSync=true){
 function startMovitTrackingPolling(){if(movitTrackingTimer)return;movitTrackingTimer=setInterval(function(){if(document.querySelector('#screenHost [data-screen="rastreamento"]'))loadMovitTracking(true).catch(()=>{})},60000)}
 function stopMovitTrackingPolling(){if(movitTrackingTimer){clearInterval(movitTrackingTimer);movitTrackingTimer=null}}
 async function loadMovitIntegrationUi(){
- const pill=$('#movitStatusPill'),msg=$('#movitConfigMsg');if(!pill)return;
+ const pill=$('#movitStatusPill'),msg=$('#movitConfigMsg');if(!pill)return;applyMovitCompanyPreset();
  try{
   pill.className='pill';pill.textContent='Verificando...';const st=await movitInvoke('status');movitLastStatus=st;
   pill.className='pill '+(st.configured?'ok':'warn');pill.textContent=st.configured?'Conectado':'Não configurado';
   if($('#movitBridgeVersion'))$('#movitBridgeVersion').textContent='v'+String(st.bridgeVersion||'—');
   if(st.clientKey&&!$('#movitClientKey').value)$('#movitClientKey').value=st.clientKey;if(st.userId&&!$('#movitUserId').value)$('#movitUserId').value=st.userId;
   $('#testMovitConfig').disabled=!st.configured;$('#disconnectMovit').disabled=!st.configured;
-  if(msg)msg.textContent=st.configured?'Integração salva com segurança. Use Testar / Sincronizar para conferir os rastreadores.':'Informe a chave da sua integração STC e os dados da conta MOVIT.';
+  if(msg)msg.textContent=st.configured?'Integração salva com segurança. Use Testar / Sincronizar para conferir os rastreadores.':(MOVIT_COMPANY_PRESETS[companyId]?'Base STC e User ID identificados. Informe seu usuário e sua senha do MOVIT e clique em CONECTAR MOVIT.':'Informe a base/chave da sua integração STC e os dados da conta MOVIT.');
  }catch(e){pill.className='pill danger';pill.textContent='Erro';if(msg)msg.textContent=e.message||String(e)}
 }
 async function saveMovitConfigurationUi(){
  const btn=$('#saveMovitConfig'),msg=$('#movitConfigMsg');
  try{
-  const clientKey=$('#movitClientKey').value.trim(),username=$('#movitUsername').value.trim(),password=$('#movitPassword').value;if(!clientKey||!username||!password)throw new Error('Informe a chave de integração, o usuário e a senha do MOVIT.');
+  const clientKey=$('#movitClientKey').value.trim(),username=$('#movitUsername').value.trim(),password=$('#movitPassword').value;if(!clientKey||!username||!password)throw new Error('Informe a base/chave STC, o usuário e a senha do MOVIT.');
   btn.disabled=true;if(msg)msg.textContent='Testando login e buscando rastreadores...';
-  const data=await movitInvoke('configure',{clientKey:clientKey,userId:Number($('#movitUserId').value||0),username:username,password:password,locale:'pt',loginUserField:$('#movitLoginUserField').value.trim()||'user',loginPasswordField:$('#movitLoginPasswordField').value.trim()||'password',loginTemplate:movitJsonValue('#movitLoginTemplate','Payload de login'),gridTemplate:movitJsonValue('#movitGridTemplate','Payload da grade')});
+  const data=await movitInvoke('configure',{clientKey:clientKey,userId:Number($('#movitUserId').value||0),username:username,password:password,locale:'pt',loginUserField:$('#movitLoginUserField').value.trim()||'user',loginPasswordField:$('#movitLoginPasswordField').value.trim()||'pass',loginTemplate:movitJsonValue('#movitLoginTemplate','Payload de login'),gridTemplate:movitJsonValue('#movitGridTemplate','Payload da grade')});
   $('#movitPassword').value='';$('#movitTrackerCount').textContent=String(data.trackerCount??'—');$('#movitLastSync').textContent=new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
   if(msg)msg.textContent=data.message||'MOVIT conectado com sucesso.';c360Toast('MOVIT conectado','Rastreamento da frota ativado.','success');await loadMovitIntegrationUi();
  }catch(e){if(msg)msg.textContent=e.message||String(e);c360Toast('Falha ao conectar MOVIT',e.message||String(e),'error',5000)}finally{btn.disabled=false}
@@ -6884,7 +6901,7 @@ function c360SetModule(tab){
  const m=C360_MODULES[tab]||[tab,'Comando 360'];
  const t=document.getElementById('headerModuleTitle'),s=document.getElementById('headerModuleSubtitle');
  if(t)t.textContent=m[0];if(s)s.textContent=m[1];
- document.title='Comando 360 • '+m[0]+' • v6.68';
+ document.title='Comando 360 • '+m[0]+' • v6.69';
  document.querySelectorAll('#mobileBottomNav [data-mobiletab]').forEach(b=>{
   const mt=b.dataset.mobiletab;
   b.classList.toggle('active',mt===tab||(mt==='more'&&!['inicio','operacoes','ponto','frota'].includes(tab)));
@@ -7125,7 +7142,7 @@ setInterval(()=>{
 },60000);
 if('serviceWorker' in navigator){
  window.addEventListener('load',()=>{
-  navigator.serviceWorker.register('./sw-v6-68.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
+  navigator.serviceWorker.register('./sw-v6-69.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
  });
 }
 
