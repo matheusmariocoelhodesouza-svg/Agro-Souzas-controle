@@ -8,7 +8,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
-<title>Comando 360 • v6.94</title>
+<title>Comando 360 • v6.95</title>
 <link rel="manifest" href="./comando360.webmanifest"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
@@ -1920,7 +1920,7 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
 <div class="card"><div class="kpi" id="pointToday">0</div><div class="label">Funcionários com registro hoje</div></div>
 <div class="card"><div class="kpi" id="pointEvents">0</div><div class="label">Batidas hoje</div></div>
 <div class="card"><div class="kpi" id="pointWorked">0h00</div><div class="label">Média trabalhada por funcionário</div></div>
-<div class="card"><div class="kpi" id="pointOvertime">0h00</div><div class="label">Horas extras hoje</div></div>
+<div class="card"><div class="kpi" id="pointOvertime">0h00</div><div class="label">Média de horas extras por funcionário</div></div>
 </div>
 <div class="card">
 <h3>Ponto 2.0</h3>
@@ -4477,10 +4477,12 @@ async function loadTeamPoint(){
      extra+=metrics[e.id]?.overtime||0;
    }
 
+   const teamAverageWorked=currentEmployees.length?Math.round(total/currentEmployees.length):0;
+   const teamAverageOvertime=currentEmployees.length?Math.round(extra/currentEmployees.length):0;
    setTextSafe('pointToday',currentEmployees.length);
    setTextSafe('pointEvents',teamEvents.length);
-   setTextSafe('pointWorked',fmtMinutes(total));
-   setTextSafe('pointOvertime',fmtMinutes(extra));
+   setTextSafe('pointWorked',fmtMinutes(teamAverageWorked));
+   setTextSafe('pointOvertime',fmtMinutes(teamAverageOvertime));
 
    const presence=$('#presenceList');
    if(presence)presence.innerHTML=currentEmployees.map(e=>{
@@ -4565,8 +4567,9 @@ async function loadRHPoint(){
    setTextSafe('pointToday',withEvents);
    setTextSafe('pointEvents',events.length);
    const averageWorked=withEvents?Math.round(totalWorked/withEvents):0;
+   const averageOvertime=withEvents?Math.round(totalOvertime/withEvents):0;
    setTextSafe('pointWorked',fmtMinutes(averageWorked));
-   setTextSafe('pointOvertime',fmtMinutes(totalOvertime));
+   setTextSafe('pointOvertime',fmtMinutes(averageOvertime));
 
    const presenceEl=$('#presenceList');
    if(presenceEl)presenceEl.innerHTML=employees.map(e=>{
