@@ -8,7 +8,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
-<title>Comando 360 • v6.88</title>
+<title>Comando 360 • v6.89</title>
 <link rel="manifest" href="./comando360.webmanifest"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
@@ -1613,13 +1613,29 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
  #operacoes .field-primary-actions .btn,#operacoes .field-truck-actions .btn{width:100%}
 }
 
+
+/* 6.89 — nível estimado de combustível */
+.fuel-full-toggle{display:flex;align-items:flex-start;gap:11px;margin-top:12px;padding:12px 13px;border:1px solid #dbe5f0;border-radius:14px;background:#f8fbff;cursor:pointer}
+.fuel-full-toggle input{width:21px;height:21px;margin:1px 0 0;flex:0 0 auto;accent-color:#1976d2}
+.fuel-full-toggle strong{display:block;font-size:13px}.fuel-full-toggle small{display:block;color:#64748b;font-size:11px;line-height:1.4;margin-top:2px}
+.fleet-fuel{margin-top:10px}
+.fleet-fuel-box{border:1px solid #dfe7f0;border-radius:13px;padding:11px 12px;background:#f8fafc}
+.fleet-fuel-head{display:flex;justify-content:space-between;gap:10px;align-items:center;font-size:12px}
+.fleet-fuel-head strong{color:#173451}.fleet-fuel-head b{font-size:14px}
+.fleet-fuel-bar{height:9px;border-radius:999px;background:#e2e8f0;overflow:hidden;margin:8px 0 6px}
+.fleet-fuel-bar i{display:block;height:100%;border-radius:999px;background:currentColor}
+.fleet-fuel-box.ok{color:#15803d}.fleet-fuel-box.warn{color:#b45309}.fleet-fuel-box.danger{color:#b91c1c}.fleet-fuel-box.muted{color:#64748b}
+.fleet-fuel-detail{font-size:10.5px;color:#64748b;line-height:1.4}
+.darkmode .fuel-full-toggle,.darkmode .fleet-fuel-box{background:#101c2e;border-color:#26384e}
+.darkmode .fuel-full-toggle small,.darkmode .fleet-fuel-detail{color:#93a8bf}
+.darkmode .fleet-fuel-head strong{color:#e8f0fa}
 </style>
 <script defer="" src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"></script>
 <script>
 (function(){
-  const BUILD='6.88';
+  const BUILD='6.89';
   try{
     const marker='controla_cache_cleanup_'+BUILD;
     if(!localStorage.getItem(marker)){
@@ -1684,7 +1700,7 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
   <div class="brand"><img class="header-brand-icon" src="./comando360-icon.svg" alt="Comando 360"/><div><b>Comando <span class="brand360">360</span></b><div><small id="companyName">Empresa</small></div></div></div>
  </div>
  <div class="header-module" id="headerModule"><span id="headerModuleTitle">Painel Geral</span><small id="headerModuleSubtitle">Central de gestão</small></div>
- <div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.88</span><button class="btn soft" id="themeToggle" type="button" aria-label="Alternar tema">☾</button><button class="btn soft hidden" id="logout">Sair</button></div>
+ <div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.89</span><button class="btn soft" id="themeToggle" type="button" aria-label="Alternar tema">☾</button><button class="btn soft hidden" id="logout">Sair</button></div>
 </header>
 <main class="wrap">
 <section class="login team-entry" id="login">
@@ -1702,7 +1718,7 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
  <label>Senha</label><input autocomplete="current-password" id="password" type="password"/>
  <button class="btn primary" id="loginBtn">Entrar</button>
  <button class="btn soft" id="backDeviceSetup" type="button" style="margin-left:6px">Voltar</button>
- <div class="muted" id="loginMsg" style="margin-top:10px">Comando 360 • v6.88</div><div class="debug" id="debug"></div>
+ <div class="muted" id="loginMsg" style="margin-top:10px">Comando 360 • v6.89</div><div class="debug" id="debug"></div>
 </div>
 </section>
 <section class="hidden" id="app">
@@ -1728,7 +1744,7 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
   <div class="team-home-grid">
    <button class="team-tile" type="button" data-teamtab="operacoes"><span class="ico">🐔</span><strong>Apanha</strong><small>Apanhas da sua equipe e carregamento caminhão por caminhão.</small></button>
    <button class="team-tile" type="button" data-teamtab="ponto"><span class="ico">⏱️</span><strong>Ponto</strong><small>Bater ponto e conferir presença dos funcionários da equipe.</small></button>
-   <button class="team-tile" type="button" data-teamtab="combustivel"><span class="ico">⛽</span><strong>Abastecimento</strong><small>Registrar combustível da condução vinculada à equipe.</small></button>
+   <button class="team-tile" type="button" data-teamtab="combustivel"><span class="ico">⛽</span><strong>Abastecimento</strong><small>Registrar combustível da condução usada pela equipe hoje.</small></button>
    <button class="team-tile" type="button" data-teamtab="equipereport"><span class="ico">📊</span><strong>Relatório</strong><small>Relatório da apanha em 80 mm para entregar ao granjeiro.</small></button>
   </div>
  </div>
@@ -2172,6 +2188,7 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
  <div class="row" style="margin-top:14px"><div><label>Apelido / identificação</label><input id="editVehicleDescription" placeholder="Ex.: Ônibus 2501"/></div><div><label>Placa</label><input id="editVehiclePlate" placeholder="ABC1D23"/></div><div><label>Status</label><select id="editVehicleStatus"><option value="active">Ativo</option><option value="maintenance">Em manutenção</option><option value="inactive">Inativo</option></select></div></div>
  <div class="row"><div><label>Marca</label><input id="editVehicleMake" placeholder="Ex.: Mercedes-Benz"/></div><div><label>Modelo</label><input id="editVehicleModel" placeholder="Ex.: Sprinter 313 CDI"/></div><div><label>Ano</label><input id="editVehicleYear" type="number" min="1950" max="2100"/></div></div>
  <div class="row"><div><label>RENAVAM</label><input id="editVehicleRenavam" inputmode="numeric"/></div><div><label>KM atual</label><input id="editVehicleKm" type="number" min="0" step="1"/></div><div><label>Equipe vinculada</label><select id="editVehicleTeam"><option value="">Sem equipe vinculada</option></select><div class="muted" id="editVehicleContractor" style="margin-top:5px"></div></div></div>
+ <div class="row"><div><label>Capacidade do tanque (litros)</label><input id="editVehicleTankCapacity" type="number" min="1" step="1" placeholder="Ex.: 100"/><div class="muted" style="margin-top:5px">Cadastre uma vez. O Comando 360 usa essa capacidade para estimar o nível de combustível.</div></div></div>
 
  <div class="vehicle-docs-inline">
   <div class="toolbar vehicle-docs-head" style="justify-content:space-between;align-items:flex-start">
@@ -2256,6 +2273,7 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
  <div><label>Foto da nota / comprovante</label><input id="fuelReceiptFile" type="file" accept="image/jpeg,image/png,image/webp" capture="environment"/><div class="muted" id="fuelReceiptReadMsg" style="margin-top:5px">Ao tirar a foto, o app lê posto, data, litros e valor quando estiverem legíveis.</div></div>
 </div>
 <div><label>Observações</label><input id="fuelNotes" placeholder="Ex.: abastecimento da equipe / viagem / observação"/></div>
+<label class="fuel-full-toggle"><input id="fuelTankFull" type="checkbox"/><span><strong>Completou o tanque?</strong><small>Marque SIM somente quando abasteceu até encher. Isso cria a referência de 100% para calcular o nível estimado.</small></span></label>
 <div class="toolbar" style="margin-top:12px"><button class="btn primary" id="saveFuelBtn" type="button">SALVAR ABASTECIMENTO</button></div><div class="muted" id="fuelMsg" style="margin-top:8px"></div></div>
 <div class="card" id="kmEditCard" style="display:none"><div class="toolbar" style="justify-content:space-between"><div><h3 style="margin:0">Registrar quilometragem</h3><div class="muted">Atualize o hodômetro sem precisar registrar abastecimento.</div></div><button class="btn soft" id="cancelKmEdit" type="button">Cancelar</button></div>
 <div class="row" style="margin-top:12px"><div><label>Veículo</label><select id="kmVehicle"></select></div><div><label>Data e hora</label><input id="kmDate" type="datetime-local"/></div><div><label>KM do hodômetro</label><input id="kmValue" type="number" min="0" step="1"/></div></div>
@@ -3123,7 +3141,7 @@ async function warmFuelOfflineCache(){
  if(!deviceMode||!navigator.onLine||!companyId)return;
  const [logs,vehicles]=await Promise.all([
   rest('v2_fuel_logs','select=*&company_id=eq.'+companyId+'&order=fueled_at.desc&limit=200'),
-  rest('v2_vehicles','select=id,description,plate,model,current_odometer_km,status&company_id=eq.'+companyId+'&order=description.asc')
+  rest('v2_vehicles','select=id,description,plate,model,current_odometer_km,fuel_tank_capacity_liters,status&company_id=eq.'+companyId+'&order=description.asc')
  ]);
  await offlineCacheSet(offlineTeamKey('fuel_logs'),logs||[]);
  await offlineCacheSet(offlineTeamKey('fuel_vehicles'),vehicles||[]);
@@ -3937,6 +3955,98 @@ function fleetTrackingLocation(t){
  const lat=Number(t.latitude),lon=Number(t.longitude);
  return Number.isFinite(lat)&&Number.isFinite(lon)?lat.toFixed(5)+', '+lon.toFixed(5):'Sem coordenadas';
 }
+function fuelLogIsFull(x){
+ const v=x?.metadata?.tank_filled_full;
+ return v===true||v==='true'||v===1||v==='1';
+}
+function fuelPlausibleKmL(v){
+ const n=Number(v||0);
+ return Number.isFinite(n)&&n>=0.5&&n<=20;
+}
+function fuelEconomyEstimate(vehicleId,logs=[]){
+ const rows=(logs||[]).filter(x=>x.vehicle_id===vehicleId&&Number(x.odometer_km)>0&&Number(x.liters)>0)
+  .sort((a,b)=>new Date(a.fueled_at)-new Date(b.fueled_at));
+ if(rows.length<2)return null;
+
+ const fullIndexes=[];
+ rows.forEach((x,i)=>{if(fuelLogIsFull(x))fullIndexes.push(i)});
+ let totalKm=0,totalLiters=0,cycles=0;
+ for(let k=1;k<fullIndexes.length;k++){
+  const a=fullIndexes[k-1],b=fullIndexes[k];
+  const km=Number(rows[b].odometer_km)-Number(rows[a].odometer_km);
+  const liters=rows.slice(a+1,b+1).reduce((s,x)=>s+Number(x.liters||0),0);
+  const rate=liters>0?km/liters:0;
+  if(km>0&&liters>0&&fuelPlausibleKmL(rate)){
+   totalKm+=km;totalLiters+=liters;cycles++;
+  }
+ }
+ if(cycles&&totalLiters>0){
+  return {km_l:totalKm/totalLiters,source:'full_cycles',cycles};
+ }
+
+ // Enquanto ainda não há dois "tanque cheio", usa uma mediana aproximada
+ // dos abastecimentos com KM para começar a estimar sem inventar um consumo fixo.
+ const rates=[];
+ for(let i=1;i<rows.length;i++){
+  const km=Number(rows[i].odometer_km)-Number(rows[i-1].odometer_km);
+  const liters=Number(rows[i].liters||0);
+  const rate=liters>0?km/liters:0;
+  if(km>0&&fuelPlausibleKmL(rate))rates.push(rate);
+ }
+ if(!rates.length)return null;
+ const recent=rates.slice(-8).sort((a,b)=>a-b);
+ const mid=Math.floor(recent.length/2);
+ const median=recent.length%2?recent[mid]:(recent[mid-1]+recent[mid])/2;
+ return {km_l:median,source:'approx_history',cycles:0};
+}
+function fuelLevelLabel(pct){
+ if(pct>=90)return 'Cheio';
+ if(pct>=65)return '≈ 3/4 do tanque';
+ if(pct>=40)return '≈ Meio tanque';
+ if(pct>=20)return '≈ 1/4 do tanque';
+ return 'Reserva estimada';
+}
+function vehicleFuelLevelEstimate(v,tracking=null){
+ const capacity=Number(v?.fuel_tank_capacity_liters||0);
+ if(!(capacity>0))return {state:'missing_capacity'};
+ const logs=(window.__fleetFuelLogs||[]).filter(x=>x.vehicle_id===v.id)
+  .sort((a,b)=>new Date(a.fueled_at)-new Date(b.fueled_at));
+ const fulls=logs.filter(x=>fuelLogIsFull(x)&&Number(x.odometer_km)>0);
+ if(!fulls.length)return {state:'need_full',capacity};
+ const ref=fulls[fulls.length-1];
+ const economy=fuelEconomyEstimate(v.id,logs);
+ if(!economy){
+  return {state:'learning',capacity,liters:capacity,pct:100,label:'Cheio',ref};
+ }
+ const latestLogKm=Math.max(0,...logs.map(x=>Number(x.odometer_km||0)).filter(Number.isFinite));
+ const currentKm=Math.max(Number(v.current_odometer_km||0),Number(tracking?.odometer_km||0),latestLogKm,Number(ref.odometer_km||0));
+ const distance=Math.max(0,currentKm-Number(ref.odometer_km||0));
+ const addedAfterRef=logs.filter(x=>new Date(x.fueled_at)>new Date(ref.fueled_at))
+  .reduce((s,x)=>s+Number(x.liters||0),0);
+ let liters=capacity-(distance/economy.km_l)+addedAfterRef;
+ liters=Math.max(0,Math.min(capacity,liters));
+ const pct=Math.max(0,Math.min(100,(liters/capacity)*100));
+ return {
+  state:'ready',capacity,liters,pct,label:fuelLevelLabel(pct),distance,
+  km_l:economy.km_l,quality:economy.source,ref,currentKm
+ };
+}
+function fleetFuelHtml(v,tracking){
+ const f=vehicleFuelLevelEstimate(v,tracking);
+ if(f.state==='missing_capacity'){
+  return '<div class="fleet-fuel"><div class="fleet-fuel-box muted"><div class="fleet-fuel-head"><strong>⛽ Combustível estimado</strong><b>Configurar</b></div><div class="fleet-fuel-detail">Cadastre a capacidade do tanque em Editar veículo.</div></div></div>';
+ }
+ if(f.state==='need_full'){
+  return '<div class="fleet-fuel"><div class="fleet-fuel-box muted"><div class="fleet-fuel-head"><strong>⛽ Combustível estimado</strong><b>Sem referência</b></div><div class="fleet-fuel-detail">No próximo abastecimento até encher, marque “Completou o tanque?”.</div></div></div>';
+ }
+ if(f.state==='learning'){
+  return '<div class="fleet-fuel"><div class="fleet-fuel-box ok"><div class="fleet-fuel-head"><strong>⛽ Combustível estimado</strong><b>Cheio • 100%</b></div><div class="fleet-fuel-bar"><i style="width:100%"></i></div><div class="fleet-fuel-detail">'+Number(f.capacity).toLocaleString('pt-BR',{maximumFractionDigits:1})+' L de capacidade • referência criada; aprendendo o consumo da condução.</div></div></div>';
+ }
+ const cls=f.pct<20?'danger':f.pct<40?'warn':'ok';
+ const quality=f.quality==='full_cycles'?'consumo aprendido por tanques completos':'consumo aproximado pelo histórico';
+ return '<div class="fleet-fuel"><div class="fleet-fuel-box '+cls+'"><div class="fleet-fuel-head"><strong>⛽ Combustível estimado</strong><b>'+esc(f.label)+' • '+Math.round(f.pct)+'%</b></div><div class="fleet-fuel-bar"><i style="width:'+Math.max(2,Math.round(f.pct))+'%"></i></div><div class="fleet-fuel-detail">≈ '+Number(f.liters).toLocaleString('pt-BR',{maximumFractionDigits:1})+' L de '+Number(f.capacity).toLocaleString('pt-BR',{maximumFractionDigits:1})+' L • '+Number(f.km_l).toLocaleString('pt-BR',{maximumFractionDigits:2})+' km/L ('+quality+').</div></div></div>';
+}
+
 function renderFleetVehicles(){
  const vehicles=[...(window.__fleetVehicles||[])];
  const teams=window.__fleetTeams||[];
@@ -4018,6 +4128,7 @@ function renderFleetVehicles(){
     '</div>'+
    '</div>'+
    trackingHtml+
+   fleetFuelHtml(v,tracking)+
    '<div class="fleet-license">'+
     '<div class="fleet-license-box '+tone+'">'+
      '<div class="fleet-license-title"><span>'+fleetLicenseIcon(tone)+'</span><span>'+esc(licenseTitle)+'</span></div>'+
@@ -4035,18 +4146,20 @@ function renderFleetVehicles(){
 async function loadVehicles(){
  try{
   if(navigator.onLine){try{await movitInvoke('sync')}catch(e){console.warn('MOVIT na Frota',e)}}
-  const [r,t,docs,files,tracking]=await Promise.all([
-   rest('v2_vehicles','select=id,description,plate,make,model,model_year,renavam,current_odometer_km,status,metadata&company_id=eq.'+companyId+'&order=description.asc'),
+  const [r,t,docs,files,tracking,fuelLogs]=await Promise.all([
+   rest('v2_vehicles','select=id,description,plate,make,model,model_year,renavam,current_odometer_km,fuel_tank_capacity_liters,status,metadata&company_id=eq.'+companyId+'&order=description.asc'),
    rest('v2_teams','select=id,name,status,metadata,supervisor_employee_id&company_id=eq.'+companyId+'&order=name.asc'),
    rest('v2_vehicle_documents','select=id,vehicle_id,document_type,expires_at,status,file_id,created_at&company_id=eq.'+companyId+'&status=eq.active&order=created_at.desc'),
    rest('v2_files','select=id,storage_bucket,storage_path,original_name,mime_type,size_bytes&company_id=eq.'+companyId+'&category=eq.vehicle_document&archived_at=is.null&order=created_at.desc'),
-   rest('v2_vehicle_tracking_current','select=vehicle_id,provider,latitude,longitude,speed_kmh,ignition,odometer_km,recorded_at,raw_data,updated_at&company_id=eq.'+companyId+'&provider=eq.movit')
+   rest('v2_vehicle_tracking_current','select=vehicle_id,provider,latitude,longitude,speed_kmh,ignition,odometer_km,recorded_at,raw_data,updated_at&company_id=eq.'+companyId+'&provider=eq.movit'),
+   rest('v2_fuel_logs','select=id,vehicle_id,fueled_at,odometer_km,liters,total_amount,metadata&company_id=eq.'+companyId+'&order=fueled_at.asc&limit=1500')
   ]);
   window.__fleetVehicles=r||[];
   window.__fleetTeams=t||[];
   vehicleDocsCache=docs||[];
   vehicleDocFiles=Object.fromEntries((files||[]).map(f=>[f.id,f]));
   window.__fleetTracking=tracking||[];
+  window.__fleetFuelLogs=fuelLogs||[];
   renderFleetVehicles();
   scheduleAutomaticCrlvRead();
  }catch(e){
@@ -4057,7 +4170,7 @@ async function loadVehicles(){
 
 function fillVehicleTeamSelect(vehicleId=''){const sel=$('#editVehicleTeam');if(!sel)return;const teams=(window.__fleetTeams||[]).filter(t=>t.status==='active'||t.metadata?.primary_vehicle_id===vehicleId);sel.innerHTML='<option value="">Sem equipe vinculada</option>'+teams.map(t=>`<option value="${t.id}">${esc(t.name)}</option>`).join('');const linked=teams.find(t=>t.metadata?.primary_vehicle_id===vehicleId);sel.value=linked?.id||'';updateVehicleContractor()}
 function updateVehicleContractor(){const t=(window.__fleetTeams||[]).find(x=>x.id===$('#editVehicleTeam')?.value);const el=$('#editVehicleContractor');if(el)el.textContent=t?.metadata?.contractor_name?'Contratante: '+t.metadata.contractor_name:''}
-window.openVehicleEdit=async function(id=''){const v=(window.__fleetVehicles||[]).find(x=>x.id===id)||{};$('#editVehicleId').value=v.id||'';$('#vehicleEditTitle').textContent=v.id?'Editar veículo':'Novo veículo';$('#editVehicleDescription').value=v.description||'';$('#editVehiclePlate').value=v.plate||'';$('#editVehicleMake').value=v.make||'';$('#editVehicleModel').value=v.model||'';$('#editVehicleYear').value=v.model_year||'';$('#editVehicleRenavam').value=v.renavam||'';$('#editVehicleKm').value=v.current_odometer_km||'';$('#editVehicleStatus').value=v.status||'active';window.__vehiclePhotoFile=null;window.__removeVehiclePhoto=false;const pp=$('#editVehiclePhotoPreview');pp.src=vehiclePlaceholder(v.description);const p=v.metadata?.vehicle_photo_path;if(p){const u=await vehiclePhotoObjectUrl(p);if(u)pp.src=u}fillVehicleTeamSelect(v.id||'');$('#archiveVehicleBtn').style.display=v.id?'':'none';$('#deleteVehicleBtn').style.display=v.id?'':'none';$('#vehicleEditMsg').textContent='';$('#vehicleEditCard').style.display='block';$('#vehicleDocEditCard').style.display='none';await loadVehicleDocs(v.id||'');$('#vehicleEditCard').scrollIntoView({behavior:'smooth',block:'start'})}
+window.openVehicleEdit=async function(id=''){const v=(window.__fleetVehicles||[]).find(x=>x.id===id)||{};$('#editVehicleId').value=v.id||'';$('#vehicleEditTitle').textContent=v.id?'Editar veículo':'Novo veículo';$('#editVehicleDescription').value=v.description||'';$('#editVehiclePlate').value=v.plate||'';$('#editVehicleMake').value=v.make||'';$('#editVehicleModel').value=v.model||'';$('#editVehicleYear').value=v.model_year||'';$('#editVehicleRenavam').value=v.renavam||'';$('#editVehicleKm').value=v.current_odometer_km||'';$('#editVehicleTankCapacity').value=v.fuel_tank_capacity_liters||'';$('#editVehicleStatus').value=v.status||'active';window.__vehiclePhotoFile=null;window.__removeVehiclePhoto=false;const pp=$('#editVehiclePhotoPreview');pp.src=vehiclePlaceholder(v.description);const p=v.metadata?.vehicle_photo_path;if(p){const u=await vehiclePhotoObjectUrl(p);if(u)pp.src=u}fillVehicleTeamSelect(v.id||'');$('#archiveVehicleBtn').style.display=v.id?'':'none';$('#deleteVehicleBtn').style.display=v.id?'':'none';$('#vehicleEditMsg').textContent='';$('#vehicleEditCard').style.display='block';$('#vehicleDocEditCard').style.display='none';await loadVehicleDocs(v.id||'');$('#vehicleEditCard').scrollIntoView({behavior:'smooth',block:'start'})}
 
 async function loadAlerts(){try{const r=await rest('v2_alerts','select=title,message,severity,status,created_at&company_id=eq.'+companyId+'&status=in.(open,seen)&order=created_at.desc&limit=50');$('#alertsList').innerHTML=r.map(x=>`<div class="item"><strong>${esc(x.title)}</strong><span class="pill ${x.severity==='critical'?'danger':x.severity==='warning'?'warn':'ok'}">${esc(x.severity)}</span><div class="muted">${esc(x.message||'')}</div></div>`).join('')||'<div class="muted">Nenhum alerta aberto.</div>'}catch(e){$('#alertsList').innerHTML='<div class="error">'+esc(e.message)+'</div>'}}
 
@@ -6013,6 +6126,7 @@ function openFuelEdit(id){
  document.getElementById('fuelStation').value=x.station_name||'';
  document.getElementById('fuelDriver').value=x.metadata?.driver||'';
  document.getElementById('fuelNotes').value=x.metadata?.notes||'';
+ document.getElementById('fuelTankFull').checked=fuelLogIsFull(x);
  document.getElementById('fuelReceiptFile').value='';
  window.__fuelReceiptOcr=x.metadata?.receipt_ocr||null;
  const readMsg=document.getElementById('fuelReceiptReadMsg');
@@ -6109,6 +6223,7 @@ async function loadFuel(){
   }
   if(x.station_name)badges+=(badges?' ':'')+'<span class="pill">⛽ '+esc(x.station_name)+'</span>';
   if(x.metadata&&x.metadata.driver)badges+=(badges?' ':'')+'<span class="pill">👤 '+esc(x.metadata.driver)+'</span>';
+  if(fuelLogIsFull(x))badges+=(badges?' ':'')+'<span class="pill ok">⛽ TANQUE CHEIO</span>';
   if(x.metadata&&x.metadata.offline_pending)badges+=' <span class="pill warn">OFFLINE • PENDENTE</span>';
   else if(x.metadata&&x.metadata.receipt_path)badges+=' <span class="pill ok">📷 Comprovante</span>';
   const notes=x.metadata&&x.metadata.notes?'<div class="muted" style="margin-top:6px">'+esc(x.metadata.notes)+'</div>':'';
@@ -6147,7 +6262,8 @@ async function saveFuel(){
     work_team_name:deviceMode?(deviceTeam?.name||null):(existing?.metadata?.work_team_name||null),
     device_access_id:deviceMode?(deviceAccess?.id||null):(existing?.metadata?.device_access_id||null),
     device_name:deviceMode?(deviceAccess?.device_name||null):(existing?.metadata?.device_name||null),
-    receipt_ocr:window.__fuelReceiptOcr||existing?.metadata?.receipt_ocr||null
+    receipt_ocr:window.__fuelReceiptOcr||existing?.metadata?.receipt_ocr||null,
+    tank_filled_full:!!document.getElementById('fuelTankFull')?.checked
   };
   const basePayload={
    company_id:companyId,vehicle_id,fueled_at:fueledAt,odometer_km:km||null,liters,total_amount:total,
@@ -6186,6 +6302,7 @@ async function saveFuel(){
   document.getElementById('saveFuelBtn').textContent='SALVAR ABASTECIMENTO';
   document.getElementById('fuelReceiptFile').value='';
   document.getElementById('fuelDriver').value='';
+  document.getElementById('fuelTankFull').checked=false;
   window.__fuelReceiptOcr=null;
   await loadFuel();
  }catch(e){m.className='error';m.textContent=e.message||String(e)}
@@ -7926,6 +8043,7 @@ document.addEventListener('click',async function(e){
    document.getElementById('fuelStation').value='';
    document.getElementById('fuelNotes').value='';
    document.getElementById('fuelDriver').value='';
+   document.getElementById('fuelTankFull').checked=false;
    document.getElementById('fuelReceiptFile').value='';
    if(deviceMode&&fuelVehicles.length){
     const primaryId=deviceVehicleInfo?.id||deviceTeam?.metadata?.primary_vehicle_id||null;
@@ -8070,7 +8188,7 @@ setInterval(()=>{
 },60000);
 if('serviceWorker' in navigator){
  window.addEventListener('load',()=>{
-  navigator.serviceWorker.register('./sw-v6-88.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
+  navigator.serviceWorker.register('./sw-v6-89.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
  });
 }
 
@@ -8209,7 +8327,7 @@ function previewVehiclePhotoFile(f){if(!f)return;window.__vehiclePhotoFile=f;win
 if(document.getElementById('vehiclePhotoCamera'))document.getElementById('vehiclePhotoCamera').addEventListener('change',e=>previewVehiclePhotoFile(e.target.files?.[0]));
 if(document.getElementById('vehiclePhotoGallery'))document.getElementById('vehiclePhotoGallery').addEventListener('change',e=>previewVehiclePhotoFile(e.target.files?.[0]));
 if(document.getElementById('removeVehiclePhoto'))document.getElementById('removeVehiclePhoto').addEventListener('click',()=>{window.__vehiclePhotoFile=null;window.__removeVehiclePhoto=true;$('#editVehiclePhotoPreview').src=vehiclePlaceholder($('#editVehicleDescription').value)});
-if(document.getElementById('saveVehicleEdit'))document.getElementById('saveVehicleEdit').addEventListener('click',async()=>{const m=$('#vehicleEditMsg');let id=$('#editVehicleId').value;const desc=$('#editVehicleDescription').value.trim(),plate=$('#editVehiclePlate').value.trim().toUpperCase().replace(/[^A-Z0-9]/g,'');if(!desc){m.textContent='Informe o apelido/identificação do veículo.';return}if(!plate){m.textContent='Informe a placa do veículo.';return}try{const dup=await rest('v2_vehicles','select=id,plate&company_id=eq.'+companyId+'&plate=eq.'+encodeURIComponent(plate));if((dup||[]).some(x=>x.id!==id)){m.textContent='Já existe outro veículo com esta placa.';return}let v=(window.__fleetVehicles||[]).find(x=>x.id===id);let metadata={...(v?.metadata||{})};const body={description:desc,plate,make:$('#editVehicleMake').value.trim()||null,model:$('#editVehicleModel').value.trim()||null,model_year:$('#editVehicleYear').value?Number($('#editVehicleYear').value):null,renavam:$('#editVehicleRenavam').value.trim()||null,current_odometer_km:$('#editVehicleKm').value?Number($('#editVehicleKm').value):0,status:$('#editVehicleStatus').value,metadata};if(id){await rest('v2_vehicles','id=eq.'+id,'PATCH',body)}else{const created=await rest('v2_vehicles','','POST',{company_id:companyId,...body});id=created?.[0]?.id||'';if(!id)throw new Error('Não foi possível obter o veículo criado.');$('#editVehicleId').value=id;$('#archiveVehicleBtn').style.display='';$('#deleteVehicleBtn').style.display=''}if(window.__removeVehiclePhoto){delete metadata.vehicle_photo_path;await rest('v2_vehicles','id=eq.'+id,'PATCH',{metadata})}if(window.__vehiclePhotoFile){metadata.vehicle_photo_path=await uploadVehiclePhoto(window.__vehiclePhotoFile,id);await rest('v2_vehicles','id=eq.'+id,'PATCH',{metadata})}const teamId=$('#editVehicleTeam').value;const teams=window.__fleetTeams||[];for(const t of teams){if(t.metadata?.primary_vehicle_id===id&&t.id!==teamId){const md={...(t.metadata||{})};delete md.primary_vehicle_id;await rest('v2_teams','id=eq.'+t.id,'PATCH',{metadata:md})}}if(teamId){const t=teams.find(x=>x.id===teamId);if(t){await rest('v2_teams','id=eq.'+teamId,'PATCH',{metadata:{...(t.metadata||{}),primary_vehicle_id:id}})}}window.__vehiclePhotoFile=null;window.__removeVehiclePhoto=false;m.textContent='Veículo salvo com sucesso.';await loadVehicles();await loadTeams();await loadVehicleDocs(id)}catch(e){m.textContent=e.message||String(e)}});
+if(document.getElementById('saveVehicleEdit'))document.getElementById('saveVehicleEdit').addEventListener('click',async()=>{const m=$('#vehicleEditMsg');let id=$('#editVehicleId').value;const desc=$('#editVehicleDescription').value.trim(),plate=$('#editVehiclePlate').value.trim().toUpperCase().replace(/[^A-Z0-9]/g,'');if(!desc){m.textContent='Informe o apelido/identificação do veículo.';return}if(!plate){m.textContent='Informe a placa do veículo.';return}try{const dup=await rest('v2_vehicles','select=id,plate&company_id=eq.'+companyId+'&plate=eq.'+encodeURIComponent(plate));if((dup||[]).some(x=>x.id!==id)){m.textContent='Já existe outro veículo com esta placa.';return}let v=(window.__fleetVehicles||[]).find(x=>x.id===id);let metadata={...(v?.metadata||{})};const body={description:desc,plate,make:$('#editVehicleMake').value.trim()||null,model:$('#editVehicleModel').value.trim()||null,model_year:$('#editVehicleYear').value?Number($('#editVehicleYear').value):null,renavam:$('#editVehicleRenavam').value.trim()||null,current_odometer_km:$('#editVehicleKm').value?Number($('#editVehicleKm').value):0,fuel_tank_capacity_liters:$('#editVehicleTankCapacity').value?Number($('#editVehicleTankCapacity').value):null,status:$('#editVehicleStatus').value,metadata};if(id){await rest('v2_vehicles','id=eq.'+id,'PATCH',body)}else{const created=await rest('v2_vehicles','','POST',{company_id:companyId,...body});id=created?.[0]?.id||'';if(!id)throw new Error('Não foi possível obter o veículo criado.');$('#editVehicleId').value=id;$('#archiveVehicleBtn').style.display='';$('#deleteVehicleBtn').style.display=''}if(window.__removeVehiclePhoto){delete metadata.vehicle_photo_path;await rest('v2_vehicles','id=eq.'+id,'PATCH',{metadata})}if(window.__vehiclePhotoFile){metadata.vehicle_photo_path=await uploadVehiclePhoto(window.__vehiclePhotoFile,id);await rest('v2_vehicles','id=eq.'+id,'PATCH',{metadata})}const teamId=$('#editVehicleTeam').value;const teams=window.__fleetTeams||[];for(const t of teams){if(t.metadata?.primary_vehicle_id===id&&t.id!==teamId){const md={...(t.metadata||{})};delete md.primary_vehicle_id;await rest('v2_teams','id=eq.'+t.id,'PATCH',{metadata:md})}}if(teamId){const t=teams.find(x=>x.id===teamId);if(t){await rest('v2_teams','id=eq.'+teamId,'PATCH',{metadata:{...(t.metadata||{}),primary_vehicle_id:id}})}}window.__vehiclePhotoFile=null;window.__removeVehiclePhoto=false;m.textContent='Veículo salvo com sucesso.';await loadVehicles();await loadTeams();await loadVehicleDocs(id)}catch(e){m.textContent=e.message||String(e)}});
 if(document.getElementById('archiveVehicleBtn'))document.getElementById('archiveVehicleBtn').addEventListener('click',async()=>{const id=$('#editVehicleId').value,m=$('#vehicleEditMsg');if(!id)return;if(!confirm('Arquivar este veículo? O histórico será preservado.'))return;try{await rest('v2_vehicles','id=eq.'+id,'PATCH',{status:'inactive'});m.textContent='Veículo arquivado.';await loadVehicles();await loadTeams()}catch(e){m.textContent=e.message||String(e)}});
 if(document.getElementById('saveTeamEdit'))document.getElementById('saveTeamEdit').addEventListener('click',async()=>{const id=$('#editTeamId').value,m=$('#teamEditMsg');const t=(window.__teams||[]).find(x=>x.id===id);const oldName=(t?.name||'').trim();const name=$('#editTeamName').value.trim(),contractor=$('#editTeamContractor').value.trim();if(!name){m.textContent='Informe o nome da equipe.';return}if(!contractor){m.textContent='Informe a empresa contratante / onde a equipe presta serviço.';return}try{const metadata={...(t?.metadata||{}),contractor_name:contractor};const supervisorPhone=$('#editTeamSupervisorPhone')?.value.trim()||'';if(supervisorPhone)metadata.supervisor_phone=supervisorPhone;else delete metadata.supervisor_phone;const vehicleId=$('#editTeamVehicle').value;if(vehicleId)metadata.primary_vehicle_id=vehicleId;else delete metadata.primary_vehicle_id;const body={name,code:$('#editTeamCode').value.trim()||null,status:$('#editTeamStatus').value,supervisor_employee_id:$('#editTeamSupervisor').value||null,metadata};let teamId=id;if(id){await rest('v2_teams','id=eq.'+id,'PATCH',body)}else{const created=await rest('v2_teams','','POST',{company_id:companyId,...body});teamId=created?.[0]?.id||''}
 const selected=new Set([...document.querySelectorAll('#teamMembersList .team-member-check:checked')].map(x=>x.value));const emps=window.__teamEmployees||[];for(const e of emps){const current=(e.primary_team||'').trim();const wasMember=oldName&&current.toLowerCase()===oldName.toLowerCase();const shouldMember=selected.has(e.id);if(shouldMember&&current!==name){await rest('v2_employees','id=eq.'+e.id,'PATCH',{primary_team:name})}else if(!shouldMember&&wasMember){await rest('v2_employees','id=eq.'+e.id,'PATCH',{primary_team:null})}}
