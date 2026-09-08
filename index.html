@@ -8,7 +8,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
-<title>Comando 360 • v6.89</title>
+<title>Comando 360 • v6.90</title>
 <link rel="manifest" href="./comando360.webmanifest"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
@@ -1614,7 +1614,7 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
 }
 
 
-/* 6.89 — nível estimado de combustível */
+/* 6.90 — nível estimado de combustível */
 .fuel-full-toggle{display:flex;align-items:flex-start;gap:11px;margin-top:12px;padding:12px 13px;border:1px solid #dbe5f0;border-radius:14px;background:#f8fbff;cursor:pointer}
 .fuel-full-toggle input{width:21px;height:21px;margin:1px 0 0;flex:0 0 auto;accent-color:#1976d2}
 .fuel-full-toggle strong{display:block;font-size:13px}.fuel-full-toggle small{display:block;color:#64748b;font-size:11px;line-height:1.4;margin-top:2px}
@@ -1635,7 +1635,7 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
 <script defer src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"></script>
 <script>
 (function(){
-  const BUILD='6.89';
+  const BUILD='6.90';
   try{
     const marker='controla_cache_cleanup_'+BUILD;
     if(!localStorage.getItem(marker)){
@@ -1700,7 +1700,7 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
   <div class="brand"><img class="header-brand-icon" src="./comando360-icon.svg" alt="Comando 360"/><div><b>Comando <span class="brand360">360</span></b><div><small id="companyName">Empresa</small></div></div></div>
  </div>
  <div class="header-module" id="headerModule"><span id="headerModuleTitle">Painel Geral</span><small id="headerModuleSubtitle">Central de gestão</small></div>
- <div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.89</span><button class="btn soft" id="themeToggle" type="button" aria-label="Alternar tema">☾</button><button class="btn soft hidden" id="logout">Sair</button></div>
+ <div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.90</span><button class="btn soft" id="themeToggle" type="button" aria-label="Alternar tema">☾</button><button class="btn soft hidden" id="logout">Sair</button></div>
 </header>
 <main class="wrap">
 <section class="login team-entry" id="login">
@@ -1718,7 +1718,7 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
  <label>Senha</label><input autocomplete="current-password" id="password" type="password"/>
  <button class="btn primary" id="loginBtn">Entrar</button>
  <button class="btn soft" id="backDeviceSetup" type="button" style="margin-left:6px">Voltar</button>
- <div class="muted" id="loginMsg" style="margin-top:10px">Comando 360 • v6.89</div><div class="debug" id="debug"></div>
+ <div class="muted" id="loginMsg" style="margin-top:10px">Comando 360 • v6.90</div><div class="debug" id="debug"></div>
 </div>
 </section>
 <section class="hidden" id="app">
@@ -2256,10 +2256,11 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
 <div class="section" data-screen="manutencoes" hidden="" id="manutencoes">
 <div class="card"><div class="toolbar" style="justify-content:space-between"><div><h3 style="margin:0">🔧 Manutenção da Frota</h3><div class="muted">Controle preventivo por data e quilometragem.</div></div><button class="btn primary" id="newMaintenanceBtn" type="button">+ NOVA MANUTENÇÃO</button></div><div class="v2-kpis" id="maintenanceKpis" style="margin-top:14px"></div><div class="list" id="maintenanceList" style="margin-top:12px"></div></div>
 <div class="card" id="maintenanceEditCard" style="display:none"><div class="toolbar" style="justify-content:space-between"><div><h3 id="maintenanceEditTitle" style="margin:0">Nova manutenção</h3><div class="muted">Registre o último serviço e programe o próximo.</div></div><button class="btn soft" id="cancelMaintenanceEdit" type="button">Cancelar</button></div><input id="editMaintenanceId" type="hidden"/>
-<div class="row" style="margin-top:12px"><div><label>Veículo</label><select id="maintenanceVehicle"></select></div><div><label>Tipo de serviço</label><select id="maintenanceType"><option>Troca de óleo e filtros</option><option>Freios</option><option>Pneus</option><option>Elétrica</option><option>Suspensão</option><option>Motor</option><option>Câmbio</option><option>Revisão preventiva</option><option>Manutenção corretiva</option><option>Outro</option></select></div><div><label>Data do serviço</label><input id="maintenanceDate" type="date"/></div></div>
+<div class="row" style="margin-top:12px"><div><label>Veículo</label><select id="maintenanceVehicle"></select></div><div><label>Tipo de serviço</label><select id="maintenanceType"><option>Troca de óleo e filtros</option><option>Freios</option><option>Pneus</option><option>Elétrica</option><option>Suspensão</option><option>Motor</option><option>Câmbio</option><option>Revisão preventiva</option><option>Manutenção corretiva</option><option>Outro</option></select><div id="maintenanceCustomTypeWrap" class="hidden" style="margin-top:8px"><label>Qual serviço?</label><input id="maintenanceCustomType" placeholder="Ex.: alternador, embreagem, escapamento, rolamento..."/></div></div><div><label>Data do serviço</label><input id="maintenanceDate" type="date"/></div></div>
 <div class="row"><div><label>KM do serviço</label><input id="maintenanceKm" type="number" min="0" step="1"/></div><div><label>Próxima por KM</label><input id="maintenanceNextKm" type="number" min="0" step="1" placeholder="Ex.: 255000"/></div><div><label>Próxima por data</label><input id="maintenanceNextDate" type="date"/></div></div>
 <div class="row"><div><label>Peças / materiais</label><input id="maintenanceParts" placeholder="Ex.: óleo, filtro de óleo, filtro diesel"/></div><div><label>Custo das peças (R$)</label><input id="maintenancePartsCost" type="number" min="0" step="0.01"/></div><div><label>Mão de obra (R$)</label><input id="maintenanceLaborCost" type="number" min="0" step="0.01"/></div></div>
-<div class="row"><div><label>Oficina / mecânico</label><input id="maintenanceWorkshop"/></div><div><label>Observações</label><input id="maintenanceNotes"/></div><div><label>Valor total</label><input id="maintenanceTotal" readonly/></div></div>
+<div class="row"><div><label>Onde comprou as peças</label><input id="maintenancePartsSupplier" placeholder="Ex.: Auto Peças X / Mercado Livre / concessionária"/></div><div><label>Foto / PDF da nota das peças</label><input id="maintenanceReceiptFile" type="file" accept="image/jpeg,image/png,image/webp,application/pdf"/><div class="muted" id="maintenanceReceiptCurrent" style="margin-top:5px">Nenhuma nota arquivada.</div></div><div><label>Quem fez o serviço</label><input id="maintenanceWorkshop" placeholder="Ex.: Eu / mecânico habitual / oficina"/></div></div>
+<div class="row"><div><label>Observações</label><input id="maintenanceNotes"/></div><div><label>Valor total</label><input id="maintenanceTotal" readonly/></div></div>
 <div class="toolbar" style="margin-top:12px"><button class="btn primary" id="saveMaintenanceEdit" type="button">SALVAR MANUTENÇÃO</button><button class="btn soft" id="archiveMaintenanceBtn" type="button">DESATIVAR PLANO</button><button class="btn danger" id="deleteMaintenanceBtn" type="button">EXCLUIR MANUTENÇÃO</button></div><div class="muted" id="maintenanceEditMsg" style="margin-top:8px"></div></div>
 </div>
 <div class="section" data-screen="combustivel" hidden="" id="combustivel">
@@ -5956,11 +5957,197 @@ function initScreenRouter(){
 }
 let maintenanceCache=[];
 function maintenanceStatus(p,vehicle){const km=Number(vehicle?.current_odometer_km||0),dueKm=Number(p.next_due_odometer_km||0);const today=new Date();today.setHours(0,0,0,0);const dueDate=p.next_due_at?new Date(p.next_due_at+'T00:00:00'):null;if((dueKm&&km>=dueKm)||(dueDate&&dueDate<today))return ['Vencida','error'];if((dueKm&&dueKm-km<=1000)||(dueDate&&((dueDate-today)/86400000)<=30))return ['Próxima','warn'];return ['Em dia','ok']}
-async function loadMaintenances(){const [plans,vehicles]=await Promise.all([rest('v2_maintenance_plans','select=*&company_id=eq.'+companyId+'&active=eq.true&order=next_due_at.asc.nullslast'),rest('v2_vehicles','select=id,description,plate,make,model,current_odometer_km,status&company_id=eq.'+companyId+'&order=description.asc')]);maintenanceCache=plans;window.__maintenanceVehicles=vehicles;const list=$('#maintenanceList'),sel=$('#maintenanceVehicle');if(sel)sel.innerHTML='<option value="">Selecione...</option>'+vehicles.map(v=>`<option value="${v.id}">${esc(v.description||v.model||v.plate)} • ${esc(v.plate||'sem placa')}</option>`).join('');let counts={ok:0,warn:0,error:0};plans.forEach(p=>counts[maintenanceStatus(p,vehicles.find(v=>v.id===p.vehicle_id))[1]]++);const k=$('#maintenanceKpis');if(k)k.innerHTML=`<div class="v2kpi maintenance-kpi"><div class="t">PLANOS ATIVOS</div><div class="v">${plans.length}</div><div class="s">manutenções programadas</div></div><div class="v2kpi maintenance-kpi"><div class="t">EM DIA</div><div class="v">${counts.ok}</div><div class="s">sem pendências</div></div><div class="v2kpi maintenance-kpi"><div class="t">PRÓXIMAS</div><div class="v">${counts.warn}</div><div class="s">até 30 dias / 1.000 km</div></div><div class="v2kpi maintenance-kpi"><div class="t">VENCIDAS</div><div class="v">${counts.error}</div><div class="s">requer atenção</div></div>`;if(list)list.innerHTML=plans.map(p=>{const v=vehicles.find(x=>x.id===p.vehicle_id),st=maintenanceStatus(p,v),m=p.metadata||{},total=Number(m.parts_cost||0)+Number(m.labor_cost||0);return `<div class="item"><div class="toolbar" style="justify-content:space-between"><div><strong>${esc(p.name)}</strong> <span class="pill ${st[1]}">${st[0]}</span><div class="muted">${esc(v?.description||v?.model||'Veículo')} • ${esc(v?.plate||'sem placa')}</div><div style="margin-top:6px">Último: ${p.last_done_at?new Date(p.last_done_at+'T00:00:00').toLocaleDateString('pt-BR'):'—'} • ${Number(p.last_done_odometer_km||0).toLocaleString('pt-BR')} km &nbsp; | &nbsp; Próximo: ${p.next_due_at?new Date(p.next_due_at+'T00:00:00').toLocaleDateString('pt-BR'):'—'} • ${p.next_due_odometer_km?Number(p.next_due_odometer_km).toLocaleString('pt-BR')+' km':'—'}</div>${total?`<div class="muted">Último custo: ${money(total)}${m.workshop?' • '+esc(m.workshop):''}</div>`:''}</div><button class="btn soft" onclick="openMaintenanceEdit('${p.id}')">Editar</button></div></div>`}).join('')||'<div class="muted">Nenhuma manutenção programada. Toque em + Nova manutenção.</div>'}
-function calcMaintenanceTotal(){const v=Number($('#maintenancePartsCost')?.value||0)+Number($('#maintenanceLaborCost')?.value||0);if($('#maintenanceTotal'))$('#maintenanceTotal').value=money(v)}
-function openMaintenanceEdit(id=''){const p=maintenanceCache.find(x=>x.id===id),m=p?.metadata||{};$('#maintenanceEditMsg').textContent='';$('#maintenanceEditCard').style.display='block';$('#maintenanceEditTitle').textContent=p?'Editar manutenção':'Nova manutenção';$('#editMaintenanceId').value=p?.id||'';$('#maintenanceVehicle').value=p?.vehicle_id||'';$('#maintenanceType').value=p?.name||'Troca de óleo e filtros';$('#maintenanceDate').value=p?.last_done_at||new Date().toISOString().slice(0,10);$('#maintenanceKm').value=p?.last_done_odometer_km||'';$('#maintenanceNextKm').value=p?.next_due_odometer_km||'';$('#maintenanceNextDate').value=p?.next_due_at||'';$('#maintenanceParts').value=m.parts||'';$('#maintenancePartsCost').value=m.parts_cost||'';$('#maintenanceLaborCost').value=m.labor_cost||'';$('#maintenanceWorkshop').value=m.workshop||'';$('#maintenanceNotes').value=m.notes||'';$('#archiveMaintenanceBtn').style.display=p?'inline-flex':'none';$('#deleteMaintenanceBtn').style.display=p?'inline-flex':'none';calcMaintenanceTotal();$('#maintenanceEditCard').scrollIntoView({behavior:'smooth',block:'start'})}
+const MAINTENANCE_RECEIPT_BUCKET='v2-maintenance-receipts';
+const MAINTENANCE_STANDARD_TYPES=['Troca de óleo e filtros','Freios','Pneus','Elétrica','Suspensão','Motor','Câmbio','Revisão preventiva','Manutenção corretiva'];
+
+async function uploadMaintenanceReceipt(file,maintenanceId){
+ if(!file)return null;
+ if(file.size>10*1024*1024)throw new Error('A nota das peças deve ter no máximo 10 MB.');
+ const s=session();if(!s?.access_token)throw new Error('Sessão expirada.');
+ const ext=file.type==='application/pdf'?'pdf':file.type==='image/png'?'png':file.type==='image/webp'?'webp':'jpg';
+ const path=companyId+'/'+maintenanceId+'/'+Date.now()+'-nota-pecas.'+ext;
+ const r=await fetch(API_URL+'/storage/v1/object/'+MAINTENANCE_RECEIPT_BUCKET+'/'+path,{
+  method:'POST',
+  headers:{apikey:KEY,Authorization:'Bearer '+s.access_token,'Content-Type':file.type||'image/jpeg','x-upsert':'false'},
+  body:file
+ });
+ await parseResponse(r);
+ return path;
+}
+async function openMaintenanceReceipt(path){
+ if(!path)return;
+ try{
+  const r=await authFetch('/storage/v1/object/'+MAINTENANCE_RECEIPT_BUCKET+'/'+path);
+  const b=await r.blob(),u=URL.createObjectURL(b);
+  window.open(u,'_blank','noopener');
+  setTimeout(()=>URL.revokeObjectURL(u),60000);
+ }catch(e){
+  alert('Não foi possível abrir a nota das peças: '+(e.message||String(e)));
+ }
+}
+function maintenanceReceiptHistory(meta={}){
+ const h=Array.isArray(meta.parts_receipt_history)?meta.parts_receipt_history:[];
+ if(h.length)return h;
+ return meta.parts_receipt_path?[{path:meta.parts_receipt_path,uploaded_at:null,supplier:meta.parts_supplier||''}]:[];
+}
+function updateMaintenanceCustomTypeUi(){
+ const other=$('#maintenanceType')?.value==='Outro';
+ const wrap=$('#maintenanceCustomTypeWrap');
+ if(wrap)wrap.classList.toggle('hidden',!other);
+ if(!other&&$('#maintenanceCustomType'))$('#maintenanceCustomType').value='';
+}
+function updateMaintenanceReceiptCurrent(meta={}){
+ const el=$('#maintenanceReceiptCurrent');if(!el)return;
+ const h=maintenanceReceiptHistory(meta),latest=h[h.length-1];
+ if(!latest?.path){
+  el.innerHTML='Nenhuma nota arquivada.';
+  return;
+ }
+ const date=latest.uploaded_at?new Date(latest.uploaded_at).toLocaleString('pt-BR'):'';
+ el.innerHTML='<span class="pill ok">📎 '+h.length+' nota'+(h.length===1?'':'s')+' arquivada'+(h.length===1?'':'s')+'</span> <button type="button" class="btn soft maintenanceReceiptView" data-path="'+esc(latest.path)+'" style="padding:5px 8px">Ver última</button>'+(date?' <span class="muted">'+esc(date)+'</span>':'');
+}
+async function loadMaintenances(){
+ const [plans,vehicles]=await Promise.all([
+  rest('v2_maintenance_plans','select=*&company_id=eq.'+companyId+'&active=eq.true&order=next_due_at.asc.nullslast'),
+  rest('v2_vehicles','select=id,description,plate,make,model,current_odometer_km,status&company_id=eq.'+companyId+'&order=description.asc')
+ ]);
+ maintenanceCache=plans||[];
+ window.__maintenanceVehicles=vehicles||[];
+
+ const list=$('#maintenanceList'),sel=$('#maintenanceVehicle');
+ if(sel)sel.innerHTML='<option value="">Selecione...</option>'+vehicles.map(v=>'<option value="'+v.id+'">'+esc(v.description||v.model||v.plate)+' • '+esc(v.plate||'sem placa')+'</option>').join('');
+
+ let counts={ok:0,warn:0,error:0};
+ plans.forEach(p=>counts[maintenanceStatus(p,vehicles.find(v=>v.id===p.vehicle_id))[1]]++);
+ const k=$('#maintenanceKpis');
+ if(k)k.innerHTML='<div class="v2kpi maintenance-kpi"><div class="t">PLANOS ATIVOS</div><div class="v">'+plans.length+'</div><div class="s">manutenções programadas</div></div>'+
+  '<div class="v2kpi maintenance-kpi"><div class="t">EM DIA</div><div class="v">'+counts.ok+'</div><div class="s">sem pendências</div></div>'+
+  '<div class="v2kpi maintenance-kpi"><div class="t">PRÓXIMAS</div><div class="v">'+counts.warn+'</div><div class="s">até 30 dias / 1.000 km</div></div>'+
+  '<div class="v2kpi maintenance-kpi"><div class="t">VENCIDAS</div><div class="v">'+counts.error+'</div><div class="s">requer atenção</div></div>';
+
+ if(list)list.innerHTML=plans.map(p=>{
+  const v=vehicles.find(x=>x.id===p.vehicle_id),st=maintenanceStatus(p,v),m=p.metadata||{};
+  const total=Number(m.parts_cost||0)+Number(m.labor_cost||0);
+  const receipts=maintenanceReceiptHistory(m),latest=receipts[receipts.length-1];
+  const supplier=m.parts_supplier?'<div class="muted">🧾 Peças compradas em: <b>'+esc(m.parts_supplier)+'</b></div>':'';
+  const receipt=latest?.path?'<button class="btn soft maintenanceReceiptView" data-path="'+esc(latest.path)+'" type="button">📎 Nota das peças'+(receipts.length>1?' ('+receipts.length+')':'')+'</button>':'';
+  return '<div class="item"><div class="toolbar" style="justify-content:space-between">'+
+   '<div><strong>'+esc(p.name)+'</strong> <span class="pill '+st[1]+'">'+st[0]+'</span>'+
+   '<div class="muted">'+esc(v?.description||v?.model||'Veículo')+' • '+esc(v?.plate||'sem placa')+'</div>'+
+   '<div style="margin-top:6px">Último: '+(p.last_done_at?new Date(p.last_done_at+'T00:00:00').toLocaleDateString('pt-BR'):'—')+' • '+Number(p.last_done_odometer_km||0).toLocaleString('pt-BR')+' km &nbsp; | &nbsp; Próximo: '+(p.next_due_at?new Date(p.next_due_at+'T00:00:00').toLocaleDateString('pt-BR'):'—')+' • '+(p.next_due_odometer_km?Number(p.next_due_odometer_km).toLocaleString('pt-BR')+' km':'—')+'</div>'+
+   (total?'<div class="muted">Último custo: '+money(total)+(m.workshop?' • '+esc(m.workshop):'')+'</div>':'')+
+   supplier+
+   '</div><div class="toolbar">'+receipt+'<button class="btn soft" onclick="openMaintenanceEdit(\''+p.id+'\')">Editar</button></div></div></div>';
+ }).join('')||'<div class="muted">Nenhuma manutenção programada. Toque em + Nova manutenção.</div>';
+}
+function calcMaintenanceTotal(){
+ const v=Number($('#maintenancePartsCost')?.value||0)+Number($('#maintenanceLaborCost')?.value||0);
+ if($('#maintenanceTotal'))$('#maintenanceTotal').value=money(v);
+}
+function openMaintenanceEdit(id=''){
+ const p=maintenanceCache.find(x=>x.id===id),m=p?.metadata||{};
+ $('#maintenanceEditMsg').textContent='';
+ $('#maintenanceEditCard').style.display='block';
+ $('#maintenanceEditTitle').textContent=p?'Editar manutenção':'Nova manutenção';
+ $('#editMaintenanceId').value=p?.id||'';
+ $('#maintenanceVehicle').value=p?.vehicle_id||'';
+
+ const savedName=p?.name||'Troca de óleo e filtros';
+ const standard=MAINTENANCE_STANDARD_TYPES.includes(savedName);
+ $('#maintenanceType').value=standard?savedName:(p?'Outro':'Troca de óleo e filtros');
+ $('#maintenanceCustomType').value=p&&!standard?savedName:'';
+ updateMaintenanceCustomTypeUi();
+
+ $('#maintenanceDate').value=p?.last_done_at||new Date().toISOString().slice(0,10);
+ $('#maintenanceKm').value=p?.last_done_odometer_km||'';
+ $('#maintenanceNextKm').value=p?.next_due_odometer_km||'';
+ $('#maintenanceNextDate').value=p?.next_due_at||'';
+ $('#maintenanceParts').value=m.parts||'';
+ $('#maintenancePartsCost').value=m.parts_cost||'';
+ $('#maintenanceLaborCost').value=m.labor_cost||'';
+ $('#maintenancePartsSupplier').value=m.parts_supplier||'';
+ $('#maintenanceReceiptFile').value='';
+ $('#maintenanceWorkshop').value=m.workshop||'';
+ $('#maintenanceNotes').value=m.notes||'';
+ updateMaintenanceReceiptCurrent(m);
+
+ $('#archiveMaintenanceBtn').style.display=p?'inline-flex':'none';
+ $('#deleteMaintenanceBtn').style.display=p?'inline-flex':'none';
+ calcMaintenanceTotal();
+ $('#maintenanceEditCard').scrollIntoView({behavior:'smooth',block:'start'});
+}
 window.openMaintenanceEdit=openMaintenanceEdit;
-async function saveMaintenance(){const id=$('#editMaintenanceId').value,vehicle_id=$('#maintenanceVehicle').value,name=$('#maintenanceType').value;if(!vehicle_id)return $('#maintenanceEditMsg').textContent='Selecione o veículo.';const lastKm=Number($('#maintenanceKm').value||0),nextKm=Number($('#maintenanceNextKm').value||0);const body={company_id:companyId,vehicle_id,name,last_done_at:$('#maintenanceDate').value||null,last_done_odometer_km:lastKm||null,next_due_at:$('#maintenanceNextDate').value||null,next_due_odometer_km:nextKm||null,active:true,metadata:{parts:$('#maintenanceParts').value.trim(),parts_cost:Number($('#maintenancePartsCost').value||0),labor_cost:Number($('#maintenanceLaborCost').value||0),workshop:$('#maintenanceWorkshop').value.trim(),notes:$('#maintenanceNotes').value.trim()}};try{if(id)await rest('v2_maintenance_plans','id=eq.'+id,'PATCH',body);else await rest('v2_maintenance_plans','','POST',body);const v=(window.__maintenanceVehicles||[]).find(x=>x.id===vehicle_id);if(v&&lastKm>Number(v.current_odometer_km||0))await rest('v2_vehicles','id=eq.'+vehicle_id,'PATCH',{current_odometer_km:lastKm});$('#maintenanceEditMsg').textContent='Manutenção salva.';$('#maintenanceEditCard').style.display='none';await loadMaintenances()}catch(e){$('#maintenanceEditMsg').textContent=e.message}}
+
+async function saveMaintenance(){
+ const currentId=$('#editMaintenanceId').value;
+ const vehicle_id=$('#maintenanceVehicle').value;
+ const msg=$('#maintenanceEditMsg');
+ if(!vehicle_id){msg.textContent='Selecione o veículo.';return}
+
+ const selectedType=$('#maintenanceType').value;
+ const customType=$('#maintenanceCustomType').value.trim();
+ const name=selectedType==='Outro'?customType:selectedType;
+ if(selectedType==='Outro'&&!customType){msg.textContent='Escreva qual é o serviço no campo “Qual serviço?”.';return}
+
+ const lastKm=Number($('#maintenanceKm').value||0),nextKm=Number($('#maintenanceNextKm').value||0);
+ const existing=currentId?maintenanceCache.find(x=>x.id===currentId):null;
+ const recordId=currentId||(crypto.randomUUID?crypto.randomUUID():String(Date.now())+'-0000-4000-8000-000000000000');
+ let metadata={
+  ...(existing?.metadata||{}),
+  parts:$('#maintenanceParts').value.trim(),
+  parts_cost:Number($('#maintenancePartsCost').value||0),
+  labor_cost:Number($('#maintenanceLaborCost').value||0),
+  parts_supplier:$('#maintenancePartsSupplier').value.trim(),
+  workshop:$('#maintenanceWorkshop').value.trim(),
+  notes:$('#maintenanceNotes').value.trim(),
+  service_type_source:selectedType==='Outro'?'custom':'standard'
+ };
+
+ const receipt=$('#maintenanceReceiptFile').files?.[0]||null;
+ try{
+  const btn=$('#saveMaintenanceEdit');if(btn)btn.disabled=true;
+  if(receipt){
+   msg.textContent='Arquivando nota das peças...';
+   const path=await uploadMaintenanceReceipt(receipt,recordId);
+   const history=maintenanceReceiptHistory(metadata);
+   history.push({
+    path,
+    uploaded_at:new Date().toISOString(),
+    supplier:metadata.parts_supplier||null,
+    service_date:$('#maintenanceDate').value||null,
+    parts_cost:metadata.parts_cost||0,
+    original_name:receipt.name||null,
+    mime_type:receipt.type||null
+   });
+   metadata.parts_receipt_history=history;
+   metadata.parts_receipt_path=path;
+  }
+
+  const body={
+   company_id:companyId,vehicle_id,name,
+   last_done_at:$('#maintenanceDate').value||null,
+   last_done_odometer_km:lastKm||null,
+   next_due_at:$('#maintenanceNextDate').value||null,
+   next_due_odometer_km:nextKm||null,
+   active:true,metadata
+  };
+
+  msg.textContent=currentId?'Salvando alterações...':'Salvando manutenção...';
+  if(currentId)await rest('v2_maintenance_plans','id=eq.'+currentId,'PATCH',body);
+  else await rest('v2_maintenance_plans','','POST',{id:recordId,...body});
+
+  const v=(window.__maintenanceVehicles||[]).find(x=>x.id===vehicle_id);
+  if(v&&lastKm>Number(v.current_odometer_km||0))await rest('v2_vehicles','id=eq.'+vehicle_id,'PATCH',{current_odometer_km:lastKm});
+
+  msg.textContent=receipt?'Manutenção e nota das peças arquivadas ✓':'Manutenção salva ✓';
+  $('#maintenanceEditCard').style.display='none';
+  await loadMaintenances();
+ }catch(e){
+  msg.textContent=e.message||String(e);
+ }finally{
+  const btn=$('#saveMaintenanceEdit');if(btn)btn.disabled=false;
+ }
+}
 
 
 let fuelCache=[],fuelVehicles=[];
@@ -8106,6 +8293,7 @@ document.addEventListener('click',async function(e){
   const vdocView=e.target.closest('.vehicleDocView');if(vdocView){e.preventDefault();await downloadVehicleDoc(vdocView.dataset.file,false);return}
   const vdocDown=e.target.closest('.vehicleDocDownload');if(vdocDown){e.preventDefault();await downloadVehicleDoc(vdocDown.dataset.file,true);return}
   const edoc=e.target.closest('.editVehicleDocBtn');if(edoc){e.preventDefault();openVehicleDoc(edoc.dataset.id);return}
+  const maintReceipt=e.target.closest('.maintenanceReceiptView');if(maintReceipt){e.preventDefault();await openMaintenanceReceipt(maintReceipt.dataset.path);return}
   const delFuel=e.target.closest('.deleteFuelBtn');if(delFuel){e.preventDefault();await deleteFuelLog(delFuel.dataset.id);return}
   const delOp=e.target.closest('.poDeleteOp');if(delOp){e.preventDefault();await deletePoultryOperation(delOp.dataset.op,delOp.dataset.loading);return}
   if(e.target.closest('#deleteMaintenanceBtn')){e.preventDefault();await deleteMaintenance(document.getElementById('editMaintenanceId')?.value);return}
@@ -8139,6 +8327,7 @@ document.addEventListener('input',function(e){
 document.addEventListener('change',async function(e){
  if(['fleetStatusFilter','fleetLicenseFilter','fleetSort'].includes(e.target?.id)){renderFleetVehicles();return}
  if(e.target?.id==='crlvLicenseCategory'){updateCrlvAutoExpiry();return}
+ if(e.target?.id==='maintenanceType'){updateMaintenanceCustomTypeUi();return}
  if(e.target?.id==='vehicleDocType'){window.__pendingVehicleDocCrlv=null;configureVehicleDocTypeUi();return}
  if(e.target?.id==='vehicleDocFile'){
   window.__pendingVehicleDocCrlv=null;
@@ -8188,7 +8377,7 @@ setInterval(()=>{
 },60000);
 if('serviceWorker' in navigator){
  window.addEventListener('load',()=>{
-  navigator.serviceWorker.register('./sw-v6-89.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
+  navigator.serviceWorker.register('./sw-v6-90.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
  });
 }
 
