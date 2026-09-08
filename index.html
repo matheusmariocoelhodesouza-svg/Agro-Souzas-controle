@@ -5578,8 +5578,8 @@ function scheduleAutoSaveTruckDriverPair(){
  clearTimeout(poultryDriverAutoSaveTimer);
  poultryDriverAutoSaveTimer=setTimeout(autoSaveTruckDriverPair,500);
 }
-function openNextTruckForm({
- resetPoTruckAutoSheet();operationId,loadingId,farmId,name,sequence}){
+function openNextTruckForm({operationId,loadingId,farmId,name,sequence}){
+ resetPoTruckAutoSheet();
  $('#poTruckOperationId').value=operationId||'';
  $('#poTruckLoadingId').value=loadingId||'';
  $('#poTruckSequence').value=sequence||1;
