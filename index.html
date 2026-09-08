@@ -8,7 +8,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
-<title>Comando 360 • v6.84</title>
+<title>Comando 360 • v6.85</title>
 <link rel="manifest" href="./comando360.webmanifest"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
@@ -1619,7 +1619,7 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
 <script defer src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"></script>
 <script>
 (function(){
-  const BUILD='6.80';
+  const BUILD='6.85';
   try{
     const marker='controla_cache_cleanup_'+BUILD;
     if(!localStorage.getItem(marker)){
@@ -1684,7 +1684,7 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
   <div class="brand"><img class="header-brand-icon" src="./comando360-icon.svg" alt="Comando 360"/><div><b>Comando <span class="brand360">360</span></b><div><small id="companyName">Empresa</small></div></div></div>
  </div>
  <div class="header-module" id="headerModule"><span id="headerModuleTitle">Painel Geral</span><small id="headerModuleSubtitle">Central de gestão</small></div>
- <div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.80</span><button class="btn soft" id="themeToggle" type="button" aria-label="Alternar tema">☾</button><button class="btn soft hidden" id="logout">Sair</button></div>
+ <div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.85</span><button class="btn soft" id="themeToggle" type="button" aria-label="Alternar tema">☾</button><button class="btn soft hidden" id="logout">Sair</button></div>
 </header>
 <main class="wrap">
 <section class="login team-entry" id="login">
@@ -1702,7 +1702,7 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
  <label>Senha</label><input autocomplete="current-password" id="password" type="password"/>
  <button class="btn primary" id="loginBtn">Entrar</button>
  <button class="btn soft" id="backDeviceSetup" type="button" style="margin-left:6px">Voltar</button>
- <div class="muted" id="loginMsg" style="margin-top:10px">Comando 360 • v6.80</div><div class="debug" id="debug"></div>
+ <div class="muted" id="loginMsg" style="margin-top:10px">Comando 360 • v6.85</div><div class="debug" id="debug"></div>
 </div>
 </section>
 <section class="hidden" id="app">
@@ -2248,7 +2248,7 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
 <div class="section" data-screen="combustivel" hidden="" id="combustivel">
 <div class="card"><div class="toolbar" style="justify-content:space-between"><div><h3 id="fuelScreenTitle" style="margin:0">⛽ Combustível & KM</h3><div class="muted" id="fuelScreenSubtitle">Abastecimentos, quilometragem, consumo e custo da frota.</div></div><div class="toolbar"><button class="btn primary" id="newFuelBtn" type="button">+ ABASTECIMENTO</button><button class="btn soft" id="newKmBtn" type="button">+ REGISTRAR KM</button></div></div><div class="v2-kpis" id="fuelKpis" style="margin-top:14px"></div></div>
 <div class="card" id="fuelEditCard" style="display:none"><div class="toolbar" style="justify-content:space-between"><div><h3 style="margin:0">Novo abastecimento</h3><div class="muted">O KM informado também atualiza a ficha do veículo quando for maior.</div></div><button class="btn soft" id="cancelFuelEdit" type="button">Cancelar</button></div>
-<div class="row" style="margin-top:12px"><div><label>Veículo</label><select id="fuelVehicle"></select></div><div><label>Data e hora</label><input id="fuelDate" type="datetime-local"/></div><div><label>KM atual</label><input id="fuelKm" type="number" min="0" step="1"/></div></div>
+<div class="row" style="margin-top:12px"><div><label>Condução</label><select id="fuelVehicle"></select><div class="muted" id="fuelVehicleHint" style="margin-top:5px">Selecione a condução abastecida.</div></div><div><label>Data e hora</label><input id="fuelDate" type="datetime-local"/></div><div><label>KM atual</label><input id="fuelKm" type="number" min="0" step="1"/></div></div>
 <div class="row"><div><label>Litros</label><input id="fuelLiters" type="number" min="0" step="0.01"/></div><div><label>Valor total (R$)</label><input id="fuelTotal" type="number" min="0" step="0.01"/></div><div><label>Posto</label><input id="fuelStation" placeholder="Nome do posto"/></div></div>
 <div class="row">
  <div><label>Motorista</label><input id="fuelDriver" placeholder="Nome do motorista"/></div>
@@ -5901,8 +5901,23 @@ async function loadFuel(){
   }
  }
  fuelCache=logs||[];fuelVehicles=vehicles||[];
- const opts='<option value="">Selecione...</option>'+fuelVehicles.map(v=>'<option value="'+esc(v.id)+'">'+esc(v.description||v.model||v.plate)+' • '+esc(v.plate||'sem placa')+'</option>').join('');
- const fs=document.getElementById('fuelVehicle'),ks=document.getElementById('kmVehicle');if(fs)fs.innerHTML=opts;if(ks)ks.innerHTML=opts;
+ const primaryFuelVehicleId=deviceMode?(deviceVehicleInfo?.id||deviceTeam?.metadata?.primary_vehicle_id||null):null;
+ const orderedFuelVehicles=[...fuelVehicles].sort((a,b)=>{
+  if(primaryFuelVehicleId&&a.id===primaryFuelVehicleId)return -1;
+  if(primaryFuelVehicleId&&b.id===primaryFuelVehicleId)return 1;
+  return String(a.description||a.model||a.plate||'').localeCompare(String(b.description||b.model||b.plate||''),'pt-BR');
+ });
+ const opts='<option value="">Selecione...</option>'+orderedFuelVehicles.map(v=>'<option value="'+esc(v.id)+'">'+esc(v.description||v.model||v.plate)+' • '+esc(v.plate||'sem placa')+(deviceMode&&v.id===primaryFuelVehicleId?' • CONDUÇÃO DA EQUIPE':'')+'</option>').join('');
+ const fs=document.getElementById('fuelVehicle'),ks=document.getElementById('kmVehicle');
+ if(fs){
+  const oldValue=fs.value;
+  fs.innerHTML=opts;
+  if(deviceMode&&primaryFuelVehicleId&&orderedFuelVehicles.some(v=>v.id===primaryFuelVehicleId))fs.value=primaryFuelVehicleId;
+  else if(oldValue&&orderedFuelVehicles.some(v=>v.id===oldValue))fs.value=oldValue;
+ }
+ if(ks)ks.innerHTML=opts;
+ const fuelHint=document.getElementById('fuelVehicleHint');
+ if(fuelHint&&deviceMode)fuelHint.textContent='A condução da equipe vem selecionada primeiro, mas você pode escolher qualquer outra condução ativa da empresa.';
  const month=new Date().toISOString().slice(0,7);
  const ml=fuelCache.filter(x=>String(x.fueled_at||'').slice(0,7)===month);
  const liters=ml.reduce((a,x)=>a+Number(x.liters||0),0),cost=ml.reduce((a,x)=>a+Number(x.total_amount||0),0);
@@ -5913,7 +5928,7 @@ async function loadFuel(){
  const kmBtn=document.getElementById('newKmBtn'),kmCard=document.getElementById('kmEditCard');
  if(deviceMode){
   if(title)title.textContent='⛽ Abastecimento';
-  if(sub)sub.textContent='Registre abastecimentos e consulte o histórico da condução.';
+  if(sub)sub.textContent='Registre o abastecimento na condução que a equipe estiver usando hoje.';
   if(histSub)histSub.textContent='Lançamentos registrados pela equipe, do mais recente para o mais antigo.';
   if(k)k.style.display='none';
   if(kmBtn)kmBtn.style.display='none';
@@ -7682,7 +7697,7 @@ async function v2Go(tab){
    else if(tab==='frota') await loadVehicles();
    else if(tab==='rastreamento') await loadMovitTracking(true);
    else if(tab==='manutencoes') await loadMaintenances();
-   else if(tab==='combustivel'){await loadFuel();if(deviceMode&&fuelVehicles.length===1){const s=$('#fuelVehicle');if(s)s.value=fuelVehicles[0].id}}
+   else if(tab==='combustivel'){await loadFuel();}
    else if(tab==='documentosrh') await loadEmpDocs();
    else if(tab==='financeiro') await loadFinance();
    else if(tab==='relatorios') await loadReports();
@@ -7712,6 +7727,16 @@ document.addEventListener('click',function(e){
 document.addEventListener('keydown',e=>{if(e.key==='Escape')c360CloseMobileMenu()});
 document.addEventListener('change',function(e){
  if(e.target?.id==='reportsFuelVehicle'&&adminReportCache)renderFuelReportByVehicle(adminReportCache.fuels,e.target.value||'all');
+ if(e.target?.id==='fuelVehicle'){
+  const v=fuelVehicles.find(x=>x.id===e.target.value);
+  const km=document.getElementById('fuelKm');
+  if(km)km.value=v?.current_odometer_km||'';
+  const hint=document.getElementById('fuelVehicleHint');
+  if(hint&&deviceMode){
+   const primaryId=deviceVehicleInfo?.id||deviceTeam?.metadata?.primary_vehicle_id||null;
+   hint.textContent=v?.id===primaryId?'Condução principal da equipe selecionada.':'Outra condução selecionada para este abastecimento.';
+  }
+ }
 });
 document.addEventListener('click',async function(e){
   if(e.target.closest('#newFuelBtn')){
@@ -7725,9 +7750,13 @@ document.addEventListener('click',async function(e){
    document.getElementById('fuelNotes').value='';
    document.getElementById('fuelDriver').value='';
    document.getElementById('fuelReceiptFile').value='';
-   if(deviceMode&&fuelVehicles.length===1){
-    document.getElementById('fuelVehicle').value=fuelVehicles[0].id;
-    document.getElementById('fuelKm').value=fuelVehicles[0].current_odometer_km||'';
+   if(deviceMode&&fuelVehicles.length){
+    const primaryId=deviceVehicleInfo?.id||deviceTeam?.metadata?.primary_vehicle_id||null;
+    const selected=fuelVehicles.find(v=>v.id===primaryId)||fuelVehicles[0];
+    document.getElementById('fuelVehicle').value=selected.id;
+    document.getElementById('fuelKm').value=selected.current_odometer_km||'';
+    const hint=document.getElementById('fuelVehicleHint');
+    if(hint)hint.textContent=selected.id===primaryId?'Condução principal da equipe selecionada. Você pode trocar abaixo.':'Selecione a condução que está sendo usada hoje.';
    }
    return
   }
@@ -7863,7 +7892,7 @@ setInterval(()=>{
 },60000);
 if('serviceWorker' in navigator){
  window.addEventListener('load',()=>{
-  navigator.serviceWorker.register('./sw-v6-84.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
+  navigator.serviceWorker.register('./sw-v6-85.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
  });
 }
 
