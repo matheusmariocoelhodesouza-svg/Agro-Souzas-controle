@@ -8,7 +8,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
-<title>Comando 360 • v6.90</title>
+<title>Comando 360 • v6.91</title>
 <link rel="manifest" href="./comando360.webmanifest"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
@@ -1614,7 +1614,18 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
 }
 
 
-/* 6.90 — nível estimado de combustível */
+/* 6.91 — peças múltiplas na manutenção */
+.maintenance-parts-card{margin:12px 0;padding:13px;border:1px solid #dce5ef;border-radius:15px;background:#f8fbff}
+.maintenance-parts-list{display:grid;gap:8px;margin-top:10px}
+.maintenance-part-row{display:grid;grid-template-columns:minmax(180px,1.6fr) 90px 120px 120px auto;gap:8px;align-items:end;padding:10px;border:1px solid #e3e9f1;border-radius:12px;background:#fff}
+.maintenance-part-row label{font-size:10px;color:#64748b;font-weight:800}
+.maintenance-part-row input{width:100%;margin-top:4px}
+.maintenance-part-subtotal{height:42px;display:flex;align-items:center;font-weight:900}
+.maintenance-part-remove{height:42px}
+@media(max-width:760px){.maintenance-part-row{grid-template-columns:1fr 80px 1fr}.maintenance-part-desc{grid-column:1/-1}.maintenance-part-remove{grid-column:3}}
+.darkmode .maintenance-parts-card,.darkmode .maintenance-part-row{background:#101c2e;border-color:#26384e}
+
+/* 6.91 — nível estimado de combustível */
 .fuel-full-toggle{display:flex;align-items:flex-start;gap:11px;margin-top:12px;padding:12px 13px;border:1px solid #dbe5f0;border-radius:14px;background:#f8fbff;cursor:pointer}
 .fuel-full-toggle input{width:21px;height:21px;margin:1px 0 0;flex:0 0 auto;accent-color:#1976d2}
 .fuel-full-toggle strong{display:block;font-size:13px}.fuel-full-toggle small{display:block;color:#64748b;font-size:11px;line-height:1.4;margin-top:2px}
@@ -1635,7 +1646,7 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
 <script defer src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"></script>
 <script>
 (function(){
-  const BUILD='6.90';
+  const BUILD='6.91';
   try{
     const marker='controla_cache_cleanup_'+BUILD;
     if(!localStorage.getItem(marker)){
@@ -1700,7 +1711,7 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
   <div class="brand"><img class="header-brand-icon" src="./comando360-icon.svg" alt="Comando 360"/><div><b>Comando <span class="brand360">360</span></b><div><small id="companyName">Empresa</small></div></div></div>
  </div>
  <div class="header-module" id="headerModule"><span id="headerModuleTitle">Painel Geral</span><small id="headerModuleSubtitle">Central de gestão</small></div>
- <div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.90</span><button class="btn soft" id="themeToggle" type="button" aria-label="Alternar tema">☾</button><button class="btn soft hidden" id="logout">Sair</button></div>
+ <div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.91</span><button class="btn soft" id="themeToggle" type="button" aria-label="Alternar tema">☾</button><button class="btn soft hidden" id="logout">Sair</button></div>
 </header>
 <main class="wrap">
 <section class="login team-entry" id="login">
@@ -1718,7 +1729,7 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
  <label>Senha</label><input autocomplete="current-password" id="password" type="password"/>
  <button class="btn primary" id="loginBtn">Entrar</button>
  <button class="btn soft" id="backDeviceSetup" type="button" style="margin-left:6px">Voltar</button>
- <div class="muted" id="loginMsg" style="margin-top:10px">Comando 360 • v6.90</div><div class="debug" id="debug"></div>
+ <div class="muted" id="loginMsg" style="margin-top:10px">Comando 360 • v6.91</div><div class="debug" id="debug"></div>
 </div>
 </section>
 <section class="hidden" id="app">
@@ -2258,10 +2269,15 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
 <div class="card" id="maintenanceEditCard" style="display:none"><div class="toolbar" style="justify-content:space-between"><div><h3 id="maintenanceEditTitle" style="margin:0">Nova manutenção</h3><div class="muted">Registre o último serviço e programe o próximo.</div></div><button class="btn soft" id="cancelMaintenanceEdit" type="button">Cancelar</button></div><input id="editMaintenanceId" type="hidden"/>
 <div class="row" style="margin-top:12px"><div><label>Veículo</label><select id="maintenanceVehicle"></select></div><div><label>Tipo de serviço</label><select id="maintenanceType"><option>Troca de óleo e filtros</option><option>Freios</option><option>Pneus</option><option>Elétrica</option><option>Suspensão</option><option>Motor</option><option>Câmbio</option><option>Revisão preventiva</option><option>Manutenção corretiva</option><option>Outro</option></select><div id="maintenanceCustomTypeWrap" class="hidden" style="margin-top:8px"><label>Qual serviço?</label><input id="maintenanceCustomType" placeholder="Ex.: alternador, embreagem, escapamento, rolamento..."/></div></div><div><label>Data do serviço</label><input id="maintenanceDate" type="date"/></div></div>
 <div class="row"><div><label>KM do serviço</label><input id="maintenanceKm" type="number" min="0" step="1"/></div><div><label>Próxima por KM</label><input id="maintenanceNextKm" type="number" min="0" step="1" placeholder="Ex.: 255000"/></div><div><label>Próxima por data</label><input id="maintenanceNextDate" type="date"/></div></div>
-<div class="row"><div><label>Peças / materiais</label><input id="maintenanceParts" placeholder="Ex.: óleo, filtro de óleo, filtro diesel"/></div><div><label>Custo das peças (R$)</label><input id="maintenancePartsCost" type="number" min="0" step="0.01"/></div><div><label>Mão de obra (R$)</label><input id="maintenanceLaborCost" type="number" min="0" step="0.01"/></div></div>
-<div class="row"><div><label>Onde comprou as peças</label><input id="maintenancePartsSupplier" placeholder="Ex.: Auto Peças X / Mercado Livre / concessionária"/></div><div><label>Foto / PDF da nota das peças</label><input id="maintenanceReceiptFile" type="file" accept="image/jpeg,image/png,image/webp,application/pdf"/><div class="muted" id="maintenanceReceiptCurrent" style="margin-top:5px">Nenhuma nota arquivada.</div></div><div><label>Quem fez o serviço</label><input id="maintenanceWorkshop" placeholder="Ex.: Eu / mecânico habitual / oficina"/></div></div>
-<div class="row"><div><label>Observações</label><input id="maintenanceNotes"/></div><div><label>Valor total</label><input id="maintenanceTotal" readonly/></div></div>
-<div class="toolbar" style="margin-top:12px"><button class="btn primary" id="saveMaintenanceEdit" type="button">SALVAR MANUTENÇÃO</button><button class="btn soft" id="archiveMaintenanceBtn" type="button">DESATIVAR PLANO</button><button class="btn danger" id="deleteMaintenanceBtn" type="button">EXCLUIR MANUTENÇÃO</button></div><div class="muted" id="maintenanceEditMsg" style="margin-top:8px"></div></div>
+<input id="maintenanceParts" type="hidden"/>
+<div class="maintenance-parts-card">
+ <div class="toolbar" style="justify-content:space-between;align-items:flex-start"><div><strong>Peças / materiais</strong><div class="muted">Pode lançar quantas peças precisar nesta manutenção.</div></div><button class="btn soft" id="addMaintenancePart" type="button">+ ADICIONAR PEÇA</button></div>
+ <div id="maintenancePartsItems" class="maintenance-parts-list"></div>
+</div>
+<div class="row"><div><label>Custo das peças (R$)</label><input id="maintenancePartsCost" type="number" min="0" step="0.01"/></div><div><label>Mão de obra (R$)</label><input id="maintenanceLaborCost" type="number" min="0" step="0.01"/></div><div><label>Quem fez o serviço</label><input id="maintenanceWorkshop" placeholder="Ex.: Eu / mecânico habitual / oficina"/></div></div>
+<div class="row"><div><label>Onde comprou as peças</label><input id="maintenancePartsSupplier" placeholder="Ex.: Auto Peças X / Mercado Livre / concessionária"/></div><div><label>Foto / PDF da nota das peças</label><input id="maintenanceReceiptFile" type="file" accept="image/jpeg,image/png,image/webp,application/pdf"/><div class="muted" id="maintenanceReceiptReadMsg" style="margin-top:5px">Ao escolher a nota, o app tenta ler automaticamente a loja, as peças e o valor.</div><div class="muted" id="maintenanceReceiptCurrent" style="margin-top:5px">Nenhuma nota arquivada.</div></div><div><label>Observações</label><input id="maintenanceNotes"/></div></div>
+<div class="row"><div><label>Valor total da manutenção</label><input id="maintenanceTotal" readonly/></div></div>
+<div class="toolbar" style="margin-top:12px"><button class="btn primary" id="saveMaintenanceEdit" type="button">SALVAR MANUTENÇÃO</button><button class="btn soft" id="saveMaintenanceAndAnother" type="button">SALVAR E + OUTRO SERVIÇO</button><button class="btn soft" id="archiveMaintenanceBtn" type="button">DESATIVAR PLANO</button><button class="btn danger" id="deleteMaintenanceBtn" type="button">EXCLUIR MANUTENÇÃO</button></div><div class="muted" id="maintenanceEditMsg" style="margin-top:8px"></div></div>
 </div>
 <div class="section" data-screen="combustivel" hidden="" id="combustivel">
 <div class="card"><div class="toolbar" style="justify-content:space-between"><div><h3 id="fuelScreenTitle" style="margin:0">⛽ Combustível & KM</h3><div class="muted" id="fuelScreenSubtitle">Abastecimentos, quilometragem, consumo e custo da frota.</div></div><div class="toolbar"><button class="btn primary" id="newFuelBtn" type="button">+ ABASTECIMENTO</button><button class="btn soft" id="newKmBtn" type="button">+ REGISTRAR KM</button></div></div><div class="v2-kpis" id="fuelKpis" style="margin-top:14px"></div></div>
@@ -5960,6 +5976,13 @@ function maintenanceStatus(p,vehicle){const km=Number(vehicle?.current_odometer_
 const MAINTENANCE_RECEIPT_BUCKET='v2-maintenance-receipts';
 const MAINTENANCE_STANDARD_TYPES=['Troca de óleo e filtros','Freios','Pneus','Elétrica','Suspensão','Motor','Câmbio','Revisão preventiva','Manutenção corretiva'];
 
+function maintenanceUuid(){
+ if(window.crypto?.randomUUID)return crypto.randomUUID();
+ return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{
+  const r=Math.random()*16|0,v=c==='x'?r:(r&0x3|0x8);
+  return v.toString(16);
+ });
+}
 async function uploadMaintenanceReceipt(file,maintenanceId){
  if(!file)return null;
  if(file.size>10*1024*1024)throw new Error('A nota das peças deve ter no máximo 10 MB.');
@@ -5990,6 +6013,209 @@ function maintenanceReceiptHistory(meta={}){
  if(h.length)return h;
  return meta.parts_receipt_path?[{path:meta.parts_receipt_path,uploaded_at:null,supplier:meta.parts_supplier||''}]:[];
 }
+function maintenanceMoney(v){
+ let s=String(v||'').trim().replace(/R\$\s*/gi,'').replace(/\s/g,'').replace(/[^0-9,.-]/g,'');
+ if(!s)return 0;
+ if(s.includes(',')&&s.includes('.')){
+  if(s.lastIndexOf(',')>s.lastIndexOf('.'))s=s.replace(/\./g,'').replace(',','.');
+  else s=s.replace(/,/g,'');
+ }else if(s.includes(','))s=s.replace(/\./g,'').replace(',','.');
+ return Number(s)||0;
+}
+function maintenanceReceiptSupplier(lines=[]){
+ const reject=/CNPJ|CPF|DANFE|NFC-?E|NF-?E|CUPOM|DOCUMENTO\s+AUXILIAR|CONSUMIDOR|CHAVE\s+DE\s+ACESSO|PROTOCOLO|IE\b|IM\b|ENDERE[CÇ]O|CEP|TELEFONE|FONE|DATA|HORA|TOTAL|SUBTOTAL|PAGAMENTO|DINHEIRO|PIX|CART[AÃ]O/i;
+ for(const raw of lines.slice(0,14)){
+  const line=String(raw||'').replace(/\s{2,}/g,' ').trim();
+  const letters=(line.match(/[A-ZÀ-Ú]/gi)||[]).length;
+  if(line.length>=4&&line.length<=90&&letters>=4&&!reject.test(line)&&!/^\d+$/.test(line))return line;
+ }
+ return '';
+}
+function parseMaintenanceReceiptText(raw){
+ const text=String(raw||'').replace(/\r/g,'\n').replace(/[ \t]+/g,' ').trim();
+ const flat=text.replace(/\s+/g,' ');
+ const lines=text.split(/\n+/).map(x=>x.trim()).filter(Boolean);
+ const supplier=maintenanceReceiptSupplier(lines);
+ let total=0;
+ const totalPatterns=[
+  /(?:VALOR\s+TOTAL|TOTAL\s+A\s+PAGAR|TOTAL\s+DA\s+NOTA|TOTAL\s+NOTA|TOTAL)\s*(?:R\$)?\s*[:=\-]?\s*(\d{1,9}(?:[.,]\d{3})*[.,]\d{2})\b/i,
+  /\bR\$\s*(\d{1,9}(?:[.,]\d{3})*[.,]\d{2})\s*(?:TOTAL|VALOR\s+TOTAL)\b/i
+ ];
+ for(const p of totalPatterns){const m=flat.match(p);if(m?.[1]){total=maintenanceMoney(m[1]);if(total>0)break}}
+
+ const itemReject=/TOTAL|SUBTOTAL|DESCONTO|ACR[EÉ]SCIMO|TROCO|PAGAMENTO|DINHEIRO|PIX|CART[AÃ]O|CNPJ|CPF|DANFE|NFC-?E|NF-?E|ICMS|TRIBUT|IMPOST|CHAVE|PROTOCOLO|ENDERE[CÇ]O|CEP|TELEFONE|FONE|VENDEDOR|CLIENTE|CONSUMIDOR/i;
+ const items=[];
+ let pendingDesc='';
+ for(const rawLine of lines){
+  const line=rawLine.replace(/\s{2,}/g,' ').trim();
+  if(!line||itemReject.test(line))continue;
+  const vals=[...line.matchAll(/(?:R\$\s*)?(\d{1,7}(?:[.,]\d{3})*[.,]\d{2,4})\b/g)];
+  const letters=(line.match(/[A-ZÀ-Ú]/gi)||[]).length;
+
+  if(!vals.length){
+   if(letters>=3&&line.length>=4&&line.length<=100&&!/^\d+[\s\-./]*$/.test(line))pendingDesc=line;
+   continue;
+  }
+
+  const last=vals[vals.length-1];
+  const lineTotal=maintenanceMoney(last[1]);
+  if(!(lineTotal>0))continue;
+
+  let desc=line.slice(0,last.index).trim();
+  if(pendingDesc&&((desc.match(/[A-ZÀ-Ú]/gi)||[]).length<3))desc=(pendingDesc+' '+desc).trim();
+  desc=desc.replace(/^\d{3,}\s+/, '').replace(/\b(?:QTD|QTDE|QUANTIDADE)\b.*$/i,'').trim();
+
+  const qtyMatch=line.match(/\b(\d+(?:[.,]\d+)?)\s*(?:UN|UND|UNID|PC|P[CÇ]A|PCA|JG|KIT|CX|KG|LT|MT)\b/i);
+  let quantity=qtyMatch?maintenanceMoney(qtyMatch[1]):1;
+  if(!(quantity>0)||quantity>1000)quantity=1;
+
+  let unitPrice=0;
+  if(vals.length>=2){
+   const candidate=maintenanceMoney(vals[vals.length-2][1]);
+   if(candidate>0&&candidate<=lineTotal*1.5)unitPrice=candidate;
+  }
+  if(!unitPrice)unitPrice=lineTotal/quantity;
+
+  const dletters=(desc.match(/[A-ZÀ-Ú]/gi)||[]).length;
+  if(dletters>=3&&desc.length<=120){
+   items.push({
+    description:desc,
+    quantity:Number(quantity.toFixed(3)),
+    unit_price:Number(unitPrice.toFixed(2)),
+    total:Number(lineTotal.toFixed(2))
+   });
+   pendingDesc='';
+  }
+ }
+ const seen=new Set();
+ const cleanItems=items.filter(x=>{
+  const key=(x.description.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,35))+'|'+x.total.toFixed(2);
+  if(seen.has(key))return false;
+  seen.add(key);return true;
+ }).slice(0,30);
+
+ if(!total&&cleanItems.length)total=cleanItems.reduce((s,x)=>s+Number(x.total||0),0);
+ return {supplier,items:cleanItems,total_amount:Number(total.toFixed(2)),raw_text:text.slice(0,8000)};
+}
+async function maintenanceReceiptImageCanvas(file){
+ const url=URL.createObjectURL(file);
+ try{
+  const img=await new Promise((resolve,reject)=>{
+   const i=new Image();i.onload=()=>resolve(i);i.onerror=()=>reject(new Error('Não consegui abrir a foto da nota.'));i.src=url;
+  });
+  return prepareOcrCanvas(img,2600);
+ }finally{URL.revokeObjectURL(url)}
+}
+function maintenanceReceiptProgress(status,progress=null,message=null){
+ const el=$('#maintenanceReceiptReadMsg');if(!el)return;
+ if(message){el.className='muted';el.textContent=message;return}
+ const pct=typeof progress==='number'?' '+Math.round(progress*100)+'%':'';
+ const labels={
+  'loading tesseract core':'Preparando leitor...',
+  'initializing tesseract':'Inicializando leitura...',
+  'loading language traineddata':'Carregando idioma...',
+  'initializing api':'Preparando OCR...',
+  'recognizing text':'Lendo a nota das peças...'
+ };
+ el.className='muted';
+ el.textContent=(labels[status]||'Lendo a nota das peças...')+pct;
+}
+async function maintenanceReceiptTextFromFile(file){
+ const isPdf=file.type==='application/pdf'||String(file.name||'').toLowerCase().endsWith('.pdf');
+ if(isPdf){
+  try{
+   const direct=await extractPdfText(file);
+   if(direct&&direct.length>50)return direct;
+  }catch(e){console.warn('Texto PDF da nota',e)}
+  if(!window.pdfjsLib)throw new Error('Leitor de PDF ainda carregando.');
+  pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+  const pdf=await pdfjsLib.getDocument({data:await file.arrayBuffer()}).promise;
+  const canvas=await pdfPageToOcrCanvas(pdf,1);
+  await ensureTesseractReady();
+  const result=await Tesseract.recognize(canvas,'por',{logger:m=>maintenanceReceiptProgress(m?.status,m?.progress)});
+  return String(result?.data?.text||'');
+ }
+ const canvas=await maintenanceReceiptImageCanvas(file);
+ await ensureTesseractReady();
+ const result=await Tesseract.recognize(canvas,'por',{logger:m=>maintenanceReceiptProgress(m?.status,m?.progress)});
+ return String(result?.data?.text||'');
+}
+async function readMaintenanceReceipt(file){
+ if(!file)return;
+ const msg=$('#maintenanceReceiptReadMsg');
+ try{
+  window.__maintenanceReceiptOcr=null;
+  maintenanceReceiptProgress(null,null,'Lendo a nota e identificando loja, peças e valores...');
+  const text=await maintenanceReceiptTextFromFile(file);
+  const parsed=parseMaintenanceReceiptText(text);
+  window.__maintenanceReceiptOcr={...parsed,read_at:new Date().toISOString(),engine:'tesseract-5.1.1'};
+
+  if(parsed.supplier)$('#maintenancePartsSupplier').value=parsed.supplier;
+  if(parsed.items.length)renderMaintenanceParts(parsed.items);
+  else if(parsed.total_amount>0)renderMaintenanceParts([{description:'Peças da nota',quantity:1,unit_price:parsed.total_amount,total:parsed.total_amount}]);
+  if(parsed.total_amount>0)$('#maintenancePartsCost').value=parsed.total_amount.toFixed(2);
+  calcMaintenanceTotal();
+
+  const found=[];
+  if(parsed.supplier)found.push('loja: '+parsed.supplier);
+  if(parsed.items.length)found.push(parsed.items.length+' peça'+(parsed.items.length===1?'':'s'));
+  if(parsed.total_amount)found.push(money(parsed.total_amount));
+  if(msg){
+   msg.className=found.length?'okmsg':'error';
+   msg.textContent=found.length?'Nota lida ✓ '+found.join(' • ')+' — confira os dados antes de salvar.':'A nota foi lida, mas não consegui identificar os campos. Você pode preencher manualmente.';
+  }
+ }catch(e){
+  if(msg){msg.className='error';msg.textContent='Não consegui ler a nota automaticamente: '+(e.message||String(e))+'. Você ainda pode preencher manualmente.'}
+ }
+}
+function maintenancePartsFromDom(){
+ return [...document.querySelectorAll('#maintenancePartsItems .maintenance-part-row')].map(row=>{
+  const description=row.querySelector('.maintenance-part-desc input')?.value.trim()||'';
+  const quantity=Number(row.querySelector('.maintenance-part-qty')?.value||1);
+  const unit_price=Number(row.querySelector('.maintenance-part-unit')?.value||0);
+  const total=Math.max(0,quantity*unit_price);
+  return {description,quantity:quantity>0?quantity:1,unit_price:unit_price>0?unit_price:0,total};
+ }).filter(x=>x.description||x.total>0);
+}
+function renderMaintenanceParts(items=[]){
+ const list=$('#maintenancePartsItems');if(!list)return;
+ const rows=(items||[]).length?items:[{description:'',quantity:1,unit_price:0,total:0}];
+ list.innerHTML=rows.map((x,i)=>{
+  const q=Number(x.quantity||1)>0?Number(x.quantity||1):1;
+  let u=Number(x.unit_price||0);
+  if(!u&&Number(x.total||0)>0)u=Number(x.total||0)/q;
+  return '<div class="maintenance-part-row" data-index="'+i+'">'+
+   '<div class="maintenance-part-desc"><label>Peça / material</label><input value="'+esc(x.description||'')+'" placeholder="Ex.: filtro diesel"/></div>'+
+   '<div><label>Qtd.</label><input class="maintenance-part-qty" type="number" min="0.001" step="0.001" value="'+q+'"/></div>'+
+   '<div><label>Valor unit. (R$)</label><input class="maintenance-part-unit" type="number" min="0" step="0.01" value="'+(u?u.toFixed(2):'')+'"/></div>'+
+   '<div><label>Subtotal</label><div class="maintenance-part-subtotal">'+money(q*u)+'</div></div>'+
+   '<button class="btn danger maintenance-part-remove" type="button" title="Remover peça">×</button>'+
+  '</div>';
+ }).join('');
+ calcMaintenanceParts();
+}
+function calcMaintenanceParts(){
+ const rows=[...document.querySelectorAll('#maintenancePartsItems .maintenance-part-row')];
+ let sum=0,parts=[];
+ rows.forEach(row=>{
+  const desc=row.querySelector('.maintenance-part-desc input')?.value.trim()||'';
+  const q=Math.max(0,Number(row.querySelector('.maintenance-part-qty')?.value||0));
+  const u=Math.max(0,Number(row.querySelector('.maintenance-part-unit')?.value||0));
+  const total=q*u;sum+=total;
+  const sub=row.querySelector('.maintenance-part-subtotal');if(sub)sub.textContent=money(total);
+  if(desc)parts.push(desc);
+ });
+ if($('#maintenanceParts'))$('#maintenanceParts').value=parts.join(', ');
+ if($('#maintenancePartsCost'))$('#maintenancePartsCost').value=sum?sum.toFixed(2):'';
+ calcMaintenanceTotal();
+}
+function addMaintenancePart(item={}){
+ const current=maintenancePartsFromDom();
+ current.push({description:item.description||'',quantity:item.quantity||1,unit_price:item.unit_price||0,total:item.total||0});
+ renderMaintenanceParts(current);
+ const rows=document.querySelectorAll('#maintenancePartsItems .maintenance-part-row');
+ const last=rows[rows.length-1];last?.querySelector('.maintenance-part-desc input')?.focus();
+}
 function updateMaintenanceCustomTypeUi(){
  const other=$('#maintenanceType')?.value==='Outro';
  const wrap=$('#maintenanceCustomTypeWrap');
@@ -6008,7 +6234,7 @@ function updateMaintenanceReceiptCurrent(meta={}){
 }
 async function loadMaintenances(){
  const [plans,vehicles]=await Promise.all([
-  rest('v2_maintenance_plans','select=*&company_id=eq.'+companyId+'&active=eq.true&order=next_due_at.asc.nullslast'),
+  rest('v2_maintenance_plans','select=*&company_id=eq.'+companyId+'&active=eq.true&order=last_done_at.desc.nullslast,created_at.desc'),
   rest('v2_vehicles','select=id,description,plate,make,model,current_odometer_km,status&company_id=eq.'+companyId+'&order=description.asc')
  ]);
  maintenanceCache=plans||[];
@@ -6020,7 +6246,7 @@ async function loadMaintenances(){
  let counts={ok:0,warn:0,error:0};
  plans.forEach(p=>counts[maintenanceStatus(p,vehicles.find(v=>v.id===p.vehicle_id))[1]]++);
  const k=$('#maintenanceKpis');
- if(k)k.innerHTML='<div class="v2kpi maintenance-kpi"><div class="t">PLANOS ATIVOS</div><div class="v">'+plans.length+'</div><div class="s">manutenções programadas</div></div>'+
+ if(k)k.innerHTML='<div class="v2kpi maintenance-kpi"><div class="t">REGISTROS ATIVOS</div><div class="v">'+plans.length+'</div><div class="s">serviços e manutenções</div></div>'+
   '<div class="v2kpi maintenance-kpi"><div class="t">EM DIA</div><div class="v">'+counts.ok+'</div><div class="s">sem pendências</div></div>'+
   '<div class="v2kpi maintenance-kpi"><div class="t">PRÓXIMAS</div><div class="v">'+counts.warn+'</div><div class="s">até 30 dias / 1.000 km</div></div>'+
   '<div class="v2kpi maintenance-kpi"><div class="t">VENCIDAS</div><div class="v">'+counts.error+'</div><div class="s">requer atenção</div></div>';
@@ -6029,16 +6255,19 @@ async function loadMaintenances(){
   const v=vehicles.find(x=>x.id===p.vehicle_id),st=maintenanceStatus(p,v),m=p.metadata||{};
   const total=Number(m.parts_cost||0)+Number(m.labor_cost||0);
   const receipts=maintenanceReceiptHistory(m),latest=receipts[receipts.length-1];
+  const partsItems=Array.isArray(m.parts_items)&&m.parts_items.length?m.parts_items:(m.parts?[{description:m.parts,quantity:1,total:Number(m.parts_cost||0)}]:[]);
+  const parts=partsItems.length?'<div class="muted">🔩 '+partsItems.slice(0,4).map(x=>esc(x.description||'Peça')+(Number(x.quantity||1)!==1?' × '+Number(x.quantity||1).toLocaleString('pt-BR'):'')).join(' • ')+(partsItems.length>4?' • +'+(partsItems.length-4)+' peça(s)':'')+'</div>':'';
   const supplier=m.parts_supplier?'<div class="muted">🧾 Peças compradas em: <b>'+esc(m.parts_supplier)+'</b></div>':'';
   const receipt=latest?.path?'<button class="btn soft maintenanceReceiptView" data-path="'+esc(latest.path)+'" type="button">📎 Nota das peças'+(receipts.length>1?' ('+receipts.length+')':'')+'</button>':'';
   return '<div class="item"><div class="toolbar" style="justify-content:space-between">'+
    '<div><strong>'+esc(p.name)+'</strong> <span class="pill '+st[1]+'">'+st[0]+'</span>'+
    '<div class="muted">'+esc(v?.description||v?.model||'Veículo')+' • '+esc(v?.plate||'sem placa')+'</div>'+
-   '<div style="margin-top:6px">Último: '+(p.last_done_at?new Date(p.last_done_at+'T00:00:00').toLocaleDateString('pt-BR'):'—')+' • '+Number(p.last_done_odometer_km||0).toLocaleString('pt-BR')+' km &nbsp; | &nbsp; Próximo: '+(p.next_due_at?new Date(p.next_due_at+'T00:00:00').toLocaleDateString('pt-BR'):'—')+' • '+(p.next_due_odometer_km?Number(p.next_due_odometer_km).toLocaleString('pt-BR')+' km':'—')+'</div>'+
-   (total?'<div class="muted">Último custo: '+money(total)+(m.workshop?' • '+esc(m.workshop):'')+'</div>':'')+
+   '<div style="margin-top:6px">Serviço: '+(p.last_done_at?new Date(p.last_done_at+'T00:00:00').toLocaleDateString('pt-BR'):'—')+' • '+Number(p.last_done_odometer_km||0).toLocaleString('pt-BR')+' km &nbsp; | &nbsp; Próximo: '+(p.next_due_at?new Date(p.next_due_at+'T00:00:00').toLocaleDateString('pt-BR'):'—')+' • '+(p.next_due_odometer_km?Number(p.next_due_odometer_km).toLocaleString('pt-BR')+' km':'—')+'</div>'+
+   parts+
+   (total?'<div class="muted">Custo: '+money(total)+(m.workshop?' • '+esc(m.workshop):'')+'</div>':'')+
    supplier+
    '</div><div class="toolbar">'+receipt+'<button class="btn soft" onclick="openMaintenanceEdit(\''+p.id+'\')">Editar</button></div></div></div>';
- }).join('')||'<div class="muted">Nenhuma manutenção programada. Toque em + Nova manutenção.</div>';
+ }).join('')||'<div class="muted">Nenhuma manutenção registrada. Toque em + Nova manutenção.</div>';
 }
 function calcMaintenanceTotal(){
  const v=Number($('#maintenancePartsCost')?.value||0)+Number($('#maintenanceLaborCost')?.value||0);
@@ -6046,6 +6275,7 @@ function calcMaintenanceTotal(){
 }
 function openMaintenanceEdit(id=''){
  const p=maintenanceCache.find(x=>x.id===id),m=p?.metadata||{};
+ $('#maintenanceEditMsg').className='muted';
  $('#maintenanceEditMsg').textContent='';
  $('#maintenanceEditCard').style.display='block';
  $('#maintenanceEditTitle').textContent=p?'Editar manutenção':'Nova manutenção';
@@ -6062,14 +6292,17 @@ function openMaintenanceEdit(id=''){
  $('#maintenanceKm').value=p?.last_done_odometer_km||'';
  $('#maintenanceNextKm').value=p?.next_due_odometer_km||'';
  $('#maintenanceNextDate').value=p?.next_due_at||'';
- $('#maintenanceParts').value=m.parts||'';
- $('#maintenancePartsCost').value=m.parts_cost||'';
+ const items=Array.isArray(m.parts_items)&&m.parts_items.length?m.parts_items:(m.parts?[{description:m.parts,quantity:1,unit_price:Number(m.parts_cost||0),total:Number(m.parts_cost||0)}]:[]);
+ renderMaintenanceParts(items);
+ if(m.parts_cost!==undefined&&m.parts_cost!==null&&Number(m.parts_cost)>=0)$('#maintenancePartsCost').value=Number(m.parts_cost||0).toFixed(2);
  $('#maintenanceLaborCost').value=m.labor_cost||'';
  $('#maintenancePartsSupplier').value=m.parts_supplier||'';
  $('#maintenanceReceiptFile').value='';
  $('#maintenanceWorkshop').value=m.workshop||'';
  $('#maintenanceNotes').value=m.notes||'';
+ window.__maintenanceReceiptOcr=m.parts_receipt_ocr||null;
  updateMaintenanceReceiptCurrent(m);
+ const readMsg=$('#maintenanceReceiptReadMsg');if(readMsg){readMsg.className='muted';readMsg.textContent='Ao escolher uma nova nota, o app tenta ler automaticamente a loja, as peças e o valor.'}
 
  $('#archiveMaintenanceBtn').style.display=p?'inline-flex':'none';
  $('#deleteMaintenanceBtn').style.display=p?'inline-flex':'none';
@@ -6078,7 +6311,7 @@ function openMaintenanceEdit(id=''){
 }
 window.openMaintenanceEdit=openMaintenanceEdit;
 
-async function saveMaintenance(){
+async function saveMaintenance(addAnother=false){
  const currentId=$('#editMaintenanceId').value;
  const vehicle_id=$('#maintenanceVehicle').value;
  const msg=$('#maintenanceEditMsg');
@@ -6091,23 +6324,35 @@ async function saveMaintenance(){
 
  const lastKm=Number($('#maintenanceKm').value||0),nextKm=Number($('#maintenanceNextKm').value||0);
  const existing=currentId?maintenanceCache.find(x=>x.id===currentId):null;
- const recordId=currentId||(crypto.randomUUID?crypto.randomUUID():String(Date.now())+'-0000-4000-8000-000000000000');
+ const recordId=currentId||maintenanceUuid();
+ const partsItems=maintenancePartsFromDom();
+ const partsSummary=partsItems.map(x=>x.description).filter(Boolean).join(', ');
+ const partsCost=Number($('#maintenancePartsCost').value||0);
  let metadata={
   ...(existing?.metadata||{}),
-  parts:$('#maintenanceParts').value.trim(),
-  parts_cost:Number($('#maintenancePartsCost').value||0),
+  parts:partsSummary,
+  parts_items:partsItems,
+  parts_cost:partsCost,
   labor_cost:Number($('#maintenanceLaborCost').value||0),
   parts_supplier:$('#maintenancePartsSupplier').value.trim(),
   workshop:$('#maintenanceWorkshop').value.trim(),
   notes:$('#maintenanceNotes').value.trim(),
-  service_type_source:selectedType==='Outro'?'custom':'standard'
+  service_type_source:selectedType==='Outro'?'custom':'standard',
+  parts_receipt_ocr:window.__maintenanceReceiptOcr||existing?.metadata?.parts_receipt_ocr||null
  };
 
  const receipt=$('#maintenanceReceiptFile').files?.[0]||null;
+ const context={
+  vehicle_id,
+  date:$('#maintenanceDate').value||null,
+  km:lastKm||null,
+  workshop:$('#maintenanceWorkshop').value.trim()
+ };
  try{
-  const btn=$('#saveMaintenanceEdit');if(btn)btn.disabled=true;
+  const saveBtn=$('#saveMaintenanceEdit'),anotherBtn=$('#saveMaintenanceAndAnother');
+  if(saveBtn)saveBtn.disabled=true;if(anotherBtn)anotherBtn.disabled=true;
   if(receipt){
-   msg.textContent='Arquivando nota das peças...';
+   msg.className='muted';msg.textContent='Arquivando nota das peças...';
    const path=await uploadMaintenanceReceipt(receipt,recordId);
    const history=maintenanceReceiptHistory(metadata);
    history.push({
@@ -6116,6 +6361,7 @@ async function saveMaintenance(){
     supplier:metadata.parts_supplier||null,
     service_date:$('#maintenanceDate').value||null,
     parts_cost:metadata.parts_cost||0,
+    items:partsItems,
     original_name:receipt.name||null,
     mime_type:receipt.type||null
    });
@@ -6132,20 +6378,32 @@ async function saveMaintenance(){
    active:true,metadata
   };
 
-  msg.textContent=currentId?'Salvando alterações...':'Salvando manutenção...';
+  msg.className='muted';msg.textContent=currentId?'Salvando alterações...':'Salvando manutenção...';
   if(currentId)await rest('v2_maintenance_plans','id=eq.'+currentId,'PATCH',body);
   else await rest('v2_maintenance_plans','','POST',{id:recordId,...body});
 
   const v=(window.__maintenanceVehicles||[]).find(x=>x.id===vehicle_id);
   if(v&&lastKm>Number(v.current_odometer_km||0))await rest('v2_vehicles','id=eq.'+vehicle_id,'PATCH',{current_odometer_km:lastKm});
 
-  msg.textContent=receipt?'Manutenção e nota das peças arquivadas ✓':'Manutenção salva ✓';
-  $('#maintenanceEditCard').style.display='none';
   await loadMaintenances();
+
+  if(addAnother){
+   openMaintenanceEdit('');
+   $('#maintenanceVehicle').value=context.vehicle_id;
+   if(context.date)$('#maintenanceDate').value=context.date;
+   if(context.km)$('#maintenanceKm').value=context.km;
+   if(context.workshop)$('#maintenanceWorkshop').value=context.workshop;
+   $('#maintenanceEditMsg').className='okmsg';
+   $('#maintenanceEditMsg').textContent='Serviço salvo ✓ Agora cadastre outro serviço na mesma condução e na mesma data.';
+  }else{
+   msg.className='okmsg';msg.textContent=receipt?'Manutenção e nota das peças arquivadas ✓':'Manutenção salva ✓';
+   $('#maintenanceEditCard').style.display='none';
+  }
  }catch(e){
-  msg.textContent=e.message||String(e);
+  msg.className='error';msg.textContent=e.message||String(e);
  }finally{
-  const btn=$('#saveMaintenanceEdit');if(btn)btn.disabled=false;
+  const saveBtn=$('#saveMaintenanceEdit'),anotherBtn=$('#saveMaintenanceAndAnother');
+  if(saveBtn)saveBtn.disabled=false;if(anotherBtn)anotherBtn.disabled=false;
  }
 }
 
@@ -8304,8 +8562,12 @@ document.addEventListener('click',async function(e){
   if(newBtn){e.preventDefault();openMaintenanceEdit('');return}
   const cancelBtn=e.target.closest('#cancelMaintenanceEdit');
   if(cancelBtn){e.preventDefault();const card=document.getElementById('maintenanceEditCard');if(card)card.style.display='none';return}
+  const addPart=e.target.closest('#addMaintenancePart');if(addPart){e.preventDefault();addMaintenancePart();return}
+  const removePart=e.target.closest('.maintenance-part-remove');if(removePart){e.preventDefault();removePart.closest('.maintenance-part-row')?.remove();if(!document.querySelector('#maintenancePartsItems .maintenance-part-row'))renderMaintenanceParts([]);else calcMaintenanceParts();return}
   const saveBtn=e.target.closest('#saveMaintenanceEdit');
-  if(saveBtn){e.preventDefault();await saveMaintenance();return}
+  if(saveBtn){e.preventDefault();await saveMaintenance(false);return}
+  const saveAnother=e.target.closest('#saveMaintenanceAndAnother');
+  if(saveAnother){e.preventDefault();await saveMaintenance(true);return}
   const archiveBtn=e.target.closest('#archiveMaintenanceBtn');
   if(archiveBtn){
     e.preventDefault();
@@ -8328,6 +8590,11 @@ document.addEventListener('change',async function(e){
  if(['fleetStatusFilter','fleetLicenseFilter','fleetSort'].includes(e.target?.id)){renderFleetVehicles();return}
  if(e.target?.id==='crlvLicenseCategory'){updateCrlvAutoExpiry();return}
  if(e.target?.id==='maintenanceType'){updateMaintenanceCustomTypeUi();return}
+ if(e.target?.id==='maintenanceReceiptFile'){
+  const file=e.target.files?.[0];
+  if(file)await readMaintenanceReceipt(file);
+  return;
+ }
  if(e.target?.id==='vehicleDocType'){window.__pendingVehicleDocCrlv=null;configureVehicleDocTypeUi();return}
  if(e.target?.id==='vehicleDocFile'){
   window.__pendingVehicleDocCrlv=null;
@@ -8346,6 +8613,7 @@ document.addEventListener('change',async function(e){
 document.addEventListener('input',function(e){
  if(e.target?.id==='crlvPlate')updateCrlvAutoExpiry();
 
+  if(e.target?.closest?.('#maintenancePartsItems')&&(e.target.classList.contains('maintenance-part-qty')||e.target.classList.contains('maintenance-part-unit')||e.target.closest('.maintenance-part-desc'))){calcMaintenanceParts();return}
   if(e.target && (e.target.id==='maintenancePartsCost'||e.target.id==='maintenanceLaborCost')) calcMaintenanceTotal();
   if(e.target && (e.target.id==='fuelLiters'||e.target.id==='fuelTotal')) fuelCalcPrice();
 });
@@ -8377,7 +8645,7 @@ setInterval(()=>{
 },60000);
 if('serviceWorker' in navigator){
  window.addEventListener('load',()=>{
-  navigator.serviceWorker.register('./sw-v6-90.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
+  navigator.serviceWorker.register('./sw-v6-91.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
  });
 }
 
