@@ -8,7 +8,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
-<title>Comando 360 • v6.91</title>
+<title>Comando 360 • v6.92</title>
 <link rel="manifest" href="./comando360.webmanifest"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
@@ -1614,7 +1614,13 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
 }
 
 
-/* 6.91 — peças múltiplas na manutenção */
+/* 6.92 — conferência da leitura da nota */
+.maintenance-receipt-preview{margin-top:9px;padding:10px;border:1px solid #dbe5ef;border-radius:12px;background:#fff}
+.maintenance-receipt-preview .receipt-detected{display:grid;gap:5px;font-size:12px}
+.maintenance-receipt-preview .receipt-items{max-height:160px;overflow:auto;margin-top:7px;padding-top:7px;border-top:1px dashed #d7e0ea}
+.darkmode .maintenance-receipt-preview{background:#101c2e;border-color:#26384e}
+
+/* 6.92 — peças múltiplas na manutenção */
 .maintenance-parts-card{margin:12px 0;padding:13px;border:1px solid #dce5ef;border-radius:15px;background:#f8fbff}
 .maintenance-parts-list{display:grid;gap:8px;margin-top:10px}
 .maintenance-part-row{display:grid;grid-template-columns:minmax(180px,1.6fr) 90px 120px 120px auto;gap:8px;align-items:end;padding:10px;border:1px solid #e3e9f1;border-radius:12px;background:#fff}
@@ -1625,7 +1631,7 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
 @media(max-width:760px){.maintenance-part-row{grid-template-columns:1fr 80px 1fr}.maintenance-part-desc{grid-column:1/-1}.maintenance-part-remove{grid-column:3}}
 .darkmode .maintenance-parts-card,.darkmode .maintenance-part-row{background:#101c2e;border-color:#26384e}
 
-/* 6.91 — nível estimado de combustível */
+/* 6.92 — nível estimado de combustível */
 .fuel-full-toggle{display:flex;align-items:flex-start;gap:11px;margin-top:12px;padding:12px 13px;border:1px solid #dbe5f0;border-radius:14px;background:#f8fbff;cursor:pointer}
 .fuel-full-toggle input{width:21px;height:21px;margin:1px 0 0;flex:0 0 auto;accent-color:#1976d2}
 .fuel-full-toggle strong{display:block;font-size:13px}.fuel-full-toggle small{display:block;color:#64748b;font-size:11px;line-height:1.4;margin-top:2px}
@@ -1646,7 +1652,7 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
 <script defer src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"></script>
 <script>
 (function(){
-  const BUILD='6.91';
+  const BUILD='6.92';
   try{
     const marker='controla_cache_cleanup_'+BUILD;
     if(!localStorage.getItem(marker)){
@@ -1711,7 +1717,7 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
   <div class="brand"><img class="header-brand-icon" src="./comando360-icon.svg" alt="Comando 360"/><div><b>Comando <span class="brand360">360</span></b><div><small id="companyName">Empresa</small></div></div></div>
  </div>
  <div class="header-module" id="headerModule"><span id="headerModuleTitle">Painel Geral</span><small id="headerModuleSubtitle">Central de gestão</small></div>
- <div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.91</span><button class="btn soft" id="themeToggle" type="button" aria-label="Alternar tema">☾</button><button class="btn soft hidden" id="logout">Sair</button></div>
+ <div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.92</span><button class="btn soft" id="themeToggle" type="button" aria-label="Alternar tema">☾</button><button class="btn soft hidden" id="logout">Sair</button></div>
 </header>
 <main class="wrap">
 <section class="login team-entry" id="login">
@@ -1729,7 +1735,7 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
  <label>Senha</label><input autocomplete="current-password" id="password" type="password"/>
  <button class="btn primary" id="loginBtn">Entrar</button>
  <button class="btn soft" id="backDeviceSetup" type="button" style="margin-left:6px">Voltar</button>
- <div class="muted" id="loginMsg" style="margin-top:10px">Comando 360 • v6.91</div><div class="debug" id="debug"></div>
+ <div class="muted" id="loginMsg" style="margin-top:10px">Comando 360 • v6.92</div><div class="debug" id="debug"></div>
 </div>
 </section>
 <section class="hidden" id="app">
@@ -2275,7 +2281,7 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
  <div id="maintenancePartsItems" class="maintenance-parts-list"></div>
 </div>
 <div class="row"><div><label>Custo das peças (R$)</label><input id="maintenancePartsCost" type="number" min="0" step="0.01"/></div><div><label>Mão de obra (R$)</label><input id="maintenanceLaborCost" type="number" min="0" step="0.01"/></div><div><label>Quem fez o serviço</label><input id="maintenanceWorkshop" placeholder="Ex.: Eu / mecânico habitual / oficina"/></div></div>
-<div class="row"><div><label>Onde comprou as peças</label><input id="maintenancePartsSupplier" placeholder="Ex.: Auto Peças X / Mercado Livre / concessionária"/></div><div><label>Foto / PDF da nota das peças</label><input id="maintenanceReceiptFile" type="file" accept="image/jpeg,image/png,image/webp,application/pdf"/><div class="muted" id="maintenanceReceiptReadMsg" style="margin-top:5px">Ao escolher a nota, o app tenta ler automaticamente a loja, as peças e o valor.</div><div class="muted" id="maintenanceReceiptCurrent" style="margin-top:5px">Nenhuma nota arquivada.</div></div><div><label>Observações</label><input id="maintenanceNotes"/></div></div>
+<div class="row"><div><label>Onde comprou as peças</label><input id="maintenancePartsSupplier" placeholder="Ex.: Auto Peças X / Mercado Livre / concessionária"/></div><div><label>Foto / PDF da nota das peças</label><input id="maintenanceReceiptFile" type="file" accept="image/jpeg,image/png,image/webp,application/pdf"/><div class="muted" id="maintenanceReceiptReadMsg" style="margin-top:5px">Ao escolher a nota, o app tenta identificar loja, peças e valores. A leitura aparece para conferência antes de preencher.</div><div id="maintenanceReceiptPreview" class="maintenance-receipt-preview hidden"></div><div class="muted" id="maintenanceReceiptCurrent" style="margin-top:5px">Nenhuma nota arquivada.</div></div><div><label>Observações</label><input id="maintenanceNotes"/></div></div>
 <div class="row"><div><label>Valor total da manutenção</label><input id="maintenanceTotal" readonly/></div></div>
 <div class="toolbar" style="margin-top:12px"><button class="btn primary" id="saveMaintenanceEdit" type="button">SALVAR MANUTENÇÃO</button><button class="btn soft" id="saveMaintenanceAndAnother" type="button">SALVAR E + OUTRO SERVIÇO</button><button class="btn soft" id="archiveMaintenanceBtn" type="button">DESATIVAR PLANO</button><button class="btn danger" id="deleteMaintenanceBtn" type="button">EXCLUIR MANUTENÇÃO</button></div><div class="muted" id="maintenanceEditMsg" style="margin-top:8px"></div></div>
 </div>
@@ -6140,34 +6146,62 @@ async function maintenanceReceiptTextFromFile(file){
  const result=await Tesseract.recognize(canvas,'por',{logger:m=>maintenanceReceiptProgress(m?.status,m?.progress)});
  return String(result?.data?.text||'');
 }
+function renderMaintenanceReceiptPreview(parsed){
+ const box=$('#maintenanceReceiptPreview');if(!box)return;
+ window.__maintenanceReceiptPending=parsed||null;
+ if(!parsed){box.classList.add('hidden');box.innerHTML='';return}
+ const items=Array.isArray(parsed.items)?parsed.items:[];
+ const supplier=parsed.supplier||'Não identificado';
+ const total=Number(parsed.total_amount||0);
+ box.classList.remove('hidden');
+ box.innerHTML='<div class="receipt-detected">'+
+  '<div><b>Loja detectada:</b> '+esc(supplier)+'</div>'+
+  '<div><b>Valor detectado:</b> '+(total>0?money(total):'Não identificado')+'</div>'+
+  '<div><b>Peças detectadas:</b> '+items.length+'</div>'+
+  (items.length?'<div class="receipt-items">'+items.slice(0,20).map((x,i)=>'<div>'+(i+1)+'. '+esc(x.description||'Peça')+' • '+Number(x.quantity||1).toLocaleString('pt-BR')+' × '+money(x.unit_price||0)+' = <b>'+money(x.total||0)+'</b></div>').join('')+'</div>':'')+
+  '<div class="toolbar" style="margin-top:9px"><button type="button" class="btn primary" id="applyMaintenanceReceiptRead">APLICAR LEITURA</button><button type="button" class="btn soft" id="discardMaintenanceReceiptRead">IGNORAR LEITURA</button></div>'+
+  '<div class="muted">Confira antes de aplicar. A foto/PDF continua anexada mesmo se você ignorar a leitura.</div>'+
+ '</div>';
+}
 async function readMaintenanceReceipt(file){
  if(!file)return;
  const msg=$('#maintenanceReceiptReadMsg');
  try{
   window.__maintenanceReceiptOcr=null;
+  window.__maintenanceReceiptPending=null;
+  renderMaintenanceReceiptPreview(null);
   maintenanceReceiptProgress(null,null,'Lendo a nota e identificando loja, peças e valores...');
   const text=await maintenanceReceiptTextFromFile(file);
   const parsed=parseMaintenanceReceiptText(text);
-  window.__maintenanceReceiptOcr={...parsed,read_at:new Date().toISOString(),engine:'tesseract-5.1.1'};
-
-  if(parsed.supplier)$('#maintenancePartsSupplier').value=parsed.supplier;
-  if(parsed.items.length)renderMaintenanceParts(parsed.items);
-  else if(parsed.total_amount>0)renderMaintenanceParts([{description:'Peças da nota',quantity:1,unit_price:parsed.total_amount,total:parsed.total_amount}]);
-  if(parsed.total_amount>0)$('#maintenancePartsCost').value=parsed.total_amount.toFixed(2);
-  calcMaintenanceTotal();
+  const result={...parsed,read_at:new Date().toISOString(),engine:'tesseract-5.1.1'};
+  window.__maintenanceReceiptOcr=result;
+  renderMaintenanceReceiptPreview(result);
 
   const found=[];
-  if(parsed.supplier)found.push('loja: '+parsed.supplier);
-  if(parsed.items.length)found.push(parsed.items.length+' peça'+(parsed.items.length===1?'':'s'));
+  if(parsed.supplier)found.push('loja');
+  if(parsed.items?.length)found.push(parsed.items.length+' peça'+(parsed.items.length===1?'':'s'));
   if(parsed.total_amount)found.push(money(parsed.total_amount));
   if(msg){
    msg.className=found.length?'okmsg':'error';
-   msg.textContent=found.length?'Nota lida ✓ '+found.join(' • ')+' — confira os dados antes de salvar.':'A nota foi lida, mas não consegui identificar os campos. Você pode preencher manualmente.';
+   msg.textContent=found.length?'Leitura concluída ✓ Confira abaixo antes de aplicar.':'A nota foi lida, mas os campos não ficaram confiáveis. Preencha manualmente ou me envie a foto para eu ajustar.';
   }
  }catch(e){
+  renderMaintenanceReceiptPreview(null);
   if(msg){msg.className='error';msg.textContent='Não consegui ler a nota automaticamente: '+(e.message||String(e))+'. Você ainda pode preencher manualmente.'}
  }
 }
+function applyMaintenanceReceiptRead(){
+ const parsed=window.__maintenanceReceiptPending;if(!parsed)return;
+ if(parsed.supplier)$('#maintenancePartsSupplier').value=parsed.supplier;
+ if(parsed.items?.length)renderMaintenanceParts(parsed.items);
+ else if(parsed.total_amount>0)renderMaintenanceParts([{description:'Peças da nota',quantity:1,unit_price:parsed.total_amount,total:parsed.total_amount}]);
+ if(parsed.total_amount>0)$('#maintenancePartsCost').value=Number(parsed.total_amount).toFixed(2);
+ calcMaintenanceTotal();
+ const msg=$('#maintenanceReceiptReadMsg');
+ if(msg){msg.className='okmsg';msg.textContent='Leitura aplicada ✓ Agora confira e corrija qualquer item antes de salvar.'}
+ renderMaintenanceReceiptPreview(null);
+}
+
 function maintenancePartsFromDom(){
  return [...document.querySelectorAll('#maintenancePartsItems .maintenance-part-row')].map(row=>{
   const description=row.querySelector('.maintenance-part-desc input')?.value.trim()||'';
@@ -6301,8 +6335,10 @@ function openMaintenanceEdit(id=''){
  $('#maintenanceWorkshop').value=m.workshop||'';
  $('#maintenanceNotes').value=m.notes||'';
  window.__maintenanceReceiptOcr=m.parts_receipt_ocr||null;
+ window.__maintenanceReceiptPending=null;
+ renderMaintenanceReceiptPreview(null);
  updateMaintenanceReceiptCurrent(m);
- const readMsg=$('#maintenanceReceiptReadMsg');if(readMsg){readMsg.className='muted';readMsg.textContent='Ao escolher uma nova nota, o app tenta ler automaticamente a loja, as peças e o valor.'}
+ const readMsg=$('#maintenanceReceiptReadMsg');if(readMsg){readMsg.className='muted';readMsg.textContent='Ao escolher uma nova nota, o app lê e mostra uma prévia para você conferir antes de preencher.'}
 
  $('#archiveMaintenanceBtn').style.display=p?'inline-flex':'none';
  $('#deleteMaintenanceBtn').style.display=p?'inline-flex':'none';
@@ -8562,6 +8598,8 @@ document.addEventListener('click',async function(e){
   if(newBtn){e.preventDefault();openMaintenanceEdit('');return}
   const cancelBtn=e.target.closest('#cancelMaintenanceEdit');
   if(cancelBtn){e.preventDefault();const card=document.getElementById('maintenanceEditCard');if(card)card.style.display='none';return}
+  const applyReceipt=e.target.closest('#applyMaintenanceReceiptRead');if(applyReceipt){e.preventDefault();applyMaintenanceReceiptRead();return}
+  const discardReceipt=e.target.closest('#discardMaintenanceReceiptRead');if(discardReceipt){e.preventDefault();renderMaintenanceReceiptPreview(null);const msg=$('#maintenanceReceiptReadMsg');if(msg){msg.className='muted';msg.textContent='Leitura ignorada. A nota continua selecionada e será arquivada ao salvar.'}return}
   const addPart=e.target.closest('#addMaintenancePart');if(addPart){e.preventDefault();addMaintenancePart();return}
   const removePart=e.target.closest('.maintenance-part-remove');if(removePart){e.preventDefault();removePart.closest('.maintenance-part-row')?.remove();if(!document.querySelector('#maintenancePartsItems .maintenance-part-row'))renderMaintenanceParts([]);else calcMaintenanceParts();return}
   const saveBtn=e.target.closest('#saveMaintenanceEdit');
@@ -8645,7 +8683,7 @@ setInterval(()=>{
 },60000);
 if('serviceWorker' in navigator){
  window.addEventListener('load',()=>{
-  navigator.serviceWorker.register('./sw-v6-91.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
+  navigator.serviceWorker.register('./sw-v6-92.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
  });
 }
 
