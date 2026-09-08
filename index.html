@@ -8,7 +8,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
-<title>Comando 360 • v6.85</title>
+<title>Comando 360 • v6.86</title>
 <link rel="manifest" href="./comando360.webmanifest"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
@@ -1619,7 +1619,7 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
 <script defer src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"></script>
 <script>
 (function(){
-  const BUILD='6.85';
+  const BUILD='6.86';
   try{
     const marker='controla_cache_cleanup_'+BUILD;
     if(!localStorage.getItem(marker)){
@@ -1684,7 +1684,7 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
   <div class="brand"><img class="header-brand-icon" src="./comando360-icon.svg" alt="Comando 360"/><div><b>Comando <span class="brand360">360</span></b><div><small id="companyName">Empresa</small></div></div></div>
  </div>
  <div class="header-module" id="headerModule"><span id="headerModuleTitle">Painel Geral</span><small id="headerModuleSubtitle">Central de gestão</small></div>
- <div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.85</span><button class="btn soft" id="themeToggle" type="button" aria-label="Alternar tema">☾</button><button class="btn soft hidden" id="logout">Sair</button></div>
+ <div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.86</span><button class="btn soft" id="themeToggle" type="button" aria-label="Alternar tema">☾</button><button class="btn soft hidden" id="logout">Sair</button></div>
 </header>
 <main class="wrap">
 <section class="login team-entry" id="login">
@@ -1702,7 +1702,7 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
  <label>Senha</label><input autocomplete="current-password" id="password" type="password"/>
  <button class="btn primary" id="loginBtn">Entrar</button>
  <button class="btn soft" id="backDeviceSetup" type="button" style="margin-left:6px">Voltar</button>
- <div class="muted" id="loginMsg" style="margin-top:10px">Comando 360 • v6.85</div><div class="debug" id="debug"></div>
+ <div class="muted" id="loginMsg" style="margin-top:10px">Comando 360 • v6.86</div><div class="debug" id="debug"></div>
 </div>
 </section>
 <section class="hidden" id="app">
@@ -2247,13 +2247,13 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
 </div>
 <div class="section" data-screen="combustivel" hidden="" id="combustivel">
 <div class="card"><div class="toolbar" style="justify-content:space-between"><div><h3 id="fuelScreenTitle" style="margin:0">⛽ Combustível & KM</h3><div class="muted" id="fuelScreenSubtitle">Abastecimentos, quilometragem, consumo e custo da frota.</div></div><div class="toolbar"><button class="btn primary" id="newFuelBtn" type="button">+ ABASTECIMENTO</button><button class="btn soft" id="newKmBtn" type="button">+ REGISTRAR KM</button></div></div><div class="v2-kpis" id="fuelKpis" style="margin-top:14px"></div></div>
-<div class="card" id="fuelEditCard" style="display:none"><div class="toolbar" style="justify-content:space-between"><div><h3 style="margin:0">Novo abastecimento</h3><div class="muted">O KM informado também atualiza a ficha do veículo quando for maior.</div></div><button class="btn soft" id="cancelFuelEdit" type="button">Cancelar</button></div>
+<div class="card" id="fuelEditCard" style="display:none"><input id="fuelEditId" type="hidden"/><div class="toolbar" style="justify-content:space-between"><div><h3 id="fuelEditTitle" style="margin:0">Novo abastecimento</h3><div class="muted">Você pode corrigir um lançamento depois. Ao fotografar a nota do posto, o Comando 360 tenta preencher os dados automaticamente.</div></div><button class="btn soft" id="cancelFuelEdit" type="button">Cancelar</button></div>
 <div class="row" style="margin-top:12px"><div><label>Condução</label><select id="fuelVehicle"></select><div class="muted" id="fuelVehicleHint" style="margin-top:5px">Selecione a condução abastecida.</div></div><div><label>Data e hora</label><input id="fuelDate" type="datetime-local"/></div><div><label>KM atual</label><input id="fuelKm" type="number" min="0" step="1"/></div></div>
 <div class="row"><div><label>Litros</label><input id="fuelLiters" type="number" min="0" step="0.01"/></div><div><label>Valor total (R$)</label><input id="fuelTotal" type="number" min="0" step="0.01"/></div><div><label>Posto</label><input id="fuelStation" placeholder="Nome do posto"/></div></div>
 <div class="row">
  <div><label>Motorista</label><input id="fuelDriver" placeholder="Nome do motorista"/></div>
  <div><label>R$/litro</label><input id="fuelPriceLiter" readonly/></div>
- <div><label>Foto do comprovante / bomba</label><input id="fuelReceiptFile" type="file" accept="image/jpeg,image/png,image/webp" capture="environment"/></div>
+ <div><label>Foto da nota / comprovante</label><input id="fuelReceiptFile" type="file" accept="image/jpeg,image/png,image/webp" capture="environment"/><div class="muted" id="fuelReceiptReadMsg" style="margin-top:5px">Ao tirar a foto, o app lê posto, data, litros e valor quando estiverem legíveis.</div></div>
 </div>
 <div><label>Observações</label><input id="fuelNotes" placeholder="Ex.: abastecimento da equipe / viagem / observação"/></div>
 <div class="toolbar" style="margin-top:12px"><button class="btn primary" id="saveFuelBtn" type="button">SALVAR ABASTECIMENTO</button></div><div class="muted" id="fuelMsg" style="margin-top:8px"></div></div>
@@ -5871,6 +5871,156 @@ async function openFuelReceipt(path){
 }
 function localDateTimeInput(d=new Date()){const z=n=>String(n).padStart(2,'0');return `${d.getFullYear()}-${z(d.getMonth()+1)}-${z(d.getDate())}T${z(d.getHours())}:${z(d.getMinutes())}`}
 function fuelCalcPrice(){const l=Number(document.getElementById('fuelLiters')?.value||0),t=Number(document.getElementById('fuelTotal')?.value||0),e=document.getElementById('fuelPriceLiter');if(e)e.value=l?money(t/l):'R$ 0,00'}
+function fuelReceiptNumber(v){
+ let s=String(v||'').trim().replace(/R\$\s*/gi,'').replace(/\s/g,'').replace(/[^0-9,.-]/g,'');
+ if(!s)return 0;
+ if(s.includes(',')&&s.includes('.')){
+  if(s.lastIndexOf(',')>s.lastIndexOf('.'))s=s.replace(/\./g,'').replace(',','.');
+  else s=s.replace(/,/g,'');
+ }else if(s.includes(','))s=s.replace(/\./g,'').replace(',','.');
+ return Number(s)||0;
+}
+function fuelReceiptFirstNumber(text,patterns){
+ for(const p of patterns){
+  const m=String(text||'').match(p);
+  if(m?.[1]){const n=fuelReceiptNumber(m[1]);if(n>0)return n}
+ }
+ return 0;
+}
+function fuelReceiptDateInput(text){
+ const m=String(text||'').match(/\b(\d{2})[\/.\-](\d{2})[\/.\-](20\d{2})(?:\s+(\d{2}):(\d{2})(?::\d{2})?)?/);
+ if(!m)return '';
+ const hh=m[4]||new Intl.DateTimeFormat('pt-BR',{timeZone:'America/Sao_Paulo',hour:'2-digit',hourCycle:'h23'}).format(new Date());
+ const mm=m[5]||'00';
+ return m[3]+'-'+m[2]+'-'+m[1]+'T'+hh+':'+mm;
+}
+function parseFuelReceiptText(raw){
+ const text=String(raw||'').replace(/\r/g,'\n').replace(/[ \t]+/g,' ').trim();
+ const flat=text.replace(/\s+/g,' ');
+ let liters=fuelReceiptFirstNumber(flat,[
+  /(?:LITROS?|VOLUME|QTD(?:ADE)?(?:\s*\(L\))?)\s*[:=\-]?\s*(\d{1,5}[.,]\d{1,3})\s*(?:L|LT|LITROS?)?\b/i,
+  /(?:DIESEL(?:\s*S-?10|\s*S-?500)?|GASOLINA|ETANOL|ARLA)[^\n]{0,90}?(\d{1,5}[.,]\d{1,3})\s*(?:L|LT|LITROS?)\b/i,
+  /\b(\d{1,5}[.,]\d{2,3})\s*(?:L|LT|LITROS?)\b/i
+ ]);
+ let total=fuelReceiptFirstNumber(flat,[
+  /(?:VALOR\s+TOTAL|VL\.?\s*TOTAL|TOTAL\s+A\s+PAGAR|TOTAL)\s*(?:R\$)?\s*[:=\-]?\s*(\d{1,7}[.,]\d{2})\b/i,
+  /\bR\$\s*(\d{1,7}[.,]\d{2})\s*(?:TOTAL|VALOR\s+TOTAL)\b/i
+ ]);
+ const unitPrice=fuelReceiptFirstNumber(flat,[
+  /(?:PRE[CÇ]O\s*(?:POR\s*)?LITRO|R\$\s*\/\s*L|VL\.?\s*UNIT(?:[AÁ]RIO)?|V\.\s*UNIT)\s*[:=\-]?\s*(\d{1,3}[.,]\d{2,4})\b/i,
+  /\b(?:DIESEL(?:\s*S-?10|\s*S-?500)?|GASOLINA|ETANOL)[^\n]{0,90}?(?:X|\*)\s*(\d{1,3}[.,]\d{2,4})\b/i
+ ]);
+ if(!liters&&total&&unitPrice>=2&&unitPrice<=20)liters=total/unitPrice;
+ if(!total&&liters&&unitPrice>=2&&unitPrice<=20)total=liters*unitPrice;
+ const km=fuelReceiptFirstNumber(flat,[
+  /(?:HOD[OÔ]METRO|OD[OÔ]METRO|KM)\s*[:=\-]?\s*(\d{2,7})\b/i
+ ]);
+ const plateMatch=flat.toUpperCase().match(/\b([A-Z]{3}[0-9][A-Z0-9][0-9]{2})\b/);
+ const lines=text.split(/\n+/).map(x=>x.trim()).filter(Boolean);
+ const rejected=/CNPJ|CPF|DANFE|NFC-?E|SAT|CUPOM|DOCUMENTO\s+AUXILIAR|CONSUMIDOR|CHAVE\s+DE\s+ACESSO|PROTOCOLO|TRIBUT|ICMS|TOTAL|QTD|LITRO|DIESEL|GASOLINA|ETANOL|ENDERE[CÇ]O|CEP|TELEFONE|FONE/i;
+ let station='';
+ for(const line of lines.slice(0,12)){
+  const clean=line.replace(/^[^A-ZÀ-Ú0-9]+/i,'').replace(/\s{2,}/g,' ').trim();
+  const letters=(clean.match(/[A-ZÀ-Ú]/gi)||[]).length;
+  if(clean.length>=4&&clean.length<=80&&letters>=4&&!rejected.test(clean)){station=clean;break}
+ }
+ return {
+  station_name:station,
+  liters:liters>0?Number(liters.toFixed(3)):0,
+  total_amount:total>0?Number(total.toFixed(2)):0,
+  unit_price:unitPrice>0?unitPrice:0,
+  odometer_km:km>0?Math.round(km):0,
+  vehicle_plate:plateMatch?.[1]||'',
+  fueled_at_local:fuelReceiptDateInput(text),
+  raw_text:text.slice(0,6000)
+ };
+}
+async function fuelReceiptCanvas(file){
+ const url=URL.createObjectURL(file);
+ try{
+  const img=await new Promise((resolve,reject)=>{
+   const i=new Image();i.onload=()=>resolve(i);i.onerror=()=>reject(new Error('Não consegui abrir a foto da nota.'));i.src=url;
+  });
+  return prepareOcrCanvas(img,2400);
+ }finally{URL.revokeObjectURL(url)}
+}
+function fuelReceiptProgress(status,progress=null){
+ const el=document.getElementById('fuelReceiptReadMsg');if(!el)return;
+ const pct=typeof progress==='number'?' '+Math.round(progress*100)+'%':'';
+ const labels={
+  'loading tesseract core':'Preparando leitor...',
+  'initializing tesseract':'Inicializando leitura...',
+  'loading language traineddata':'Carregando idioma...',
+  'initializing api':'Preparando OCR...',
+  'recognizing text':'Lendo a nota do posto...'
+ };
+ el.textContent=(labels[status]||'Lendo a nota do posto...')+pct;
+}
+async function readFuelReceipt(file){
+ if(!file)return;
+ const msg=document.getElementById('fuelReceiptReadMsg');
+ try{
+  if(msg){msg.className='muted';msg.textContent='Preparando foto da nota...'}
+  const canvas=await fuelReceiptCanvas(file);
+  await ensureTesseractReady();
+  const result=await Tesseract.recognize(canvas,'por',{logger:m=>fuelReceiptProgress(m?.status,m?.progress)});
+  const parsed=parseFuelReceiptText(result?.data?.text||'');
+  window.__fuelReceiptOcr={...parsed,read_at:new Date().toISOString(),engine:'tesseract-5.1.1'};
+  if(parsed.station_name&&!document.getElementById('fuelStation').value.trim())document.getElementById('fuelStation').value=parsed.station_name;
+  if(parsed.liters>0)document.getElementById('fuelLiters').value=String(parsed.liters).replace('.',',');
+  if(parsed.total_amount>0)document.getElementById('fuelTotal').value=parsed.total_amount.toFixed(2);
+  if(parsed.fueled_at_local)document.getElementById('fuelDate').value=parsed.fueled_at_local;
+  if(parsed.odometer_km>0)document.getElementById('fuelKm').value=parsed.odometer_km;
+  if(parsed.vehicle_plate){
+   const match=fuelVehicles.find(v=>String(v.plate||'').replace(/[^A-Z0-9]/gi,'').toUpperCase()===parsed.vehicle_plate);
+   if(match)document.getElementById('fuelVehicle').value=match.id;
+  }
+  fuelCalcPrice();
+  const found=[];
+  if(parsed.station_name)found.push('posto');
+  if(parsed.liters)found.push(parsed.liters.toLocaleString('pt-BR',{maximumFractionDigits:3})+' L');
+  if(parsed.total_amount)found.push(money(parsed.total_amount));
+  if(parsed.fueled_at_local)found.push('data/hora');
+  if(msg){
+   msg.className=found.length?'okmsg':'error';
+   msg.textContent=found.length?'Nota lida ✓ '+found.join(' • ')+' — confira antes de salvar.':'Li a foto, mas não consegui identificar os campos. Você pode preencher manualmente.';
+  }
+ }catch(e){
+  if(msg){msg.className='error';msg.textContent='Não consegui ler a nota automaticamente: '+(e.message||String(e))+'. Você ainda pode preencher manualmente.'}
+ }
+}
+function fuelDateForInput(iso){
+ if(!iso)return localDateTimeInput();
+ try{
+  const p=new Intl.DateTimeFormat('en-CA',{timeZone:'America/Sao_Paulo',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).formatToParts(new Date(iso));
+  const o=Object.fromEntries(p.map(x=>[x.type,x.value]));
+  return o.year+'-'+o.month+'-'+o.day+'T'+o.hour+':'+o.minute;
+ }catch(_){return localDateTimeInput(new Date(iso))}
+}
+function openFuelEdit(id){
+ const x=fuelCache.find(r=>r.id===id);if(!x)return;
+ const ownDevice=!deviceMode||String(x.metadata?.device_access_id||'')===String(deviceAccess?.id||'');
+ if(deviceMode&&!ownDevice){c360Toast('Edição não permitida','Este abastecimento foi lançado por outro aparelho.','error');return}
+ document.getElementById('fuelEditId').value=x.id;
+ document.getElementById('fuelEditTitle').textContent='Editar abastecimento';
+ document.getElementById('saveFuelBtn').textContent='SALVAR ALTERAÇÕES';
+ document.getElementById('fuelVehicle').value=x.vehicle_id||'';
+ document.getElementById('fuelDate').value=fuelDateForInput(x.fueled_at);
+ document.getElementById('fuelKm').value=x.odometer_km||'';
+ document.getElementById('fuelLiters').value=x.liters||'';
+ document.getElementById('fuelTotal').value=x.total_amount||'';
+ document.getElementById('fuelStation').value=x.station_name||'';
+ document.getElementById('fuelDriver').value=x.metadata?.driver||'';
+ document.getElementById('fuelNotes').value=x.metadata?.notes||'';
+ document.getElementById('fuelReceiptFile').value='';
+ window.__fuelReceiptOcr=x.metadata?.receipt_ocr||null;
+ const readMsg=document.getElementById('fuelReceiptReadMsg');
+ if(readMsg){readMsg.className='muted';readMsg.textContent=x.metadata?.receipt_path?'Já existe um comprovante salvo. Se escolher outra foto, ela será lida e substituirá o comprovante deste lançamento.':'Você pode adicionar uma foto da nota para preencher ou conferir os dados.'}
+ fuelCalcPrice();
+ document.getElementById('fuelEditCard').style.display='block';
+ document.getElementById('fuelEditCard').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
 async function loadFuel(){
  let logs=[],vehicles=[];
  if(deviceMode&&!navigator.onLine){
@@ -5962,35 +6112,46 @@ async function loadFuel(){
   else if(x.metadata&&x.metadata.receipt_path)badges+=' <span class="pill ok">📷 Comprovante</span>';
   const notes=x.metadata&&x.metadata.notes?'<div class="muted" style="margin-top:6px">'+esc(x.metadata.notes)+'</div>':'';
   const photo=(x.metadata&&x.metadata.receipt_path&&!x.metadata.offline_pending&&!deviceMode)?'<button class="btn soft viewFuelReceipt" data-path="'+esc(x.metadata.receipt_path)+'" type="button">Ver foto</button>':'';
+  const canEdit=!x.metadata?.offline_pending&&(!deviceMode||String(x.metadata?.device_access_id||'')===String(deviceAccess?.id||''));
+  const edit=canEdit?'<button class="btn soft editFuelBtn" data-id="'+esc(x.id)+'" type="button">Editar</button>':'';
   const del=(deviceMode||x.metadata&&x.metadata.offline_pending)?'':'<button class="btn danger deleteFuelBtn" data-id="'+esc(x.id)+'" type="button">Excluir</button>';
-  return '<div class="item"><div class="toolbar" style="justify-content:space-between;gap:10px"><div><strong>'+esc(v?.description||v?.model||'Veículo')+' • '+esc(v?.plate||'sem placa')+'</strong><div class="muted">'+new Date(x.fueled_at).toLocaleString('pt-BR')+' • '+Number(x.odometer_km||0).toLocaleString('pt-BR')+' km • '+Number(x.liters||0).toLocaleString('pt-BR',{maximumFractionDigits:2})+' L • '+money(x.total_amount||0)+'</div><div style="margin-top:6px">'+badges+'</div>'+notes+'</div><div class="toolbar">'+photo+del+'</div></div></div>';
+  return '<div class="item"><div class="toolbar" style="justify-content:space-between;gap:10px"><div><strong>'+esc(v?.description||v?.model||'Veículo')+' • '+esc(v?.plate||'sem placa')+'</strong><div class="muted">'+new Date(x.fueled_at).toLocaleString('pt-BR')+' • '+Number(x.odometer_km||0).toLocaleString('pt-BR')+' km • '+Number(x.liters||0).toLocaleString('pt-BR',{maximumFractionDigits:2})+' L • '+money(x.total_amount||0)+'</div><div style="margin-top:6px">'+badges+'</div>'+notes+'</div><div class="toolbar">'+edit+photo+del+'</div></div></div>';
  }).join('')||'<div class="muted">Nenhum abastecimento registrado.</div>';
 }
 async function saveFuel(){
  const m=document.getElementById('fuelMsg'),
+       editId=document.getElementById('fuelEditId')?.value||'',
        vehicle_id=document.getElementById('fuelVehicle').value,
-       liters=Number(document.getElementById('fuelLiters').value||0),
-       total=Number(document.getElementById('fuelTotal').value||0),
+       liters=Number(String(document.getElementById('fuelLiters').value||'0').replace(',','.')),
+       total=Number(String(document.getElementById('fuelTotal').value||'0').replace(',','.')),
        km=Number(document.getElementById('fuelKm').value||0),
        driver=document.getElementById('fuelDriver').value.trim(),
-       receipt=document.getElementById('fuelReceiptFile').files?.[0]||null;
- if(!vehicle_id){m.textContent='Selecione o veículo.';return}
+       receipt=document.getElementById('fuelReceiptFile').files?.[0]||null,
+       existing=editId?fuelCache.find(x=>x.id===editId):null;
+ if(!vehicle_id){m.textContent='Selecione a condução.';return}
  if(liters<=0){m.textContent='Informe a quantidade de litros.';return}
  const btn=document.getElementById('saveFuelBtn');
  try{
   if(btn)btn.disabled=true;
+  if(editId&&deviceMode&&!navigator.onLine)throw new Error('Para editar um abastecimento já sincronizado, conecte este celular à internet.');
   const fueledAt=new Date(document.getElementById('fuelDate').value||Date.now()).toISOString();
-  const offlineId=makeOfflineId('fuel');
+  const offlineId=existing?.offline_event_id||makeOfflineId('fuel');
+  const metadata={
+    ...(existing?.metadata||{}),
+    notes:document.getElementById('fuelNotes').value.trim()||null,
+    driver:driver||null,
+    receipt_path:existing?.metadata?.receipt_path||null,
+    source:existing?.metadata?.source||(deviceMode?'team_device':'admin'),
+    work_team_id:deviceMode?(deviceAccess?.team_id||null):(existing?.metadata?.work_team_id||null),
+    work_team_name:deviceMode?(deviceTeam?.name||null):(existing?.metadata?.work_team_name||null),
+    device_access_id:deviceMode?(deviceAccess?.id||null):(existing?.metadata?.device_access_id||null),
+    device_name:deviceMode?(deviceAccess?.device_name||null):(existing?.metadata?.device_name||null),
+    receipt_ocr:window.__fuelReceiptOcr||existing?.metadata?.receipt_ocr||null
+  };
   const basePayload={
    company_id:companyId,vehicle_id,fueled_at:fueledAt,odometer_km:km||null,liters,total_amount:total,
    station_name:document.getElementById('fuelStation').value.trim()||null,
-   offline_event_id:offlineId,
-   metadata:{
-    notes:document.getElementById('fuelNotes').value.trim()||null,
-    driver:driver||null,
-    receipt_path:null,
-    source:deviceMode?'team_device':'admin'
-   }
+   offline_event_id:offlineId,metadata
   };
 
   if(deviceMode&&!navigator.onLine){
@@ -6002,25 +6163,34 @@ async function saveFuel(){
     created_at:fueledAt,payload:basePayload,receipt_blob:receipt||null
    });
    m.className='okmsg';m.textContent='Abastecimento salvo no celular ✓ Será sincronizado quando a internet voltar.';
-   document.getElementById('fuelEditCard').style.display='none';
-   document.getElementById('fuelReceiptFile').value='';
-   document.getElementById('fuelDriver').value='';
-   await loadFuel();
-   return;
+  }else{
+   m.className='muted';m.textContent=receipt?'Enviando nota e salvando abastecimento...':(editId?'Salvando alterações...':'Salvando abastecimento...');
+   if(receipt)basePayload.metadata.receipt_path=await uploadFuelReceipt(receipt,vehicle_id);
+   if(editId){
+    await rest('v2_fuel_logs','id=eq.'+encodeURIComponent(editId),'PATCH',{
+      vehicle_id:basePayload.vehicle_id,fueled_at:basePayload.fueled_at,odometer_km:basePayload.odometer_km,
+      liters:basePayload.liters,total_amount:basePayload.total_amount,station_name:basePayload.station_name,
+      metadata:basePayload.metadata
+    });
+    m.className='okmsg';m.textContent='Abastecimento atualizado ✓';
+   }else{
+    await rest('v2_fuel_logs','', 'POST',basePayload);
+    m.className='okmsg';m.textContent='Abastecimento salvo ✓';
+   }
   }
 
-  m.className='muted';m.textContent=receipt?'Enviando foto e salvando abastecimento...':'Salvando abastecimento...';
-  const receiptPath=receipt?await uploadFuelReceipt(receipt,vehicle_id):null;
-  basePayload.metadata.receipt_path=receiptPath;
-  await rest('v2_fuel_logs','', 'POST',basePayload);
-  m.className='okmsg';m.textContent='Abastecimento salvo ✓';
   document.getElementById('fuelEditCard').style.display='none';
+  document.getElementById('fuelEditId').value='';
+  document.getElementById('fuelEditTitle').textContent='Novo abastecimento';
+  document.getElementById('saveFuelBtn').textContent='SALVAR ABASTECIMENTO';
   document.getElementById('fuelReceiptFile').value='';
   document.getElementById('fuelDriver').value='';
+  window.__fuelReceiptOcr=null;
   await loadFuel();
  }catch(e){m.className='error';m.textContent=e.message||String(e)}
  finally{if(btn)btn.disabled=false}
 }
+
 async function saveKm(){
  const m=document.getElementById('kmMsg'),vehicle_id=document.getElementById('kmVehicle').value,km=Number(document.getElementById('kmValue').value||0);
  if(!vehicle_id||km<=0){m.textContent='Selecione o veículo e informe o KM.';return}
@@ -7727,6 +7897,7 @@ document.addEventListener('click',function(e){
 document.addEventListener('keydown',e=>{if(e.key==='Escape')c360CloseMobileMenu()});
 document.addEventListener('change',function(e){
  if(e.target?.id==='reportsFuelVehicle'&&adminReportCache)renderFuelReportByVehicle(adminReportCache.fuels,e.target.value||'all');
+ if(e.target?.id==='fuelReceiptFile'&&e.target.files?.[0])readFuelReceipt(e.target.files[0]).catch(err=>console.warn('Leitura da nota',err));
  if(e.target?.id==='fuelVehicle'){
   const v=fuelVehicles.find(x=>x.id===e.target.value);
   const km=document.getElementById('fuelKm');
@@ -7741,6 +7912,11 @@ document.addEventListener('change',function(e){
 document.addEventListener('click',async function(e){
   if(e.target.closest('#newFuelBtn')){
    e.preventDefault();
+   document.getElementById('fuelEditId').value='';
+   document.getElementById('fuelEditTitle').textContent='Novo abastecimento';
+   document.getElementById('saveFuelBtn').textContent='SALVAR ABASTECIMENTO';
+   window.__fuelReceiptOcr=null;
+   const readMsg=document.getElementById('fuelReceiptReadMsg');if(readMsg){readMsg.className='muted';readMsg.textContent='Ao tirar a foto, o app lê posto, data, litros e valor quando estiverem legíveis.'}
    document.getElementById('fuelEditCard').style.display='block';
    document.getElementById('fuelDate').value=localDateTimeInput();
    document.getElementById('fuelMsg').textContent='';
@@ -7760,6 +7936,7 @@ document.addEventListener('click',async function(e){
    }
    return
   }
+  const fuelEdit=e.target.closest('.editFuelBtn');if(fuelEdit){e.preventDefault();openFuelEdit(fuelEdit.dataset.id);return}
   if(e.target.closest('#cancelFuelEdit')){e.preventDefault();document.getElementById('fuelEditCard').style.display='none';return}
   if(e.target.closest('#saveFuelBtn')){e.preventDefault();await saveFuel();return}
   if(e.target.closest('#newKmBtn')){e.preventDefault();if(deviceMode)return;document.getElementById('kmEditCard').style.display='block';document.getElementById('kmDate').value=localDateTimeInput();document.getElementById('kmMsg').textContent='';return}
@@ -7892,7 +8069,7 @@ setInterval(()=>{
 },60000);
 if('serviceWorker' in navigator){
  window.addEventListener('load',()=>{
-  navigator.serviceWorker.register('./sw-v6-85.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
+  navigator.serviceWorker.register('./sw-v6-86.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
  });
 }
 
