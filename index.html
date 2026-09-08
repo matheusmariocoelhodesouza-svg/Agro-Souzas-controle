@@ -5345,7 +5345,11 @@ async function loadPoultryOps(renderUi=true){
        '<div class="toolbar" style="justify-content:space-between;align-items:flex-start"><div><b style="font-size:15px">🚚 Caminhão '+esc(t.truck_sequence||'')+'</b><div class="muted" style="margin-top:3px">'+esc(t.truck_plate||'')+' • '+esc(t.driver_name||'')+'</div></div>'+
        (t.metadata?.offline_pending?'<span class="pill warn">OFFLINE • PENDENTE</span>':(t.is_cata?'<span class="pill warn">CATA</span>':''))+'</div>'+
        '<div style="margin-top:8px"><b>'+poN(t.birds).toLocaleString('pt-BR')+' aves</b> • '+(t.started_at?new Date(t.started_at).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'—')+' → '+(t.completed_at?new Date(t.completed_at).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'—')+' • '+esc(Array.isArray(t.metadata?.barn_breakdown)&&t.metadata.barn_breakdown.length?t.metadata.barn_breakdown.map(x=>aviaryDisplayLabel(x.barn_number||poultryBarns.find(b=>b.id===x.barn_id)?.barn_number||'')+(t.is_cata?': '+poN(x.birds).toLocaleString('pt-BR')+' aves':'')).join(' • '):aviaryDisplayLabel(t.metadata?.aviary_number||poultryBarns.find(b=>b.id===t.metadata?.barn_id)?.barn_number||''))+'</div>'+
-       '<div class="muted" style="margin-top:4px">'+(t.metadata?.boxes_count?'Caixas: '+poN(t.metadata.boxes_count).toLocaleString('pt-BR')+' • ':'')+(t.metadata?.birds_per_box?'Aves/caixa: '+poN(t.metadata.birds_per_box).toLocaleString('pt-BR',{maximumFractionDigits:2})+' • ':'')+'Vazias: '+poN(t.metadata?.empty_boxes).toLocaleString('pt-BR')+' • Mortes: '+poN(t.metadata?.loading_deaths).toLocaleString('pt-BR')+(t.metadata?.sheet_photo_path?(t.metadata.sheet_photo_path==='local-pending'?' • 📷 Nota pendente de envio':' • 📷 Nota salva'):'')+'</div>'+(t.metadata?.sheet_photo_path&&t.metadata.sheet_photo_path!=='local-pending'?'<div style="margin-top:8px"><button class="btn soft poOpenSheet" type="button" data-path="'+esc(t.metadata.sheet_photo_path)+'">📷 VER NOTA DO CAMINHÃO</button></div>':'')+'</div>'
+       '<div class="muted" style="margin-top:4px">'+(t.metadata?.boxes_count?'Caixas: '+poN(t.metadata.boxes_count).toLocaleString('pt-BR')+' • ':'')+(t.metadata?.birds_per_box?'Aves/caixa: '+poN(t.metadata.birds_per_box).toLocaleString('pt-BR',{maximumFractionDigits:2})+' • ':'')+'Vazias: '+poN(t.metadata?.empty_boxes).toLocaleString('pt-BR')+' • Mortes: '+poN(t.metadata?.loading_deaths).toLocaleString('pt-BR')+(t.metadata?.sheet_photo_path?(t.metadata.sheet_photo_path==='local-pending'?' • 📷 Nota pendente de envio':' • 📷 Nota salva'):' • 📷 Sem nota')+'</div>'+
+       (t.metadata?.sheet_photo_path&&t.metadata.sheet_photo_path!=='local-pending'
+        ?'<div style="margin-top:8px"><button class="btn soft poOpenSheet" type="button" data-path="'+esc(t.metadata.sheet_photo_path)+'">📷 VER NOTA DO CAMINHÃO</button></div>'
+        :(!t.metadata?.offline_pending?'<div style="margin-top:8px"><button class="btn soft poAttachSheet" type="button" data-truck="'+esc(t.id)+'">📷 ANEXAR FOTO JÁ TIRADA</button></div>':''))+
+      '</div>'
     ).join(''):'<div class="muted" style="padding:10px 0">Nenhum caminhão registrado ainda. Comece pelo Caminhão 1.</div>';
 
     return '<div class="item">'+
@@ -5385,6 +5389,34 @@ async function uploadPoultrySheet(file,token){
  const path=companyId+'/'+teamId+'/'+String(token||Date.now())+'.'+ext;
  const r=await authFetch('/storage/v1/object/'+POULTRY_SHEET_BUCKET+'/'+path,{method:'POST',headers:{'Content-Type':file.type||'image/jpeg','x-upsert':'false'},body:file},true);
  await parseResponse(r);return path;
+}
+async function attachPoultrySheetToTruck(truckId){
+ if(!truckId)return;
+ if(!navigator.onLine)return alert('Conecte o celular à internet para anexar a foto ao caminhão.');
+ const truck=(poultryTruckLoads||[]).find(t=>t.id===truckId);
+ if(!truck)return alert('Caminhão não encontrado. Atualize a apanha e tente novamente.');
+ const input=document.createElement('input');
+ input.type='file';
+ input.accept='image/jpeg,image/png,image/webp';
+ input.style.display='none';
+ document.body.appendChild(input);
+ input.addEventListener('change',async()=>{
+  const file=input.files?.[0];
+  if(!file){input.remove();return}
+  try{
+   const path=await uploadPoultrySheet(file,'truck-'+truckId+'-'+Date.now());
+   const metadata={...(truck.metadata||{}),sheet_photo_path:path,sheet_photo_attached_at:new Date().toISOString()};
+   await rest('v2_poultry_truck_loads','id=eq.'+encodeURIComponent(truckId),'PATCH',{metadata});
+   truck.metadata=metadata;
+   await loadPoultryOps();
+   alert('Foto da nota anexada ao Caminhão '+(truck.truck_sequence||'')+' ✓');
+  }catch(e){
+   alert('Não foi possível anexar a foto da nota: '+(e.message||String(e)));
+  }finally{
+   input.remove();
+  }
+ },{once:true});
+ input.click();
 }
 async function openPoultrySheet(path){
  if(!path||path==='local-pending')return alert('A foto da nota ainda está pendente de sincronização.');
@@ -5825,6 +5857,8 @@ if($('#quickTeamSave'))$('#quickTeamSave').addEventListener('click',async()=>{
 document.addEventListener('click',async e=>{
  const sheetBtn=e.target.closest('.poOpenSheet');
  if(sheetBtn){e.preventDefault();await openPoultrySheet(sheetBtn.dataset.path);return}
+ const attachSheetBtn=e.target.closest('.poAttachSheet');
+ if(attachSheetBtn){e.preventDefault();await attachPoultrySheetToTruck(attachSheetBtn.dataset.truck);return}
  const a=e.target.closest('.poAddTruck');
  if(a){
    openNextTruckForm({operationId:a.dataset.op,loadingId:a.dataset.loading,farmId:a.dataset.farm,name:a.dataset.name||'',sequence:Number(a.dataset.seq||1)});
