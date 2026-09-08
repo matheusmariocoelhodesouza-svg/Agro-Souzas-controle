@@ -8,7 +8,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
-<title>Comando 360 • v6.93</title>
+<title>Comando 360 • v6.94</title>
 <link rel="manifest" href="./comando360.webmanifest"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
@@ -6964,17 +6964,16 @@ async function deletePoultryOperation(operationId,loadingId){
  if(!operationId||!confirm('Excluir esta apanha inteira? Caminhões vinculados também serão apagados.'))return;
  if(!confirm('CONFIRMAÇÃO FINAL: esta apanha será excluída definitivamente.'))return;
  try{
-  if(loadingId){
-   const trucks=await rest('v2_poultry_truck_loads','select=id&loading_id=eq.'+loadingId);
-   for(const t of trucks||[]){
-    try{await rest('v2_poultry_truck_barns','truck_load_id=eq.'+t.id,'DELETE')}catch{}
-   }
-   await rest('v2_poultry_truck_loads','loading_id=eq.'+loadingId,'DELETE');
-   await rest('v2_poultry_loadings','id=eq.'+loadingId,'DELETE');
-  }
-  await rest('v2_operations','id=eq.'+operationId,'DELETE');
-  await loadPoultryOps();await loadPoultryDashboard();
- }catch(e){alert('Não foi possível excluir a apanha: '+e.message)}
+  // A operação é o registro principal. O banco apaga carregamento, caminhões e aviários
+  // automaticamente por ON DELETE CASCADE, evitando exclusões parciais e apanhas "fantasmas".
+  const deleted=await rest('v2_operations','id=eq.'+encodeURIComponent(operationId)+'&operation_type=eq.poultry_catching','DELETE');
+  if(!deleted?.length)throw new Error('O registro principal não foi removido do banco.');
+  await loadPoultryOps();
+  await loadPoultryDashboard();
+  alert('Apanha excluída com sucesso.');
+ }catch(e){
+  alert('Não foi possível excluir a apanha: '+(e.message||String(e)));
+ }
 }
 
 
