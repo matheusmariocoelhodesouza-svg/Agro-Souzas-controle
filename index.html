@@ -8,7 +8,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
-<title>Comando 360 • v6.92</title>
+<title>Comando 360 • v6.93</title>
 <link rel="manifest" href="./comando360.webmanifest"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
@@ -1614,13 +1614,13 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
 }
 
 
-/* 6.92 — conferência da leitura da nota */
+/* 6.93 — conferência da leitura da nota */
 .maintenance-receipt-preview{margin-top:9px;padding:10px;border:1px solid #dbe5ef;border-radius:12px;background:#fff}
 .maintenance-receipt-preview .receipt-detected{display:grid;gap:5px;font-size:12px}
 .maintenance-receipt-preview .receipt-items{max-height:160px;overflow:auto;margin-top:7px;padding-top:7px;border-top:1px dashed #d7e0ea}
 .darkmode .maintenance-receipt-preview{background:#101c2e;border-color:#26384e}
 
-/* 6.92 — peças múltiplas na manutenção */
+/* 6.93 — peças múltiplas na manutenção */
 .maintenance-parts-card{margin:12px 0;padding:13px;border:1px solid #dce5ef;border-radius:15px;background:#f8fbff}
 .maintenance-parts-list{display:grid;gap:8px;margin-top:10px}
 .maintenance-part-row{display:grid;grid-template-columns:minmax(180px,1.6fr) 90px 120px 120px auto;gap:8px;align-items:end;padding:10px;border:1px solid #e3e9f1;border-radius:12px;background:#fff}
@@ -1631,7 +1631,20 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
 @media(max-width:760px){.maintenance-part-row{grid-template-columns:1fr 80px 1fr}.maintenance-part-desc{grid-column:1/-1}.maintenance-part-remove{grid-column:3}}
 .darkmode .maintenance-parts-card,.darkmode .maintenance-part-row{background:#101c2e;border-color:#26384e}
 
-/* 6.92 — nível estimado de combustível */
+/* 6.93 — KM rodado pelo rastreador */
+.fleet-distance{margin-top:10px}
+.fleet-distance-box{border:1px solid #dce6f0;border-radius:13px;padding:11px 12px;background:#f8fbff}
+.fleet-distance-head{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:8px}
+.fleet-distance-head strong{font-size:12px;color:#173451}.fleet-distance-head span{font-size:10px;color:#64748b}
+.fleet-distance-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
+.fleet-distance-cell{padding:8px;border-radius:10px;background:#fff;border:1px solid #e5ebf2;text-align:center}
+.fleet-distance-cell b{display:block;font-size:14px}.fleet-distance-cell small{display:block;color:#64748b;font-size:9px;margin-top:2px}
+.fleet-distance-note{font-size:10px;color:#64748b;margin-top:7px;line-height:1.35}
+@media(max-width:640px){.fleet-distance-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.darkmode .fleet-distance-box,.darkmode .fleet-distance-cell{background:#101c2e;border-color:#26384e}
+.darkmode .fleet-distance-head strong{color:#e8f0fa}.darkmode .fleet-distance-note,.darkmode .fleet-distance-head span,.darkmode .fleet-distance-cell small{color:#93a8bf}
+
+/* 6.93 — nível estimado de combustível */
 .fuel-full-toggle{display:flex;align-items:flex-start;gap:11px;margin-top:12px;padding:12px 13px;border:1px solid #dbe5f0;border-radius:14px;background:#f8fbff;cursor:pointer}
 .fuel-full-toggle input{width:21px;height:21px;margin:1px 0 0;flex:0 0 auto;accent-color:#1976d2}
 .fuel-full-toggle strong{display:block;font-size:13px}.fuel-full-toggle small{display:block;color:#64748b;font-size:11px;line-height:1.4;margin-top:2px}
@@ -1652,7 +1665,7 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
 <script defer src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"></script>
 <script>
 (function(){
-  const BUILD='6.92';
+  const BUILD='6.93';
   try{
     const marker='controla_cache_cleanup_'+BUILD;
     if(!localStorage.getItem(marker)){
@@ -1717,7 +1730,7 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
   <div class="brand"><img class="header-brand-icon" src="./comando360-icon.svg" alt="Comando 360"/><div><b>Comando <span class="brand360">360</span></b><div><small id="companyName">Empresa</small></div></div></div>
  </div>
  <div class="header-module" id="headerModule"><span id="headerModuleTitle">Painel Geral</span><small id="headerModuleSubtitle">Central de gestão</small></div>
- <div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.92</span><button class="btn soft" id="themeToggle" type="button" aria-label="Alternar tema">☾</button><button class="btn soft hidden" id="logout">Sair</button></div>
+ <div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.93</span><button class="btn soft" id="themeToggle" type="button" aria-label="Alternar tema">☾</button><button class="btn soft hidden" id="logout">Sair</button></div>
 </header>
 <main class="wrap">
 <section class="login team-entry" id="login">
@@ -1735,7 +1748,7 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
  <label>Senha</label><input autocomplete="current-password" id="password" type="password"/>
  <button class="btn primary" id="loginBtn">Entrar</button>
  <button class="btn soft" id="backDeviceSetup" type="button" style="margin-left:6px">Voltar</button>
- <div class="muted" id="loginMsg" style="margin-top:10px">Comando 360 • v6.92</div><div class="debug" id="debug"></div>
+ <div class="muted" id="loginMsg" style="margin-top:10px">Comando 360 • v6.93</div><div class="debug" id="debug"></div>
 </div>
 </section>
 <section class="hidden" id="app">
@@ -4054,6 +4067,31 @@ function vehicleFuelLevelEstimate(v,tracking=null){
   km_l:economy.km_l,quality:economy.source,ref,currentKm
  };
 }
+function fleetDistanceRow(vehicleId){
+ return (window.__fleetDistanceSummary||[]).find(x=>x.vehicle_id===vehicleId)||null;
+}
+function fleetDistanceKm(v){
+ const n=Math.max(0,Number(v||0));
+ return n.toLocaleString('pt-BR',{minimumFractionDigits:n<10?1:0,maximumFractionDigits:1})+' km';
+}
+function fleetDistanceHtml(v){
+ const d=fleetDistanceRow(v.id);
+ if(!d||Number(d.sample_count||0)<1){
+  return '<div class="fleet-distance"><div class="fleet-distance-box"><div class="fleet-distance-head"><strong>🛣️ KM rodado pelo rastreador</strong><span>Iniciando histórico</span></div><div class="fleet-distance-note">O Comando 360 começou a guardar o hodômetro do MOVIT. Os totais aparecem conforme novas leituras forem chegando.</div></div></div>';
+ }
+ const samples=Number(d.sample_count||0);
+ return '<div class="fleet-distance"><div class="fleet-distance-box">'+
+  '<div class="fleet-distance-head"><strong>🛣️ KM rodado pelo rastreador</strong><span>'+samples+' leitura'+(samples===1?'':'s')+'</span></div>'+
+  '<div class="fleet-distance-grid">'+
+   '<div class="fleet-distance-cell"><b>'+fleetDistanceKm(d.today_km)+'</b><small>HOJE</small></div>'+
+   '<div class="fleet-distance-cell"><b>'+fleetDistanceKm(d.yesterday_km)+'</b><small>ONTEM</small></div>'+
+   '<div class="fleet-distance-cell"><b>'+fleetDistanceKm(d.last_7_days_km)+'</b><small>ÚLTIMOS 7 DIAS</small></div>'+
+   '<div class="fleet-distance-cell"><b>'+fleetDistanceKm(d.month_km)+'</b><small>MÊS ATUAL</small></div>'+
+  '</div>'+
+  '<div class="fleet-distance-note">Calculado automaticamente pelas variações do hodômetro enviado pelo MOVIT. O histórico começou a ser coletado agora.</div>'+
+ '</div></div>';
+}
+
 function fleetFuelHtml(v,tracking){
  const f=vehicleFuelLevelEstimate(v,tracking);
  if(f.state==='missing_capacity'){
@@ -4151,6 +4189,7 @@ function renderFleetVehicles(){
     '</div>'+
    '</div>'+
    trackingHtml+
+   fleetDistanceHtml(v)+
    fleetFuelHtml(v,tracking)+
    '<div class="fleet-license">'+
     '<div class="fleet-license-box '+tone+'">'+
@@ -4169,13 +4208,14 @@ function renderFleetVehicles(){
 async function loadVehicles(){
  try{
   if(navigator.onLine){try{await movitInvoke('sync')}catch(e){console.warn('MOVIT na Frota',e)}}
-  const [r,t,docs,files,tracking,fuelLogs]=await Promise.all([
+  const [r,t,docs,files,tracking,fuelLogs,distanceSummary]=await Promise.all([
    rest('v2_vehicles','select=id,description,plate,make,model,model_year,renavam,current_odometer_km,fuel_tank_capacity_liters,status,metadata&company_id=eq.'+companyId+'&order=description.asc'),
    rest('v2_teams','select=id,name,status,metadata,supervisor_employee_id&company_id=eq.'+companyId+'&order=name.asc'),
    rest('v2_vehicle_documents','select=id,vehicle_id,document_type,expires_at,status,file_id,created_at&company_id=eq.'+companyId+'&status=eq.active&order=created_at.desc'),
    rest('v2_files','select=id,storage_bucket,storage_path,original_name,mime_type,size_bytes&company_id=eq.'+companyId+'&category=eq.vehicle_document&archived_at=is.null&order=created_at.desc'),
    rest('v2_vehicle_tracking_current','select=vehicle_id,provider,latitude,longitude,speed_kmh,ignition,odometer_km,recorded_at,raw_data,updated_at&company_id=eq.'+companyId+'&provider=eq.movit'),
-   rest('v2_fuel_logs','select=id,vehicle_id,fueled_at,odometer_km,liters,total_amount,metadata&company_id=eq.'+companyId+'&order=fueled_at.asc&limit=1500')
+   rest('v2_fuel_logs','select=id,vehicle_id,fueled_at,odometer_km,liters,total_amount,metadata&company_id=eq.'+companyId+'&order=fueled_at.asc&limit=1500'),
+   rpc('v2_vehicle_tracking_distance_summary',{p_company_id:companyId})
   ]);
   window.__fleetVehicles=r||[];
   window.__fleetTeams=t||[];
@@ -4183,6 +4223,7 @@ async function loadVehicles(){
   vehicleDocFiles=Object.fromEntries((files||[]).map(f=>[f.id,f]));
   window.__fleetTracking=tracking||[];
   window.__fleetFuelLogs=fuelLogs||[];
+  window.__fleetDistanceSummary=distanceSummary||[];
   renderFleetVehicles();
   scheduleAutomaticCrlvRead();
  }catch(e){
@@ -8711,9 +8752,22 @@ if($('#syncOfflineNow'))$('#syncOfflineNow').addEventListener('click',async()=>{
 setInterval(()=>{
  if(navigator.onLine&&companyId)offlineQueueList().then(q=>{if(q.length)syncOfflineQueue().catch(()=>{})}).catch(()=>{});
 },60000);
+let movitHistoryAutoSyncBusy=false;
+setInterval(async()=>{
+ if(movitHistoryAutoSyncBusy||!navigator.onLine||!companyId||deviceMode||!session()?.access_token)return;
+ movitHistoryAutoSyncBusy=true;
+ try{
+  const st=await movitInvoke('status');
+  if(st?.configured)await movitInvoke('sync');
+ }catch(e){
+  console.warn('MOVIT histórico automático',e);
+ }finally{
+  movitHistoryAutoSyncBusy=false;
+ }
+},10*60*1000);
 if('serviceWorker' in navigator){
  window.addEventListener('load',()=>{
-  navigator.serviceWorker.register('./sw-v6-92.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
+  navigator.serviceWorker.register('./sw-v6-93.js',{scope:'./'}).catch(e=>console.warn('Service Worker',e));
  });
 }
 
