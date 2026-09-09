@@ -2333,9 +2333,9 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
 </div>
 
 <div class="section" data-screen="manutencoes" hidden="" id="manutencoes">
-<div class="card"><div class="toolbar" style="justify-content:space-between"><div><h3 style="margin:0">🔧 Manutenção da Frota</h3><div class="muted">Controle preventivo por data e quilometragem.</div></div><button class="btn primary" id="newMaintenanceBtn" type="button">+ NOVA MANUTENÇÃO</button></div><div class="v2-kpis" id="maintenanceKpis" style="margin-top:14px"></div><div class="list" id="maintenanceList" style="margin-top:12px"></div></div>
+<div class="card"><div class="toolbar" style="justify-content:space-between"><div><h3 style="margin:0">🔧 Manutenções</h3><div class="muted">Conduções, esteiras e outros equipamentos em um único histórico de serviços.</div></div><button class="btn primary" id="newMaintenanceBtn" type="button">+ NOVA MANUTENÇÃO</button></div><div class="v2-kpis" id="maintenanceKpis" style="margin-top:14px"></div><div class="list" id="maintenanceList" style="margin-top:12px"></div></div>
 <div class="card" id="maintenanceEditCard" style="display:none"><div class="toolbar" style="justify-content:space-between"><div><h3 id="maintenanceEditTitle" style="margin:0">Nova manutenção</h3><div class="muted">Registre o último serviço e programe o próximo.</div></div><button class="btn soft" id="cancelMaintenanceEdit" type="button">Cancelar</button></div><input id="editMaintenanceId" type="hidden"/>
-<div class="row" style="margin-top:12px"><div><label>Veículo</label><select id="maintenanceVehicle"></select></div><div><label>Tipo de serviço</label><select id="maintenanceType"><option>Troca de óleo e filtros</option><option>Freios</option><option>Pneus</option><option>Elétrica</option><option>Suspensão</option><option>Motor</option><option>Câmbio</option><option>Revisão preventiva</option><option>Manutenção corretiva</option><option>Outro</option></select><div id="maintenanceCustomTypeWrap" class="hidden" style="margin-top:8px"><label>Qual serviço?</label><input id="maintenanceCustomType" placeholder="Ex.: alternador, embreagem, escapamento, rolamento..."/></div></div><div><label>Data do serviço</label><input id="maintenanceDate" type="date"/></div></div>
+<div class="row" style="margin-top:12px"><div><label>O que recebeu manutenção?</label><select id="maintenanceVehicle"></select><div id="maintenanceOtherAssetWrap" class="hidden" style="margin-top:8px"><label>Equipamento / item</label><input id="maintenanceOtherAsset" placeholder="Ex.: Esteira 1, compressor, bomba, painel..."/></div></div><div><label>Tipo de serviço</label><select id="maintenanceType"><option>Troca de óleo e filtros</option><option>Freios</option><option>Pneus</option><option>Elétrica</option><option>Suspensão</option><option>Motor</option><option>Câmbio</option><option>Revisão preventiva</option><option>Manutenção corretiva</option><option>Outro</option></select><div id="maintenanceCustomTypeWrap" class="hidden" style="margin-top:8px"><label>Qual serviço?</label><input id="maintenanceCustomType" placeholder="Ex.: alternador, embreagem, escapamento, rolamento..."/></div></div><div><label>Data do serviço</label><input id="maintenanceDate" type="date"/></div></div>
 <div class="row"><div><label>KM do serviço</label><input id="maintenanceKm" type="number" min="0" step="1"/></div><div><label>Próxima por KM</label><input id="maintenanceNextKm" type="number" min="0" step="1" placeholder="Ex.: 255000"/></div><div><label>Próxima por data</label><input id="maintenanceNextDate" type="date"/></div></div>
 <input id="maintenanceParts" type="hidden"/>
 <div class="maintenance-parts-card">
@@ -6628,6 +6628,14 @@ function updateMaintenanceCustomTypeUi(){
  if(wrap)wrap.classList.toggle('hidden',!other);
  if(!other&&$('#maintenanceCustomType'))$('#maintenanceCustomType').value='';
 }
+function updateMaintenanceAssetUi(){
+ const other=$('#maintenanceVehicle')?.value==='__other__';
+ const wrap=$('#maintenanceOtherAssetWrap');if(wrap)wrap.classList.toggle('hidden',!other);
+ const km=$('#maintenanceKm'),nextKm=$('#maintenanceNextKm');
+ [km,nextKm].forEach(el=>{if(el?.parentElement)el.parentElement.style.display=other?'none':''});
+ if(other){if(km)km.value='';if(nextKm)nextKm.value=''}
+}
+document.addEventListener('change',e=>{if(e.target?.id==='maintenanceVehicle')updateMaintenanceAssetUi()});
 function updateMaintenanceReceiptCurrent(meta={}){
  const el=$('#maintenanceReceiptCurrent');if(!el)return;
  const h=maintenanceReceiptHistory(meta),latest=h[h.length-1];
@@ -6647,18 +6655,23 @@ async function loadMaintenances(){
  window.__maintenanceVehicles=vehicles||[];
 
  const list=$('#maintenanceList'),sel=$('#maintenanceVehicle');
- if(sel)sel.innerHTML='<option value="">Selecione...</option>'+vehicles.map(v=>'<option value="'+v.id+'">'+esc(v.description||v.model||v.plate)+' • '+esc(v.plate||'sem placa')+'</option>').join('');
+ if(sel)sel.innerHTML='<option value="">Selecione...</option>'+vehicles.map(v=>'<option value="'+v.id+'">🚐 '+esc(v.description||v.model||v.plate)+' • '+esc(v.plate||'sem placa')+'</option>').join('')+'<option value="__other__">⚙️ Outro equipamento / item</option>';
 
  let counts={ok:0,warn:0,error:0};
  plans.forEach(p=>counts[maintenanceStatus(p,vehicles.find(v=>v.id===p.vehicle_id))[1]]++);
  const k=$('#maintenanceKpis');
  if(k)k.innerHTML='<div class="v2kpi maintenance-kpi"><div class="t">REGISTROS ATIVOS</div><div class="v">'+plans.length+'</div><div class="s">serviços e manutenções</div></div>'+
   '<div class="v2kpi maintenance-kpi"><div class="t">EM DIA</div><div class="v">'+counts.ok+'</div><div class="s">sem pendências</div></div>'+
-  '<div class="v2kpi maintenance-kpi"><div class="t">PRÓXIMAS</div><div class="v">'+counts.warn+'</div><div class="s">até 30 dias / 1.000 km</div></div>'+
+  '<div class="v2kpi maintenance-kpi"><div class="t">PRÓXIMAS</div><div class="v">'+counts.warn+'</div><div class="s">por data ou quilometragem</div></div>'+
   '<div class="v2kpi maintenance-kpi"><div class="t">VENCIDAS</div><div class="v">'+counts.error+'</div><div class="s">requer atenção</div></div>';
 
  if(list)list.innerHTML=plans.map(p=>{
   const v=vehicles.find(x=>x.id===p.vehicle_id),st=maintenanceStatus(p,v),m=p.metadata||{};
+  const isOther=p.asset_type==='other'||!p.vehicle_id;
+  const assetLabel=isOther?(p.asset_name||m.asset_name||'Outro equipamento / item'):(v?.description||v?.model||'Veículo');
+  const assetMeta=isOther?'Equipamento / item':(v?.plate||'sem placa');
+  const serviceMeter=isOther?'':(' • '+Number(p.last_done_odometer_km||0).toLocaleString('pt-BR')+' km');
+  const nextMeter=isOther?'':(' • '+(p.next_due_odometer_km?Number(p.next_due_odometer_km).toLocaleString('pt-BR')+' km':'—'));
   const total=Number(m.parts_cost||0)+Number(m.labor_cost||0);
   const receipts=maintenanceReceiptHistory(m),latest=receipts[receipts.length-1];
   const partsItems=Array.isArray(m.parts_items)&&m.parts_items.length?m.parts_items:(m.parts?[{description:m.parts,quantity:1,total:Number(m.parts_cost||0)}]:[]);
@@ -6667,8 +6680,8 @@ async function loadMaintenances(){
   const receipt=latest?.path?'<button class="btn soft maintenanceReceiptView" data-path="'+esc(latest.path)+'" type="button">📎 Nota das peças'+(receipts.length>1?' ('+receipts.length+')':'')+'</button>':'';
   return '<div class="item"><div class="toolbar" style="justify-content:space-between">'+
    '<div><strong>'+esc(p.name)+'</strong> <span class="pill '+st[1]+'">'+st[0]+'</span>'+
-   '<div class="muted">'+esc(v?.description||v?.model||'Veículo')+' • '+esc(v?.plate||'sem placa')+'</div>'+
-   '<div style="margin-top:6px">Serviço: '+(p.last_done_at?new Date(p.last_done_at+'T00:00:00').toLocaleDateString('pt-BR'):'—')+' • '+Number(p.last_done_odometer_km||0).toLocaleString('pt-BR')+' km &nbsp; | &nbsp; Próximo: '+(p.next_due_at?new Date(p.next_due_at+'T00:00:00').toLocaleDateString('pt-BR'):'—')+' • '+(p.next_due_odometer_km?Number(p.next_due_odometer_km).toLocaleString('pt-BR')+' km':'—')+'</div>'+
+   '<div class="muted">'+esc(assetLabel)+' • '+esc(assetMeta)+'</div>'+
+   '<div style="margin-top:6px">Serviço: '+(p.last_done_at?new Date(p.last_done_at+'T00:00:00').toLocaleDateString('pt-BR'):'—')+serviceMeter+' &nbsp; | &nbsp; Próximo: '+(p.next_due_at?new Date(p.next_due_at+'T00:00:00').toLocaleDateString('pt-BR'):'—')+nextMeter+'</div>'+
    parts+
    (total?'<div class="muted">Custo: '+money(total)+(m.workshop?' • '+esc(m.workshop):'')+'</div>':'')+
    supplier+
@@ -6686,7 +6699,10 @@ function openMaintenanceEdit(id=''){
  $('#maintenanceEditCard').style.display='block';
  $('#maintenanceEditTitle').textContent=p?'Editar manutenção':'Nova manutenção';
  $('#editMaintenanceId').value=p?.id||'';
- $('#maintenanceVehicle').value=p?.vehicle_id||'';
+ const savedOther=!!p&&(p.asset_type==='other'||!p.vehicle_id);
+ $('#maintenanceVehicle').value=savedOther?'__other__':(p?.vehicle_id||'');
+ $('#maintenanceOtherAsset').value=savedOther?(p?.asset_name||m.asset_name||''):'';
+ updateMaintenanceAssetUi();
 
  const savedName=p?.name||'Troca de óleo e filtros';
  const standard=MAINTENANCE_STANDARD_TYPES.includes(savedName);
@@ -6721,16 +6737,20 @@ window.openMaintenanceEdit=openMaintenanceEdit;
 
 async function saveMaintenance(addAnother=false){
  const currentId=$('#editMaintenanceId').value;
- const vehicle_id=$('#maintenanceVehicle').value;
+ const assetSelection=$('#maintenanceVehicle').value;
+ const isOther=assetSelection==='__other__';
+ const vehicle_id=isOther?null:assetSelection;
+ const asset_name=isOther?$('#maintenanceOtherAsset').value.trim():null;
  const msg=$('#maintenanceEditMsg');
- if(!vehicle_id){msg.textContent='Selecione o veículo.';return}
+ if(!assetSelection){msg.textContent='Selecione uma condução ou “Outro equipamento / item”.';return}
+ if(isOther&&!asset_name){msg.textContent='Escreva qual equipamento ou item recebeu a manutenção.';return}
 
  const selectedType=$('#maintenanceType').value;
  const customType=$('#maintenanceCustomType').value.trim();
  const name=selectedType==='Outro'?customType:selectedType;
  if(selectedType==='Outro'&&!customType){msg.textContent='Escreva qual é o serviço no campo “Qual serviço?”.';return}
 
- const lastKm=Number($('#maintenanceKm').value||0),nextKm=Number($('#maintenanceNextKm').value||0);
+ const lastKm=isOther?0:Number($('#maintenanceKm').value||0),nextKm=isOther?0:Number($('#maintenanceNextKm').value||0);
  const existing=currentId?maintenanceCache.find(x=>x.id===currentId):null;
  const recordId=currentId||maintenanceUuid();
  const partsItems=maintenancePartsFromDom();
@@ -6751,7 +6771,8 @@ async function saveMaintenance(addAnother=false){
 
  const receipt=$('#maintenanceReceiptFile').files?.[0]||null;
  const context={
-  vehicle_id,
+  assetSelection,
+  asset_name,
   date:$('#maintenanceDate').value||null,
   km:lastKm||null,
   workshop:$('#maintenanceWorkshop').value.trim()
@@ -6778,7 +6799,7 @@ async function saveMaintenance(addAnother=false){
   }
 
   const body={
-   company_id:companyId,vehicle_id,name,
+   company_id:companyId,vehicle_id,asset_type:isOther?'other':'vehicle',asset_name:isOther?asset_name:null,name,
    last_done_at:$('#maintenanceDate').value||null,
    last_done_odometer_km:lastKm||null,
    next_due_at:$('#maintenanceNextDate').value||null,
@@ -6797,12 +6818,14 @@ async function saveMaintenance(addAnother=false){
 
   if(addAnother){
    openMaintenanceEdit('');
-   $('#maintenanceVehicle').value=context.vehicle_id;
+   $('#maintenanceVehicle').value=context.assetSelection;
+   if(context.assetSelection==='__other__')$('#maintenanceOtherAsset').value=context.asset_name||'';
+   updateMaintenanceAssetUi();
    if(context.date)$('#maintenanceDate').value=context.date;
    if(context.km)$('#maintenanceKm').value=context.km;
    if(context.workshop)$('#maintenanceWorkshop').value=context.workshop;
    $('#maintenanceEditMsg').className='okmsg';
-   $('#maintenanceEditMsg').textContent='Serviço salvo ✓ Agora cadastre outro serviço na mesma condução e na mesma data.';
+   $('#maintenanceEditMsg').textContent='Serviço salvo ✓ Agora cadastre outro serviço no mesmo item e na mesma data.';
   }else{
    msg.className='okmsg';msg.textContent=receipt?'Manutenção e nota das peças arquivadas ✓':'Manutenção salva ✓';
    $('#maintenanceEditCard').style.display='none';
