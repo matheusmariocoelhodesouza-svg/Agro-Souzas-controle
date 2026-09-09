@@ -8,7 +8,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
-<title>Comando 360 • v6.98</title>
+<title>Comando 360 • v6.99</title>
 <link rel="manifest" href="./comando360.webmanifest"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
@@ -1699,6 +1699,23 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
 .darkmode .global-search-result:hover{background:#13233a}
 @media(max-width:600px){.global-search-panel{top:7vh;max-height:86vh}.global-search-head h3{font-size:19px}}
 
+
+/* 6.99 — Insumos / consumo operacional */
+#insumos .consumables-actions{display:flex;gap:8px;flex-wrap:wrap}
+#insumos .consumables-form{display:none}
+#insumos .consumables-form.open{display:block}
+#insumos .consumables-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:11px}
+#insumos .consumables-grid>div{min-width:0}
+#insumos .consumables-grid label{display:block;font-size:11px;font-weight:850;color:#64748b;margin-bottom:6px}
+#insumos .consumables-grid input,#insumos .consumables-grid select{width:100%;min-height:44px;border:1px solid #cbd5e1;border-radius:10px;padding:10px 11px;background:#fff;color:#172033;font:inherit}
+#insumos .consumable-stock{font-weight:900}
+#insumos .consumable-negative{color:#b91c1c}
+#insumos .consumable-ok{color:#166534}
+.darkmode #insumos .consumables-grid input,.darkmode #insumos .consumables-grid select{background:#0b1727;color:#e7eef9;border-color:#314158}
+.darkmode #insumos .consumables-grid label{color:#9eb0c6}
+@media(max-width:900px){#insumos .consumables-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:620px){#insumos .consumables-grid{grid-template-columns:1fr}#insumos .consumables-actions .btn{width:100%}}
+
 </style>
 <script defer="" src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
@@ -1728,6 +1745,7 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
 <div class="v2group">GESTÃO</div>
 <button class="v2navbtn" data-v2tab="funcionarios">♙   RH</button>
 <button class="v2navbtn" data-v2tab="frota">▰   Frota</button>
+<button class="v2navbtn" data-v2tab="insumos">🧴   Insumos</button>
 <button class="v2navbtn" data-v2tab="financeiro">💰   Financeiro</button>
 <button class="v2navbtn" data-v2tab="relatorios">📊   Relatórios</button>
 <div class="v2group">SISTEMA</div>
@@ -1770,7 +1788,7 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
   <div class="brand"><img class="header-brand-icon" src="./comando360-icon.svg" alt="Comando 360"/><div><b>Comando <span class="brand360">360</span></b><div><small id="companyName">Empresa</small></div></div></div>
  </div>
  <div class="header-module" id="headerModule"><span id="headerModuleTitle">Painel Geral</span><small id="headerModuleSubtitle">Central de gestão</small></div>
- <div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="header-icon-btn" id="headerSearchBtn" type="button" title="Busca geral" aria-label="Busca geral">⌕</button><button class="header-icon-btn" type="button" data-jump="alertas" title="Alertas" aria-label="Abrir alertas">🔔<span id="headerAlertsCount">0</span></button><button class="header-icon-btn" type="button" data-jump="ia" title="Assistente IA" aria-label="Abrir Assistente IA">✦</button><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.98</span><button class="btn soft" id="themeToggle" type="button" aria-label="Alternar tema">☾</button><button class="btn soft hidden" id="logout">Sair</button></div>
+ <div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="header-icon-btn" id="headerSearchBtn" type="button" title="Busca geral" aria-label="Busca geral">⌕</button><button class="header-icon-btn" type="button" data-jump="alertas" title="Alertas" aria-label="Abrir alertas">🔔<span id="headerAlertsCount">0</span></button><button class="header-icon-btn" type="button" data-jump="ia" title="Assistente IA" aria-label="Abrir Assistente IA">✦</button><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.99</span><button class="btn soft" id="themeToggle" type="button" aria-label="Alternar tema">☾</button><button class="btn soft hidden" id="logout">Sair</button></div>
 </header>
 <main class="wrap">
 <section class="login team-entry" id="login">
@@ -1788,11 +1806,11 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
  <label>Senha</label><input autocomplete="current-password" id="password" type="password"/>
  <button class="btn primary" id="loginBtn">Entrar</button>
  <button class="btn soft" id="backDeviceSetup" type="button" style="margin-left:6px">Voltar</button>
- <div class="muted" id="loginMsg" style="margin-top:10px">Comando 360 • v6.98</div><div class="debug" id="debug"></div>
+ <div class="muted" id="loginMsg" style="margin-top:10px">Comando 360 • v6.99</div><div class="debug" id="debug"></div>
 </div>
 </section>
 <section class="hidden" id="app">
-<div class="nav" id="nav"><button class="active" data-tab="inicio">Início</button><button data-tab="equipes">Equipes</button><button data-tab="funcionarios">RH &amp; Pessoas</button><button data-tab="documentosrh">Docs RH</button><button data-tab="ponto">Ponto</button><button data-tab="operacoes">Operações / Apanha</button><button data-tab="frota">Frota</button><button data-tab="manutencoes">Manutenções</button><button data-tab="combustivel">Combustível & KM</button><button data-tab="financeiro">Financeiro</button><button data-tab="relatorios">Relatórios</button><button data-tab="alertas">Alertas</button><button data-tab="integracoes">Integrações</button><button data-tab="ia">Assistente IA</button></div>
+<div class="nav" id="nav"><button class="active" data-tab="inicio">Início</button><button data-tab="equipes">Equipes</button><button data-tab="funcionarios">RH &amp; Pessoas</button><button data-tab="documentosrh">Docs RH</button><button data-tab="ponto">Ponto</button><button data-tab="operacoes">Operações / Apanha</button><button data-tab="frota">Frota</button><button data-tab="manutencoes">Manutenções</button><button data-tab="combustivel">Combustível & KM</button><button data-tab="insumos">Insumos</button><button data-tab="financeiro">Financeiro</button><button data-tab="relatorios">Relatórios</button><button data-tab="alertas">Alertas</button><button data-tab="integracoes">Integrações</button><button data-tab="ia">Assistente IA</button></div>
 <div class="team-mode-bar hidden" id="deviceModeBar"><div><strong id="deviceModeTeam">Equipe</strong><div class="muted">Acesso restrito a este aparelho</div></div><button class="btn soft" type="button" data-teamtab="equipehome">⌂ Início</button></div>
 <div class="offline-sync-panel hidden" id="offlineSyncPanel">
  <div class="offline-sync-box">
@@ -2355,6 +2373,58 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
 <div><label>PDF / Foto</label><input id="empDocFile" type="file" accept="application/pdf,image/jpeg,image/png,image/webp" style="width:100%;padding:10px;margin-top:6px;border:1px solid #cbd5e1;border-radius:10px"/></div>
 <div class="toolbar" style="margin-top:12px"><button class="btn primary" id="saveEmpDoc" type="button">SALVAR</button><button class="btn danger" id="deleteEmpDoc" type="button" style="display:none">EXCLUIR</button></div><div class="muted" id="empDocMsg" style="margin-top:8px"></div></div>
 <div class="card"><div class="list" id="empDocsList"></div></div>
+</div>
+
+
+<div class="section" data-screen="insumos" hidden="" id="insumos">
+ <div class="v2hero">
+  <div><div class="dashboard-eyebrow">CONTROLE OPERACIONAL</div><h1>🧴 Insumos</h1><p>Óleo, sabão e outros produtos usados na operação. Controle quantidade, litros/unidades, estoque e custo real.</p></div>
+  <div class="consumables-actions"><button class="btn primary" id="newConsumableItemBtn" type="button">+ NOVO INSUMO</button><button class="btn soft" id="newConsumableEntryBtn" type="button">+ ENTRADA / COMPRA</button><button class="btn soft" id="newConsumableUsageBtn" type="button">− REGISTRAR CONSUMO</button></div>
+ </div>
+
+ <div class="v2-kpis" id="consumablesKpis"></div>
+
+ <div class="card consumables-form" id="consumableItemForm">
+  <div class="toolbar" style="justify-content:space-between"><div><h3 style="margin:0">Cadastrar insumo</h3><div class="muted">Cadastre óleo, sabão ou qualquer produto que queira acompanhar.</div></div><button class="btn soft" id="cancelConsumableItem" type="button">Cancelar</button></div>
+  <div class="consumables-grid" style="margin-top:12px">
+   <div><label>Nome do produto</label><input id="consumableName" placeholder="Ex.: Óleo / Sabão"/></div>
+   <div><label>Unidade de controle</label><select id="consumableUnit"><option value="L">Litros (L)</option><option value="un">Unidades (un)</option><option value="kg">Quilos (kg)</option><option value="gal">Galões (gal)</option></select></div>
+   <div><label>Estoque mínimo</label><input id="consumableMinStock" type="number" min="0" step="0.001" placeholder="Opcional"/></div>
+   <div><label>Observação</label><input id="consumableItemNote" placeholder="Ex.: mistura do cano"/></div>
+  </div>
+  <div class="toolbar" style="margin-top:14px"><button class="btn primary" id="saveConsumableItem" type="button">SALVAR INSUMO</button></div>
+  <div class="muted" id="consumableItemMsg" style="margin-top:8px"></div>
+ </div>
+
+ <div class="card consumables-form" id="consumableMovementForm">
+  <div class="toolbar" style="justify-content:space-between"><div><h3 id="consumableMovementTitle" style="margin:0">Registrar movimentação</h3><div class="muted" id="consumableMovementSubtitle">Informe o que entrou ou foi usado.</div></div><button class="btn soft" id="cancelConsumableMovement" type="button">Cancelar</button></div>
+  <input id="consumableMovementType" type="hidden" value="out"/>
+  <div class="consumables-grid" style="margin-top:12px">
+   <div><label>Produto</label><select id="consumableMovementItem"></select></div>
+   <div><label>Quantidade</label><input id="consumableMovementQty" type="number" min="0.001" step="0.001"/></div>
+   <div id="consumableMovementTotalWrap"><label>Valor total da compra (R$)</label><input id="consumableMovementTotal" type="number" min="0" step="0.01"/></div>
+   <div><label>Data e hora</label><input id="consumableMovementDate" type="datetime-local"/></div>
+  </div>
+  <div class="consumables-grid" style="margin-top:11px">
+   <div style="grid-column:span 2"><label>Onde foi usado / observação</label><input id="consumableMovementNotes" placeholder="Ex.: mistura do cano / Equipe 1"/></div>
+   <div><label>Custo calculado</label><input id="consumableMovementCalculated" readonly value="R$ 0,00"/></div>
+  </div>
+  <div class="toolbar" style="margin-top:14px"><button class="btn primary" id="saveConsumableMovement" type="button">SALVAR</button></div>
+  <div class="muted" id="consumableMovementMsg" style="margin-top:8px"></div>
+ </div>
+
+ <div class="card">
+  <div class="toolbar" style="justify-content:space-between;align-items:flex-start">
+   <div><h3 style="margin:0">Estoque e consumo</h3><div class="muted">Veja quanto tem hoje e quanto cada produto consumiu no período.</div></div>
+   <div class="toolbar"><input id="consumablesStart" type="date"/><input id="consumablesEnd" type="date"/><button class="btn soft" id="refreshConsumables" type="button">↻ Atualizar</button></div>
+  </div>
+  <div id="consumablesStockList" style="margin-top:13px"></div>
+ </div>
+
+ <div class="card">
+  <div><h3 style="margin:0">Histórico de entradas e consumos</h3><div class="muted">Compras e usos registrados no período selecionado.</div></div>
+  <div id="consumablesHistory" style="margin-top:12px"></div>
+ </div>
 </div>
 
 <div class="section" data-screen="financeiro" hidden="" id="financeiro">
@@ -6113,6 +6183,172 @@ function initScreenRouter(){
    el.classList.remove('active');
  });
 }
+
+let consumablesItems=[],consumablesMovements=[];
+function consumablesNum(v){const n=Number(v||0);return Number.isFinite(n)?n:0}
+function consumablesDateInput(d=new Date()){const z=n=>String(n).padStart(2,'0');return d.getFullYear()+'-'+z(d.getMonth()+1)+'-'+z(d.getDate())+'T'+z(d.getHours())+':'+z(d.getMinutes())}
+function consumablesPeriodDefaults(){
+ const now=new Date(),start=new Date(now.getFullYear(),now.getMonth(),1);
+ const a=document.getElementById('consumablesStart'),b=document.getElementById('consumablesEnd');
+ if(a&&!a.value)a.value=start.toISOString().slice(0,10);
+ if(b&&!b.value)b.value=now.toISOString().slice(0,10);
+}
+function consumableStock(itemId,movs=consumablesMovements){
+ return movs.filter(x=>x.item_id===itemId).reduce((s,x)=>s+(['in','adjustment_in','transfer_in'].includes(x.movement_type)?consumablesNum(x.quantity):-consumablesNum(x.quantity)),0);
+}
+function consumableItem(id){return consumablesItems.find(x=>x.id===id)}
+function consumablesRangeMovements(){
+ const a=document.getElementById('consumablesStart')?.value||'0000-01-01',b=document.getElementById('consumablesEnd')?.value||'9999-12-31';
+ return consumablesMovements.filter(x=>{const d=String(x.occurred_at||'').slice(0,10);return d>=a&&d<=b});
+}
+function consumableQty(v,unit){return consumablesNum(v).toLocaleString('pt-BR',{maximumFractionDigits:3})+' '+esc(unit||'')}
+function fillConsumableMovementItems(){
+ const s=document.getElementById('consumableMovementItem');if(!s)return;
+ s.innerHTML='<option value="">Selecione...</option>'+consumablesItems.map(x=>'<option value="'+esc(x.id)+'">'+esc(x.name)+' • '+esc(x.unit||'un')+'</option>').join('');
+}
+function renderConsumableMovementCalculated(){
+ const type=document.getElementById('consumableMovementType')?.value||'out';
+ const qty=consumablesNum(document.getElementById('consumableMovementQty')?.value);
+ const total=consumablesNum(document.getElementById('consumableMovementTotal')?.value);
+ const item=consumableItem(document.getElementById('consumableMovementItem')?.value);
+ const value=type==='in'?total:qty*consumablesNum(item?.current_avg_cost);
+ const el=document.getElementById('consumableMovementCalculated');if(el)el.value=money(value);
+}
+function openConsumableMovement(type){
+ if(!consumablesItems.length){c360Toast('Cadastre um insumo primeiro','Ex.: Óleo ou Sabão.','error');return}
+ const form=document.getElementById('consumableMovementForm');if(!form)return;
+ document.getElementById('consumableMovementType').value=type;
+ document.getElementById('consumableMovementTitle').textContent=type==='in'?'Entrada / compra de insumo':'Registrar consumo de insumo';
+ document.getElementById('consumableMovementSubtitle').textContent=type==='in'?'Registre a quantidade comprada e o valor total pago.':'Registre quanto foi usado. O custo é calculado pelo custo médio do estoque.';
+ document.getElementById('consumableMovementTotalWrap').style.display=type==='in'?'block':'none';
+ document.getElementById('consumableMovementQty').value='';
+ document.getElementById('consumableMovementTotal').value='';
+ document.getElementById('consumableMovementNotes').value='';
+ document.getElementById('consumableMovementDate').value=consumablesDateInput();
+ document.getElementById('consumableMovementMsg').textContent='';
+ fillConsumableMovementItems();
+ form.classList.add('open');
+ renderConsumableMovementCalculated();
+ form.scrollIntoView({behavior:'smooth',block:'start'});
+}
+function renderConsumables(){
+ consumablesPeriodDefaults();
+ const period=consumablesRangeMovements();
+ const ins=period.filter(x=>x.movement_type==='in');
+ const outs=period.filter(x=>x.movement_type==='out');
+ const purchases=ins.reduce((s,x)=>s+consumablesNum(x.quantity)*consumablesNum(x.unit_cost),0);
+ const consumedCost=outs.reduce((s,x)=>s+consumablesNum(x.quantity)*consumablesNum(x.unit_cost),0);
+ const liters=outs.filter(x=>String(consumableItem(x.item_id)?.unit||'').toLowerCase()==='l').reduce((s,x)=>s+consumablesNum(x.quantity),0);
+ const stockValue=consumablesItems.reduce((s,i)=>s+Math.max(0,consumableStock(i.id))*consumablesNum(i.current_avg_cost),0);
+ const k=document.getElementById('consumablesKpis');
+ if(k)k.innerHTML=
+  '<div class="v2kpi"><div class="t">COMPRAS NO PERÍODO</div><div class="v">'+money(purchases)+'</div><div class="s">valor pago em entradas</div></div>'+
+  '<div class="v2kpi"><div class="t">CONSUMIDO NO PERÍODO</div><div class="v">'+money(consumedCost)+'</div><div class="s">custo do que foi usado</div></div>'+
+  '<div class="v2kpi"><div class="t">LITROS CONSUMIDOS</div><div class="v">'+liters.toLocaleString('pt-BR',{maximumFractionDigits:2})+' L</div><div class="s">produtos controlados em litros</div></div>'+
+  '<div class="v2kpi"><div class="t">VALOR EM ESTOQUE</div><div class="v">'+money(stockValue)+'</div><div class="s">'+consumablesItems.length+' insumo(s) cadastrado(s)</div></div>';
+
+ const list=document.getElementById('consumablesStockList');
+ if(list){
+  list.innerHTML=consumablesItems.length?'<div class="tablewrap"><table><tr><th>Produto</th><th>Estoque atual</th><th>Custo médio</th><th>Valor em estoque</th><th>Consumido no período</th><th>Custo consumido</th></tr>'+
+   consumablesItems.map(i=>{
+    const stock=consumableStock(i.id),used=outs.filter(x=>x.item_id===i.id).reduce((s,x)=>s+consumablesNum(x.quantity),0);
+    const usedCost=outs.filter(x=>x.item_id===i.id).reduce((s,x)=>s+consumablesNum(x.quantity)*consumablesNum(x.unit_cost),0);
+    const min=consumablesNum(i.minimum_stock),low=min>0&&stock<=min;
+    return '<tr><td><b>'+esc(i.name)+'</b></td><td class="consumable-stock '+(low?'consumable-negative':'consumable-ok')+'">'+consumableQty(stock,i.unit)+(low?' ⚠':'')+'</td><td>'+money(i.current_avg_cost)+'</td><td>'+money(Math.max(0,stock)*consumablesNum(i.current_avg_cost))+'</td><td>'+consumableQty(used,i.unit)+'</td><td>'+money(usedCost)+'</td></tr>';
+   }).join('')+'</table></div>':'<div class="muted">Nenhum insumo cadastrado. Cadastre Óleo, Sabão ou outro produto.</div>';
+ }
+
+ const hist=document.getElementById('consumablesHistory');
+ if(hist){
+  const rows=[...period].sort((a,b)=>new Date(b.occurred_at)-new Date(a.occurred_at));
+  hist.innerHTML=rows.length?'<div class="tablewrap"><table><tr><th>Data</th><th>Movimento</th><th>Produto</th><th>Quantidade</th><th>Custo unit.</th><th>Total</th><th>Observação</th></tr>'+
+   rows.map(x=>{const i=consumableItem(x.item_id),total=consumablesNum(x.quantity)*consumablesNum(x.unit_cost);return '<tr><td>'+new Date(x.occurred_at).toLocaleString('pt-BR')+'</td><td><span class="pill '+(x.movement_type==='in'?'ok':'warn')+'">'+(x.movement_type==='in'?'ENTRADA':'CONSUMO')+'</span></td><td>'+esc(i?.name||'Insumo')+'</td><td>'+consumableQty(x.quantity,i?.unit)+'</td><td>'+money(x.unit_cost)+'</td><td>'+money(total)+'</td><td>'+esc(x.notes||'')+'</td></tr>'}).join('')+
+   '</table></div>':'<div class="muted">Nenhuma entrada ou consumo neste período.</div>';
+ }
+ fillConsumableMovementItems();
+}
+async function loadConsumables(){
+ consumablesPeriodDefaults();
+ const [items,movs]=await Promise.all([
+  rest('v2_inventory_items','select=*&company_id=eq.'+companyId+'&category=eq.insumo&status=eq.active&order=name.asc'),
+  rest('v2_inventory_movements','select=*&company_id=eq.'+companyId+'&order=occurred_at.desc&limit=1000')
+ ]);
+ consumablesItems=items||[];
+ const ids=new Set(consumablesItems.map(x=>x.id));
+ consumablesMovements=(movs||[]).filter(x=>ids.has(x.item_id));
+ renderConsumables();
+}
+async function saveConsumableItem(){
+ const msg=document.getElementById('consumableItemMsg');
+ const name=document.getElementById('consumableName').value.trim();
+ const unit=document.getElementById('consumableUnit').value;
+ if(!name){msg.className='error';msg.textContent='Informe o nome do produto.';return}
+ msg.className='muted';msg.textContent='Salvando...';
+ try{
+  const sku='INS-'+Date.now().toString(36).toUpperCase();
+  await rest('v2_inventory_items','','POST',{
+   company_id:companyId,sku,name,category:'insumo',unit,
+   minimum_stock:consumablesNum(document.getElementById('consumableMinStock').value),
+   current_avg_cost:0,tracks_lot:false,tracks_expiry:false,status:'active',
+   metadata:{source:'insumos',note:document.getElementById('consumableItemNote').value.trim()}
+  });
+  document.getElementById('consumableName').value='';
+  document.getElementById('consumableMinStock').value='';
+  document.getElementById('consumableItemNote').value='';
+  document.getElementById('consumableItemForm').classList.remove('open');
+  await loadConsumables();c360Toast('Insumo cadastrado','Agora você pode registrar compras e consumo.','success');
+ }catch(e){msg.className='error';msg.textContent=e.message||String(e)}
+}
+async function saveConsumableMovement(){
+ const msg=document.getElementById('consumableMovementMsg');
+ const type=document.getElementById('consumableMovementType').value;
+ const item=consumableItem(document.getElementById('consumableMovementItem').value);
+ const qty=consumablesNum(document.getElementById('consumableMovementQty').value);
+ const total=consumablesNum(document.getElementById('consumableMovementTotal').value);
+ if(!item){msg.className='error';msg.textContent='Selecione o produto.';return}
+ if(!(qty>0)){msg.className='error';msg.textContent='Informe uma quantidade maior que zero.';return}
+ const currentStock=consumableStock(item.id);
+ if(type==='out'&&qty>currentStock+0.000001){msg.className='error';msg.textContent='Estoque insuficiente. Disponível: '+consumableQty(currentStock,item.unit)+'.';return}
+ if(type==='in'&&!(total>0)){msg.className='error';msg.textContent='Informe o valor total pago nesta compra.';return}
+ const unitCost=type==='in'?total/qty:consumablesNum(item.current_avg_cost);
+ msg.className='muted';msg.textContent='Salvando...';
+ try{
+  const u=session()?.user?.id||null;
+  await rest('v2_inventory_movements','','POST',{
+   company_id:companyId,item_id:item.id,location_id:null,movement_type:type,quantity:qty,unit_cost:unitCost,
+   occurred_at:new Date(document.getElementById('consumableMovementDate').value||Date.now()).toISOString(),
+   source_type:type==='in'?'consumable_purchase':'consumable_usage',
+   notes:document.getElementById('consumableMovementNotes').value.trim()||null,created_by:u
+  });
+  if(type==='in'){
+   const oldCost=consumablesNum(item.current_avg_cost);
+   const baseQty=Math.max(0,currentStock);
+   const newAvg=(baseQty*oldCost+qty*unitCost)/(baseQty+qty);
+   await rest('v2_inventory_items','id=eq.'+encodeURIComponent(item.id),'PATCH',{current_avg_cost:Number(newAvg.toFixed(6))});
+  }
+  document.getElementById('consumableMovementForm').classList.remove('open');
+  await loadConsumables();
+  c360Toast(type==='in'?'Entrada registrada':'Consumo registrado',type==='in'?money(total)+' adicionados ao estoque.':consumableQty(qty,item.unit)+' baixados do estoque.','success');
+ }catch(e){msg.className='error';msg.textContent=e.message||String(e)}
+}
+document.addEventListener('input',function(e){
+ if(['consumableMovementQty','consumableMovementTotal'].includes(e.target?.id))renderConsumableMovementCalculated();
+});
+document.addEventListener('change',function(e){
+ if(e.target?.id==='consumableMovementItem')renderConsumableMovementCalculated();
+ if(['consumablesStart','consumablesEnd'].includes(e.target?.id))renderConsumables();
+});
+document.addEventListener('click',async function(e){
+ if(e.target.closest('#newConsumableItemBtn')){e.preventDefault();document.getElementById('consumableItemMsg').textContent='';document.getElementById('consumableItemForm').classList.add('open');document.getElementById('consumableItemForm').scrollIntoView({behavior:'smooth',block:'start'});return}
+ if(e.target.closest('#cancelConsumableItem')){e.preventDefault();document.getElementById('consumableItemForm').classList.remove('open');return}
+ if(e.target.closest('#saveConsumableItem')){e.preventDefault();await saveConsumableItem();return}
+ if(e.target.closest('#newConsumableEntryBtn')){e.preventDefault();openConsumableMovement('in');return}
+ if(e.target.closest('#newConsumableUsageBtn')){e.preventDefault();openConsumableMovement('out');return}
+ if(e.target.closest('#cancelConsumableMovement')){e.preventDefault();document.getElementById('consumableMovementForm').classList.remove('open');return}
+ if(e.target.closest('#saveConsumableMovement')){e.preventDefault();await saveConsumableMovement();return}
+ if(e.target.closest('#refreshConsumables')){e.preventDefault();await loadConsumables();return}
+});
+
 let maintenanceCache=[];
 function maintenanceStatus(p,vehicle){const km=Number(vehicle?.current_odometer_km||0),dueKm=Number(p.next_due_odometer_km||0);const today=new Date();today.setHours(0,0,0,0);const dueDate=p.next_due_at?new Date(p.next_due_at+'T00:00:00'):null;if((dueKm&&km>=dueKm)||(dueDate&&dueDate<today))return ['Vencida','error'];if((dueKm&&dueKm-km<=1000)||(dueDate&&((dueDate-today)/86400000)<=30))return ['Próxima','warn'];return ['Em dia','ok']}
 const MAINTENANCE_RECEIPT_BUCKET='v2-maintenance-receipts';
@@ -8525,6 +8761,7 @@ const C360_MODULES={
  frota:['Frota','Conduções e CRLV'],
  rastreamento:['Rastreamento','MOVIT e localização da frota'],
  manutencoes:['Manutenções','Preventiva e corretiva'],
+ insumos:['Insumos','Consumo de óleo, sabão e materiais'],
  combustivel:['Combustível & KM','Abastecimentos e hodômetro'],
  financeiro:['Financeiro','Entradas, saídas e resultado'],
  relatorios:['Relatórios & BI','Indicadores gerenciais'],
@@ -8539,7 +8776,7 @@ function c360SetModule(tab){
  const m=C360_MODULES[tab]||[tab,'Comando 360'];
  const t=document.getElementById('headerModuleTitle'),s=document.getElementById('headerModuleSubtitle');
  if(t)t.textContent=m[0];if(s)s.textContent=m[1];
- document.title='Comando 360 • '+m[0]+' • v6.98';
+ document.title='Comando 360 • '+m[0]+' • v6.99';
  document.querySelectorAll('#mobileBottomNav [data-mobiletab]').forEach(b=>{
   const mt=b.dataset.mobiletab;
   b.classList.toggle('active',mt===tab||(mt==='more'&&!['inicio','operacoes','ponto','frota'].includes(tab)));
@@ -8603,6 +8840,7 @@ async function v2Go(tab){
    else if(tab==='frota') await loadVehicles();
    else if(tab==='rastreamento') await loadMovitTracking(true);
    else if(tab==='manutencoes') await loadMaintenances();
+   else if(tab==='insumos') await loadConsumables();
    else if(tab==='combustivel'){await loadFuel();}
    else if(tab==='documentosrh') await loadEmpDocs();
    else if(tab==='financeiro') await loadFinance();
@@ -8834,7 +9072,7 @@ setInterval(async()=>{
 },10*60*1000);
 if('serviceWorker' in navigator){
  window.addEventListener('load',()=>{
-  navigator.serviceWorker.register('./sw-v6-98.js',{scope:'./',updateViaCache:'none'}).catch(e=>console.warn('Service Worker',e));
+  navigator.serviceWorker.register('./sw-v6-99.js',{scope:'./',updateViaCache:'none'}).catch(e=>console.warn('Service Worker',e));
  });
 }
 
