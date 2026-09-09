@@ -8,7 +8,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
-<title>Comando 360 • v7.00</title>
+<title>Comando 360 • v7.01</title>
 <link rel="manifest" href="./comando360.webmanifest"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
@@ -1850,6 +1850,93 @@ body.darkmode.app-ready:not(.device-mode) header{
 body.darkmode.app-ready:not(.device-mode) header .brand b{color:#edf4fd!important}
 body.darkmode.app-ready:not(.device-mode) header #companyName{color:#93a7bd!important}
 
+
+/* 7.01 — contraste correto da tela Apanhas no modo escuro */
+body.darkmode #operacoes #poultryList .poultry-op-card{
+ background:#0f1b2b!important;
+ border-color:#2a3d53!important;
+ color:#eaf2fb!important;
+ opacity:1!important;
+ filter:none!important;
+ box-shadow:0 5px 18px rgba(0,0,0,.12)!important;
+}
+body.darkmode #operacoes #poultryList .poultry-op-card.is-completed{
+ opacity:1!important;
+ filter:none!important;
+ border-color:#315345!important;
+}
+body.darkmode #operacoes #poultryList .poultry-op-card> .toolbar strong,
+body.darkmode #operacoes #poultryList .po-trucks-section strong{
+ color:#f5f9ff!important;
+}
+body.darkmode #operacoes #poultryList .poultry-op-card .muted{
+ color:#a9b9cc!important;
+}
+body.darkmode #operacoes #poultryList .po-site-card{
+ background:#132338!important;
+ border:1px solid #2b425a!important;
+ color:#dce8f5!important;
+}
+body.darkmode #operacoes #poultryList .po-site-card b{
+ color:#f4f8fd!important;
+}
+body.darkmode #operacoes #poultryList .po-detail>div{
+ background:#132338!important;
+ border-color:#2b425a!important;
+ color:#dce8f5!important;
+}
+body.darkmode #operacoes #poultryList .po-detail>div .muted{
+ color:#9fb2c8!important;
+}
+body.darkmode #operacoes #poultryList .po-detail>div b{
+ color:#ffffff!important;
+ font-weight:900;
+}
+body.darkmode #operacoes #poultryList .po-revenue-card{
+ background:#153426!important;
+ border-color:#2f6a4f!important;
+ color:#dff7e9!important;
+}
+body.darkmode #operacoes #poultryList .po-revenue-card b{
+ color:#a7f3c8!important;
+}
+body.darkmode #operacoes #poultryList .po-revenue-card .muted{
+ color:#b8dac7!important;
+}
+body.darkmode #operacoes #poultryList .po-trucks-section{
+ border-top-color:#31465d!important;
+}
+body.darkmode #operacoes #poultryList .truck-list{
+ border-top-color:#31465d!important;
+}
+body.darkmode #operacoes #poultryList .poultry-truck-card{
+ background:#132338!important;
+ border-color:#2b425a!important;
+ color:#dce8f5!important;
+ opacity:1!important;
+ filter:none!important;
+}
+body.darkmode #operacoes #poultryList .poultry-truck-card b,
+body.darkmode #operacoes #poultryList .poultry-truck-card strong{
+ color:#ffffff!important;
+}
+body.darkmode #operacoes #poultryList .poultry-truck-card .muted{
+ color:#b0bfd0!important;
+}
+body.darkmode #operacoes #poultryList .pill.ok{
+ background:#173d2c!important;
+ border:1px solid #2f6a4f!important;
+ color:#9af0bc!important;
+}
+body.darkmode #operacoes #poultryList .pill.warn{
+ background:#463615!important;
+ border:1px solid #6f5520!important;
+ color:#ffd77a!important;
+}
+body.darkmode #operacoes #poultryList .po-actions{
+ color:#dce8f5!important;
+}
+
 </style>
 <script defer="" src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
@@ -1944,7 +2031,7 @@ body.darkmode.app-ready:not(.device-mode) header #companyName{color:#93a7bd!impo
   <div class="brand"><img class="header-brand-icon" src="./comando360-icon.svg" alt="Comando 360"/><div><b>Comando <span class="brand360">360</span></b><div><small id="companyName">Empresa</small></div></div></div>
  </div>
  <div class="header-module" id="headerModule"><span id="headerModuleTitle">Painel Geral</span><small id="headerModuleSubtitle">Central de gestão</small></div>
- <div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="header-icon-btn" id="headerSearchBtn" type="button" title="Busca geral" aria-label="Busca geral">⌕</button><button class="header-icon-btn" type="button" data-jump="alertas" title="Alertas" aria-label="Abrir alertas">🔔<span id="headerAlertsCount">0</span></button><button class="header-icon-btn" type="button" data-jump="ia" title="Assistente IA" aria-label="Abrir Assistente IA">✦</button><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v7.00</span><button class="btn soft" id="themeToggle" type="button" aria-label="Alternar tema">☾</button><button class="btn soft hidden" id="logout">Sair</button></div>
+ <div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="header-icon-btn" id="headerSearchBtn" type="button" title="Busca geral" aria-label="Busca geral">⌕</button><button class="header-icon-btn" type="button" data-jump="alertas" title="Alertas" aria-label="Abrir alertas">🔔<span id="headerAlertsCount">0</span></button><button class="header-icon-btn" type="button" data-jump="ia" title="Assistente IA" aria-label="Abrir Assistente IA">✦</button><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v7.01</span><button class="btn soft" id="themeToggle" type="button" aria-label="Alternar tema">☾</button><button class="btn soft hidden" id="logout">Sair</button></div>
 </header>
 <main class="wrap">
 <section class="login team-entry" id="login">
@@ -1962,7 +2049,7 @@ body.darkmode.app-ready:not(.device-mode) header #companyName{color:#93a7bd!impo
  <label>Senha</label><input autocomplete="current-password" id="password" type="password"/>
  <button class="btn primary" id="loginBtn">Entrar</button>
  <button class="btn soft" id="backDeviceSetup" type="button" style="margin-left:6px">Voltar</button>
- <div class="muted" id="loginMsg" style="margin-top:10px">Comando 360 • v7.00</div><div class="debug" id="debug"></div>
+ <div class="muted" id="loginMsg" style="margin-top:10px">Comando 360 • v7.01</div><div class="debug" id="debug"></div>
 </div>
 </section>
 <section class="hidden" id="app">
@@ -5690,20 +5777,20 @@ async function loadPoultryOps(renderUi=true){
     const barn=poultryBarns.find(b=>b.id===(o.metadata?.barn_id||loading?.metadata?.default_barn_id));
     const pending=!!o.metadata?.offline_pending;
     const truckHtml=opTrucks.length?opTrucks.map(t=>
-      '<div class="truck-row" style="padding:12px;border:1px solid #e5e7eb;border-radius:12px;margin:8px 0;background:#fff">'+
+      '<div class="truck-row poultry-truck-card" style="padding:12px;border:1px solid #e5e7eb;border-radius:12px;margin:8px 0;background:#fff">'+
        '<div class="toolbar" style="justify-content:space-between;align-items:flex-start"><div><b style="font-size:15px">🚚 Caminhão '+esc(t.truck_sequence||'')+'</b><div class="muted" style="margin-top:3px">'+esc(t.truck_plate||'')+' • '+esc(t.driver_name||'')+'</div></div>'+
        (t.metadata?.offline_pending?'<span class="pill warn">OFFLINE • PENDENTE</span>':(t.is_cata?'<span class="pill warn">CATA</span>':''))+'</div>'+
        '<div style="margin-top:8px"><b>'+poN(t.birds).toLocaleString('pt-BR')+' aves</b> • '+(t.started_at?new Date(t.started_at).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'—')+' → '+(t.completed_at?new Date(t.completed_at).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'—')+' • '+esc(Array.isArray(t.metadata?.barn_breakdown)&&t.metadata.barn_breakdown.length?t.metadata.barn_breakdown.map(x=>aviaryDisplayLabel(x.barn_number||poultryBarns.find(b=>b.id===x.barn_id)?.barn_number||'')+(t.is_cata?': '+poN(x.birds).toLocaleString('pt-BR')+' aves':'')).join(' • '):aviaryDisplayLabel(t.metadata?.aviary_number||poultryBarns.find(b=>b.id===t.metadata?.barn_id)?.barn_number||''))+'</div>'+
        '<div class="muted" style="margin-top:4px">'+(t.metadata?.boxes_count?'Caixas: '+poN(t.metadata.boxes_count).toLocaleString('pt-BR')+' • ':'')+(t.metadata?.birds_per_box?'Aves/caixa: '+poN(t.metadata.birds_per_box).toLocaleString('pt-BR',{maximumFractionDigits:2})+' • ':'')+'Vazias: '+poN(t.metadata?.empty_boxes).toLocaleString('pt-BR')+' • Mortes: '+poN(t.metadata?.loading_deaths).toLocaleString('pt-BR')+(t.metadata?.sheet_photo_path?' • 📷 Ficha anexada':'')+'</div></div>'
     ).join(''):'<div class="muted" style="padding:10px 0">Nenhum caminhão registrado ainda. Comece pelo Caminhão 1.</div>';
 
-    return '<div class="item">'+
+    return '<div class="item poultry-op-card '+(o.status==='completed'?'is-completed':'')+'">'+
       '<div class="toolbar" style="justify-content:space-between"><div><strong>'+esc(farm?.producer_name||o.customer_name||o.title)+'</strong><div class="muted">'+esc(farm?.city||o.metadata?.city||'')+' • '+esc(farm?.farm_name||'Granja não informada')+' • '+esc(team?.name||deviceTeam?.name||'Equipe')+'</div></div>'+
       (pending?'<span class="pill warn">APANHA OFFLINE • PENDENTE</span>':'<span class="pill '+(o.status==='completed'?'ok':'')+'">'+esc(poSL(o.status))+'</span>')+'</div>'+
-      '<div class="site-memory"><b>Tomada:</b> '+esc(farm?.metadata?.outlet_type||o.metadata?.outlet_type||'Não informada')+' &nbsp; • &nbsp; <b>Energia:</b> '+esc(farm?.metadata?.energy_type||o.metadata?.energy_type||'Não informada')+'</div>'+
+      '<div class="site-memory po-site-card"><b>Tomada:</b> '+esc(farm?.metadata?.outlet_type||o.metadata?.outlet_type||'Não informada')+' &nbsp; • &nbsp; <b>Energia:</b> '+esc(farm?.metadata?.energy_type||o.metadata?.energy_type||'Não informada')+'</div>'+
       '<div class="po-detail"><div><span class="muted">Caminhões</span><br><b>'+opTrucks.length+'</b></div><div><span class="muted">Aves carregadas</span><br><b>'+totalBirds.toLocaleString('pt-BR')+'</b></div><div><span class="muted">Catas</span><br><b>'+opTrucks.filter(t=>t.is_cata).length+'</b></div><div><span class="muted">Início previsto</span><br><b>'+(o.scheduled_start?new Date(o.scheduled_start).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'—')+'</b></div></div>'+
-      (!deviceMode&&o.status==='completed'?'<div class="site-memory" style="margin-top:10px;background:#ecfdf5;border:1px solid #bbf7d0"><b>💰 Valor ganho: '+money(poN(o.actual_revenue))+'</b><div class="muted" style="margin-top:3px">'+revenueRule+' • lançado automaticamente no Financeiro</div></div>':'')+
-      '<div style="margin-top:14px;padding-top:12px;border-top:1px solid #e5e7eb"><div class="toolbar" style="justify-content:space-between;align-items:flex-end"><div><strong>🚚 Carregamento caminhão por caminhão</strong><div class="muted">Cada caminhão fica registrado separadamente nesta apanha.</div></div><div class="muted">'+opTrucks.length+' registrado(s)</div></div><div class="truck-list">'+truckHtml+'</div></div>'+
+      (!deviceMode&&o.status==='completed'?'<div class="site-memory po-revenue-card" style="margin-top:10px;background:#ecfdf5;border:1px solid #bbf7d0"><b>💰 Valor ganho: '+money(poN(o.actual_revenue))+'</b><div class="muted" style="margin-top:3px">'+revenueRule+' • lançado automaticamente no Financeiro</div></div>':'')+
+      '<div class="po-trucks-section" style="margin-top:14px;padding-top:12px;border-top:1px solid #e5e7eb"><div class="toolbar" style="justify-content:space-between;align-items:flex-end"><div><strong>🚚 Carregamento caminhão por caminhão</strong><div class="muted">Cada caminhão fica registrado separadamente nesta apanha.</div></div><div class="muted">'+opTrucks.length+' registrado(s)</div></div><div class="truck-list">'+truckHtml+'</div></div>'+
       '<div class="po-actions" style="margin-top:12px">'+
        (loading&&o.status!=='completed'?'<button class="btn primary poAddTruck" style="font-size:15px;padding:12px 18px" data-op="'+esc(o.id)+'" data-loading="'+esc(loading.id)+'" data-farm="'+esc(loading.farm_id||'')+'" data-name="'+esc(farm?.producer_name||o.title)+'" data-seq="'+(opTrucks.length+1)+'">+ ADICIONAR CAMINHÃO '+(opTrucks.length+1)+'</button>':'')+
        (o.status==='completed'?'<span class="pill ok">APANHA CONCLUÍDA • '+opTrucks.length+' CAMINHÃO(ÕES)'+(o.metadata?.offline_complete_pending?' • AGUARDANDO SYNC':'')+'</span>':'')+
@@ -8955,7 +9042,7 @@ function c360SetModule(tab){
  const m=C360_MODULES[tab]||[tab,'Comando 360'];
  const t=document.getElementById('headerModuleTitle'),s=document.getElementById('headerModuleSubtitle');
  if(t)t.textContent=m[0];if(s)s.textContent=m[1];
- document.title='Comando 360 • '+m[0]+' • v7.00';
+ document.title='Comando 360 • '+m[0]+' • v7.01';
  document.querySelectorAll('#mobileBottomNav [data-mobiletab]').forEach(b=>{
   const mt=b.dataset.mobiletab;
   b.classList.toggle('active',mt===tab||(mt==='more'&&!['inicio','operacoes','ponto','frota'].includes(tab)));
