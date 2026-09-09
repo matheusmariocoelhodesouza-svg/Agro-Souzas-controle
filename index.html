@@ -8,7 +8,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
-<title>Comando 360 • v6.99</title>
+<title>Comando 360 • v7.00</title>
 <link rel="manifest" href="./comando360.webmanifest"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
@@ -1716,6 +1716,140 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
 @media(max-width:900px){#insumos .consumables-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:620px){#insumos .consumables-grid{grid-template-columns:1fr}#insumos .consumables-actions .btn{width:100%}}
 
+
+/* 7.00 — cabeçalho mobile enxuto + tema automático do aparelho */
+#themeToggle{display:none!important}
+@media(max-width:900px){
+ body.app-ready:not(.device-mode) header{
+  min-height:56px!important;
+  padding:7px 10px!important;
+  gap:8px!important;
+ }
+ body.app-ready:not(.device-mode) .header-left{
+  min-width:0;
+  gap:8px;
+ }
+ body.app-ready:not(.device-mode) #mobileMenuBtn{
+  display:none!important;
+ }
+ body.app-ready:not(.device-mode) header .brand{
+  min-width:0;
+  gap:8px!important;
+ }
+ body.app-ready:not(.device-mode) header .brand>div{
+  min-width:0;
+ }
+ body.app-ready:not(.device-mode) header .header-brand-icon{
+  width:36px!important;
+  height:36px!important;
+  flex:0 0 36px;
+ }
+ body.app-ready:not(.device-mode) header .brand b{
+  display:block;
+  white-space:nowrap;
+  font-size:14px!important;
+  line-height:1.05;
+ }
+ body.app-ready:not(.device-mode) header #companyName{
+  display:none!important;
+ }
+ body.app-ready:not(.device-mode) .v2topmeta{
+  margin-left:auto;
+  gap:5px!important;
+ }
+ body.app-ready:not(.device-mode) #headerSearchBtn,
+ body.app-ready:not(.device-mode) .v2topmeta [data-jump="ia"],
+ body.app-ready:not(.device-mode) #buildBadge,
+ body.app-ready:not(.device-mode) #themeToggle,
+ body.app-ready:not(.device-mode) #logout{
+  display:none!important;
+ }
+ body.app-ready:not(.device-mode) #networkBadge.online{
+  display:none!important;
+ }
+ body.app-ready:not(.device-mode) #networkBadge.offline{
+  display:grid!important;
+  place-items:center;
+  width:34px;
+  height:34px;
+  min-width:34px;
+  padding:0!important;
+  font-size:0!important;
+  border-radius:10px;
+ }
+ body.app-ready:not(.device-mode) #networkBadge.offline::before{
+  content:"●";
+  font-size:13px;
+ }
+ body.app-ready:not(.device-mode) .v2topmeta .header-icon-btn[data-jump="alertas"]{
+  width:40px;
+  height:40px;
+  min-width:40px;
+  padding:0;
+  border-radius:11px;
+ }
+ body.app-ready:not(.device-mode) .wrap{
+  padding-top:9px!important;
+ }
+ body.app-ready:not(.device-mode) #inicio .v2hero{
+  margin:0 0 10px!important;
+  padding:0 2px!important;
+  gap:8px!important;
+  align-items:center!important;
+ }
+ body.app-ready:not(.device-mode) #inicio .dashboard-eyebrow,
+ body.app-ready:not(.device-mode) #inicio .v2hero p{
+  display:none!important;
+ }
+ body.app-ready:not(.device-mode) #inicio .v2hero>div:first-child{
+  min-width:0;
+  flex:1 1 auto;
+ }
+ body.app-ready:not(.device-mode) #inicio .v2hero h1{
+  margin:0!important;
+  font-size:22px!important;
+  line-height:1.08!important;
+  letter-spacing:-.35px!important;
+ }
+ body.app-ready:not(.device-mode) #dashboardLastUpdate{
+  margin-top:3px!important;
+  font-size:9.5px!important;
+  line-height:1.25;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+ }
+ body.app-ready:not(.device-mode) #inicio .v2hero>.toolbar{
+  flex:0 0 auto;
+ }
+ body.app-ready:not(.device-mode) #refreshBtn{
+  width:38px!important;
+  height:38px!important;
+  min-width:38px!important;
+  padding:0!important;
+  border-radius:11px!important;
+  font-size:0!important;
+  display:grid;
+  place-items:center;
+ }
+ body.app-ready:not(.device-mode) #refreshBtn::before{
+  content:"↻";
+  font-size:19px;
+  line-height:1;
+ }
+}
+@media(max-width:430px){
+ body.app-ready:not(.device-mode) header .brand b{font-size:13.5px!important}
+ body.app-ready:not(.device-mode) header .header-brand-icon{width:34px!important;height:34px!important;flex-basis:34px}
+ body.app-ready:not(.device-mode) #inicio .v2hero h1{font-size:21px!important}
+}
+.darkmode body.app-ready:not(.device-mode) header{
+ background:rgba(13,27,44,.97)!important;
+ border-color:#26394f!important;
+}
+.darkmode body.app-ready:not(.device-mode) header .brand b{color:#edf4fd!important}
+.darkmode body.app-ready:not(.device-mode) header #companyName{color:#93a7bd!important}
+
 </style>
 <script defer="" src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
@@ -1736,8 +1870,28 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
 </script>
 </head>
 <body>
+<script>
+(function(){
+  const mq=window.matchMedia?window.matchMedia('(prefers-color-scheme: dark)'):null;
+  function applySystemTheme(){
+    const dark=!!(mq&&mq.matches);
+    document.body.classList.toggle('darkmode',dark);
+    document.documentElement.style.colorScheme=dark?'dark':'light';
+    const meta=document.querySelector('meta[name="theme-color"]');
+    if(meta)meta.setAttribute('content',dark?'#08111f':'#f4f7fb');
+  }
+  try{localStorage.removeItem('controla_theme')}catch(_){}
+  applySystemTheme();
+  if(mq){
+    if(mq.addEventListener)mq.addEventListener('change',applySystemTheme);
+    else if(mq.addListener)mq.addListener(applySystemTheme);
+  }
+  window.__c360ApplySystemTheme=applySystemTheme;
+})();
+</script>
 <aside class="v2sidebar" id="v2sidebar">
 <div class="v2logo"><img class="v2brandicon" src="./comando360-icon.svg" alt="Comando 360"/><div><strong>COMANDO <span>360</span></strong><small>VISIBILIDADE • CONTROLE • PROGRESSO</small></div></div>
+<button class="v2navbtn c360-sidebar-search" id="sidebarSearchBtn" type="button">⌕   Busca geral</button>
 <div class="v2group">OPERAÇÃO</div>
 <button class="v2navbtn active" data-v2tab="inicio">▦   Painel</button>
 <button class="v2navbtn" data-v2tab="operacoes">▣   Operações</button>
@@ -1749,6 +1903,8 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
 <button class="v2navbtn" data-v2tab="financeiro">💰   Financeiro</button>
 <button class="v2navbtn" data-v2tab="relatorios">📊   Relatórios</button>
 <div class="v2group">SISTEMA</div>
+<button class="v2navbtn" data-v2tab="alertas">🔔   Alertas</button>
+<button class="v2navbtn" data-v2tab="ia">✦   Assistente IA</button>
 <button class="v2navbtn" data-v2tab="configuracoes">⚙   Configurações</button>
 </aside>
 <div class="mobile-menu-backdrop" id="mobileMenuBackdrop" aria-hidden="true"></div>
@@ -1788,7 +1944,7 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
   <div class="brand"><img class="header-brand-icon" src="./comando360-icon.svg" alt="Comando 360"/><div><b>Comando <span class="brand360">360</span></b><div><small id="companyName">Empresa</small></div></div></div>
  </div>
  <div class="header-module" id="headerModule"><span id="headerModuleTitle">Painel Geral</span><small id="headerModuleSubtitle">Central de gestão</small></div>
- <div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="header-icon-btn" id="headerSearchBtn" type="button" title="Busca geral" aria-label="Busca geral">⌕</button><button class="header-icon-btn" type="button" data-jump="alertas" title="Alertas" aria-label="Abrir alertas">🔔<span id="headerAlertsCount">0</span></button><button class="header-icon-btn" type="button" data-jump="ia" title="Assistente IA" aria-label="Abrir Assistente IA">✦</button><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.99</span><button class="btn soft" id="themeToggle" type="button" aria-label="Alternar tema">☾</button><button class="btn soft hidden" id="logout">Sair</button></div>
+ <div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="header-icon-btn" id="headerSearchBtn" type="button" title="Busca geral" aria-label="Busca geral">⌕</button><button class="header-icon-btn" type="button" data-jump="alertas" title="Alertas" aria-label="Abrir alertas">🔔<span id="headerAlertsCount">0</span></button><button class="header-icon-btn" type="button" data-jump="ia" title="Assistente IA" aria-label="Abrir Assistente IA">✦</button><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v7.00</span><button class="btn soft" id="themeToggle" type="button" aria-label="Alternar tema">☾</button><button class="btn soft hidden" id="logout">Sair</button></div>
 </header>
 <main class="wrap">
 <section class="login team-entry" id="login">
@@ -1806,7 +1962,7 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
  <label>Senha</label><input autocomplete="current-password" id="password" type="password"/>
  <button class="btn primary" id="loginBtn">Entrar</button>
  <button class="btn soft" id="backDeviceSetup" type="button" style="margin-left:6px">Voltar</button>
- <div class="muted" id="loginMsg" style="margin-top:10px">Comando 360 • v6.99</div><div class="debug" id="debug"></div>
+ <div class="muted" id="loginMsg" style="margin-top:10px">Comando 360 • v7.00</div><div class="debug" id="debug"></div>
 </div>
 </section>
 <section class="hidden" id="app">
@@ -3924,7 +4080,7 @@ async function loadDashboard(){
   }).join(''):'<div class="v2-empty">Nenhuma equipe ativa cadastrada.</div>';
 
   const clientName=cleanCompanyName(companyProfile.trade_name||companyProfile.legal_name);
-  if($('#dashboardTitle'))$('#dashboardTitle').textContent='Painel Geral • '+clientName;
+  if($('#dashboardTitle'))$('#dashboardTitle').textContent='Painel Geral';
   if($('#dashboardLastUpdate'))$('#dashboardLastUpdate').textContent='Atualizado em '+new Date().toLocaleString('pt-BR')+' • '+clientName;
   await loadSmartAlerts();
  }catch(e){
@@ -8799,7 +8955,7 @@ function c360SetModule(tab){
  const m=C360_MODULES[tab]||[tab,'Comando 360'];
  const t=document.getElementById('headerModuleTitle'),s=document.getElementById('headerModuleSubtitle');
  if(t)t.textContent=m[0];if(s)s.textContent=m[1];
- document.title='Comando 360 • '+m[0]+' • v6.99';
+ document.title='Comando 360 • '+m[0]+' • v7.00';
  document.querySelectorAll('#mobileBottomNav [data-mobiletab]').forEach(b=>{
   const mt=b.dataset.mobiletab;
   b.classList.toggle('active',mt===tab||(mt==='more'&&!['inicio','operacoes','ponto','frota'].includes(tab)));
@@ -9054,8 +9210,8 @@ document.addEventListener('input',function(e){
   if(e.target && (e.target.id==='maintenancePartsCost'||e.target.id==='maintenanceLaborCost')) calcMaintenanceTotal();
   if(e.target && (e.target.id==='fuelLiters'||e.target.id==='fuelTotal')) fuelCalcPrice();
 });
-$('#themeToggle').addEventListener('click',()=>{document.body.classList.toggle('darkmode');localStorage.setItem('controla_theme',document.body.classList.contains('darkmode')?'dark':'light');$('#themeToggle').textContent=document.body.classList.contains('darkmode')?'☀':'☾'});
-if(localStorage.getItem('controla_theme')==='dark'){document.body.classList.add('darkmode');$('#themeToggle').textContent='☀'}
+// Tema automático: acompanha o modo claro/escuro do aparelho em tempo real.
+if(window.__c360ApplySystemTheme)window.__c360ApplySystemTheme();
 (()=>{const d=new Date();$('#v2Today').textContent='Hoje, '+d.toLocaleDateString('pt-BR');$('#v2Weekday').textContent=d.toLocaleDateString('pt-BR',{weekday:'long'})})();
 function updateNetworkBadge(){
  const el=$('#networkBadge');if(!el)return;
@@ -9301,6 +9457,7 @@ async function c360RunGlobalSearch(term){
  box.innerHTML=rows.slice(0,25).map(r=>'<button class="global-search-result" type="button" data-jump="'+esc(r.tab)+'"><span>'+r.ico+'</span><span style="flex:1"><b>'+esc(r.title)+'</b><small>'+esc(r.sub)+'</small></span><span>›</span></button>').join('');
 }
 if(document.getElementById('headerSearchBtn'))document.getElementById('headerSearchBtn').addEventListener('click',c360OpenGlobalSearch);
+if(document.getElementById('sidebarSearchBtn'))document.getElementById('sidebarSearchBtn').addEventListener('click',()=>{c360CloseMobileMenu();c360OpenGlobalSearch()});
 if(document.getElementById('globalSearchClose'))document.getElementById('globalSearchClose').addEventListener('click',c360CloseGlobalSearch);
 if(document.getElementById('globalSearchBackdrop'))document.getElementById('globalSearchBackdrop').addEventListener('click',c360CloseGlobalSearch);
 if(document.getElementById('globalSearchInput'))document.getElementById('globalSearchInput').addEventListener('input',e=>{
