@@ -1680,6 +1680,25 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
 .darkmode .settings-highlight{background:#0b1727;border-color:#203047}
 @media(max-width:900px){.settings-grid{grid-template-columns:1fr}.settings-wide{grid-column:auto}.header-icon-btn{min-width:34px;height:34px}.module-subnav{overflow:auto;flex-wrap:nowrap}.module-subnav button{white-space:nowrap}}
 
+
+.global-search-backdrop{position:fixed;inset:0;background:rgba(8,20,38,.48);backdrop-filter:blur(3px);z-index:150}
+.global-search-panel{position:fixed;z-index:151;left:50%;top:12vh;transform:translateX(-50%);width:min(720px,calc(100% - 28px));max-height:76vh;overflow:auto;background:#fff;border:1px solid #dfe8f2;border-radius:20px;padding:17px;box-shadow:0 28px 80px rgba(5,24,48,.28)}
+.global-search-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.global-search-head h3{margin:2px 0 0;font-size:22px}
+.global-search-input{display:flex;align-items:center;gap:10px;margin:14px 0 8px;border:2px solid #d9e5f1;border-radius:14px;padding:0 13px;background:#fbfdff}
+.global-search-input:focus-within{border-color:#2681dc;box-shadow:0 0 0 3px rgba(38,129,220,.1)}
+.global-search-input span{font-size:22px;color:#5d7591}
+.global-search-input input{border:0!important;outline:0!important;box-shadow:none!important;background:transparent!important;margin:0!important;padding:13px 0!important;font-size:16px;width:100%}
+.global-search-results{margin-top:10px}
+.global-search-result{width:100%;display:flex;align-items:center;justify-content:space-between;gap:12px;text-align:left;border:1px solid #e6edf5;background:#fff;border-radius:13px;padding:12px;margin-top:7px;cursor:pointer;color:inherit}
+.global-search-result:hover{border-color:#a9c8e8;background:#f7fbff}
+.global-search-result b{display:block}.global-search-result small{display:block;color:#71839a;margin-top:3px}
+.global-search-result>span:first-child{font-size:22px;min-width:28px}.global-search-result>span:last-child{font-weight:900;color:#5d7591}
+.darkmode .global-search-panel,.darkmode .global-search-result{background:#101c2e;color:#e7eef9;border-color:#26384e}
+.darkmode .global-search-input{background:#0b1727;border-color:#26384e}
+.darkmode .global-search-result:hover{background:#13233a}
+@media(max-width:600px){.global-search-panel{top:7vh;max-height:86vh}.global-search-head h3{font-size:19px}}
+
 </style>
 <script defer="" src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
@@ -1717,6 +1736,13 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
 <div class="mobile-menu-backdrop" id="mobileMenuBackdrop" aria-hidden="true"></div>
 <div class="app-progress" id="appProgress" aria-hidden="true"><i></i></div>
 <div class="c360-toast-stack" id="c360ToastStack" aria-live="polite" aria-atomic="true"></div>
+<div class="global-search-backdrop hidden" id="globalSearchBackdrop"></div>
+<div class="global-search-panel hidden" id="globalSearchPanel" role="dialog" aria-modal="true" aria-labelledby="globalSearchTitle">
+ <div class="global-search-head"><div><div class="dashboard-eyebrow">BUSCA GERAL</div><h3 id="globalSearchTitle">Encontrar no Comando 360</h3></div><button class="btn soft" id="globalSearchClose" type="button">✕</button></div>
+ <div class="global-search-input"><span>⌕</span><input id="globalSearchInput" type="search" autocomplete="off" placeholder="Funcionário, placa, granja, apanha ou cliente..."/></div>
+ <div class="muted" id="globalSearchHint">Digite pelo menos 2 caracteres.</div>
+ <div class="global-search-results" id="globalSearchResults"></div>
+</div>
 <div class="route-choice-backdrop hidden" id="routeChoiceBackdrop" aria-hidden="true"></div>
 <div class="route-choice-sheet hidden" id="routeChoiceSheet" role="dialog" aria-modal="true" aria-labelledby="routeChoiceTitle">
  <div class="route-choice-handle"></div>
@@ -1744,7 +1770,7 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
   <div class="brand"><img class="header-brand-icon" src="./comando360-icon.svg" alt="Comando 360"/><div><b>Comando <span class="brand360">360</span></b><div><small id="companyName">Empresa</small></div></div></div>
  </div>
  <div class="header-module" id="headerModule"><span id="headerModuleTitle">Painel Geral</span><small id="headerModuleSubtitle">Central de gestão</small></div>
- <div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="header-icon-btn" type="button" data-jump="alertas" title="Alertas" aria-label="Abrir alertas">🔔<span id="headerAlertsCount">0</span></button><button class="header-icon-btn" type="button" data-jump="ia" title="Assistente IA" aria-label="Abrir Assistente IA">✦</button><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.98</span><button class="btn soft" id="themeToggle" type="button" aria-label="Alternar tema">☾</button><button class="btn soft hidden" id="logout">Sair</button></div>
+ <div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="header-icon-btn" id="headerSearchBtn" type="button" title="Busca geral" aria-label="Busca geral">⌕</button><button class="header-icon-btn" type="button" data-jump="alertas" title="Alertas" aria-label="Abrir alertas">🔔<span id="headerAlertsCount">0</span></button><button class="header-icon-btn" type="button" data-jump="ia" title="Assistente IA" aria-label="Abrir Assistente IA">✦</button><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v6.98</span><button class="btn soft" id="themeToggle" type="button" aria-label="Alternar tema">☾</button><button class="btn soft hidden" id="logout">Sair</button></div>
 </header>
 <main class="wrap">
 <section class="login team-entry" id="login">
@@ -5827,16 +5853,6 @@ async function completePoultryOperation(operationId,loadingId){
   await loadPoultryOps();
  }catch(e){alert(e.message)}
 }
-async function saveOperationFinance(){
- if(!isAdminGeneral)return;
- const id=$('#poFinanceOperationId').value,price=poN($('#poFinancePricePerBird').value);
- try{
-  const ops=await rest('v2_operations','select=actual_birds,planned_birds,price_per_bird&id=eq.'+id),o=ops?.[0]||{};
-  await rest('v2_operations','id=eq.'+id,'PATCH',{price_per_bird:price||null,planned_revenue:o.planned_birds&&price?poN(o.planned_birds)*price:null,actual_revenue:o.actual_birds&&price?poN(o.actual_birds)*price:null});
-  $('#poFinanceCard').classList.add('hidden');await loadPoultryOps();
- }catch(e){$('#poFinanceMsg').textContent=e.message}
-}
-
 if($('#newPoultryOp'))$('#newPoultryOp').addEventListener('click',async()=>{
  $('#poultryForm').classList.remove('hidden');
  $('#poStart').value=poLocalInputDate();
@@ -5912,14 +5928,6 @@ if($('#poTruckPlate')){
 }
 if($('#poTruckSave'))$('#poTruckSave').addEventListener('click',()=>saveTruckLoad(false));
 if($('#poTruckSaveClose'))$('#poTruckSaveClose').addEventListener('click',()=>saveTruckLoad(true));
-if($('#poFinanceClose'))$('#poFinanceClose').addEventListener('click',()=>$('#poFinanceCard').classList.add('hidden'));
-if($('#poFinanceSave'))$('#poFinanceSave').addEventListener('click',saveOperationFinance);
-if($('#quickTeamBtn'))$('#quickTeamBtn').addEventListener('click',()=>{if(deviceMode)return;$('#quickTeamCard').classList.remove('hidden');$('#quickTeamName').focus()});
-if($('#quickTeamClose'))$('#quickTeamClose').addEventListener('click',()=>$('#quickTeamCard').classList.add('hidden'));
-if($('#quickTeamSave'))$('#quickTeamSave').addEventListener('click',async()=>{
- const name=$('#quickTeamName').value.trim();if(!name)return $('#quickTeamMsg').textContent='Informe o nome da equipe.';
- try{const created=await rest('v2_teams','','POST',{company_id:companyId,name,code:$('#quickTeamCode').value.trim()||null,status:'active'});await loadPoultrySelectors();const id=created?.[0]?.id;if(id)$('#poTeam').value=id;$('#quickTeamCard').classList.add('hidden')}catch(e){$('#quickTeamMsg').textContent=e.message}
-});
 document.addEventListener('click',async e=>{
  const a=e.target.closest('.poAddTruck');
  if(a){
@@ -5934,7 +5942,6 @@ document.addEventListener('click',async e=>{
    return;
  }
  const c=e.target.closest('.poCompleteOp');if(c){await completePoultryOperation(c.dataset.op,c.dataset.loading);return}
- const f=e.target.closest('.poFinance');if(f&&isAdminGeneral){$('#poFinanceOperationId').value=f.dataset.op;$('#poFinanceName').textContent=f.dataset.name||'';$('#poFinancePricePerBird').value=f.dataset.price||'';$('#poFinanceMsg').textContent='';$('#poFinanceCard').classList.remove('hidden')}
 });
 async function loadTeamHome(){if(!deviceMode)return}
 let teamCatchReports=[];
@@ -8992,6 +8999,58 @@ if(document.getElementById('saveProfessional'))document.getElementById('saveProf
 // Dados do empregador são fixos e não podem ser alterados nesta tela.
 // Perfil profissional é carregado somente ao abrir RH & Pessoas para manter o dashboard leve.
 
+
+
+let c360GlobalSearchTimer=null;
+function c360OpenGlobalSearch(){
+ if(deviceMode)return;
+ const back=document.getElementById('globalSearchBackdrop'),panel=document.getElementById('globalSearchPanel'),input=document.getElementById('globalSearchInput');
+ if(back)back.classList.remove('hidden');if(panel)panel.classList.remove('hidden');
+ setTimeout(()=>input?.focus(),40);
+}
+function c360CloseGlobalSearch(){
+ document.getElementById('globalSearchBackdrop')?.classList.add('hidden');
+ document.getElementById('globalSearchPanel')?.classList.add('hidden');
+}
+function c360SearchOr(fields,term){
+ const clean=String(term||'').replace(/[(),]/g,' ').trim();
+ const pattern='*'+clean+'*';
+ return 'or='+encodeURIComponent('('+fields.map(f=>f+'.ilike.'+pattern).join(',')+')');
+}
+async function c360RunGlobalSearch(term){
+ const q=String(term||'').trim(),hint=document.getElementById('globalSearchHint'),box=document.getElementById('globalSearchResults');
+ if(!box)return;
+ if(q.length<2){box.innerHTML='';if(hint)hint.textContent='Digite pelo menos 2 caracteres.';return}
+ if(hint)hint.textContent='Buscando em pessoas, frota, granjas, operações e clientes...';
+ const safe=p=>p.catch(()=>[]);
+ const [emps,vehicles,farms,ops,customers]=await Promise.all([
+  safe(rest('v2_employees','select=id,full_name,employee_number,job_title&company_id=eq.'+companyId+'&status=eq.active&'+c360SearchOr(['full_name','employee_number','job_title'],q)+'&limit=7')),
+  safe(rest('v2_vehicles','select=id,description,plate,model,renavam,status&company_id=eq.'+companyId+'&'+c360SearchOr(['description','plate','model','renavam'],q)+'&limit=7')),
+  safe(rest('v2_poultry_farms','select=id,producer_name,farm_name,city,status&company_id=eq.'+companyId+'&status=eq.active&'+c360SearchOr(['producer_name','farm_name','city'],q)+'&limit=7')),
+  safe(rest('v2_operations','select=id,title,customer_name,location_name,status&company_id=eq.'+companyId+'&'+c360SearchOr(['title','customer_name','location_name'],q)+'&limit=7')),
+  safe(rest('v2_customers','select=id,legal_name,trade_name,phone,email,status&company_id=eq.'+companyId+'&status=eq.active&'+c360SearchOr(['legal_name','trade_name','phone','email'],q)+'&limit=7'))
+ ]);
+ const rows=[];
+ (emps||[]).forEach(x=>rows.push({ico:'👤',title:x.full_name,sub:'RH • '+(x.employee_number||'sem matrícula')+(x.job_title?' • '+x.job_title:''),tab:'funcionarios'}));
+ (vehicles||[]).forEach(x=>rows.push({ico:'🚐',title:x.description||x.model||'Veículo',sub:'Frota • '+(x.plate||'sem placa')+(x.model?' • '+x.model:''),tab:'frota'}));
+ (farms||[]).forEach(x=>rows.push({ico:'🏠',title:x.farm_name||x.producer_name||'Granja',sub:'Operação • '+(x.producer_name||'')+(x.city?' • '+x.city:''),tab:'operacoes'}));
+ (ops||[]).forEach(x=>rows.push({ico:'🐔',title:x.title||'Apanha',sub:'Operação • '+(x.customer_name||'')+(x.location_name?' • '+x.location_name:''),tab:'operacoes'}));
+ (customers||[]).forEach(x=>rows.push({ico:'🤝',title:x.trade_name||x.legal_name||'Cliente',sub:'Cliente • '+(x.phone||x.email||'cadastro comercial'),tab:'configuracoes'}));
+ if(hint)hint.textContent=rows.length?rows.length+' resultado(s) encontrado(s).':'Nenhum resultado encontrado.';
+ box.innerHTML=rows.slice(0,25).map(r=>'<button class="global-search-result" type="button" data-jump="'+esc(r.tab)+'"><span>'+r.ico+'</span><span style="flex:1"><b>'+esc(r.title)+'</b><small>'+esc(r.sub)+'</small></span><span>›</span></button>').join('');
+}
+if(document.getElementById('headerSearchBtn'))document.getElementById('headerSearchBtn').addEventListener('click',c360OpenGlobalSearch);
+if(document.getElementById('globalSearchClose'))document.getElementById('globalSearchClose').addEventListener('click',c360CloseGlobalSearch);
+if(document.getElementById('globalSearchBackdrop'))document.getElementById('globalSearchBackdrop').addEventListener('click',c360CloseGlobalSearch);
+if(document.getElementById('globalSearchInput'))document.getElementById('globalSearchInput').addEventListener('input',e=>{
+ clearTimeout(c360GlobalSearchTimer);
+ c360GlobalSearchTimer=setTimeout(()=>c360RunGlobalSearch(e.target.value).catch(err=>{const h=document.getElementById('globalSearchHint');if(h)h.textContent='Falha na busca: '+(err.message||String(err))}),280);
+});
+document.addEventListener('click',e=>{if(e.target.closest('.global-search-result'))c360CloseGlobalSearch()});
+document.addEventListener('keydown',e=>{
+ if(e.key==='Escape')c360CloseGlobalSearch();
+ if((e.ctrlKey||e.metaKey)&&String(e.key).toLowerCase()==='k'){e.preventDefault();c360OpenGlobalSearch()}
+});
 
 let settingsCompanyRaw={},settingsCustomers=[],settingsContracts=[];
 function settingsPlanLabel(code){
