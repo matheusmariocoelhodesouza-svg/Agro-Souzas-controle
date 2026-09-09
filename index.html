@@ -1843,12 +1843,12 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
  body.app-ready:not(.device-mode) header .header-brand-icon{width:34px!important;height:34px!important;flex-basis:34px}
  body.app-ready:not(.device-mode) #inicio .v2hero h1{font-size:21px!important}
 }
-.darkmode body.app-ready:not(.device-mode) header{
+body.darkmode.app-ready:not(.device-mode) header{
  background:rgba(13,27,44,.97)!important;
  border-color:#26394f!important;
 }
-.darkmode body.app-ready:not(.device-mode) header .brand b{color:#edf4fd!important}
-.darkmode body.app-ready:not(.device-mode) header #companyName{color:#93a7bd!important}
+body.darkmode.app-ready:not(.device-mode) header .brand b{color:#edf4fd!important}
+body.darkmode.app-ready:not(.device-mode) header #companyName{color:#93a7bd!important}
 
 </style>
 <script defer="" src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
@@ -1856,7 +1856,7 @@ body.app-ready:not(.device-mode) #screenHost textarea::placeholder{color:#9aa8b8
 <script defer src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"></script>
 <script>
 (function(){
-  const BUILD='6.98';
+  const BUILD='7.00';
   try{
     const marker='controla_cache_cleanup_'+BUILD;
     if(!localStorage.getItem(marker)){
