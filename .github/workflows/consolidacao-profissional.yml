@@ -4,7 +4,9 @@ on:
   push:
     branches: [consolidacao-profissional]
     paths:
-      - 'scripts/apply_consolidation.py'
+      - 'scripts/*.py'
+      - 'c360-core-*.js'
+      - 'sw-v8-00.js'
   workflow_dispatch:
 
 permissions:
@@ -38,5 +40,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add index.html app-v8.js assets/app-v8.css
-          git commit -m "Consolidação v8: modulariza frontend e valida sintaxe"
+          git commit -m "Consolidação v8: atualiza frontend modular validado"
           git push origin HEAD:consolidacao-profissional
