@@ -29,6 +29,10 @@ text=re.sub(
     text,
     count=1,
 )
+# Remove any remaining literal client identity from UI/help/report fallbacks.
+text=text.replace('Nágila Severino de Araújo Apanha de Aves Vivas','Dados da empresa não configurados')
+text=text.replace('Nágila Severino de Araújo apanho de aves vivas','Dados da empresa não configurados')
+text=text.replace('53422038000119','')
 
 # Beta must remain visible and unmistakable.
 text=re.sub(
@@ -37,13 +41,12 @@ text=re.sub(
     text,
     count=1,
 )
-# Fallback if formatting of the function changed slightly.
 text=text.replace(
     '''function cleanCompanyName(v){\n const s=String(v||"Empresa").replace(/\\s*[•-]?\\s*BETA(?:\\s*-\\s*DADOS FICTÍCIOS)?/gi,'').trim();\n return s||"Empresa";\n}''',
     '''function cleanCompanyName(v){\n const s=String(v||'Empresa').trim();\n return s||'Empresa';\n}'''
 )
 
-# Use company timezone in presentation/business date helpers when a timezone option is already present.
+# Use the company timezone whenever the code is formatting a business date/time.
 text=text.replace("timeZone:'America/Sao_Paulo'","timeZone:(companyProfile?.timezone||'America/Sao_Paulo')")
 text=text.replace('timeZone:"America/Sao_Paulo"','timeZone:(companyProfile?.timezone||\'America/Sao_Paulo\')')
 
