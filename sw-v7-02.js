@@ -1,12 +1,13 @@
-const CACHE='comando360-v7-02';
+const CACHE='comando360-v7-02-hotfix1';
 const CORE=[
   './',
   './index.html',
   './comando360.webmanifest',
-  './comando360-icon.svg'
+  './comando360-icon.svg',
+  './c360-field-offline-hotfix.js'
 ];
 
-async function fetchWithTimeout(request,ms=4500){
+async function fetchWithTimeout(request,ms=3500){
   const controller=new AbortController();
   const timer=setTimeout(()=>controller.abort(),ms);
   try{
@@ -16,12 +17,38 @@ async function fetchWithTimeout(request,ms=4500){
   }
 }
 
+async function patchAppHtml(response){
+  if(!response)return response;
+  try{
+    const type=response.headers.get('content-type')||'';
+    if(type&&!type.includes('text/html'))return response;
+    let html=await response.text();
+    if(!html.includes('c360-field-offline-hotfix.js')){
+      const marker="<script>\n'use strict';";
+      if(html.includes(marker)){
+        html=html.replace(marker,"<script src=\"./c360-field-offline-hotfix.js\"></script>\n"+marker);
+      }else{
+        html=html.replace('</head>','<script src="./c360-field-offline-hotfix.js"></script></head>');
+      }
+    }
+    // O modo campo passa a usar conectividade real com o servidor, em vez de
+    // depender apenas do navigator.onLine do Android, que pode ficar true sem internet.
+    html=html.replaceAll('navigator.onLine','c360NetOnline()');
+    const headers=new Headers(response.headers);
+    headers.delete('content-length');
+    headers.delete('content-encoding');
+    return new Response(html,{status:response.status,statusText:response.statusText,headers});
+  }catch(_){
+    return response;
+  }
+}
+
 async function prepareCore(){
   const cache=await caches.open(CACHE);
   let hasShell=false;
   for(const url of CORE){
     try{
-      const response=await fetchWithTimeout(url,6000);
+      const response=await fetchWithTimeout(url,5000);
       if(response&&response.ok){
         await cache.put(url,response.clone());
         if(url==='./'||url==='./index.html')hasShell=true;
@@ -43,8 +70,6 @@ self.addEventListener('install',event=>{
 
 self.addEventListener('activate',event=>{
   event.waitUntil((async()=>{
-    // Só remove caches antigos depois de confirmar que a versão atual
-    // já possui uma cópia funcional do app para uso offline.
     await prepareCore();
     const current=await caches.open(CACHE);
     const ready=await current.match('./index.html')||await current.match('./');
@@ -66,19 +91,18 @@ self.addEventListener('fetch',event=>{
   if(req.mode==='navigate'){
     event.respondWith((async()=>{
       try{
-        const fresh=await fetchWithTimeout(req,4500);
+        const fresh=await fetchWithTimeout(req,2500);
         if(fresh&&fresh.ok){
           const cache=await caches.open(CACHE);
           await cache.put('./index.html',fresh.clone());
           await cache.put('./',fresh.clone());
-          return fresh;
+          return await patchAppHtml(fresh);
         }
       }catch(_){}
 
-      // Se estiver sem internet, aceita também um shell de versão anterior.
-      return (await caches.match('./index.html'))||
-             (await caches.match('./'))||
-             new Response('<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Comando 360</title><body style="font-family:system-ui;padding:24px"><h2>Comando 360</h2><p>O aplicativo está sem internet e não encontrou uma cópia offline pronta. Conecte uma vez à internet, abra o app e depois ele continuará funcionando offline.</p></body>',{headers:{'Content-Type':'text/html; charset=utf-8'}});
+      const cached=(await caches.match('./index.html'))||(await caches.match('./'));
+      if(cached)return await patchAppHtml(cached);
+      return new Response('<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Comando 360</title><body style="font-family:system-ui;padding:24px"><h2>Comando 360</h2><p>O aplicativo está sem internet e ainda não tem uma cópia offline pronta neste aparelho. Conecte uma vez à internet, abra o app e depois ele continuará funcionando offline.</p></body>',{headers:{'Content-Type':'text/html; charset=utf-8'}});
     })());
     return;
   }
