@@ -337,9 +337,11 @@ async function enrollEmployeeFaceFromFile(file,employeeId,descriptor=null){
 }
 async function profilePhotoAsFile(employee){
  if(!employee?.photo_path)throw new Error('Este funcionário ainda não possui foto de perfil.');
- const r=await authFetch('/storage/v1/object/employee-documents/'+employee.photo_path);
- if(!r.ok)throw new Error('Não foi possível abrir a foto de perfil.');
- const blob=await r.blob();
+ let blob=null;
+ for(const bucket of ['v2-employee-photos','employee-documents']){
+  try{const r=await authFetch('/storage/v1/object/'+bucket+'/'+employee.photo_path);if(r.ok){blob=await r.blob();break}}catch(_){}
+ }
+ if(!blob)throw new Error('Não foi possível abrir a foto de perfil.');
  const ext=blob.type==='image/png'?'png':blob.type==='image/webp'?'webp':'jpg';
  return new File([blob],'perfil-'+employee.id+'.'+ext,{type:blob.type||'image/jpeg'});
 }
@@ -1387,12 +1389,15 @@ const employeePhotoUrls={};
 async function employeePhotoObjectUrl(path){
  if(!path)return '';
  if(employeePhotoUrls[path])return employeePhotoUrls[path];
- try{const r=await authFetch('/storage/v1/object/employee-documents/'+path);if(!r.ok)throw new Error('Foto indisponível');const b=await r.blob();const u=URL.createObjectURL(b);employeePhotoUrls[path]=u;return u}catch(e){console.warn('employee photo',e);return ''}
+ for(const bucket of ['v2-employee-photos','employee-documents']){
+  try{const r=await authFetch('/storage/v1/object/'+bucket+'/'+path);if(!r.ok)continue;const b=await r.blob();const u=URL.createObjectURL(b);employeePhotoUrls[path]=u;return u}catch(_){}
+ }
+ console.warn('employee photo unavailable',path);return '';
 }
 async function uploadEmployeeProfilePhoto(file,employeeId){
  if(!file)return null;if(file.size>5*1024*1024)throw new Error('A foto deve ter no máximo 5 MB.');
  const s=session(),ext=file.type==='image/png'?'png':file.type==='image/webp'?'webp':'jpg';const path=companyId+'/'+employeeId+'/profile-'+Date.now()+'.'+ext;
- const r=await fetch(API_URL+'/storage/v1/object/employee-documents/'+path,{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+s.access_token,'Content-Type':file.type||'image/jpeg','x-upsert':'false'},body:file});await parseResponse(r);return path
+ const r=await fetch(API_URL+'/storage/v1/object/v2-employee-photos/'+path,{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+s.access_token,'Content-Type':file.type||'image/jpeg','x-upsert':'false'},body:file});await parseResponse(r);return path
 }
 function employeeInitials(name){return String(name||'?').trim().split(/\s+/).slice(0,2).map(x=>x[0]||'').join('').toUpperCase()||'?'}
 function employeePlaceholder(name){const initials=employeeInitials(name);return 'data:image/svg+xml;charset=UTF-8,'+encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160"><rect width="100%" height="100%" fill="#e2e8f0"/><text x="50%" y="54%" text-anchor="middle" dominant-baseline="middle" font-family="Arial" font-size="52" font-weight="700" fill="#475569">${initials}</text></svg>`)}
@@ -1404,8 +1409,8 @@ window.openEmployeeEdit=function(id){const e=(window.__rhEmployees||[]).find(x=>
 async function loadOperations(){try{const r=await rest('v2_operations','select=operation_number,title,status,customer_name,location_name,scheduled_start,planned_revenue,actual_revenue&company_id=eq.'+companyId+'&order=scheduled_start.desc&limit=50');$('#operationsList').innerHTML=r.map(x=>`<div class="item"><strong>#${esc(x.operation_number)} • ${esc(x.title)}</strong><span class="pill">${esc(x.status)}</span><div class="muted">${esc(x.customer_name||'')} • ${esc(x.location_name||'')}</div><div class="muted">Previsto: ${money(x.planned_revenue)} • Real: ${money(x.actual_revenue)}</div></div>`).join('')||'<div class="muted">Ainda não há operações cadastradas.</div>'}catch(e){$('#operationsList').innerHTML='<div class="error">'+esc(e.message)+'</div>'}}
 const vehiclePhotoUrls={};
 function vehiclePlaceholder(name='Veículo'){const t=(name||'V').trim().slice(0,2).toUpperCase();return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="220" height="164"><rect width="100%" height="100%" fill="#e2e8f0"/><text x="50%" y="54%" text-anchor="middle" font-family="Arial" font-size="38" fill="#64748b">${t}</text></svg>`)}`}
-async function vehiclePhotoObjectUrl(path){if(!path)return '';if(vehiclePhotoUrls[path])return vehiclePhotoUrls[path];try{const r=await authFetch('/storage/v1/object/employee-documents/'+path);if(!r.ok)throw new Error('Foto indisponível');const b=await r.blob();const u=URL.createObjectURL(b);vehiclePhotoUrls[path]=u;return u}catch(e){console.warn('vehicle photo',e);return ''}}
-async function uploadVehiclePhoto(file,vehicleId){const sess=session();const ext=file.type==='image/png'?'png':file.type==='image/webp'?'webp':'jpg';const path=companyId+'/vehicles/'+vehicleId+'/profile-'+Date.now()+'.'+ext;const r=await fetch(API_URL+'/storage/v1/object/employee-documents/'+path,{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+sess.access_token,'Content-Type':file.type||'image/jpeg','x-upsert':'false'},body:file});await parseResponse(r);return path}
+async function vehiclePhotoObjectUrl(path){if(!path)return '';if(vehiclePhotoUrls[path])return vehiclePhotoUrls[path];for(const bucket of ['v2-vehicle-photos','employee-documents']){try{const r=await authFetch('/storage/v1/object/'+bucket+'/'+path);if(!r.ok)continue;const b=await r.blob();const u=URL.createObjectURL(b);vehiclePhotoUrls[path]=u;return u}catch(_){}}console.warn('vehicle photo unavailable',path);return ''}
+async function uploadVehiclePhoto(file,vehicleId){const sess=session();const ext=file.type==='image/png'?'png':file.type==='image/webp'?'webp':'jpg';const path=companyId+'/vehicles/'+vehicleId+'/profile-'+Date.now()+'.'+ext;const r=await fetch(API_URL+'/storage/v1/object/v2-vehicle-photos/'+path,{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+sess.access_token,'Content-Type':file.type||'image/jpeg','x-upsert':'false'},body:file});await parseResponse(r);return path}
 async function hydrateVehiclePhotos(){for(const v of (window.__fleetVehicles||[])){const img=document.querySelector(`[data-vehicle-photo="${v.id}"]`);if(!img)continue;img.src=vehiclePlaceholder(v.description);const p=v.metadata?.vehicle_photo_path;if(p){const u=await vehiclePhotoObjectUrl(p);if(u)img.src=u}}}
 function licensingStatusForVehicle(v,crlv){
  const category=inferVehicleLicenseCategory(v);
