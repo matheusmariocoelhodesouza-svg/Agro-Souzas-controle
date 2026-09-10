@@ -8,7 +8,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
-<title>Comando 360 • v7.01</title>
+<title>Comando 360 • v7.02</title>
 <link rel="manifest" href="./comando360.webmanifest"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
@@ -1937,13 +1937,52 @@ body.darkmode #operacoes #poultryList .po-actions{
  color:#dce8f5!important;
 }
 
+
+/* 7.02 — Financeiro com contraste e privacidade de valores */
+#financeiro .finance-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+#financeiro .finance-head-actions{justify-content:flex-end}
+#financeiro .finance-privacy-btn{border:1px solid #d8e2ee;background:#f7f9fc;color:#334155}
+#financeiro .finance-kpis{grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+#financeiro .finance-kpi{min-height:112px;padding:14px;border:1px solid #dfe7f0;border-radius:16px;background:#fff;box-shadow:0 3px 12px rgba(15,23,42,.04)}
+#financeiro .finance-kpi-label{display:block;font-size:11px;font-weight:850;letter-spacing:.15px;color:#64748b}
+#financeiro .finance-kpi-value{display:block;margin-top:12px;font-size:21px;line-height:1.12;font-weight:950;color:#0f172a!important;word-break:break-word}
+#financeiro .finance-kpi-value.count{font-size:24px}
+#financeiro .finance-entry-card{padding:14px}
+#financeiro .finance-entry-layout{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+#financeiro .finance-entry-main{min-width:0;flex:1}
+#financeiro .finance-entry-title{font-size:14px;line-height:1.35;font-weight:850;color:#172033}
+#financeiro .finance-entry-meta{margin-top:5px}
+#financeiro .finance-entry-amount{display:inline-flex;margin-top:9px;font-size:13px;font-weight:900}
+#financeiro .finance-entry-actions{display:flex;align-items:flex-start;flex:0 0 auto}
+#financeiro .finance-entry-actions .finCancel{width:auto!important;min-width:0!important;padding:8px 11px!important;font-size:11px!important;border-radius:10px!important}
+body.darkmode #financeiro .finance-overview-card,
+body.darkmode #financeiro .finance-entry-card{background:#0f1d2f;border-color:#24364c}
+body.darkmode #financeiro .finance-kpi{background:#112033;border-color:#2a3d55;box-shadow:none}
+body.darkmode #financeiro .finance-kpi-label{color:#9fb0c4!important}
+body.darkmode #financeiro .finance-kpi-value{color:#f8fafc!important}
+body.darkmode #financeiro .finance-entry-title{color:#f8fafc!important}
+body.darkmode #financeiro .finance-entry-meta{color:#95a8bf!important}
+body.darkmode #financeiro .finance-privacy-btn{background:#17283d;border-color:#334a66;color:#eef5ff}
+@media(max-width:760px){
+ #financeiro .finance-head{align-items:stretch;flex-direction:column}
+ #financeiro .finance-head-actions{display:grid;grid-template-columns:1fr 1.25fr;width:100%}
+ #financeiro .finance-head-actions .btn{width:100%!important;min-height:44px}
+ #financeiro .finance-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+ #financeiro .finance-kpi{min-height:104px;padding:13px}
+ #financeiro .finance-kpi-value{font-size:19px}
+ #financeiro .finance-entry-layout{gap:8px}
+}
+@media(max-width:390px){
+ #financeiro .finance-head-actions{grid-template-columns:1fr}
+ #financeiro .finance-kpi-value{font-size:17px}
+}
 </style>
 <script defer="" src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"></script>
 <script>
 (function(){
-  const BUILD='7.00';
+  const BUILD='7.02';
   try{
     const marker='controla_cache_cleanup_'+BUILD;
     if(!localStorage.getItem(marker)){
@@ -2031,7 +2070,7 @@ body.darkmode #operacoes #poultryList .po-actions{
   <div class="brand"><img class="header-brand-icon" src="./comando360-icon.svg" alt="Comando 360"/><div><b>Comando <span class="brand360">360</span></b><div><small id="companyName">Empresa</small></div></div></div>
  </div>
  <div class="header-module" id="headerModule"><span id="headerModuleTitle">Painel Geral</span><small id="headerModuleSubtitle">Central de gestão</small></div>
- <div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="header-icon-btn" id="headerSearchBtn" type="button" title="Busca geral" aria-label="Busca geral">⌕</button><button class="header-icon-btn" type="button" data-jump="alertas" title="Alertas" aria-label="Abrir alertas">🔔<span id="headerAlertsCount">0</span></button><button class="header-icon-btn" type="button" data-jump="ia" title="Assistente IA" aria-label="Abrir Assistente IA">✦</button><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v7.01</span><button class="btn soft" id="themeToggle" type="button" aria-label="Alternar tema">☾</button><button class="btn soft hidden" id="logout">Sair</button></div>
+ <div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="header-icon-btn" id="headerSearchBtn" type="button" title="Busca geral" aria-label="Busca geral">⌕</button><button class="header-icon-btn" type="button" data-jump="alertas" title="Alertas" aria-label="Abrir alertas">🔔<span id="headerAlertsCount">0</span></button><button class="header-icon-btn" type="button" data-jump="ia" title="Assistente IA" aria-label="Abrir Assistente IA">✦</button><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v7.02</span><button class="btn soft" id="themeToggle" type="button" aria-label="Alternar tema">☾</button><button class="btn soft hidden" id="logout">Sair</button></div>
 </header>
 <main class="wrap">
 <section class="login team-entry" id="login">
@@ -2049,7 +2088,7 @@ body.darkmode #operacoes #poultryList .po-actions{
  <label>Senha</label><input autocomplete="current-password" id="password" type="password"/>
  <button class="btn primary" id="loginBtn">Entrar</button>
  <button class="btn soft" id="backDeviceSetup" type="button" style="margin-left:6px">Voltar</button>
- <div class="muted" id="loginMsg" style="margin-top:10px">Comando 360 • v7.01</div><div class="debug" id="debug"></div>
+ <div class="muted" id="loginMsg" style="margin-top:10px">Comando 360 • v7.02</div><div class="debug" id="debug"></div>
 </div>
 </section>
 <section class="hidden" id="app">
@@ -2671,7 +2710,7 @@ body.darkmode #operacoes #poultryList .po-actions{
 </div>
 
 <div class="section" data-screen="financeiro" hidden="" id="financeiro">
-<div class="card"><div class="toolbar" style="justify-content:space-between"><div><h3 style="margin:0">💰 Financeiro</h3><div class="muted">Entradas, saídas e resultado mensal.</div></div><button class="btn primary" id="newFinEntryBtn" type="button">+ NOVO LANÇAMENTO</button></div><div class="v2-kpis" id="financeKpis" style="margin-top:14px"></div></div>
+<div class="card finance-overview-card"><div class="finance-head"><div><h3 style="margin:0">💰 Financeiro</h3><div class="muted">Entradas, saídas e resultado mensal.</div></div><div class="toolbar finance-head-actions"><button class="btn soft finance-privacy-btn" id="toggleFinancePrivacy" type="button" aria-pressed="false">👁 Ocultar valores</button><button class="btn primary" id="newFinEntryBtn" type="button">+ NOVO LANÇAMENTO</button></div></div><div class="v2-kpis finance-kpis" id="financeKpis" style="margin-top:14px"></div></div>
 <div class="card" id="finEditCard" style="display:none"><div class="toolbar" style="justify-content:space-between"><h3 style="margin:0">Novo lançamento</h3><button class="btn soft" id="cancelFinEntry" type="button">Cancelar</button></div>
 <div class="row" style="margin-top:12px"><div><label>Tipo</label><select id="finType"><option value="income">Entrada</option><option value="expense">Saída</option></select></div><div><label>Descrição</label><input id="finDescription"/></div><div><label>Valor (R$)</label><input id="finAmount" type="number" min="0" step="0.01"/></div></div>
 <div class="row"><div><label>Data</label><input id="finIssueDate" type="date"/></div><div><label>Vencimento</label><input id="finDueDate" type="date"/></div><div><label>Cliente / fornecedor</label><input id="finCounterparty"/></div></div>
@@ -6582,6 +6621,14 @@ document.addEventListener('change',function(e){
  if(['consumablesStart','consumablesEnd'].includes(e.target?.id))renderConsumables();
 });
 document.addEventListener('click',async function(e){
+  const financePrivacy=e.target.closest('#toggleFinancePrivacy');
+  if(financePrivacy){
+    e.preventDefault();
+    financeValuesHidden=!financeValuesHidden;
+    localStorage.setItem('c360_finance_values_hidden',financeValuesHidden?'1':'0');
+    renderFinanceView();
+    return;
+  }
  if(e.target.closest('#newConsumableItemBtn')){e.preventDefault();document.getElementById('consumableItemMsg').textContent='';document.getElementById('consumableItemForm').classList.add('open');document.getElementById('consumableItemForm').scrollIntoView({behavior:'smooth',block:'start'});return}
  if(e.target.closest('#cancelConsumableItem')){e.preventDefault();document.getElementById('consumableItemForm').classList.remove('open');return}
  if(e.target.closest('#saveConsumableItem')){e.preventDefault();await saveConsumableItem();return}
@@ -8875,6 +8922,47 @@ function openEmpDoc(id=''){const d=empDocsCache.find(x=>x.id===id);document.getE
 async function saveEmpDoc(){const m=document.getElementById('empDocMsg'),id=document.getElementById('empDocId').value,employee_id=document.getElementById('empDocEmployee').value,file=document.getElementById('empDocFile').files?.[0];if(!employee_id){m.textContent='Selecione o funcionário.';return}try{const old=empDocsCache.find(x=>x.id===id);let file_id=old?.file_id||null;if(file){m.textContent='Enviando arquivo...';const f=await uploadCompanyDocument(file,'employee',employee_id);file_id=f?.id||file_id}const body={company_id:companyId,employee_id,file_id,document_type:document.getElementById('empDocType').value,expires_at:document.getElementById('empDocExpires').value||null,status:'active',metadata:{}};if(id)await rest('v2_employee_documents','id=eq.'+id,'PATCH',body);else await rest('v2_employee_documents','','POST',body);document.getElementById('empDocEditCard').style.display='none';await loadEmpDocs();await loadSmartAlerts()}catch(e){m.textContent=e.message}}
 async function deleteEmpDoc(){const id=document.getElementById('empDocId').value;if(!id||!confirm('Excluir este documento?'))return;try{const d=empDocsCache.find(x=>x.id===id);await rest('v2_employee_documents','id=eq.'+id,'DELETE');if(d?.file_id)try{await rest('v2_files','id=eq.'+d.file_id,'PATCH',{archived_at:new Date().toISOString()})}catch{}document.getElementById('empDocEditCard').style.display='none';await loadEmpDocs()}catch(e){alert(e.message)}}
 
+let financeValuesHidden=localStorage.getItem('c360_finance_values_hidden')==='1';
+let financeViewState={income:0,expense:0};
+
+function financeDisplayMoney(value){
+ return financeValuesHidden?'R$ ••••••':money(value);
+}
+function financeDisplayDescription(value){
+ const safe=esc(value||'Sem descrição');
+ return financeValuesHidden?safe.replace(/R\$\s*[0-9][0-9.,]*/gi,'R$ ••••'):safe;
+}
+function updateFinancePrivacyButton(){
+ const b=document.getElementById('toggleFinancePrivacy');if(!b)return;
+ b.textContent=financeValuesHidden?'👁 Mostrar valores':'👁 Ocultar valores';
+ b.setAttribute('aria-pressed',financeValuesHidden?'true':'false');
+ b.setAttribute('aria-label',financeValuesHidden?'Mostrar valores financeiros':'Ocultar valores financeiros');
+}
+function renderFinanceView(){
+ const income=Number(financeViewState.income||0),expense=Number(financeViewState.expense||0);
+ const k=document.getElementById('financeKpis');
+ if(k)k.innerHTML=
+  '<div class="finance-kpi"><span class="finance-kpi-label">ENTRADAS DO MÊS</span><strong class="finance-kpi-value">'+financeDisplayMoney(income)+'</strong></div>'+
+  '<div class="finance-kpi"><span class="finance-kpi-label">SAÍDAS DO MÊS</span><strong class="finance-kpi-value">'+financeDisplayMoney(expense)+'</strong></div>'+
+  '<div class="finance-kpi"><span class="finance-kpi-label">RESULTADO</span><strong class="finance-kpi-value">'+financeDisplayMoney(income-expense)+'</strong></div>'+
+  '<div class="finance-kpi"><span class="finance-kpi-label">LANÇAMENTOS</span><strong class="finance-kpi-value count">'+financeCache.length+'</strong></div>';
+
+ const l=document.getElementById('financeList');
+ if(l)l.innerHTML=financeCache.map(x=>{
+  const cancelled=x.status==='cancelled';
+  return '<div class="item finance-entry-card"><div class="finance-entry-layout">'+
+   '<div class="finance-entry-main">'+
+    '<div class="finance-entry-title">'+(x.entry_type==='income'?'⬆ Entrada':'⬇ Saída')+' • '+financeDisplayDescription(x.description||'Sem descrição')+'</div>'+
+    '<div class="muted finance-entry-meta">'+(x.issue_date?new Date(x.issue_date+'T00:00:00').toLocaleDateString('pt-BR'):'')+(x.counterparty_name?' • '+esc(x.counterparty_name):'')+'</div>'+
+    '<span class="pill '+(x.entry_type==='income'?'ok':'warn')+' finance-entry-amount">'+financeDisplayMoney(x.amount)+'</span>'+
+    (cancelled?' <span class="pill danger">CANCELADO</span>':'')+
+   '</div>'+
+   (!cancelled?'<div class="finance-entry-actions"><button class="btn danger finCancel" data-id="'+esc(x.id)+'">Cancelar</button></div>':'')+
+  '</div></div>';
+ }).join('')||'<div class="muted">Nenhum lançamento.</div>';
+ updateFinancePrivacyButton();
+}
+
 async function loadFinance(){
  const [entries,rep]=await Promise.all([
   rest('v2_financial_entries','select=*&company_id=eq.'+companyId+'&order=issue_date.desc,created_at.desc&limit=200'),
@@ -8884,9 +8972,10 @@ async function loadFinance(){
  const month=new Date().toISOString().slice(0,7),r=(rep||[]).find(x=>String(x.reference_month||'').slice(0,7)===month);
  const income=Number(r?.income||financeCache.filter(x=>String(x.issue_date||'').slice(0,7)===month&&x.entry_type==='income'&&x.status!=='cancelled').reduce((a,x)=>a+Number(x.amount||0),0));
  const expense=Number(r?.expense||financeCache.filter(x=>String(x.issue_date||'').slice(0,7)===month&&x.entry_type==='expense'&&x.status!=='cancelled').reduce((a,x)=>a+Number(x.amount||0),0));
- const k=document.getElementById('financeKpis');if(k)k.innerHTML=`<div class="v2kpi"><span>Entradas mês</span><strong>${money(income)}</strong></div><div class="v2kpi"><span>Saídas mês</span><strong>${money(expense)}</strong></div><div class="v2kpi"><span>Resultado</span><strong>${money(income-expense)}</strong></div><div class="v2kpi"><span>Lançamentos</span><strong>${financeCache.length}</strong></div>`;
- const l=document.getElementById('financeList');if(l)l.innerHTML=financeCache.map(x=>`<div class="item"><div class="toolbar" style="justify-content:space-between"><div><strong>${x.entry_type==='income'?'⬆ Entrada':'⬇ Saída'} • ${esc(x.description||'Sem descrição')}</strong><div class="muted">${x.issue_date?new Date(x.issue_date+'T00:00:00').toLocaleDateString('pt-BR'):''} • ${esc(x.counterparty_name||'')}</div><span class="pill ${x.entry_type==='income'?'ok':'warn'}">${money(x.amount)}</span>${x.status==='cancelled'?' <span class="pill danger">CANCELADO</span>':''}</div>${x.status!=='cancelled'?`<button class="btn danger finCancel" data-id="${x.id}">Cancelar</button>`:''}</div></div>`).join('')||'<div class="muted">Nenhum lançamento.</div>';
+ financeViewState={income,expense};
+ renderFinanceView();
 }
+
 async function saveFinEntry(){const m=document.getElementById('finMsg'),amount=Number(document.getElementById('finAmount').value||0),desc=document.getElementById('finDescription').value.trim();if(!desc||amount<=0){m.textContent='Informe descrição e valor.';return}try{const u=await getUser(),d=document.getElementById('finIssueDate').value||new Date().toISOString().slice(0,10);await rest('v2_financial_entries','','POST',{company_id:companyId,entry_type:document.getElementById('finType').value,description:desc,amount,issue_date:d,due_date:document.getElementById('finDueDate').value||null,competence_date:d,status:'open',counterparty_name:document.getElementById('finCounterparty').value.trim()||null,source_type:'manual',metadata:{},created_by:u?.id||null});document.getElementById('finEditCard').style.display='none';await loadFinance()}catch(e){m.textContent=e.message}}
 async function cancelFinEntry(id){if(!id||!confirm('Cancelar este lançamento financeiro?'))return;try{await rest('v2_financial_entries','id=eq.'+id,'PATCH',{status:'cancelled'});await loadFinance()}catch(e){alert(e.message)}}
 
@@ -9042,7 +9131,7 @@ function c360SetModule(tab){
  const m=C360_MODULES[tab]||[tab,'Comando 360'];
  const t=document.getElementById('headerModuleTitle'),s=document.getElementById('headerModuleSubtitle');
  if(t)t.textContent=m[0];if(s)s.textContent=m[1];
- document.title='Comando 360 • '+m[0]+' • v7.01';
+ document.title='Comando 360 • '+m[0]+' • v7.02';
  document.querySelectorAll('#mobileBottomNav [data-mobiletab]').forEach(b=>{
   const mt=b.dataset.mobiletab;
   b.classList.toggle('active',mt===tab||(mt==='more'&&!['inicio','operacoes','ponto','frota'].includes(tab)));
@@ -9338,7 +9427,7 @@ setInterval(async()=>{
 },10*60*1000);
 if('serviceWorker' in navigator){
  window.addEventListener('load',()=>{
-  navigator.serviceWorker.register('./sw-v6-99.js',{scope:'./',updateViaCache:'none'}).catch(e=>console.warn('Service Worker',e));
+  navigator.serviceWorker.register('./sw-v7-02.js',{scope:'./',updateViaCache:'none'}).catch(e=>console.warn('Service Worker',e));
  });
 }
 
