@@ -2,10 +2,12 @@ const CACHE='comando360-v8-00';
 const CORE=[
   './',
   './index.html',
-  './comando360.webmanifest',
-  './comando360-icon.svg',
+  './assets/app-v8.css',
   './c360-core-network.js',
-  './c360-core-ui.js'
+  './c360-core-ui.js',
+  './app-v8.js',
+  './comando360.webmanifest',
+  './comando360-icon.svg'
 ];
 
 async function fetchWithTimeout(request,ms=4000){
