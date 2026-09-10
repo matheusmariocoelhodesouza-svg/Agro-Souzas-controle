@@ -8,7 +8,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
-<title>Comando 360 • v7.02</title>
+<title>Comando 360 • v8.00</title>
 <link rel="manifest" href="./comando360.webmanifest"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
@@ -2088,7 +2088,7 @@ body.darkmode #financeiro .finance-privacy-btn{background:#17283d;border-color:#
  <label>Senha</label><input autocomplete="current-password" id="password" type="password"/>
  <button class="btn primary" id="loginBtn">Entrar</button>
  <button class="btn soft" id="backDeviceSetup" type="button" style="margin-left:6px">Voltar</button>
- <div class="muted" id="loginMsg" style="margin-top:10px">Comando 360 • v7.02</div><div class="debug" id="debug"></div>
+ <div class="muted" id="loginMsg" style="margin-top:10px">Comando 360 • v8.00</div><div class="debug" id="debug"></div>
 </div>
 </section>
 <section class="hidden" id="app">
@@ -2219,7 +2219,7 @@ body.darkmode #financeiro .finance-privacy-btn{background:#17283d;border-color:#
 <div class="section" data-screen="funcionarios" hidden="" id="funcionarios">
 <div class="v2hero"><div><div class="dashboard-eyebrow">GESTÃO DE PESSOAS</div><h1>RH</h1><p>Funcionários, ponto, documentos, jornada, biometria e férias em uma única área.</p></div></div>
 <div class="module-subnav"><button class="active" type="button" data-jump="funcionarios">👥 Pessoas</button><button type="button" data-jump="ponto">⏱ Ponto</button><button type="button" data-jump="documentosrh">📁 Documentos</button></div>
-<div class="card rh-employer-card"><div class="toolbar"><div><strong>🏢 Dados do empregador</strong><div class="muted">Preenchidos automaticamente e usados nos documentos, recibos e comprovantes do ponto.</div></div></div><div class="row"><div><label>Razão social</label><input id="companyLegalName" value="Nágila Severino de Araújo Apanha de Aves Vivas" readonly aria-readonly="true"/></div><div><label>CNPJ</label><input id="companyTaxId" value="53.422.038/0001-19" readonly aria-readonly="true"/></div></div><input id="companyTradeName" type="hidden" value=""/><div class="muted" id="companyProfileMsg">Dados do empregador definidos pelo administrador.</div></div><div class="card" id="employeeEditCard" style="display:none"><div class="toolbar"><div><h3 style="margin:0">Editar funcionário</h3><div class="muted" id="employeeEditSubtitle">Atualize o cadastro sem perder o histórico.</div></div><button class="btn soft" id="cancelEmployeeEdit" type="button">Cancelar</button></div><input id="editEmployeeId" type="hidden"/><div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin:12px 0 16px"><img id="editEmployeePhotoPreview" alt="Foto do funcionário" style="width:112px;height:112px;object-fit:cover;border-radius:18px;border:1px solid #cbd5e1;background:#f8fafc"/><div><div style="font-weight:800;margin-bottom:8px">Foto de perfil</div><div class="toolbar"><button class="btn primary" id="takeEmployeePhoto" type="button">📷 TIRAR FOTO</button><button class="btn soft" id="chooseEmployeePhoto" type="button">🖼️ GALERIA</button><button class="btn soft" id="removeEmployeePhoto" type="button">REMOVER</button></div><input accept="image/jpeg,image/png,image/webp" capture="user" class="hidden" id="employeePhotoCamera" type="file"/><input accept="image/jpeg,image/png,image/webp" class="hidden" id="employeePhotoGallery" type="file"/><div class="muted" style="margin-top:7px"><b>Foto oficial do colaborador.</b> Ao salvar uma nova foto, o app também usa esta mesma imagem como referência do reconhecimento facial do Ponto 2.0.</div></div></div><div class="row"><div><label>Nome completo</label><input id="editEmployeeName"/></div><div><label>Matrícula</label><input id="editEmployeeNumber" inputmode="numeric"/></div><div><label>CPF</label><input id="editEmployeeCpf" inputmode="numeric"/></div></div><div class="row"><div><label>RG</label><input id="editEmployeeRg"/></div><div><label>Data de nascimento</label><input id="editEmployeeBirth" type="date"/></div><div><label>Telefone</label><input id="editEmployeePhone"/></div></div><div class="row"><div><label>Cargo / função</label><input id="editEmployeeJob"/></div><div><label>Equipe</label><input id="editEmployeeTeam" placeholder="Ex.: Equipe 1"/></div><div><label>Data de admissão</label><input id="editEmployeeAdmission" type="date"/></div></div><div><label>Endereço</label><input id="editEmployeeAddress" placeholder="Rua, número, bairro, cidade..."/></div><div class="row" style="margin-top:12px"><button class="btn primary" id="saveEmployeeEdit" type="button">SALVAR ALTERAÇÕES</button><button class="btn soft" id="archiveEmployee" type="button">ARQUIVAR FUNCIONÁRIO</button><button class="btn danger" id="deleteEmployee" type="button">EXCLUIR DEFINITIVAMENTE</button></div><div class="muted" id="employeeEditMsg" style="margin-top:8px"></div></div>
+<div class="card rh-employer-card"><div class="toolbar"><div><strong>🏢 Dados do empregador</strong><div class="muted">Preenchidos automaticamente e usados nos documentos, recibos e comprovantes do ponto.</div></div></div><div class="row"><div><label>Razão social</label><input id="companyLegalName" value="Dados da empresa não configurados" readonly aria-readonly="true"/></div><div><label>CNPJ</label><input id="companyTaxId" value="53.422.038/0001-19" readonly aria-readonly="true"/></div></div><input id="companyTradeName" type="hidden" value=""/><div class="muted" id="companyProfileMsg">Dados do empregador definidos pelo administrador.</div></div><div class="card" id="employeeEditCard" style="display:none"><div class="toolbar"><div><h3 style="margin:0">Editar funcionário</h3><div class="muted" id="employeeEditSubtitle">Atualize o cadastro sem perder o histórico.</div></div><button class="btn soft" id="cancelEmployeeEdit" type="button">Cancelar</button></div><input id="editEmployeeId" type="hidden"/><div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin:12px 0 16px"><img id="editEmployeePhotoPreview" alt="Foto do funcionário" style="width:112px;height:112px;object-fit:cover;border-radius:18px;border:1px solid #cbd5e1;background:#f8fafc"/><div><div style="font-weight:800;margin-bottom:8px">Foto de perfil</div><div class="toolbar"><button class="btn primary" id="takeEmployeePhoto" type="button">📷 TIRAR FOTO</button><button class="btn soft" id="chooseEmployeePhoto" type="button">🖼️ GALERIA</button><button class="btn soft" id="removeEmployeePhoto" type="button">REMOVER</button></div><input accept="image/jpeg,image/png,image/webp" capture="user" class="hidden" id="employeePhotoCamera" type="file"/><input accept="image/jpeg,image/png,image/webp" class="hidden" id="employeePhotoGallery" type="file"/><div class="muted" style="margin-top:7px"><b>Foto oficial do colaborador.</b> Ao salvar uma nova foto, o app também usa esta mesma imagem como referência do reconhecimento facial do Ponto 2.0.</div></div></div><div class="row"><div><label>Nome completo</label><input id="editEmployeeName"/></div><div><label>Matrícula</label><input id="editEmployeeNumber" inputmode="numeric"/></div><div><label>CPF</label><input id="editEmployeeCpf" inputmode="numeric"/></div></div><div class="row"><div><label>RG</label><input id="editEmployeeRg"/></div><div><label>Data de nascimento</label><input id="editEmployeeBirth" type="date"/></div><div><label>Telefone</label><input id="editEmployeePhone"/></div></div><div class="row"><div><label>Cargo / função</label><input id="editEmployeeJob"/></div><div><label>Equipe</label><input id="editEmployeeTeam" placeholder="Ex.: Equipe 1"/></div><div><label>Data de admissão</label><input id="editEmployeeAdmission" type="date"/></div></div><div><label>Endereço</label><input id="editEmployeeAddress" placeholder="Rua, número, bairro, cidade..."/></div><div class="row" style="margin-top:12px"><button class="btn primary" id="saveEmployeeEdit" type="button">SALVAR ALTERAÇÕES</button><button class="btn soft" id="archiveEmployee" type="button">ARQUIVAR FUNCIONÁRIO</button><button class="btn danger" id="deleteEmployee" type="button">EXCLUIR DEFINITIVAMENTE</button></div><div class="muted" id="employeeEditMsg" style="margin-top:8px"></div></div>
 <div class="rh-kpi-grid">
 <div class="card rh-kpi-card"><div class="kpi" id="rhActive">0</div><div class="label">Funcionários ativos</div></div>
 <div class="card rh-kpi-card"><div class="kpi" id="rhWorking">0</div><div class="label">Com ponto hoje</div></div>
@@ -2914,11 +2914,13 @@ body.darkmode #financeiro .finance-privacy-btn{background:#17283d;border-color:#
 </div>
 <div class="section" data-screen="ia" hidden="" id="ia"><div class="card chat"><h3>Assistente IA</h3><div class="muted">A IA avisará se a chave da OpenAI ainda não estiver configurada.</div><div class="chatbox" id="chatbox"></div><div class="toolbar" style="margin-top:10px"><input id="question" placeholder="Ex.: quais equipes estão atrasadas hoje?" style="flex:1;margin:0"/><button class="btn primary" id="sendAI">Enviar</button></div></div></div>
 </section></main>
+<script src="./c360-core-network.js"></script>
+<script src="./c360-core-ui.js"></script>
 <script>
 'use strict';
 const API_URL='https://aycbrqziusxtxhsdfqjk.supabase.co';
 const KEY='sb_publishable_OGJX3NBA__JxoyjB3IZNvQ_0nNwh_Xc';
-const EMPLOYER_FALLBACK={legal_name:'Nágila Severino de Araújo Apanha de Aves Vivas',tax_id:'53422038000119'};
+const EMPLOYER_FALLBACK={legal_name:'',tax_id:''};
 const withOfficialEmployer=(profile={})=>{
  const employer=profile?.metadata?.employer||{};
  return {...profile,legal_name:employer.legal_name||profile.legal_name||EMPLOYER_FALLBACK.legal_name,tax_id:employer.tax_id||profile.tax_id||EMPLOYER_FALLBACK.tax_id,employer_metadata:employer};
@@ -2928,8 +2930,8 @@ const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 const money=v=>Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
 function cleanCompanyName(v){
- const s=String(v||"Empresa").replace(/\s*[•-]?\s*BETA(?:\s*-\s*DADOS FICTÍCIOS)?/gi,'').trim();
- return s||"Empresa";
+ const s=String(v||'Empresa').trim();
+ return s||'Empresa';
 }
 const session=()=>{try{return JSON.parse(localStorage.getItem('controla_beta_session')||'null')}catch{return null}};
 const saveSession=s=>localStorage.setItem('controla_beta_session',JSON.stringify(s));
@@ -3105,7 +3107,7 @@ async function enterDeviceApp(authUser){
  let access=null,cachedIdentity=null,vehicleInfo=null,supervisorInfo=null;
  try{cachedIdentity=await offlineCacheGet('device_identity:'+user.id)}catch(_){}
 
- if(navigator.onLine){
+ if(c360NetOnline()){
   try{access=await loadDeviceAccess(user.id)}
   catch(e){console.warn('Falha ao consultar vínculo do aparelho',e);access=cachedIdentity?.access||null}
  }else{
@@ -3113,13 +3115,13 @@ async function enterDeviceApp(authUser){
  }
 
  if(!access){
-  const er=new Error(navigator.onLine?'Este celular ainda não foi ativado. Digite o código da equipe.':'Este celular ainda não possui dados offline. Conecte à internet pelo menos uma vez após a ativação.');
+  const er=new Error(c360NetOnline()?'Este celular ainda não foi ativado. Digite o código da equipe.':'Este celular ainda não possui dados offline. Conecte à internet pelo menos uma vez após a ativação.');
   er.code='DEVICE_UNPAIRED';throw er;
  }
 
  deviceMode=true;deviceAccess=access;companyId=access.company_id;currentRoleCode='device';isAdminGeneral=false;
 
- if(navigator.onLine){
+ if(c360NetOnline()){
   try{
    const identity=await c360CollectDeviceIdentity();
    await rpc('v2_update_device_identity',{p_device_name:identity.name,p_device_info:identity.info});
@@ -3173,7 +3175,7 @@ async function enterDeviceApp(authUser){
  applyDeviceUi();initScreenRouter();await v2Go('equipehome');
  await updateOfflineQueueBadge();
 
- if(navigator.onLine){
+ if(c360NetOnline()){
   warmDeviceOfflineData().catch(e=>console.warn('pré-carga offline',e));
   syncOfflineQueue().catch(e=>console.warn('sync offline',e));
  }
@@ -3202,11 +3204,11 @@ async function activateDevice(code){
 }
 
 
-async function uploadFaceReference(file,employeeId){const s=session();const ext=file.type==='image/png'?'png':file.type==='image/webp'?'webp':'jpg';const path=companyId+'/'+employeeId+'/reference-'+Date.now()+'.'+ext;const r=await fetch(API_URL+'/storage/v1/object/biometric-selfies/'+path,{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+s.access_token,'Content-Type':file.type||'image/jpeg','x-upsert':'false'},body:file});await parseResponse(r);return path}
+async function uploadFaceReference(file,employeeId){const s=session();const ext=file.type==='image/png'?'png':file.type==='image/webp'?'webp':'jpg';const path=companyId+'/'+employeeId+'/reference-'+Date.now()+'.'+ext;const r=await fetch(API_URL+'/storage/v1/object/v2-face-references/'+path,{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+s.access_token,'Content-Type':file.type||'image/jpeg','x-upsert':'false'},body:file});await parseResponse(r);return path}
 async function uploadSelfie(file,employeeId){
  const s=session();if(!s?.access_token)throw new Error('Sessão expirada.');
  const ext=file.type==='image/png'?'png':file.type==='image/webp'?'webp':'jpg';
- const bucket=deviceMode?'v2-attendance-selfies':'biometric-selfies';
+ const bucket='v2-attendance-selfies';
  const path=companyId+'/'+employeeId+'/point-'+Date.now()+'.'+ext;
  const r=await fetch(API_URL+'/storage/v1/object/'+bucket+'/'+path,{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+s.access_token,'Content-Type':file.type||'image/jpeg','x-upsert':'false'},body:file});
  await parseResponse(r);return path;
@@ -3250,10 +3252,6 @@ async function enrollEmployeeFaceFromFile(file,employeeId,descriptor=null){
   p_descriptor:faceDescriptor
  });
 
- // Compatibilidade com o cadastro facial legado; falha aqui não bloqueia a Biometria V2.
- try{await rpc('enroll_employee_face',{p_employee_id:employeeId,p_photo_storage_path:facePath})}
- catch(e){console.warn('enroll_employee_face legado',e)}
-
  return {facePath};
 }
 async function profilePhotoAsFile(employee){
@@ -3284,10 +3282,10 @@ function durationToMinutes(v){
  const [h,m]=String(v).split(':').map(Number);
  return Math.max(1,(Number(h)||0)*60+(Number(m)||0));
 }
-function eventLocalMinutes(iso){const p=new Intl.DateTimeFormat('en-GB',{timeZone:'America/Sao_Paulo',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(new Date(iso));return timeToMinutes(p)}
+function eventLocalMinutes(iso){const p=new Intl.DateTimeFormat('en-GB',{timeZone:(companyProfile?.timezone||'America/Sao_Paulo'),hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(new Date(iso));return timeToMinutes(p)}
 async function loadSchedules(){
   if(!companyId){scheduleCache={};return}
-  if(deviceMode&&!navigator.onLine){
+  if(deviceMode&&!c360NetOnline()){
     scheduleCache=await offlineCacheGet(offlineTeamKey('point_schedules'))||{};
     return;
   }
@@ -3350,7 +3348,7 @@ function computeDayMetrics(events,opts={}){
 
 function localDateBR(d=new Date()){
   const parts=new Intl.DateTimeFormat('en-CA',{
-    timeZone:'America/Sao_Paulo',
+    timeZone:(companyProfile?.timezone||'America/Sao_Paulo'),
     year:'numeric',month:'2-digit',day:'2-digit'
   }).formatToParts(d);
   const obj=Object.fromEntries(parts.map(p=>[p.type,p.value]));
@@ -3365,7 +3363,7 @@ function saoPauloDayUtcBounds(day){
 
 function localDayFromIso(iso){
   const parts=new Intl.DateTimeFormat('en-CA',{
-    timeZone:'America/Sao_Paulo',
+    timeZone:(companyProfile?.timezone||'America/Sao_Paulo'),
     year:'numeric',month:'2-digit',day:'2-digit'
   }).formatToParts(new Date(iso));
   const obj=Object.fromEntries(parts.map(p=>[p.type,p.value]));
@@ -3410,7 +3408,7 @@ async function previewNextPoint(){
   const label=$('#nextPointLabel');
   if(!matricula){label.textContent='Digite a matrícula';return}
   try{
-    if(deviceMode&&!navigator.onLine){
+    if(deviceMode&&!c360NetOnline()){
       const emp=await offlineFindEmployeeByNumber(matricula);
       if(!emp){label.textContent='Matrícula não disponível offline';return}
       const next=await offlineNextPoint(emp.id);
@@ -3498,7 +3496,7 @@ function offlineTeamKey(kind,date=''){
 }
 function saoPauloDateKey(iso){
  try{
-  const parts=new Intl.DateTimeFormat('en-CA',{timeZone:'America/Sao_Paulo',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date(iso));
+  const parts=new Intl.DateTimeFormat('en-CA',{timeZone:(companyProfile?.timezone||'America/Sao_Paulo'),year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date(iso));
   const m=Object.fromEntries(parts.map(p=>[p.type,p.value]));
   return m.year+'-'+m.month+'-'+m.day;
  }catch(_){return String(iso||'').slice(0,10)}
@@ -3560,7 +3558,7 @@ async function cachePointContext(employees,events){
  await offlineCacheSet(offlineTeamKey('point_events',day),events||[]);
 }
 async function warmPointOfflineCache(){
- if(!deviceMode||!navigator.onLine||!companyId)return;
+ if(!deviceMode||!c360NetOnline()||!companyId)return;
  try{
   const [employees,events,faces]=await Promise.all([
    devicePointEmployees(),
@@ -3573,7 +3571,7 @@ async function warmPointOfflineCache(){
  }catch(e){console.warn('warm point offline cache',e)}
 }
 async function warmPoultryOfflineCache(){
- if(!deviceMode||!navigator.onLine||!companyId)return;
+ if(!deviceMode||!c360NetOnline()||!companyId)return;
  const teamId=deviceAccess?.team_id;
  if(!teamId)return;
  const teams=await rest('v2_teams','select=id,name,status,metadata,supervisor_employee_id&company_id=eq.'+companyId+'&id=eq.'+encodeURIComponent(teamId))||[];
@@ -3593,7 +3591,7 @@ async function warmPoultryOfflineCache(){
  await offlineCacheSet(offlineTeamKey('poultry_ops'),{ops,loadings,trucks});
 }
 async function warmFuelOfflineCache(){
- if(!deviceMode||!navigator.onLine||!companyId)return;
+ if(!deviceMode||!c360NetOnline()||!companyId)return;
  const [logs,vehicles]=await Promise.all([
   rest('v2_fuel_logs','select=*&company_id=eq.'+companyId+'&order=fueled_at.desc&limit=200'),
   rest('v2_vehicles','select=id,description,plate,model,current_odometer_km,fuel_tank_capacity_liters,status&company_id=eq.'+companyId+'&order=description.asc')
@@ -3602,7 +3600,7 @@ async function warmFuelOfflineCache(){
  await offlineCacheSet(offlineTeamKey('fuel_vehicles'),vehicles||[]);
 }
 async function warmDeviceOfflineData(){
- if(!deviceMode||!navigator.onLine)return;
+ if(!deviceMode||!c360NetOnline())return;
  await Promise.allSettled([
   warmPointOfflineCache(),
   loadSchedules(),
@@ -3815,7 +3813,7 @@ async function syncPoultryCompleteOfflineItem(item){
  return true;
 }
 async function syncOfflineQueue(){
- if(offlineSyncRunning||!navigator.onLine||!companyId||!session()?.access_token)return;
+ if(offlineSyncRunning||!c360NetOnline()||!companyId||!session()?.access_token)return;
  offlineSyncRunning=true;
  const badge=$('#offlineQueueBadge');
  try{
@@ -3840,7 +3838,7 @@ async function syncOfflineQueue(){
   await offlineCacheSet('last_sync:'+String(companyId||'none'),new Date().toISOString());
   await updateOfflineQueueBadge();
   if($('#offlineSyncPanel')&&!$('#offlineSyncPanel').classList.contains('hidden'))await renderOfflineSyncPanel();
-  if(deviceMode&&navigator.onLine){
+  if(deviceMode&&c360NetOnline()){
    await warmPointOfflineCache();
    const active=document.querySelector('[data-screen="ponto"].active');
    if(active)await loadTeamPoint();
@@ -4243,7 +4241,7 @@ async function loadTeams(){
 }
 function deviceTimeLabel(v){
  if(!v)return 'Nunca acessou';
- try{return new Date(v).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo'})}catch(_){return String(v)}
+ try{return new Date(v).toLocaleString('pt-BR',{timeZone:(companyProfile?.timezone||'America/Sao_Paulo')})}catch(_){return String(v)}
 }
 function deviceSeenLabel(v){
  if(!v)return 'Nunca acessou';
@@ -4626,7 +4624,7 @@ function renderFleetVehicles(){
 }
 async function loadVehicles(){
  try{
-  if(navigator.onLine){try{await movitInvoke('sync')}catch(e){console.warn('MOVIT na Frota',e)}}
+  if(c360NetOnline()){try{await movitInvoke('sync')}catch(e){console.warn('MOVIT na Frota',e)}}
   const [r,t,docs,files,tracking,fuelLogs,distanceSummary]=await Promise.all([
    rest('v2_vehicles','select=id,description,plate,make,model,model_year,renavam,current_odometer_km,fuel_tank_capacity_liters,status,metadata&company_id=eq.'+companyId+'&order=description.asc'),
    rest('v2_teams','select=id,name,status,metadata,supervisor_employee_id&company_id=eq.'+companyId+'&order=name.asc'),
@@ -4701,7 +4699,7 @@ async function loadMonthlyMirror(){
     const teamRows=await rest('v2_teams','select=id,name,code,status&company_id=eq.'+companyId+'&order=name.asc');
     const teamMap=Object.fromEntries((teamRows||[]).map(t=>[t.id,t]));
     const originalSel=$('#treatmentOriginalId');
-    if(originalSel)originalSel.innerHTML='<option value="">Sem vínculo / inclusão manual</option>'+rows.map(x=>{const tn=pointEventTeamName(x,teamMap);return '<option value="'+esc(x.id)+'">'+esc(new Date(x.occurred_at).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo'}))+' • '+esc(pointLabels[x.event_type]||x.event_type)+(tn?' • '+esc(tn):'')+'</option>';}).join('');
+    if(originalSel)originalSel.innerHTML='<option value="">Sem vínculo / inclusão manual</option>'+rows.map(x=>{const tn=pointEventTeamName(x,teamMap);return '<option value="'+esc(x.id)+'">'+esc(new Date(x.occurred_at).toLocaleString('pt-BR',{timeZone:(companyProfile?.timezone||'America/Sao_Paulo')}))+' • '+esc(pointLabels[x.event_type]||x.event_type)+(tn?' • '+esc(tn):'')+'</option>';}).join('');
     list.dataset.employeeName=emp.full_name||'';
     list.dataset.employeeNumber=emp.employee_number||'';
     list.dataset.cpf=emp.cpf||'';
@@ -4747,13 +4745,13 @@ async function loadMonthlyMirror(){
       if(mt.incomplete)incompleteDays++;
 
       const fmt=t=>new Date(t).toLocaleTimeString('pt-BR',{
-        hour:'2-digit',minute:'2-digit',timeZone:'America/Sao_Paulo'
+        hour:'2-digit',minute:'2-digit',timeZone:(companyProfile?.timezone||'America/Sao_Paulo')
       });
 
       const first=session.events[0];
       const last=session.events[session.events.length-1];
       const dateLabel=new Date(shiftDay+'T12:00:00-03:00').toLocaleDateString('pt-BR',{
-        timeZone:'America/Sao_Paulo'
+        timeZone:(companyProfile?.timezone||'America/Sao_Paulo')
       });
 
       const crossedMidnight=localDayFromIso(first.occurred_at)!==localDayFromIso(last.occurred_at);
@@ -4801,7 +4799,7 @@ function printMonthlyMirror(){
   const role=mirror?.dataset?.role||'';
   const content=mirror?.innerHTML||'';
   const summary=$('#monthlySummary')?.innerHTML||'';
-  const emitted=new Date().toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo'});
+  const emitted=new Date().toLocaleString('pt-BR',{timeZone:(companyProfile?.timezone||'America/Sao_Paulo')});
   const employer=companyProfile.legal_name||companyProfile.trade_name||'Empresa';
   const cnpj=companyProfile.tax_id||'';
   const schedule=scheduleText(employeeId);
@@ -4844,7 +4842,7 @@ async function loadTeamPoint(){
    const teamId=deviceAccess?.team_id||deviceTeam?.id||null;
    const teamName=deviceTeam?.name||'Equipe do aparelho';
 
-   if(deviceMode&&!navigator.onLine){
+   if(deviceMode&&!c360NetOnline()){
     employees=await offlineCacheGet(offlineTeamKey('point_employees'))||[];
     events=await offlineCacheGet(offlineTeamKey('point_events',day))||[];
     const pending=(await offlineQueueList()).filter(x=>x.type==='attendance'&&saoPauloDateKey(x.payload?.occurred_at)===day).map(x=>({
@@ -4868,7 +4866,7 @@ async function loadTeamPoint(){
     await cachePointContext(employees,events);
    }
 
-   if(!employees.length&&deviceMode&&!navigator.onLine){
+   if(!employees.length&&deviceMode&&!c360NetOnline()){
     const p=$('#presenceList');
     if(p)p.innerHTML='<div class="error">Ainda não há funcionários salvos para uso offline. Conecte este celular à internet uma vez.</div>';
    }
@@ -4913,7 +4911,7 @@ async function loadTeamPoint(){
    const list=$('#pointList');
    if(list)list.innerHTML=[...teamEvents].reverse().slice(0,80).map(x=>{
      const e=map[x.employee_id]||{};
-     return '<div class="item"><strong>'+esc(e.full_name||'Funcionário')+'</strong><span class="pill '+(x.offline_pending?'warn':'')+'">'+esc(pointLabels[x.event_type]||x.event_type)+(x.offline_pending?' • OFFLINE':'')+'</span><div class="muted">'+esc(new Date(x.occurred_at).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo'}))+' • '+esc(x.method||'matrícula')+' • <b>'+esc(teamName)+'</b></div></div>';
+     return '<div class="item"><strong>'+esc(e.full_name||'Funcionário')+'</strong><span class="pill '+(x.offline_pending?'warn':'')+'">'+esc(pointLabels[x.event_type]||x.event_type)+(x.offline_pending?' • OFFLINE':'')+'</span><div class="muted">'+esc(new Date(x.occurred_at).toLocaleString('pt-BR',{timeZone:(companyProfile?.timezone||'America/Sao_Paulo')}))+' • '+esc(x.method||'matrícula')+' • <b>'+esc(teamName)+'</b></div></div>';
    }).join('')||'<div class="muted">Nenhuma batida registrada por esta equipe hoje.</div>';
 
    const mirror=$('#timeMirrorList');
@@ -5010,7 +5008,7 @@ async function loadRHPoint(){
      if(!evs.length)return '';
      const mt=metricsByEmployee[e.id];
      const first=evs[0],last=evs[evs.length-1];
-     const fmt=t=>new Date(t).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',timeZone:'America/Sao_Paulo'});
+     const fmt=t=>new Date(t).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',timeZone:(companyProfile?.timezone||'America/Sao_Paulo')});
      const status=statusLabels[mt.status]||mt.status;
      const teamToday=currentTeamByEmployee[e.id]||e.primary_team||'Sem equipe';
      const cadastro=e.primary_team&&!sameTeamName(e.primary_team,teamToday)?' • Cadastro: '+esc(e.primary_team):'';
@@ -5020,7 +5018,7 @@ async function loadRHPoint(){
    const pointListEl=$('#pointList');
    if(pointListEl)pointListEl.innerHTML=[...events].reverse().slice(0,100).map(x=>{
      const e=map[x.employee_id]||{};
-     const dt=new Date(x.occurred_at).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo'});
+     const dt=new Date(x.occurred_at).toLocaleString('pt-BR',{timeZone:(companyProfile?.timezone||'America/Sao_Paulo')});
      const teamName=pointEventTeamName(x,teamMap)||e.primary_team||'Equipe não identificada';
      const switched=switchEventIds.has(x.id);
      return '<div class="item"><strong>'+esc(e.full_name||'Funcionário')+'</strong><span class="pill">'+esc(pointLabels[x.event_type]||x.event_type)+'</span>'+(switched?' <span class="pill warn">TROCA DE EQUIPE</span>':'')+'<div class="muted">'+esc(dt)+' • '+esc(x.method||'método não informado')+' • <b>'+esc(teamName)+'</b>'+(x.accuracy_m?' • GPS ±'+esc(x.accuracy_m)+' m':'')+'</div></div>';
@@ -5118,25 +5116,25 @@ async function preRecognizePointSelfie(file){
  if(btn)btn.disabled=true;
  label.textContent='Analisando rosto...';
  msg.className='muted';
- msg.textContent=navigator.onLine?'Identificando funcionário...':'Identificando funcionário offline...';
+ msg.textContent=c360NetOnline()?'Identificando funcionário...':'Identificando funcionário offline...';
  try{
   const descriptor=await faceDescriptorFromFile(file);
   let employee=null,distance=null;
   if(deviceMode){
-   const employees=navigator.onLine?await devicePointEmployees():await offlinePointEmployees();
+   const employees=c360NetOnline()?await devicePointEmployees():await offlinePointEmployees();
    let m=null;
-   if(navigator.onLine){
+   if(c360NetOnline()){
     const match=await rpc('v2_device_match_employee_face',{p_company_id:companyId,p_descriptor:descriptor,p_threshold:.50});
     m=(match||[])[0]||null;
    }else{
     m=await offlineMatchEmployeeFace(descriptor,.50);
    }
-   if(!m)throw new Error(navigator.onLine?'Rosto não reconhecido ou biometria ainda não cadastrada.':'Rosto não reconhecido no cache deste celular. Conecte à internet uma vez para atualizar as biometrias.');
+   if(!m)throw new Error(c360NetOnline()?'Rosto não reconhecido ou biometria ainda não cadastrada.':'Rosto não reconhecido no cache deste celular. Conecte à internet uma vez para atualizar as biometrias.');
    employee=(employees||[]).find(e=>e.id===m.employee_id)||null;
    if(!employee)throw new Error('Funcionário reconhecido, mas não está disponível neste aparelho.');
    distance=Number(m.distance||0);
   }else{
-   if(!navigator.onLine)throw new Error('No acesso administrativo, o reconhecimento facial exige internet.');
+   if(!c360NetOnline())throw new Error('No acesso administrativo, o reconhecimento facial exige internet.');
    const match=await rpc('v2_match_employee_face',{p_company_id:companyId,p_descriptor:descriptor,p_threshold:.50});
    const m=(match||[])[0];
    if(!m)throw new Error('Rosto não reconhecido ou biometria ainda não cadastrada.');
@@ -5145,12 +5143,12 @@ async function preRecognizePointSelfie(file){
    if(!employee)throw new Error('Funcionário reconhecido, mas não está ativo.');
    distance=Number(m.distance||0);
   }
-  const nextEvent=(deviceMode&&!navigator.onLine)?await offlineNextPoint(employee.id):await getNextPoint(employee.id);
+  const nextEvent=(deviceMode&&!c360NetOnline())?await offlineNextPoint(employee.id):await getNextPoint(employee.id);
   if(nextEvent==='finished')throw new Error('Jornada já encerrada hoje para '+employee.full_name+'.');
-  window.__pointFaceMatch={file,employee,distance,descriptor,offline:!navigator.onLine};
+  window.__pointFaceMatch={file,employee,distance,descriptor,offline:!c360NetOnline()};
   label.textContent=employee.full_name+' • '+(pointLabels[nextEvent]||nextEvent);
-  msg.className=navigator.onLine?'okmsg':'warn';
-  msg.textContent='✓ '+employee.full_name+' reconhecido'+(navigator.onLine?'.':'. Modo offline — o ponto ficará salvo neste celular.');
+  msg.className=c360NetOnline()?'okmsg':'warn';
+  msg.textContent='✓ '+employee.full_name+' reconhecido'+(c360NetOnline()?'.':'. Modo offline — o ponto ficará salvo neste celular.');
   if(btn)btn.disabled=false;
  }catch(e){
   window.__pointFaceMatch=null;
@@ -5181,7 +5179,7 @@ $('#registerPoint').addEventListener('click',async()=>{
  if(!withSelfie&&!matricula){msg.className='error';msg.textContent='Digite a matrícula.';return}
  if(withSelfie&&!selfie){msg.className='error';msg.textContent='Capture a selfie antes de bater o ponto.';return}
 
- if(deviceMode&&!navigator.onLine){
+ if(deviceMode&&!c360NetOnline()){
   btn.disabled=true;
   try{
    if(withSelfie){
@@ -5416,7 +5414,7 @@ function populateSavedFarmOptions(){
 }
 async function loadDevicePoultryContext(){
  try{
-  if(deviceMode&&!navigator.onLine){
+  if(deviceMode&&!c360NetOnline()){
    const cached=await offlineCacheGet(offlineTeamKey('poultry_context'))||{};
    poultryTeams=cached.teams||[];
    poultryFarms=cached.farms||[];
@@ -5576,7 +5574,7 @@ async function autoSavePoultryFarm(){
  const integrated=$('#poIntegratedName')?.value.trim()||'',city=$('#poCity')?.value.trim()||'';
  if(!integrated||!city)return;
  const msg=$('#aviaryMsg');
- if(!navigator.onLine){if(msg)msg.textContent='✓ Granja guardada no preenchimento e será sincronizada com a apanha.';return}
+ if(!c360NetOnline()){if(msg)msg.textContent='✓ Granja guardada no preenchimento e será sincronizada com a apanha.';return}
  try{
   if(msg)msg.textContent='Salvando granja automaticamente...';
   await ensureAviaryProfile();
@@ -5591,7 +5589,7 @@ function scheduleAutoSavePoultryFarm(){
  poultryFarmAutoSaveTimer=setTimeout(autoSavePoultryFarm,650);
 }
 async function findExistingOpenPoultryOperation(teamId,farmId){
- if(!teamId||!farmId||!navigator.onLine)return null;
+ if(!teamId||!farmId||!c360NetOnline())return null;
  try{
   const ls=await rest('v2_poultry_loadings',
    'select=id,operation_id,farm_id,team_id,status,reported_trucks,reported_birds&company_id=eq.'+encodeURIComponent(companyId)+
@@ -5615,7 +5613,7 @@ async function savePoultryOperation(){
  const t=poultryTeams.find(x=>x.id===$('#poTeam').value)||(deviceMode?deviceTeam:null);
  if(!t||!$('#poStart').value)return $('#poMsg').textContent='Selecione a equipe e informe o início.';
 
- if(deviceMode&&!navigator.onLine){
+ if(deviceMode&&!c360NetOnline()){
   const integrated=$('#poIntegratedName').value.trim(),city=$('#poCity').value.trim(),farmName=$('#poFarmName').value.trim();
   if(!integrated||!city)return $('#poMsg').textContent='Preencha nome do integrado e cidade.';
   try{
@@ -5731,7 +5729,7 @@ async function savePoultryOperation(){
 async function loadPoultryOps(renderUi=true){
  try{
   let ops=[],loadings=[],trucks=[];
-  if(deviceMode&&!navigator.onLine){
+  if(deviceMode&&!c360NetOnline()){
    const cached=await offlineCacheGet(offlineTeamKey('poultry_ops'))||{};
    ops=cached.ops||[];loadings=cached.loadings||[];trucks=cached.trucks||[];
   }else{
@@ -5870,7 +5868,7 @@ function resetPoTruckAutoSheet(){
 }
 async function autoSavePoultrySheetFile(file){
  if(!file)return null;
- if(deviceMode&&!navigator.onLine)return null;
+ if(deviceMode&&!c360NetOnline())return null;
  const token=makeOfflineId('sheet-auto');
  poTruckAutoSheetUpload=uploadPoultrySheet(file,token).then(path=>{
   poTruckAutoSheetPath=path;
@@ -6002,7 +6000,7 @@ function fillTruckPairFrom(source){
  }
 }
 async function loadTruckDriverPairs(){
- if(deviceMode&&!navigator.onLine){
+ if(deviceMode&&!c360NetOnline()){
   poultryDriverPairs=await offlineCacheGet(offlineTeamKey('driver_pairs'))||[];
   refreshTruckDriverSuggestions();
   return poultryDriverPairs;
@@ -6047,7 +6045,7 @@ async function autoSaveTruckDriverPair(){
  const driver=$('#poTruckDriver')?.value.trim()||'',plate=$('#poTruckPlate')?.value.trim().toUpperCase()||'';
  if(!driver||!plate)return;
  try{
-  if(navigator.onLine)await saveTruckDriverPair(driver,plate,null,false);
+  if(c360NetOnline())await saveTruckDriverPair(driver,plate,null,false);
   else await rememberTruckDriverPairOffline(driver,plate,false);
  }catch(e){console.warn('Salvamento automático motorista/placa',e)}
 }
@@ -6114,7 +6112,7 @@ async function saveTruckLoad(closeAfter=false){
   is_cata:isCata,barn_breakdown:barnBreakdown,notes:$('#poTruckNotes').value.trim()||null,sheet
  };
 
- if(deviceMode&&!navigator.onLine){
+ if(deviceMode&&!c360NetOnline()){
   try{
    $('#poTruckMsg').textContent='Salvando caminhão e ficha neste celular...';
    const id=makeOfflineId('truck');
@@ -6179,7 +6177,7 @@ async function reopenPoultryOperationAndAddTruck(btn){
 }
 
 async function completePoultryOperation(operationId,loadingId){
- if(deviceMode&&!navigator.onLine){
+ if(deviceMode&&!c360NetOnline()){
   try{
    const trucks=poultryTruckLoads.filter(t=>t.loading_id===loadingId);
    if(!trucks.length)return alert('Registre pelo menos um caminhão antes de concluir a apanha.');
@@ -6243,7 +6241,7 @@ if($('#poTruckSheetFile'))$('#poTruckSheetFile').addEventListener('change',async
  resetPoTruckAutoSheet();
  if(!file){wrap.classList.add('hidden');img.removeAttribute('src');name.textContent='';return}
  img.src=URL.createObjectURL(file);wrap.classList.remove('hidden');
- if(deviceMode&&!navigator.onLine){
+ if(deviceMode&&!c360NetOnline()){
   name.textContent=file.name+' • salva neste celular e será enviada automaticamente quando voltar a internet';
   return;
  }
@@ -6289,7 +6287,7 @@ document.addEventListener('click',async e=>{
  const ra=e.target.closest('.poReopenAddTruck');
  if(ra){
    e.preventDefault();
-   if(deviceMode&&!navigator.onLine)return alert('Para reabrir uma apanha concluída, conecte o celular à internet.');
+   if(deviceMode&&!c360NetOnline())return alert('Para reabrir uma apanha concluída, conecte o celular à internet.');
    await reopenPoultryOperationAndAddTruck(ra);
    return;
  }
@@ -6305,8 +6303,8 @@ function formatCompanyTaxId(v){
  if(d.length===11)return d.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/,'$1.$2.$3-$4');
  return v||'Não informado';
 }
-function catchTime(v){return v?new Date(v).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',timeZone:'America/Sao_Paulo'}):'—'}
-function catchDate(v){return v?new Date(v).toLocaleDateString('pt-BR',{timeZone:'America/Sao_Paulo'}):'—'}
+function catchTime(v){return v?new Date(v).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',timeZone:(companyProfile?.timezone||'America/Sao_Paulo')}):'—'}
+function catchDate(v){return v?new Date(v).toLocaleDateString('pt-BR',{timeZone:(companyProfile?.timezone||'America/Sao_Paulo')}):'—'}
 function catchDuration(start,end){
  if(!start||!end)return '—';
  const m=Math.max(0,Math.round((new Date(end)-new Date(start))/60000));
@@ -6317,7 +6315,7 @@ async function getDeviceSupervisorReportInfo(){
  const cached=uid?await offlineCacheGet('device_identity:'+uid):null;
  let name=cached?.supervisorInfo?.full_name||'';
  let phone=deviceTeam?.metadata?.supervisor_phone||cached?.supervisorInfo?.phone||'';
- if(navigator.onLine&&deviceTeam?.supervisor_employee_id){
+ if(c360NetOnline()&&deviceTeam?.supervisor_employee_id){
   try{
    const rows=await rest('v2_employees','select=id,full_name,phone&id=eq.'+encodeURIComponent(deviceTeam.supervisor_employee_id)+'&limit=1');
    if(rows?.[0]){name=rows[0].full_name||name;phone=deviceTeam?.metadata?.supervisor_phone||rows[0].phone||phone}
@@ -7170,7 +7168,7 @@ function fuelReceiptFirstNumber(text,patterns){
 function fuelReceiptDateInput(text){
  const m=String(text||'').match(/\b(\d{2})[\/.\-](\d{2})[\/.\-](20\d{2})(?:\s+(\d{2}):(\d{2})(?::\d{2})?)?/);
  if(!m)return '';
- const hh=m[4]||new Intl.DateTimeFormat('pt-BR',{timeZone:'America/Sao_Paulo',hour:'2-digit',hourCycle:'h23'}).format(new Date());
+ const hh=m[4]||new Intl.DateTimeFormat('pt-BR',{timeZone:(companyProfile?.timezone||'America/Sao_Paulo'),hour:'2-digit',hourCycle:'h23'}).format(new Date());
  const mm=m[5]||'00';
  return m[3]+'-'+m[2]+'-'+m[1]+'T'+hh+':'+mm;
 }
@@ -7272,7 +7270,7 @@ async function readFuelReceipt(file){
 function fuelDateForInput(iso){
  if(!iso)return localDateTimeInput();
  try{
-  const p=new Intl.DateTimeFormat('en-CA',{timeZone:'America/Sao_Paulo',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).formatToParts(new Date(iso));
+  const p=new Intl.DateTimeFormat('en-CA',{timeZone:(companyProfile?.timezone||'America/Sao_Paulo'),year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).formatToParts(new Date(iso));
   const o=Object.fromEntries(p.map(x=>[x.type,x.value]));
   return o.year+'-'+o.month+'-'+o.day+'T'+o.hour+':'+o.minute;
  }catch(_){return localDateTimeInput(new Date(iso))}
@@ -7304,7 +7302,7 @@ function openFuelEdit(id){
 
 async function loadFuel(){
  let logs=[],vehicles=[];
- if(deviceMode&&!navigator.onLine){
+ if(deviceMode&&!c360NetOnline()){
   vehicles=await offlineCacheGet(offlineTeamKey('fuel_vehicles'))||[];
   logs=await offlineCacheGet(offlineTeamKey('fuel_logs'))||[];
   const pending=(await offlineQueueList()).filter(x=>x.type==='fuel').map(x=>({
@@ -7415,7 +7413,7 @@ async function saveFuel(){
  const btn=document.getElementById('saveFuelBtn');
  try{
   if(btn)btn.disabled=true;
-  if(editId&&deviceMode&&!navigator.onLine)throw new Error('Para editar um abastecimento já sincronizado, conecte este celular à internet.');
+  if(editId&&deviceMode&&!c360NetOnline())throw new Error('Para editar um abastecimento já sincronizado, conecte este celular à internet.');
   const fueledAt=new Date(document.getElementById('fuelDate').value||Date.now()).toISOString();
   const offlineId=existing?.offline_event_id||makeOfflineId('fuel');
   const metadata={
@@ -7437,7 +7435,7 @@ async function saveFuel(){
    offline_event_id:offlineId,metadata
   };
 
-  if(deviceMode&&!navigator.onLine){
+  if(deviceMode&&!c360NetOnline()){
    m.textContent='Salvando abastecimento neste celular...';
    basePayload.metadata.source='team_device_offline';
    basePayload.metadata.offline_captured=true;
@@ -7715,7 +7713,7 @@ let fleetCrlvAutoReadRunning=false;
 const fleetCrlvAutoReadTried=new Set();
 
 async function autoReadPendingFleetCrlvs(){
- if(fleetCrlvAutoReadRunning||!navigator.onLine||!companyId)return;
+ if(fleetCrlvAutoReadRunning||!c360NetOnline()||!companyId)return;
 
  const docs=(vehicleDocsCache||[]).filter(d=>isVehicleCrlv(d.document_type)&&d.status==='active'&&d.file_id);
  const queue=[];
@@ -7749,7 +7747,7 @@ async function autoReadPendingFleetCrlvs(){
 }
 
 function scheduleAutomaticCrlvRead(){
- if(!navigator.onLine||!companyId)return;
+ if(!c360NetOnline()||!companyId)return;
  clearTimeout(window.__fleetCrlvAutoTimer);
  window.__fleetCrlvAutoTimer=setTimeout(()=>{
   autoReadPendingFleetCrlvs().catch(e=>console.warn('Leitura automática de CRLV',e));
@@ -9000,7 +8998,7 @@ function renderFuelReportByVehicle(fuels=[],filter='all'){
   const kms=g.entries.map(e=>Number(e.odometer_km||0)).filter(x=>x>0);
   const minKm=kms.length?Math.min(...kms):0,maxKm=kms.length?Math.max(...kms):0,kmRange=(minKm&&maxKm&&maxKm>=minKm)?maxKm-minKm:0;
   const details=g.entries.map(e=>{
-   const date=e.fueled_at?new Date(e.fueled_at).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo',day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'}):'—';
+   const date=e.fueled_at?new Date(e.fueled_at).toLocaleString('pt-BR',{timeZone:(companyProfile?.timezone||'America/Sao_Paulo'),day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'}):'—';
    const liters=poN(e.liters),cost=poN(e.total_amount),price=liters?cost/liters:0,driver=e.metadata?.driver_name||e.metadata?.driver||'';
    return '<tr><td>'+esc(date)+'</td><td>'+esc(e.station_name||'—')+(driver?'<div class="muted">'+esc(driver)+'</div>':'')+'</td><td class="num">'+(e.odometer_km?Number(e.odometer_km).toLocaleString('pt-BR'):'—')+'</td><td class="num">'+liters.toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:2})+' L</td><td class="num">'+money(price)+'</td><td class="num"><b>'+money(cost)+'</b></td></tr>';
   }).join('');
@@ -9085,7 +9083,7 @@ function exportAdminReportsCsv(){
  const lines=[['Relatório Comando 360',r.label],['Empresa',r.company],[],['Indicador','Valor'],['Aves',r.birds],['Apanhas',r.loadings],['Caminhões',r.trucks],['Faturamento',r.revenue],['Custos',r.cost],['Resultado',r.result],[],['Produção por equipe','Aves']];
  r.byTeam.forEach(x=>lines.push([x.name,x.birds]));
  lines.push([],['Produção por integrado','Aves']);r.byCustomer.forEach(x=>lines.push([x.name,x.birds]));
- lines.push([],['ABASTECIMENTOS POR CONDUÇÃO']);r.fuels.forEach(g=>{lines.push([],['Condução',g.name],['Placa',g.plate||''],['Abastecimentos',g.logs],['Litros',g.liters],['Custo total',g.cost],['Média R$/L',g.liters?g.cost/g.liters:0],['Data','Posto','KM','Litros','R$/L','Total']);g.entries.forEach(e=>{const l=poN(e.liters),c=poN(e.total_amount);lines.push([e.fueled_at?new Date(e.fueled_at).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo'}):'',e.station_name||'',e.odometer_km||'',l,l?c/l:0,c])})});
+ lines.push([],['ABASTECIMENTOS POR CONDUÇÃO']);r.fuels.forEach(g=>{lines.push([],['Condução',g.name],['Placa',g.plate||''],['Abastecimentos',g.logs],['Litros',g.liters],['Custo total',g.cost],['Média R$/L',g.liters?g.cost/g.liters:0],['Data','Posto','KM','Litros','R$/L','Total']);g.entries.forEach(e=>{const l=poN(e.liters),c=poN(e.total_amount);lines.push([e.fueled_at?new Date(e.fueled_at).toLocaleString('pt-BR',{timeZone:(companyProfile?.timezone||'America/Sao_Paulo')}):'',e.station_name||'',e.odometer_km||'',l,l?c/l:0,c])})});
  const csv='\ufeff'+lines.map(row=>row.map(v=>'"'+String(v??'').replaceAll('"','""')+'"').join(';')).join('\n');
  downloadText('Comando_360_Relatorio_'+r.month+'.csv',csv,'text/csv;charset=utf-8');
 }
@@ -9093,7 +9091,7 @@ function printAdminReports(){
  const r=adminReportCache;if(!r)return alert('Gere o relatório primeiro.');
  const team=r.byTeam.map(x=>'<tr><td>'+esc(x.name)+'</td><td>'+x.ops+'</td><td>'+x.birds.toLocaleString('pt-BR')+'</td></tr>').join('');
  const cust=r.byCustomer.map(x=>'<tr><td>'+esc(x.name)+'</td><td>'+x.ops+'</td><td>'+x.birds.toLocaleString('pt-BR')+'</td></tr>').join('');
- const fuel=r.fuels.map(g=>{const rows=g.entries.map(e=>{const l=poN(e.liters),c=poN(e.total_amount);return '<tr><td>'+(e.fueled_at?new Date(e.fueled_at).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo'}):'—')+'</td><td>'+esc(e.station_name||'—')+'</td><td>'+(e.odometer_km?Number(e.odometer_km).toLocaleString('pt-BR'):'—')+'</td><td>'+l.toLocaleString('pt-BR',{maximumFractionDigits:2})+'</td><td>'+money(l?c/l:0)+'</td><td>'+money(c)+'</td></tr>'}).join('');return '<div class="fuel-section"><h3>'+esc(g.name)+(g.plate?' • '+esc(g.plate):'')+'</h3><div class="fuel-summary">Abastecimentos: <b>'+g.logs+'</b> • Litros: <b>'+g.liters.toLocaleString('pt-BR',{maximumFractionDigits:2})+' L</b> • Total: <b>'+money(g.cost)+'</b> • Média: <b>'+money(g.liters?g.cost/g.liters:0)+'/L</b></div><table><tr><th>Data</th><th>Posto</th><th>KM</th><th>Litros</th><th>R$/L</th><th>Total</th></tr>'+rows+'</table></div>'}).join('');
+ const fuel=r.fuels.map(g=>{const rows=g.entries.map(e=>{const l=poN(e.liters),c=poN(e.total_amount);return '<tr><td>'+(e.fueled_at?new Date(e.fueled_at).toLocaleString('pt-BR',{timeZone:(companyProfile?.timezone||'America/Sao_Paulo')}):'—')+'</td><td>'+esc(e.station_name||'—')+'</td><td>'+(e.odometer_km?Number(e.odometer_km).toLocaleString('pt-BR'):'—')+'</td><td>'+l.toLocaleString('pt-BR',{maximumFractionDigits:2})+'</td><td>'+money(l?c/l:0)+'</td><td>'+money(c)+'</td></tr>'}).join('');return '<div class="fuel-section"><h3>'+esc(g.name)+(g.plate?' • '+esc(g.plate):'')+'</h3><div class="fuel-summary">Abastecimentos: <b>'+g.logs+'</b> • Litros: <b>'+g.liters.toLocaleString('pt-BR',{maximumFractionDigits:2})+' L</b> • Total: <b>'+money(g.cost)+'</b> • Média: <b>'+money(g.liters?g.cost/g.liters:0)+'/L</b></div><table><tr><th>Data</th><th>Posto</th><th>KM</th><th>Litros</th><th>R$/L</th><th>Total</th></tr>'+rows+'</table></div>'}).join('');
  const w=window.open('','_blank');if(!w)return alert('Permita pop-ups para gerar o PDF.');
  w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>Relatório '+esc(r.label)+'</title><style>@page{size:A4;margin:12mm}body{font-family:Arial,sans-serif;color:#111;font-size:11px}h1{margin:0;font-size:22px}h2{font-size:14px;margin:18px 0 6px;border-bottom:1px solid #222;padding-bottom:4px}.fuel-section{break-inside:avoid;margin:10px 0 18px}.fuel-section h3{margin:8px 0 4px;font-size:13px}.fuel-summary{font-size:10px;margin-bottom:5px}.head{border-bottom:2px solid #111;padding-bottom:10px}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin:12px 0}.k{border:1px solid #bbb;padding:8px}.k span{display:block;font-size:9px;color:#555}.k b{font-size:15px}table{width:100%;border-collapse:collapse;margin-top:5px}th,td{border-bottom:1px solid #ddd;padding:6px;text-align:left}th{background:#f4f4f4}.footer{margin-top:18px;border-top:1px solid #aaa;padding-top:6px;color:#555;font-size:9px}</style></head><body>'+
  '<div class="head"><h1>'+esc(r.company)+' — RELATÓRIO GERENCIAL</h1><div>'+esc(r.label)+' • Emitido '+new Date().toLocaleString('pt-BR')+'</div></div>'+
@@ -9391,7 +9389,7 @@ if(window.__c360ApplySystemTheme)window.__c360ApplySystemTheme();
 (()=>{const d=new Date();$('#v2Today').textContent='Hoje, '+d.toLocaleDateString('pt-BR');$('#v2Weekday').textContent=d.toLocaleDateString('pt-BR',{weekday:'long'})})();
 function updateNetworkBadge(){
  const el=$('#networkBadge');if(!el)return;
- const online=navigator.onLine;
+ const online=c360NetOnline();
  el.textContent=online?'● Online':'● Sem internet';
  el.classList.toggle('online',online);
  el.classList.toggle('offline',!online);
@@ -9399,22 +9397,22 @@ function updateNetworkBadge(){
 window.addEventListener('online',()=>{updateNetworkBadge();c360Toast('Conexão restabelecida','O Comando 360 voltou a ficar online.','success',2600);fleetCrlvAutoReadTried.clear();setTimeout(()=>{syncOfflineQueue().catch(e=>console.warn('sync online',e));scheduleAutomaticCrlvRead()},400)});
 window.addEventListener('offline',()=>{updateNetworkBadge();c360Toast('Você está sem internet','Os registros compatíveis continuam sendo guardados para sincronizar depois.','info',4200)});
 updateNetworkBadge();
-setInterval(()=>{if(navigator.onLine&&session()?.refresh_token)ensureFreshAccessToken(180).catch(e=>console.warn('renovação de sessão',e))},5*60*1000);
+setInterval(()=>{if(c360NetOnline()&&session()?.refresh_token)ensureFreshAccessToken(180).catch(e=>console.warn('renovação de sessão',e))},5*60*1000);
 if($('#offlineQueueBadge'))$('#offlineQueueBadge').addEventListener('click',()=>{openOfflineSyncPanel().catch(e=>console.warn(e))});
 if($('#closeOfflineSyncPanel'))$('#closeOfflineSyncPanel').addEventListener('click',()=>$('#offlineSyncPanel').classList.add('hidden'));
 if($('#syncOfflineNow'))$('#syncOfflineNow').addEventListener('click',async()=>{
  const b=$('#syncOfflineNow');if(b.disabled)return;
- if(!navigator.onLine){alert('Sem internet. Os registros continuam guardados neste celular.');return}
+ if(!c360NetOnline()){alert('Sem internet. Os registros continuam guardados neste celular.');return}
  b.disabled=true;b.textContent='SINCRONIZANDO...';
  try{await syncOfflineQueue();await renderOfflineSyncPanel()}
  finally{b.disabled=false;b.textContent='SINCRONIZAR AGORA'}
 });
 setInterval(()=>{
- if(navigator.onLine&&companyId)offlineQueueList().then(q=>{if(q.length)syncOfflineQueue().catch(()=>{})}).catch(()=>{});
+ if(c360NetOnline()&&companyId)offlineQueueList().then(q=>{if(q.length)syncOfflineQueue().catch(()=>{})}).catch(()=>{});
 },60000);
 let movitHistoryAutoSyncBusy=false;
 setInterval(async()=>{
- if(movitHistoryAutoSyncBusy||!navigator.onLine||!companyId||deviceMode||!session()?.access_token)return;
+ if(movitHistoryAutoSyncBusy||!c360NetOnline()||!companyId||deviceMode||!session()?.access_token)return;
  movitHistoryAutoSyncBusy=true;
  try{
   const st=await movitInvoke('status');
@@ -9427,7 +9425,7 @@ setInterval(async()=>{
 },10*60*1000);
 if('serviceWorker' in navigator){
  window.addEventListener('load',()=>{
-  navigator.serviceWorker.register('./sw-v7-02.js',{scope:'./',updateViaCache:'none'}).catch(e=>console.warn('Service Worker',e));
+  navigator.serviceWorker.register('./sw-v8-00.js',{scope:'./',updateViaCache:'none'}).catch(e=>console.warn('Service Worker',e));
  });
 }
 
