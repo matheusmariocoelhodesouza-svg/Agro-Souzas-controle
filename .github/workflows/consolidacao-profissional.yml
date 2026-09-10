@@ -1,0 +1,39 @@
+name: Comando 360 - Consolidação Profissional
+
+on:
+  push:
+    branches: [consolidacao-profissional]
+    paths:
+      - 'scripts/apply_consolidation.py'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  consolidate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: consolidacao-profissional
+          fetch-depth: 0
+
+      - name: Apply consolidation patch
+        run: python3 scripts/apply_consolidation.py
+
+      - name: Static safety checks
+        run: python3 scripts/static_checks.py
+
+      - name: Commit generated changes
+        run: |
+          if git diff --quiet; then
+            echo "No generated changes."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "Consolidação v8: network core, ambiente e remoção de legado"
+          git push origin HEAD:consolidacao-profissional
