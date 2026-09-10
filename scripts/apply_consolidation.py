@@ -8,11 +8,11 @@ css_path=root/'assets'/'app-v8.css'
 css_path.parent.mkdir(parents=True,exist_ok=True)
 
 index=index_path.read_text(encoding='utf-8')
-original_index=index
 
 # ---------------- Shell / version ----------------
 index=index.replace('<title>Comando 360 • v7.02</title>','<title>Comando 360 • v8.00</title>')
 index=index.replace('Comando 360 • v7.02','Comando 360 • v8.00')
+index=index.replace("const BUILD='7.02';","const BUILD='8.00';")
 
 # Core scripts load before the application bundle.
 main_marker="<script>\n'use strict';"
@@ -70,6 +70,57 @@ legacy_pattern=re.compile(
     re.M,
 )
 app=legacy_pattern.sub('\n',app,count=1)
+
+# Dedicated V2 photo buckets. Existing photos remain readable from the legacy bucket during migration.
+old_employee_reader="""async function employeePhotoObjectUrl(path){
+ if(!path)return '';
+ if(employeePhotoUrls[path])return employeePhotoUrls[path];
+ try{const r=await authFetch('/storage/v1/object/employee-documents/'+path);if(!r.ok)throw new Error('Foto indisponível');const b=await r.blob();const u=URL.createObjectURL(b);employeePhotoUrls[path]=u;return u}catch(e){console.warn('employee photo',e);return ''}
+}"""
+new_employee_reader="""async function employeePhotoObjectUrl(path){
+ if(!path)return '';
+ if(employeePhotoUrls[path])return employeePhotoUrls[path];
+ for(const bucket of ['v2-employee-photos','employee-documents']){
+  try{const r=await authFetch('/storage/v1/object/'+bucket+'/'+path);if(!r.ok)continue;const b=await r.blob();const u=URL.createObjectURL(b);employeePhotoUrls[path]=u;return u}catch(_){}
+ }
+ console.warn('employee photo unavailable',path);return '';
+}"""
+app=app.replace(old_employee_reader,new_employee_reader)
+
+app=app.replace(
+    "const r=await fetch(API_URL+'/storage/v1/object/employee-documents/'+path,{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+s.access_token,'Content-Type':file.type||'image/jpeg','x-upsert':'false'},body:file});await parseResponse(r);return path",
+    "const r=await fetch(API_URL+'/storage/v1/object/v2-employee-photos/'+path,{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+s.access_token,'Content-Type':file.type||'image/jpeg','x-upsert':'false'},body:file});await parseResponse(r);return path",
+    1,
+)
+
+old_profile_file="""async function profilePhotoAsFile(employee){
+ if(!employee?.photo_path)throw new Error('Este funcionário ainda não possui foto de perfil.');
+ const r=await authFetch('/storage/v1/object/employee-documents/'+employee.photo_path);
+ if(!r.ok)throw new Error('Não foi possível abrir a foto de perfil.');
+ const blob=await r.blob();
+ const ext=blob.type==='image/png'?'png':blob.type==='image/webp'?'webp':'jpg';
+ return new File([blob],'perfil-'+employee.id+'.'+ext,{type:blob.type||'image/jpeg'});
+}"""
+new_profile_file="""async function profilePhotoAsFile(employee){
+ if(!employee?.photo_path)throw new Error('Este funcionário ainda não possui foto de perfil.');
+ let blob=null;
+ for(const bucket of ['v2-employee-photos','employee-documents']){
+  try{const r=await authFetch('/storage/v1/object/'+bucket+'/'+employee.photo_path);if(r.ok){blob=await r.blob();break}}catch(_){}
+ }
+ if(!blob)throw new Error('Não foi possível abrir a foto de perfil.');
+ const ext=blob.type==='image/png'?'png':blob.type==='image/webp'?'webp':'jpg';
+ return new File([blob],'perfil-'+employee.id+'.'+ext,{type:blob.type||'image/jpeg'});
+}"""
+app=app.replace(old_profile_file,new_profile_file)
+
+old_vehicle_reader="""async function vehiclePhotoObjectUrl(path){if(!path)return '';if(vehiclePhotoUrls[path])return vehiclePhotoUrls[path];try{const r=await authFetch('/storage/v1/object/employee-documents/'+path);if(!r.ok)throw new Error('Foto indisponível');const b=await r.blob();const u=URL.createObjectURL(b);vehiclePhotoUrls[path]=u;return u}catch(e){console.warn('vehicle photo',e);return ''}}"""
+new_vehicle_reader="""async function vehiclePhotoObjectUrl(path){if(!path)return '';if(vehiclePhotoUrls[path])return vehiclePhotoUrls[path];for(const bucket of ['v2-vehicle-photos','employee-documents']){try{const r=await authFetch('/storage/v1/object/'+bucket+'/'+path);if(!r.ok)continue;const b=await r.blob();const u=URL.createObjectURL(b);vehiclePhotoUrls[path]=u;return u}catch(_){}}console.warn('vehicle photo unavailable',path);return ''}"""
+app=app.replace(old_vehicle_reader,new_vehicle_reader)
+
+old_vehicle_upload="""async function uploadVehiclePhoto(file,vehicleId){const sess=session();const ext=file.type==='image/png'?'png':file.type==='image/webp'?'webp':'jpg';const path=companyId+'/vehicles/'+vehicleId+'/profile-'+Date.now()+'.'+ext;const r=await fetch(API_URL+'/storage/v1/object/employee-documents/'+path,{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+sess.access_token,'Content-Type':file.type||'image/jpeg','x-upsert':'false'},body:file});await parseResponse(r);return path}"""
+new_vehicle_upload="""async function uploadVehiclePhoto(file,vehicleId){const sess=session();const ext=file.type==='image/png'?'png':file.type==='image/webp'?'webp':'jpg';const path=companyId+'/vehicles/'+vehicleId+'/profile-'+Date.now()+'.'+ext;const r=await fetch(API_URL+'/storage/v1/object/v2-vehicle-photos/'+path,{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+sess.access_token,'Content-Type':file.type||'image/jpeg','x-upsert':'false'},body:file});await parseResponse(r);return path}"""
+app=app.replace(old_vehicle_upload,new_vehicle_upload)
+
 app_path.write_text(app,encoding='utf-8')
 
 # ---------------- Extract head CSS ----------------
@@ -83,12 +134,10 @@ if style_match:
 elif not css_path.exists():
     raise RuntimeError('CSS principal não encontrado para modularização.')
 
-# Ensure the external CSS is referenced exactly once.
 if 'assets/app-v8.css' not in index:
     if head_end==-1: raise RuntimeError('Cabeçalho HTML inválido.')
     index=index[:head_end]+'<link rel="stylesheet" href="./assets/app-v8.css"/>\n'+index[head_end:]
 
-# Core scripts may have been adjacent to the extracted inline script; ensure they remain.
 app_tag='<script src="./app-v8.js"></script>'
 if 'src="./c360-core-network.js"' not in index:
     index=index.replace(app_tag,core+app_tag,1)
