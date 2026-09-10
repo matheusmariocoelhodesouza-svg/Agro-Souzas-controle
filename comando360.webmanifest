@@ -28,5 +28,20 @@
       "type": "image/svg+xml",
       "purpose": "maskable"
     }
+  ],
+  "shortcuts": [
+    {
+      "name": "Boletos DDA",
+      "short_name": "DDA",
+      "description": "Abrir captura automática de boletos e contas a pagar",
+      "url": "./dda.html",
+      "icons": [
+        {
+          "src": "./comando360-icon.svg",
+          "sizes": "any",
+          "type": "image/svg+xml"
+        }
+      ]
+    }
   ]
 }
