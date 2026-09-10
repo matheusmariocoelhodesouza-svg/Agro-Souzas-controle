@@ -4,7 +4,8 @@ const CORE=[
   './index.html',
   './comando360.webmanifest',
   './comando360-icon.svg',
-  './c360-core-network.js'
+  './c360-core-network.js',
+  './c360-core-ui.js'
 ];
 
 async function fetchWithTimeout(request,ms=4000){
