@@ -1,0 +1,6793 @@
+'use strict';
+const API_URL='https://aycbrqziusxtxhsdfqjk.supabase.co';
+const KEY='sb_publishable_OGJX3NBA__JxoyjB3IZNvQ_0nNwh_Xc';
+const EMPLOYER_FALLBACK={legal_name:'',tax_id:''};
+const withOfficialEmployer=(profile={})=>{
+ const employer=profile?.metadata?.employer||{};
+ return {...profile,legal_name:employer.legal_name||profile.legal_name||EMPLOYER_FALLBACK.legal_name,tax_id:employer.tax_id||profile.tax_id||EMPLOYER_FALLBACK.tax_id,employer_metadata:employer};
+};
+let companyId=null, conversationId=null, scheduleCache={}, companyProfile={}, currentRoleCode=null, isAdminGeneral=false, deviceMode=false, deviceAccess=null, deviceTeam=null, deviceVehicleInfo=null;
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+const money=v=>Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+function cleanCompanyName(v){
+ const s=String(v||'Empresa').trim();
+ return s||'Empresa';
+}
+const session=()=>{try{return JSON.parse(localStorage.getItem('controla_beta_session')||'null')}catch{return null}};
+const saveSession=s=>localStorage.setItem('controla_beta_session',JSON.stringify(s));
+const clearSession=()=>localStorage.removeItem('controla_beta_session');
+function setMsg(t,c='muted'){const e=$('#loginMsg');e.className=c;e.textContent=t}
+function debug(t){$('#debug').textContent=t||''}
+async function fetchTimeout(url,opts={},ms=12000){
+ const controller=new AbortController();
+ const timer=setTimeout(()=>controller.abort(),ms);
+ try{return await fetch(url,{...opts,signal:controller.signal})}
+ catch(e){if(e&&e.name==='AbortError')throw new Error('A conexão demorou demais. Tente novamente.');throw e}
+ finally{clearTimeout(timer)}
+}
+async function parseResponse(r){const text=await r.text();let data=null;try{data=text?JSON.parse(text):null}catch{data=text}if(!r.ok){const msg=(data&&data.msg)||(data&&data.message)||(data&&data.error_description)||(data&&data.error)||('HTTP '+r.status);throw new Error(msg)}return data}
+let refreshTokenPromise=null;
+function jwtExpSeconds(token){
+ try{
+  const p=String(token||'').split('.')[1];if(!p)return 0;
+  const b=p.replace(/-/g,'+').replace(/_/g,'/');
+  return Number(JSON.parse(decodeURIComponent(Array.prototype.map.call(atob(b),c=>'%'+('00'+c.charCodeAt(0).toString(16)).slice(-2)).join(''))).exp||0);
+ }catch(_){return 0}
+}
+async function refreshToken(){
+ if(refreshTokenPromise)return refreshTokenPromise;
+ refreshTokenPromise=(async()=>{
+  const s=session();if(!s?.refresh_token)throw new Error('Sessão expirada. Entre novamente.');
+  const r=await fetchTimeout(API_URL+'/auth/v1/token?grant_type=refresh_token',{
+   method:'POST',headers:{apikey:KEY,'Content-Type':'application/json'},
+   body:JSON.stringify({refresh_token:s.refresh_token})
+  },12000);
+  const data=await parseResponse(r);saveSession(data);return data.access_token;
+ })();
+ try{return await refreshTokenPromise}finally{refreshTokenPromise=null}
+}
+async function ensureFreshAccessToken(minSeconds=90){
+ const s=session();if(!s?.access_token)throw new Error('Você precisa entrar.');
+ const exp=Number(s.expires_at||jwtExpSeconds(s.access_token)||0);
+ if(exp&&exp-Math.floor(Date.now()/1000)<=minSeconds)return await refreshToken();
+ return s.access_token;
+}
+async function authFetch(path,opts={},retry=true){
+ let token=await ensureFreshAccessToken();
+ const headers={apikey:KEY,Authorization:'Bearer '+token,...(opts.headers||{})};
+ let r=await fetchTimeout(API_URL+path,{...opts,headers},12000);
+ if(r.status===401&&retry){
+  token=await refreshToken();
+  headers.Authorization='Bearer '+token;
+  r=await fetchTimeout(API_URL+path,{...opts,headers},12000);
+ }
+ return r;
+}
+async function login(email,password){
+ if(!email||!password)throw new Error('Informe e-mail e senha.');
+ const r=await fetchTimeout(API_URL+'/auth/v1/token?grant_type=password',{
+   method:'POST',
+   headers:{apikey:KEY,'Content-Type':'application/json'},
+   body:JSON.stringify({email,password})
+ },12000);
+ const data=await parseResponse(r);
+ saveSession(data);
+ return data;
+}
+function isAnonymousUser(user){
+ return !!(user&&(user.is_anonymous===true||(!user.email&&Array.isArray(user.identities)&&user.identities.length===0)));
+}
+function isDeviceUser(user){
+ return !!(user&&(
+   isAnonymousUser(user)||
+   user.app_metadata?.comando360_device===true||
+   user.user_metadata?.comando360_device===true||
+   user.user_metadata?.controla_device===true
+ ));
+}
+async function anonymousLogin(){
+ const r=await fetchTimeout(API_URL+'/auth/v1/signup',{
+   method:'POST',
+   headers:{apikey:KEY,'Content-Type':'application/json'},
+   body:JSON.stringify({data:{controla_device:true}})
+ },12000);
+ const data=await parseResponse(r);saveSession(data);return data;
+}
+async function loadDeviceAccess(userId){
+ const rows=await v2Rest('v2_device_access','select=id,company_id,team_id,device_name,device_info,permissions,active,paired_at,last_seen_at&user_id=eq.'+encodeURIComponent(userId)+'&active=eq.true&limit=1');
+ return rows&&rows[0]?rows[0]:null;
+}
+async function devicePointEmployees(){
+ const rows=await rpc('v2_device_list_point_employees',{});
+ return Array.isArray(rows)?rows:[];
+}
+async function deviceFaceTemplates(){
+ const rows=await rpc('v2_device_list_face_templates',{});
+ return Array.isArray(rows)?rows:[];
+}
+async function devicePointEventsToday(){
+ const rows=await rpc('v2_device_point_events_today',{});
+ return Array.isArray(rows)?rows:[];
+}
+function pointEventTeamId(ev){return ev?.work_team_id||ev?.metadata?.work_team_id||null}
+function pointEventTeamName(ev,teamMap={}){
+ const id=pointEventTeamId(ev);
+ return (id&&teamMap[id]?.name)||ev?.metadata?.work_team_name||null;
+}
+function sameTeamName(a,b){return String(a||'').trim().toLowerCase()===String(b||'').trim().toLowerCase()}
+
+function c360DeviceLocalId(){
+ let id='';
+ try{
+   id=localStorage.getItem('c360_device_public_id')||'';
+   if(!id){
+     id=(globalThis.crypto?.randomUUID?globalThis.crypto.randomUUID().replaceAll('-','').slice(0,8):Math.random().toString(36).slice(2,10)).toUpperCase();
+     localStorage.setItem('c360_device_public_id',id);
+   }
+ }catch(_){id=Math.random().toString(36).slice(2,10).toUpperCase()}
+ return id;
+}
+function c360BrowserInfo(){
+ const ua=navigator.userAgent||'';
+ if(/EdgA?\//i.test(ua))return {name:'Edge',version:(ua.match(/EdgA?\/([\d.]+)/i)||[])[1]||''};
+ if(/OPR\//i.test(ua))return {name:'Opera',version:(ua.match(/OPR\/([\d.]+)/i)||[])[1]||''};
+ if(/CriOS\//i.test(ua))return {name:'Chrome',version:(ua.match(/CriOS\/([\d.]+)/i)||[])[1]||''};
+ if(/Chrome\//i.test(ua))return {name:'Chrome',version:(ua.match(/Chrome\/([\d.]+)/i)||[])[1]||''};
+ if(/FxiOS\//i.test(ua))return {name:'Firefox',version:(ua.match(/FxiOS\/([\d.]+)/i)||[])[1]||''};
+ if(/Firefox\//i.test(ua))return {name:'Firefox',version:(ua.match(/Firefox\/([\d.]+)/i)||[])[1]||''};
+ if(/Safari\//i.test(ua))return {name:'Safari',version:(ua.match(/Version\/([\d.]+)/i)||[])[1]||''};
+ return {name:'Navegador',version:''};
+}
+async function c360CollectDeviceIdentity(){
+ const ua=navigator.userAgent||'',browser=c360BrowserInfo(),publicId=c360DeviceLocalId();
+ let platform=navigator.userAgentData?.platform||navigator.platform||'',platformVersion='',model='';
+ try{
+   if(navigator.userAgentData?.getHighEntropyValues){
+     const h=await navigator.userAgentData.getHighEntropyValues(['model','platform','platformVersion']);
+     model=String(h.model||'').trim();
+     platform=String(h.platform||platform||'').trim();
+     platformVersion=String(h.platformVersion||'').trim();
+   }
+ }catch(_){}
+ if(!model){
+   const androidModel=ua.match(/Android[^;]*;\s*([^;)]+?)(?:\s+Build\/|;|\))/i);
+   if(androidModel)model=String(androidModel[1]||'').replace(/^wv\s+/i,'').trim();
+ }
+ if(!model){
+   if(/iPhone/i.test(ua))model='iPhone';
+   else if(/iPad/i.test(ua))model='iPad';
+   else if(/Android/i.test(ua))model='Android';
+   else if(/Windows/i.test(ua))model='Computador Windows';
+   else model='Aparelho';
+ }
+ if(/Android/i.test(ua)&&!platform)platform='Android';
+ if(/iPhone|iPad/i.test(ua))platform='iOS';
+ const name=[model,browser.name,'#'+publicId].filter(Boolean).join(' • ').slice(0,120);
+ return {name,info:{model,platform,platform_version:platformVersion,browser:browser.name,browser_version:browser.version,device_code:publicId}};
+}
+function applyDeviceUi(){
+ document.body.classList.add('device-mode');
+ const logout=document.getElementById('logout');if(logout){logout.textContent='Trocar equipe';logout.classList.remove('hidden')}
+ if(typeof setPointMethod==='function')setPointMethod('employee_number');
+
+ // No celular de campo mostramos apenas o necessário para registrar e conferir as batidas.
+ // Cálculos de jornada, horas extras e espelhos ficam restritos ao administrativo.
+ const hideCardById=id=>{const el=document.getElementById(id);const card=el?.closest('.card');if(card)card.style.display='none'};
+ hideCardById('pointWorked');
+ hideCardById('pointOvertime');
+ hideCardById('monthlyEmployee');
+ hideCardById('timeMirrorList');
+
+ const km=document.getElementById('newKmBtn');if(km)km.style.display='none';
+}
+async function enterDeviceApp(authUser){
+ const user=authUser||await getUser();
+ if(!user||!user.id)throw new Error('Sessão do aparelho não encontrada.');
+
+ let access=null,cachedIdentity=null,vehicleInfo=null,supervisorInfo=null;
+ try{cachedIdentity=await offlineCacheGet('device_identity:'+user.id)}catch(_){}
+
+ if(c360NetOnline()){
+  try{access=await loadDeviceAccess(user.id)}
+  catch(e){console.warn('Falha ao consultar vínculo do aparelho',e);access=cachedIdentity?.access||null}
+ }else{
+  access=cachedIdentity?.access||null;
+ }
+
+ if(!access){
+  const er=new Error(c360NetOnline()?'Este celular ainda não foi ativado. Digite o código da equipe.':'Este celular ainda não possui dados offline. Conecte à internet pelo menos uma vez após a ativação.');
+  er.code='DEVICE_UNPAIRED';throw er;
+ }
+
+ deviceMode=true;deviceAccess=access;companyId=access.company_id;currentRoleCode='device';isAdminGeneral=false;
+
+ if(c360NetOnline()){
+  try{
+   const identity=await c360CollectDeviceIdentity();
+   await rpc('v2_update_device_identity',{p_device_name:identity.name,p_device_info:identity.info});
+   access.device_name=identity.name;
+   access.device_info=identity.info;
+  }catch(e){
+   console.warn('Não foi possível atualizar identificação do aparelho',e);
+   try{await rpc('v2_touch_device',{})}catch(x){console.warn('Não foi possível atualizar último acesso do aparelho',x)}
+  }
+  try{
+   const companies=await v2Rest('v2_companies','select=id,legal_name,trade_name,tax_id,timezone,metadata&id=eq.'+encodeURIComponent(companyId)+'&limit=1');
+   companyProfile=withOfficialEmployer(companies&&companies[0]?companies[0]:(cachedIdentity?.companyProfile||{id:companyId,trade_name:"Empresa"}));
+  }catch(_){companyProfile=withOfficialEmployer(cachedIdentity?.companyProfile||{id:companyId,trade_name:"Empresa"})}
+  try{
+   const teams=await v2Rest('v2_teams','select=id,name,code,metadata,status,supervisor_employee_id&id=eq.'+encodeURIComponent(access.team_id)+'&limit=1');
+   deviceTeam=teams&&teams[0]?teams[0]:(cachedIdentity?.deviceTeam||{id:access.team_id,name:'Equipe'});
+  }catch(_){deviceTeam=cachedIdentity?.deviceTeam||{id:access.team_id,name:'Equipe'}}
+  try{
+   const vehicleId=deviceTeam?.metadata?.primary_vehicle_id||null;
+   if(vehicleId){
+    const vs=await v2Rest('v2_vehicles','select=id,description,plate,model,current_odometer_km&id=eq.'+encodeURIComponent(vehicleId)+'&limit=1');
+    vehicleInfo=vs?.[0]||cachedIdentity?.vehicleInfo||null;
+   }
+  }catch(_){vehicleInfo=cachedIdentity?.vehicleInfo||null}
+  try{
+   const supervisorId=deviceTeam?.supervisor_employee_id||null;
+   if(supervisorId){
+    const es=await v2Rest('v2_employees','select=id,full_name,phone&id=eq.'+encodeURIComponent(supervisorId)+'&limit=1');
+    supervisorInfo=es?.[0]||cachedIdentity?.supervisorInfo||null;
+   }
+  }catch(_){supervisorInfo=cachedIdentity?.supervisorInfo||null}
+  deviceVehicleInfo=vehicleInfo||null;
+  await offlineCacheSet('device_identity:'+user.id,{access,companyProfile,deviceTeam,vehicleInfo,supervisorInfo,cached_at:new Date().toISOString()});
+ }else{
+  companyProfile=withOfficialEmployer(cachedIdentity?.companyProfile||{id:companyId,trade_name:"Empresa"});
+  deviceTeam=cachedIdentity?.deviceTeam||{id:access.team_id,name:'Equipe'};
+  vehicleInfo=cachedIdentity?.vehicleInfo||null;
+  deviceVehicleInfo=vehicleInfo||null;
+  supervisorInfo=cachedIdentity?.supervisorInfo||null;
+ }
+
+ const companyLabel=document.getElementById('companyName');if(companyLabel)companyLabel.textContent=cleanCompanyName(companyProfile?.trade_name||companyProfile?.legal_name||'Empresa');
+ const teamName=document.getElementById('teamHomeName');if(teamName)teamName.textContent=deviceTeam.name||'Equipe';
+ const barName=document.getElementById('deviceModeTeam');if(barName)barName.textContent=deviceTeam.name||'Equipe';
+ const vehicleText=document.getElementById('teamHomeVehicle');
+ if(vehicleText)vehicleText.textContent=vehicleInfo?(vehicleInfo.description||vehicleInfo.model||'Condução')+(vehicleInfo.plate?' • '+vehicleInfo.plate:''):'Celular de campo';
+
+ document.getElementById('login').classList.add('hidden');
+ document.getElementById('app').classList.remove('hidden');
+ document.body.classList.add('app-ready');
+ applyDeviceUi();initScreenRouter();await v2Go('equipehome');
+ await updateOfflineQueueBadge();
+
+ if(c360NetOnline()){
+  warmDeviceOfflineData().catch(e=>console.warn('pré-carga offline',e));
+  syncOfflineQueue().catch(e=>console.warn('sync offline',e));
+ }
+}
+async function activateDevice(code){
+ if(!code||code.trim().length<4)throw new Error('Digite o código de ativação.');
+ clearSession();
+ const pairingCode=code.trim().toUpperCase();
+ const identity=await c360CollectDeviceIdentity();
+ const r=await fetchTimeout(API_URL+'/functions/v1/comando360-device-activate',{
+   method:'POST',
+   headers:{
+     apikey:KEY,
+     Authorization:'Bearer '+KEY,
+     'Content-Type':'application/json'
+   },
+   body:JSON.stringify({
+     code:pairingCode,
+     device_name:identity.name
+   })
+ },18000);
+ const data=await parseResponse(r);
+ if(!data?.session?.access_token)throw new Error('A ativação não retornou uma sessão válida.');
+ saveSession(data.session);
+ await enterDeviceApp(data.session.user||null);
+}
+
+
+async function uploadFaceReference(file,employeeId){const s=session();const ext=file.type==='image/png'?'png':file.type==='image/webp'?'webp':'jpg';const path=companyId+'/'+employeeId+'/reference-'+Date.now()+'.'+ext;const r=await fetch(API_URL+'/storage/v1/object/v2-face-references/'+path,{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+s.access_token,'Content-Type':file.type||'image/jpeg','x-upsert':'false'},body:file});await parseResponse(r);return path}
+async function uploadSelfie(file,employeeId){
+ const s=session();if(!s?.access_token)throw new Error('Sessão expirada.');
+ const ext=file.type==='image/png'?'png':file.type==='image/webp'?'webp':'jpg';
+ const bucket='v2-attendance-selfies';
+ const path=companyId+'/'+employeeId+'/point-'+Date.now()+'.'+ext;
+ const r=await fetch(API_URL+'/storage/v1/object/'+bucket+'/'+path,{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+s.access_token,'Content-Type':file.type||'image/jpeg','x-upsert':'false'},body:file});
+ await parseResponse(r);return path;
+}
+async function restUpsert(table,payload,onConflict){const r=await authFetch('/rest/v1/'+table+'?on_conflict='+encodeURIComponent(onConflict),{method:'POST',headers:{'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=representation'},body:JSON.stringify(payload)});return parseResponse(r)}
+async function rpc(name,payload){const r=await authFetch('/rest/v1/rpc/'+name,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});return parseResponse(r)}
+const FACE_MODELS='https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js@0.22.2/weights';
+let faceModelsReady=false;
+async function ensureFaceModels(){
+ if(faceModelsReady)return;
+ if(!window.faceapi){
+  const started=Date.now();
+  while(!window.faceapi&&Date.now()-started<8000)await new Promise(r=>setTimeout(r,120));
+ }
+ if(!window.faceapi)throw new Error('Reconhecimento facial ainda não carregou. Abra o app uma vez com internet e tente novamente.');
+ const pointMsgEl=$('#pointMsg');if(pointMsgEl)pointMsgEl.textContent='Preparando reconhecimento facial...';
+ await Promise.all([faceapi.nets.tinyFaceDetector.loadFromUri(FACE_MODELS),faceapi.nets.faceLandmark68Net.loadFromUri(FACE_MODELS),faceapi.nets.faceRecognitionNet.loadFromUri(FACE_MODELS)]);
+ faceModelsReady=true;
+}
+async function imageFromFile(file){return new Promise((resolve,reject)=>{const u=URL.createObjectURL(file),im=new Image();im.onload=()=>{URL.revokeObjectURL(u);resolve(im)};im.onerror=()=>{URL.revokeObjectURL(u);reject(new Error('Não foi possível abrir a foto.'))};im.src=u})}
+async function faceDescriptorFromFile(file){await ensureFaceModels();const img=await imageFromFile(file);const r=await faceapi.detectSingleFace(img,new faceapi.TinyFaceDetectorOptions({inputSize:320,scoreThreshold:.55})).withFaceLandmarks().withFaceDescriptor();if(!r)throw new Error('Rosto não identificado. Tire outra foto de frente e com boa iluminação.');return Array.from(r.descriptor)}
+async function enrollEmployeeFaceFromFile(file,employeeId,descriptor=null){
+ if(!file||!employeeId)throw new Error('Foto e funcionário são obrigatórios para a biometria.');
+ const faceDescriptor=descriptor||await faceDescriptorFromFile(file);
+ const facePath=await uploadFaceReference(file,employeeId);
+ const u=await getUser();
+
+ // Primeiro garante que o cadastro V2 exista; depois grava o descriptor facial.
+ await restUpsert('v2_employee_face_enrollments',{
+  company_id:companyId,
+  employee_id:employeeId,
+  reference_photo_path:facePath,
+  status:'active',
+  enrolled_at:new Date().toISOString(),
+  enrolled_by:u.id,
+  revoked_at:null
+ },'company_id,employee_id');
+
+ await rpc('v2_save_employee_face_descriptor',{
+  p_employee_id:employeeId,
+  p_descriptor:faceDescriptor
+ });
+
+ return {facePath};
+}
+async function profilePhotoAsFile(employee){
+ if(!employee?.photo_path)throw new Error('Este funcionário ainda não possui foto de perfil.');
+ const r=await authFetch('/storage/v1/object/employee-documents/'+employee.photo_path);
+ if(!r.ok)throw new Error('Não foi possível abrir a foto de perfil.');
+ const blob=await r.blob();
+ const ext=blob.type==='image/png'?'png':blob.type==='image/webp'?'webp':'jpg';
+ return new File([blob],'perfil-'+employee.id+'.'+ext,{type:blob.type||'image/jpeg'});
+}
+async function getUser(){const r=await authFetch('/auth/v1/user');return parseResponse(r)}
+
+const pointLabels={in:'Entrada',break_start:'Saída para intervalo',break_end:'Retorno do intervalo',out:'Saída final',finished:'Jornada encerrada'};
+const statusLabels={working:'Trabalhando',on_break:'Em intervalo',finished:'Jornada encerrada',present:'Presente'};
+const statusClass={working:'ok',on_break:'warn',finished:'',present:'ok'};
+const EXPECTED_DAILY_MINUTES=8*60;
+function normalizeTimeValue(v){return v?String(v).slice(0,5):''}
+function getEmployeeSchedule(employeeId){return scheduleCache[employeeId]||null}
+function expectedMinutesFor(employeeId){return Number(getEmployeeSchedule(employeeId)?.daily_minutes||EXPECTED_DAILY_MINUTES)}
+function timeToMinutes(t){if(!t)return null;const [h,m]=String(t).slice(0,5).split(':').map(Number);return h*60+m}
+function minutesToHHMM(mins){
+ mins=Math.max(0,Math.round(Number(mins||0)));
+ const h=Math.floor(mins/60),m=mins%60;
+ return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+}
+function durationToMinutes(v){
+ if(!v)return 480;
+ const [h,m]=String(v).split(':').map(Number);
+ return Math.max(1,(Number(h)||0)*60+(Number(m)||0));
+}
+function eventLocalMinutes(iso){const p=new Intl.DateTimeFormat('en-GB',{timeZone:(companyProfile?.timezone||'America/Sao_Paulo'),hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(new Date(iso));return timeToMinutes(p)}
+async function loadSchedules(){
+  if(!companyId){scheduleCache={};return}
+  if(deviceMode&&!c360NetOnline()){
+    scheduleCache=await offlineCacheGet(offlineTeamKey('point_schedules'))||{};
+    return;
+  }
+  try{
+    const rows=await rest('v2_employee_schedules','select=employee_id,start_time,break_start_time,break_end_time,end_time,daily_minutes,tolerance_minutes,days_of_week&company_id=eq.'+companyId);
+    scheduleCache=Object.fromEntries((rows||[]).map(r=>[r.employee_id,{
+      start:normalizeTimeValue(r.start_time),
+      break_start:normalizeTimeValue(r.break_start_time),
+      break_end:normalizeTimeValue(r.break_end_time),
+      end:normalizeTimeValue(r.end_time),
+      daily_minutes:Number(r.daily_minutes||480),
+      tolerance:Number(r.tolerance_minutes||0),
+      days_of_week:r.days_of_week||[1,2,3,4,5]
+    }]));
+    if(deviceMode)await offlineCacheSet(offlineTeamKey('point_schedules'),scheduleCache);
+  }catch(e){
+    console.warn('Falha ao carregar jornadas',e);
+    scheduleCache=deviceMode?(await offlineCacheGet(offlineTeamKey('point_schedules'))||{}):{};
+  }
+}
+
+function fmtMinutes(mins){
+  mins=Math.max(0,Math.round(Number(mins||0)));
+  const h=Math.floor(mins/60),m=mins%60;
+  return `${h}h${String(m).padStart(2,'0')}`;
+}
+function fmtSignedMinutes(mins){
+  mins=Math.round(Number(mins||0));
+  const sign=mins>0?'+':mins<0?'-':'';
+  return sign+fmtMinutes(Math.abs(mins));
+}
+function scheduleText(employeeId){
+  const s=getEmployeeSchedule(employeeId);
+  if(!s)return 'Não cadastrada';
+  const interval=(s.break_start&&s.break_end)?` • intervalo ${s.break_start}–${s.break_end}`:'';
+  return `${s.start||'--:--'}–${s.end||'--:--'}${interval} • carga ${fmtMinutes(s.daily_minutes||480)}`;
+}
+
+function computeDayMetrics(events,opts={}){
+ const sorted=[...(events||[])].sort((a,b)=>new Date(a.occurred_at)-new Date(b.occurred_at));
+ let worked=0,breakMinutes=0,openWork=null,openBreak=null;
+ for(const e of sorted){
+  const t=new Date(e.occurred_at);
+  if(e.event_type==='in'){if(!openWork)openWork=t;openBreak=null}
+  else if(e.event_type==='break_start'){if(openWork){worked+=Math.max(0,(t-openWork)/60000);openWork=null}if(!openBreak)openBreak=t}
+  else if(e.event_type==='break_end'){if(openBreak){breakMinutes+=Math.max(0,(t-openBreak)/60000);openBreak=null}if(!openWork)openWork=t}
+  else if(e.event_type==='out'){if(openWork){worked+=Math.max(0,(t-openWork)/60000);openWork=null}if(openBreak){breakMinutes+=Math.max(0,(t-openBreak)/60000);openBreak=null}}
+ }
+ const last=sorted[sorted.length-1];
+ const status=last?.event_type==='in'||last?.event_type==='break_end'?'working':last?.event_type==='break_start'?'on_break':last?.event_type==='out'?'finished':'none';
+ if(opts.live){
+  const endAt=opts.endAt?new Date(opts.endAt):new Date();
+  if(openWork)worked+=Math.max(0,(endAt-openWork)/60000);
+  if(openBreak)breakMinutes+=Math.max(0,(endAt-openBreak)/60000);
+ }
+ const workedRounded=Math.round(worked);
+ const expected=Number(opts.expectedMinutes||EXPECTED_DAILY_MINUTES);
+ return {worked:workedRounded,breakMinutes:Math.round(breakMinutes),overtime:Math.max(0,workedRounded-expected),balance:workedRounded-expected,status,incomplete:!!(openWork||openBreak)};
+}
+
+function localDateBR(d=new Date()){
+  const parts=new Intl.DateTimeFormat('en-CA',{
+    timeZone:(companyProfile?.timezone||'America/Sao_Paulo'),
+    year:'numeric',month:'2-digit',day:'2-digit'
+  }).formatToParts(d);
+  const obj=Object.fromEntries(parts.map(p=>[p.type,p.value]));
+  return `${obj.year}-${obj.month}-${obj.day}`;
+}
+
+function saoPauloDayUtcBounds(day){
+  const start=new Date(day+'T00:00:00-03:00');
+  const end=new Date(start.getTime()+24*60*60*1000);
+  return {start:start.toISOString(),end:end.toISOString()};
+}
+
+function localDayFromIso(iso){
+  const parts=new Intl.DateTimeFormat('en-CA',{
+    timeZone:(companyProfile?.timezone||'America/Sao_Paulo'),
+    year:'numeric',month:'2-digit',day:'2-digit'
+  }).formatToParts(new Date(iso));
+  const obj=Object.fromEntries(parts.map(p=>[p.type,p.value]));
+  return `${obj.year}-${obj.month}-${obj.day}`;
+}
+
+function buildWorkSessions(events){
+  const sorted=[...(events||[])].sort((a,b)=>new Date(a.occurred_at)-new Date(b.occurred_at));
+  const sessions=[];
+  let current=null;
+  for(const ev of sorted){
+    if(ev.event_type==='in'){
+      if(current?.events?.length)sessions.push(current);
+      current={start:ev.occurred_at,events:[ev]};
+      continue;
+    }
+    if(!current)continue;
+    current.events.push(ev);
+    if(ev.event_type==='out'){
+      current.end=ev.occurred_at;
+      sessions.push(current);
+      current=null;
+    }
+  }
+  if(current?.events?.length)sessions.push(current);
+  return sessions;
+}
+
+
+async function getNextPoint(employeeId){
+  if(deviceMode){
+    const evs=(await devicePointEventsToday()).filter(x=>x.employee_id===employeeId);
+    const last=evs&&evs.length?evs[evs.length-1].event_type:null;
+    if(!last)return 'in';if(last==='in')return 'break_start';if(last==='break_start')return 'break_end';if(last==='break_end')return 'out';return 'finished';
+  }
+  const r=await rpc('v2_attendance_next_event',{p_company_id:companyId,p_employee_id:employeeId,p_at:new Date().toISOString()});
+  return r;
+}
+
+async function previewNextPoint(){
+  const matricula=$('#pointMatricula').value.trim();
+  const label=$('#nextPointLabel');
+  if(!matricula){label.textContent='Digite a matrícula';return}
+  try{
+    if(deviceMode&&!c360NetOnline()){
+      const emp=await offlineFindEmployeeByNumber(matricula);
+      if(!emp){label.textContent='Matrícula não disponível offline';return}
+      const next=await offlineNextPoint(emp.id);
+      label.textContent=(pointLabels[next]||String(next))+' • offline';
+      return;
+    }
+    let emp=[];
+    if(deviceMode){
+      const all=await devicePointEmployees();
+      emp=all.filter(e=>String(e.employee_number||'').trim()===matricula);
+    }else{
+      emp=await rest('v2_employees','select=id,full_name,employee_number,cpf,primary_team&company_id=eq.'+companyId+'&employee_number=eq.'+encodeURIComponent(matricula)+'&status=eq.active&limit=1');
+    }
+    if(!emp.length){label.textContent='Matrícula não encontrada';return}
+    const next=await getNextPoint(emp[0].id);
+    label.textContent=pointLabels[next]||String(next);
+  }catch(e){label.textContent='Não foi possível consultar a próxima batida'}
+}
+
+const OFFLINE_DB_NAME='controla_offline_v1';
+const OFFLINE_DB_VERSION=1;
+let offlineSyncRunning=false;
+
+function offlineDbOpen(){
+ return new Promise((resolve,reject)=>{
+  if(!('indexedDB' in window))return reject(new Error('Este navegador não oferece armazenamento offline.'));
+  const req=indexedDB.open(OFFLINE_DB_NAME,OFFLINE_DB_VERSION);
+  req.onupgradeneeded=()=>{
+   const db=req.result;
+   if(!db.objectStoreNames.contains('queue')){
+    const s=db.createObjectStore('queue',{keyPath:'id'});
+    s.createIndex('company_id','company_id',{unique:false});
+    s.createIndex('type','type',{unique:false});
+    s.createIndex('created_at','created_at',{unique:false});
+   }
+   if(!db.objectStoreNames.contains('cache'))db.createObjectStore('cache',{keyPath:'key'});
+  };
+  req.onsuccess=()=>resolve(req.result);
+  req.onerror=()=>reject(req.error||new Error('Falha no banco offline.'));
+ });
+}
+async function offlineStorePut(store,value){
+ const db=await offlineDbOpen();
+ return new Promise((resolve,reject)=>{
+  const tx=db.transaction(store,'readwrite');
+  tx.objectStore(store).put(value);
+  tx.oncomplete=()=>{db.close();resolve(value)};
+  tx.onerror=()=>{const e=tx.error;db.close();reject(e)};
+ });
+}
+async function offlineStoreGet(store,key){
+ const db=await offlineDbOpen();
+ return new Promise((resolve,reject)=>{
+  const tx=db.transaction(store,'readonly'),r=tx.objectStore(store).get(key);
+  r.onsuccess=()=>{const v=r.result;db.close();resolve(v)};
+  r.onerror=()=>{const e=r.error;db.close();reject(e)};
+ });
+}
+async function offlineStoreAll(store){
+ const db=await offlineDbOpen();
+ return new Promise((resolve,reject)=>{
+  const tx=db.transaction(store,'readonly'),r=tx.objectStore(store).getAll();
+  r.onsuccess=()=>{const v=r.result||[];db.close();resolve(v)};
+  r.onerror=()=>{const e=r.error;db.close();reject(e)};
+ });
+}
+async function offlineStoreDelete(store,key){
+ const db=await offlineDbOpen();
+ return new Promise((resolve,reject)=>{
+  const tx=db.transaction(store,'readwrite');
+  tx.objectStore(store).delete(key);
+  tx.oncomplete=()=>{db.close();resolve()};
+  tx.onerror=()=>{const e=tx.error;db.close();reject(e)};
+ });
+}
+async function offlineCacheSet(key,value){
+ try{return await offlineStorePut('cache',{key,value,updated_at:new Date().toISOString()})}catch(e){console.warn('offline cache set',e)}
+}
+async function offlineCacheGet(key){
+ try{return (await offlineStoreGet('cache',key))?.value||null}catch(e){console.warn('offline cache get',e);return null}
+}
+function offlineTeamKey(kind,date=''){
+ const teamId=deviceAccess?.team_id||deviceTeam?.id||'admin';
+ return kind+':'+String(companyId||'none')+':'+String(teamId)+(date?':'+date:'');
+}
+function saoPauloDateKey(iso){
+ try{
+  const parts=new Intl.DateTimeFormat('en-CA',{timeZone:(companyProfile?.timezone||'America/Sao_Paulo'),year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date(iso));
+  const m=Object.fromEntries(parts.map(p=>[p.type,p.value]));
+  return m.year+'-'+m.month+'-'+m.day;
+ }catch(_){return String(iso||'').slice(0,10)}
+}
+function makeOfflineId(prefix='off'){
+ if(window.crypto&&crypto.randomUUID)return prefix+'-'+crypto.randomUUID();
+ return prefix+'-'+Date.now()+'-'+Math.random().toString(36).slice(2);
+}
+async function offlineQueueAdd(item){
+ const row={attempts:0,last_error:null,...item};
+ await offlineStorePut('queue',row);
+ await updateOfflineQueueBadge();
+ if($('#offlineSyncPanel')&&!$('#offlineSyncPanel').classList.contains('hidden'))await renderOfflineSyncPanel();
+ return row;
+}
+async function offlineQueueList(){
+ try{
+  const all=await offlineStoreAll('queue');
+  return all.filter(x=>!companyId||x.company_id===companyId).sort((a,b)=>String(a.created_at).localeCompare(String(b.created_at)));
+ }catch(e){console.warn('offline queue list',e);return []}
+}
+function offlineTypeLabel(type){
+ return ({
+  attendance:'Ponto',
+  fuel:'Abastecimento',
+  poultry_operation:'Apanha',
+  poultry_truck:'Caminhão da apanha',
+  poultry_complete:'Conclusão da apanha'
+ })[type]||type||'Registro';
+}
+async function renderOfflineSyncPanel(){
+ const panel=$('#offlineSyncPanel'),list=$('#offlineSyncList'),sum=$('#offlineSyncSummary'),last=$('#offlineLastSync');
+ if(!panel||!list)return;
+ const q=await offlineQueueList();
+ const lastVal=await offlineCacheGet('last_sync:'+String(companyId||'none'));
+ if(last)last.textContent='Última sincronização: '+(lastVal?new Date(lastVal).toLocaleString('pt-BR'):'—');
+ if(sum)sum.textContent=q.length?q.length+' registro(s) aguardando envio.':'Tudo sincronizado.';
+ list.innerHTML=q.length?q.map(item=>{
+  const when=item.created_at?new Date(item.created_at).toLocaleString('pt-BR'):'—';
+  const attempts=Number(item.attempts||0);
+  return '<div class="offline-sync-item"><div class="toolbar" style="justify-content:space-between"><div class="type">'+esc(offlineTypeLabel(item.type))+'</div><span class="pill '+(item.last_error?'danger':'warn')+'">'+(item.last_error?'ERRO':'PENDENTE')+'</span></div><div class="muted">'+esc(when)+' • tentativa(s): '+attempts+'</div>'+(item.last_error?'<div class="err">'+esc(item.last_error)+'</div>':'')+'</div>';
+ }).join(''):'<div class="item"><strong>✓ Nenhum registro pendente</strong><div class="muted">Os dados deste celular estão sincronizados com o servidor.</div></div>';
+}
+async function openOfflineSyncPanel(){
+ const p=$('#offlineSyncPanel');if(!p)return;
+ p.classList.remove('hidden');
+ await renderOfflineSyncPanel();
+}
+async function updateOfflineQueueBadge(){
+ const b=$('#offlineQueueBadge');if(!b)return;
+ const q=await offlineQueueList();
+ b.textContent='⟳ '+q.length+' pendente'+(q.length===1?'':'s');
+ b.classList.toggle('hidden',q.length===0);
+}
+async function cachePointContext(employees,events){
+ if(!deviceMode||!companyId)return;
+ const day=localDateBR();
+ await offlineCacheSet(offlineTeamKey('point_employees'),employees||[]);
+ await offlineCacheSet(offlineTeamKey('point_events',day),events||[]);
+}
+async function warmPointOfflineCache(){
+ if(!deviceMode||!c360NetOnline()||!companyId)return;
+ try{
+  const [employees,events,faces]=await Promise.all([
+   devicePointEmployees(),
+   devicePointEventsToday(),
+   deviceFaceTemplates()
+  ]);
+  await cachePointContext(employees,events);
+  await offlineCacheSet(offlineTeamKey('point_faces'),faces||[]);
+  ensureFaceModels().catch(e=>console.warn('pré-carga facial offline',e));
+ }catch(e){console.warn('warm point offline cache',e)}
+}
+async function warmPoultryOfflineCache(){
+ if(!deviceMode||!c360NetOnline()||!companyId)return;
+ const teamId=deviceAccess?.team_id;
+ if(!teamId)return;
+ const teams=await rest('v2_teams','select=id,name,status,metadata,supervisor_employee_id&company_id=eq.'+companyId+'&id=eq.'+encodeURIComponent(teamId))||[];
+ const loadings=await rest('v2_poultry_loadings','select=id,farm_id,operation_id,metadata,team_id,status&company_id=eq.'+companyId+'&team_id=eq.'+encodeURIComponent(teamId)+'&order=created_at.desc&limit=200')||[];
+ const farmIds=[...new Set(loadings.map(x=>x.farm_id).filter(Boolean))];
+ let farms=[],barns=[];
+ if(farmIds.length){
+  const q=farmIds.join(',');
+  farms=await rest('v2_poultry_farms','select=id,integrator_id,producer_name,farm_name,city,address,status,metadata&company_id=eq.'+companyId+'&id=in.('+q+')')||[];
+  barns=await rest('v2_poultry_barns','select=id,farm_id,barn_number,outlet_type,energy_type,status&company_id=eq.'+companyId+'&farm_id=in.('+q+')')||[];
+ }
+ await offlineCacheSet(offlineTeamKey('poultry_context'),{teams:teams.length?teams:(deviceTeam?[deviceTeam]:[]),farms,barns,loadings});
+ const [ops,trucks]=await Promise.all([
+  rest('v2_operations','select=id,operation_number,title,customer_name,location_name,team_id,scheduled_start,scheduled_end,actual_start,actual_end,status,planned_birds,actual_birds,price_per_thousand,price_per_bird,actual_revenue,notes,offline_event_id,metadata&company_id=eq.'+companyId+'&operation_type=eq.poultry_catching&order=scheduled_start.desc&limit=100'),
+  rest('v2_poultry_truck_loads','select=id,loading_id,truck_sequence,truck_plate,driver_name,birds,started_at,completed_at,is_cata,external_reference,metadata&company_id=eq.'+companyId+'&order=created_at.asc')
+ ]);
+ await offlineCacheSet(offlineTeamKey('poultry_ops'),{ops,loadings,trucks});
+}
+async function warmFuelOfflineCache(){
+ if(!deviceMode||!c360NetOnline()||!companyId)return;
+ const [logs,vehicles]=await Promise.all([
+  rest('v2_fuel_logs','select=*&company_id=eq.'+companyId+'&order=fueled_at.desc&limit=200'),
+  rest('v2_vehicles','select=id,description,plate,model,current_odometer_km,fuel_tank_capacity_liters,status&company_id=eq.'+companyId+'&order=description.asc')
+ ]);
+ await offlineCacheSet(offlineTeamKey('fuel_logs'),logs||[]);
+ await offlineCacheSet(offlineTeamKey('fuel_vehicles'),vehicles||[]);
+}
+async function warmDeviceOfflineData(){
+ if(!deviceMode||!c360NetOnline())return;
+ await Promise.allSettled([
+  warmPointOfflineCache(),
+  loadSchedules(),
+  warmPoultryOfflineCache(),
+  warmFuelOfflineCache()
+ ]);
+ await updateOfflineQueueBadge();
+}
+async function offlineFindEmployeeByNumber(number){
+ const employees=await offlineCacheGet(offlineTeamKey('point_employees'))||[];
+ return employees.find(e=>String(e.employee_number||'').trim().toLowerCase()===String(number||'').trim().toLowerCase())||null;
+}
+function offlineFaceDistance(a,b){
+ if(!Array.isArray(a)||!Array.isArray(b)||a.length!==b.length||!a.length)return Infinity;
+ let s=0;
+ for(let i=0;i<a.length;i++){const d=Number(a[i])-Number(b[i]);s+=d*d}
+ return Math.sqrt(s);
+}
+async function offlineMatchEmployeeFace(descriptor,threshold=.50){
+ const templates=await offlineCacheGet(offlineTeamKey('point_faces'))||[];
+ let best=null;
+ for(const t of templates){
+  const distance=offlineFaceDistance(t.descriptor,descriptor);
+  if(distance<=threshold&&(!best||distance<best.distance))best={employee_id:t.employee_id,distance};
+ }
+ return best;
+}
+async function offlinePointEmployees(){
+ return await offlineCacheGet(offlineTeamKey('point_employees'))||[];
+}
+function nextPointFromEvents(events){
+ const sorted=[...(events||[])].sort((a,b)=>new Date(a.occurred_at)-new Date(b.occurred_at));
+ const last=sorted.length?sorted[sorted.length-1].event_type:null;
+ if(!last)return 'in';
+ if(last==='in')return 'break_start';
+ if(last==='break_start')return 'break_end';
+ if(last==='break_end')return 'out';
+ return 'finished';
+}
+async function offlineNextPoint(employeeId){
+ const day=localDateBR();
+ const cached=await offlineCacheGet(offlineTeamKey('point_events',day))||[];
+ const queued=(await offlineQueueList()).filter(x=>x.type==='attendance'&&x.payload?.employee_id===employeeId&&saoPauloDateKey(x.payload?.occurred_at)===day).map(x=>x.payload);
+ return nextPointFromEvents(cached.filter(x=>x.employee_id===employeeId).concat(queued));
+}
+async function appendCachedOfflinePoint(payload){
+ const day=saoPauloDateKey(payload.occurred_at);
+ const key=offlineTeamKey('point_events',day);
+ const events=await offlineCacheGet(key)||[];
+ if(!events.some(x=>x.offline_event_id===payload.offline_event_id)){
+  events.push({
+   id:null,employee_id:payload.employee_id,occurred_at:payload.occurred_at,event_type:payload.event_type,
+   method:payload.method,accuracy_m:payload.accuracy_m,offline_event_id:payload.offline_event_id,
+   work_team_id:payload.work_team_id||null,device_access_id:payload.device_access_id||null,metadata:payload.metadata||{},offline_pending:true
+  });
+  await offlineCacheSet(key,events);
+ }
+}
+async function syncAttendanceOfflineItem(item){
+ const p={...item.payload,metadata:{...(item.payload?.metadata||{})}};
+ let selfiePath=item.selfie_uploaded_path||p.metadata?.selfie_storage_path||null;
+ if(p.method==='face'&&item.selfie_blob&&!selfiePath){
+  selfiePath=await uploadSelfie(item.selfie_blob,p.employee_id);
+  item.selfie_uploaded_path=selfiePath;
+  p.metadata.selfie_storage_path=selfiePath;
+  p.metadata.selfie_pending_upload=false;
+  item.payload={...p};
+  await offlineStorePut('queue',item);
+ }
+ const exists=await rest('v2_attendance_events','select=id&company_id=eq.'+encodeURIComponent(p.company_id)+'&offline_event_id=eq.'+encodeURIComponent(p.offline_event_id)+'&limit=1');
+ let eventId=exists?.[0]?.id||null;
+ if(!eventId){
+  const saved=await rest('v2_attendance_events','','POST',p);
+  eventId=saved?.[0]?.id||null;
+ }
+ if(p.method==='face'&&eventId&&selfiePath){
+  const checks=await rest('v2_attendance_face_checks','select=id&attendance_event_id=eq.'+encodeURIComponent(eventId)+'&limit=1');
+  if(!checks?.length){
+   const distance=Number(p.metadata?.face_distance||0);
+   await restInsert('v2_attendance_face_checks',{
+    company_id:p.company_id,attendance_event_id:eventId,employee_id:p.employee_id,
+    selfie_path:selfiePath,verified:true,score:Math.max(0,1-distance),
+    algorithm:'face-api.js_0.22.2',failure_reason:null,
+    metadata:{source:'team_device_offline_sync',offline_event_id:p.offline_event_id}
+   });
+  }
+ }
+ return true;
+}
+async function syncFuelOfflineItem(item){
+ const p={...item.payload,metadata:{...(item.payload?.metadata||{})}};
+ const exists=await rest('v2_fuel_logs','select=id&company_id=eq.'+encodeURIComponent(p.company_id)+'&offline_event_id=eq.'+encodeURIComponent(p.offline_event_id)+'&limit=1');
+ if(exists?.length)return true;
+ if(item.receipt_blob){
+  if(!item.receipt_uploaded_path){
+   item.receipt_uploaded_path=await uploadFuelReceipt(item.receipt_blob,p.vehicle_id);
+   await offlineStorePut('queue',item);
+  }
+  p.metadata.receipt_path=item.receipt_uploaded_path;
+ }
+ await rest('v2_fuel_logs','','POST',p);
+ return true;
+}
+
+async function syncPoultryOperationOfflineItem(item){
+ const f=item.form||{};
+ const res=await rpc('v2_device_sync_poultry_operation',{
+  p_company_id:item.company_id,
+  p_offline_event_id:item.id,
+  p_integrated:f.integrated,
+  p_city:f.city,
+  p_farm_name:f.farm_name||null,
+  p_aviary:null,
+  p_outlet_type:f.outlet_type||null,
+  p_energy_type:f.energy_type||null,
+  p_scheduled_start:f.scheduled_start,
+  p_scheduled_end:f.scheduled_end||null,
+  p_notes:f.notes||null
+ });
+ const row=Array.isArray(res)?res[0]:res;
+ if(!row?.operation_id||!row?.loading_id)throw new Error('Apanha offline não retornou os IDs do servidor.');
+ return row;
+}
+async function resolvePoultryOfflineRefs(item){
+ let operationId=item.operation_id||null,loadingId=item.loading_id||null,loading=null;
+ if(item.operation_offline_id){
+  const ops=await rest('v2_operations','select=id,offline_event_id&company_id=eq.'+encodeURIComponent(item.company_id)+'&offline_event_id=eq.'+encodeURIComponent(item.operation_offline_id)+'&limit=1');
+  if(!ops?.length)throw new Error('A apanha ainda não foi sincronizada.');
+  operationId=ops[0].id;
+ }
+ if(!loadingId||String(loadingId).startsWith('offline:')){
+  if(!operationId)throw new Error('Operação da apanha não encontrada.');
+  const rows=await rest('v2_poultry_loadings','select=id,operation_id,farm_id,metadata&company_id=eq.'+encodeURIComponent(item.company_id)+'&operation_id=eq.'+encodeURIComponent(operationId)+'&limit=1');
+  if(!rows?.length)throw new Error('Carregamento da apanha ainda não foi criado.');
+  loading=rows[0];loadingId=loading.id;
+ }else{
+  const rows=await rest('v2_poultry_loadings','select=id,operation_id,farm_id,metadata&company_id=eq.'+encodeURIComponent(item.company_id)+'&id=eq.'+encodeURIComponent(loadingId)+'&limit=1');
+  loading=rows?.[0]||null;
+  operationId=operationId||loading?.operation_id||null;
+ }
+ return {operationId,loadingId,loading};
+}
+async function syncPoultryTruckOfflineItem(item){
+ const refs=await resolvePoultryOfflineRefs(item);
+ const p=item.payload||{},sheet=p.sheet||{};
+ const existing=await rest('v2_poultry_truck_loads','select=id,loading_id,external_reference&company_id=eq.'+encodeURIComponent(item.company_id)+'&external_reference=eq.'+encodeURIComponent(item.id)+'&limit=1');
+ let truck=existing?.[0]||null;
+
+ let barnBreakdown=(Array.isArray(item.barn_breakdown)&&item.barn_breakdown.length?item.barn_breakdown:(Array.isArray(p.barn_breakdown)?p.barn_breakdown:[]))
+  .map(x=>({barn_id:x?.barn_id||null,barn_number:normalizeAviaryNumber(x?.barn_number),birds:poN(x?.birds)}))
+  .filter(x=>x.barn_number||x.barn_id);
+
+ // Compatibilidade com itens offline criados antes da v6.55.
+ if(!barnBreakdown.length&&item.barn_id){
+  const oldId=String(item.barn_id).startsWith('offline:')?(refs.loading?.metadata?.default_barn_id||null):item.barn_id;
+  const oldBarn=poultryBarns.find(b=>b.id===oldId);
+  barnBreakdown=[{barn_id:oldId,barn_number:oldBarn?.barn_number||sheet.sheet_aviaries||'Aviário',birds:poN(p.birds)}];
+ }
+ if(!barnBreakdown.length)throw new Error('Número do aviário do caminhão não foi encontrado.');
+
+ let sheetPath=item.sheet_uploaded_path||null;
+ if(item.sheet_blob&&!sheetPath){
+  sheetPath=await uploadPoultrySheet(item.sheet_blob,item.id);
+  item.sheet_uploaded_path=sheetPath;
+  await offlineStorePut('queue',item);
+ }
+
+ if(!truck){
+  const rows=await rest('v2_poultry_truck_loads','','POST',{
+   company_id:item.company_id,loading_id:refs.loadingId,truck_sequence:p.truck_sequence,
+   truck_plate:p.truck_plate||null,driver_name:p.driver_name||null,birds:p.birds||0,
+   started_at:p.started_at||null,completed_at:p.completed_at||null,is_cata:!!p.is_cata,
+   external_reference:item.id,
+   metadata:{
+    aviary_number:p.is_cata?null:(barnBreakdown[0]?.barn_number||null),
+    barn_breakdown:barnBreakdown,notes:p.notes||null,...sheet,sheet_photo_path:sheetPath,source:'team_device_offline_sync'
+   }
+  });
+  truck=rows?.[0]||null;
+ }
+ if(!truck?.id)throw new Error('Caminhão offline não foi salvo.');
+
+ // Histórico antigo com barn_id continua ligado à tabela estruturada.
+ const legacy= barnBreakdown.filter(x=>x.barn_id);
+ if(legacy.length){
+  const barnLinks=await rest('v2_poultry_truck_barns','select=id,barn_id&company_id=eq.'+encodeURIComponent(item.company_id)+'&truck_load_id=eq.'+encodeURIComponent(truck.id));
+  const linked=new Set((barnLinks||[]).map(x=>x.barn_id));
+  for(let i=0;i<legacy.length;i++){
+   const bb=legacy[i];if(linked.has(bb.barn_id))continue;
+   await rest('v2_poultry_truck_barns','','POST',{company_id:item.company_id,truck_load_id:truck.id,barn_id:bb.barn_id,sequence_no:i+1,birds:poN(bb.birds)||null,started_at:p.started_at||null,completed_at:p.completed_at||null,notes:p.notes||null});
+  }
+ }
+ try{await saveTruckDriverPair(p.driver_name,p.truck_plate,item.team_id||null)}catch(e){console.warn('Atalho motorista/placa offline',e)}
+ if(refs.operationId)await refreshOperationBirdTotals(refs.operationId,refs.loadingId);
+ return true;
+}
+async function syncPoultryCompleteOfflineItem(item){
+ const refs=await resolvePoultryOfflineRefs(item);
+ const trucks=await rest('v2_poultry_truck_loads','select=birds,started_at,completed_at&company_id=eq.'+encodeURIComponent(item.company_id)+'&loading_id=eq.'+encodeURIComponent(refs.loadingId));
+ if(!trucks?.length)throw new Error('Aguardando sincronização dos caminhões desta apanha.');
+ const total=trucks.reduce((a,t)=>a+poN(t.birds),0);
+ const starts=trucks.map(t=>t.started_at).filter(Boolean).sort();
+ const ends=trucks.map(t=>t.completed_at).filter(Boolean).sort();
+ await rest('v2_poultry_loadings','id=eq.'+encodeURIComponent(refs.loadingId),'PATCH',{
+  reported_birds:total,reported_trucks:trucks.length,status:'completed'
+ });
+ await rest('v2_operations','id=eq.'+encodeURIComponent(refs.operationId),'PATCH',{
+  actual_birds:total,status:'completed',actual_start:starts[0]||null,actual_end:ends[ends.length-1]||new Date().toISOString()
+ });
+ return true;
+}
+async function syncOfflineQueue(){
+ if(offlineSyncRunning||!c360NetOnline()||!companyId||!session()?.access_token)return;
+ offlineSyncRunning=true;
+ const badge=$('#offlineQueueBadge');
+ try{
+  const items=await offlineQueueList();
+  if(badge&&items.length)badge.textContent='⟳ sincronizando...';
+  for(const item of items){
+   try{
+    if(item.type==='attendance')await syncAttendanceOfflineItem(item);
+    else if(item.type==='fuel')await syncFuelOfflineItem(item);
+    else if(item.type==='poultry_operation')await syncPoultryOperationOfflineItem(item);
+    else if(item.type==='poultry_truck')await syncPoultryTruckOfflineItem(item);
+    else if(item.type==='poultry_complete')await syncPoultryCompleteOfflineItem(item);
+    else continue;
+    await offlineStoreDelete('queue',item.id);
+   }catch(e){
+    item.attempts=Number(item.attempts||0)+1;
+    item.last_error=e.message||String(e);
+    item.last_attempt_at=new Date().toISOString();
+    await offlineStorePut('queue',item);
+   }
+  }
+  await offlineCacheSet('last_sync:'+String(companyId||'none'),new Date().toISOString());
+  await updateOfflineQueueBadge();
+  if($('#offlineSyncPanel')&&!$('#offlineSyncPanel').classList.contains('hidden'))await renderOfflineSyncPanel();
+  if(deviceMode&&c360NetOnline()){
+   await warmPointOfflineCache();
+   const active=document.querySelector('[data-screen="ponto"].active');
+   if(active)await loadTeamPoint();
+   const fuelActive=document.querySelector('[data-screen="combustivel"].active');
+   if(fuelActive)await loadFuel();
+   const poultryActive=document.querySelector('[data-screen="operacoes"].active');
+   if(poultryActive){await loadDevicePoultryContext();await loadPoultryOps()}
+   warmDeviceOfflineData().catch(e=>console.warn('refresh offline cache',e));
+  }
+ }finally{offlineSyncRunning=false}
+}
+async function registerOfflinePointByNumber(matricula){
+ const msg=$('#pointMsg');
+ const employee=await offlineFindEmployeeByNumber(matricula);
+ if(!employee)throw new Error('Matrícula não está no cache deste celular. Abra o Ponto uma vez com internet antes de usar offline.');
+ const nextEvent=await offlineNextPoint(employee.id);
+ if(nextEvent==='finished')throw new Error('Jornada já encerrada hoje para este funcionário.');
+ const day=localDateBR();
+ const cached=await offlineCacheGet(offlineTeamKey('point_events',day))||[];
+ const queued=(await offlineQueueList()).filter(x=>x.type==='attendance'&&x.payload?.employee_id===employee.id&&saoPauloDateKey(x.payload?.occurred_at)===day).map(x=>x.payload);
+ const prior=cached.filter(x=>x.employee_id===employee.id).concat(queued).sort((a,b)=>new Date(a.occurred_at)-new Date(b.occurred_at));
+ const lastWithTeam=[...prior].reverse().find(x=>pointEventTeamId(x));
+ const previousTeamId=lastWithTeam?pointEventTeamId(lastWithTeam):null;
+ const previousTeamName=lastWithTeam?pointEventTeamName(lastWithTeam,{}):null;
+ const teamChanged=!!(previousTeamId&&deviceAccess?.team_id&&previousTeamId!==deviceAccess.team_id);
+ msg.className='muted';msg.textContent='Obtendo GPS e salvando no celular...';
+ const gps=await getGPS();
+ const occurredAt=new Date().toISOString(),offlineId=makeOfflineId('point');
+ const userId=session()?.user?.id||null;
+ const payload={
+  company_id:companyId,employee_id:employee.id,occurred_at:occurredAt,event_type:nextEvent,
+  latitude:gps.latitude,longitude:gps.longitude,accuracy_m:gps.accuracy_m,
+  method:'employee_number',device_id:navigator.userAgent.slice(0,180),offline_event_id:offlineId,
+  work_team_id:deviceAccess?.team_id||null,device_access_id:deviceAccess?.id||null,
+  metadata:{beta:true,source:'team_device_offline',identification_method:'employee_number',offline_captured:true,offline_captured_at:occurredAt,work_team_id:deviceAccess?.team_id||null,work_team_name:deviceTeam?.name||null,device_access_id:deviceAccess?.id||null,device_name:deviceAccess?.device_name||null,team_changed:teamChanged,previous_team_name:previousTeamName||null},
+  created_by:userId
+ };
+ await offlineQueueAdd({id:offlineId,type:'attendance',company_id:companyId,team_id:deviceAccess?.team_id||null,created_at:occurredAt,payload});
+ await appendCachedOfflinePoint(payload);
+ const receiptType=pointLabels[nextEvent]||nextEvent,when=new Date(occurredAt).toLocaleString('pt-BR');
+ msg.className='okmsg';msg.textContent=receiptType+' salvo no celular para '+employee.full_name+'.'+(teamChanged?' Troca para '+(deviceTeam?.name||'esta equipe')+' registrada.':'')+' Será sincronizado quando a internet voltar.';
+ const receipt=$('#pointReceipt');
+ receipt.className='card';
+ receipt.innerHTML='<div class="label">COMPROVANTE DE PONTO • OFFLINE</div><div style="font-size:18px;font-weight:900;margin:3px 0">'+esc(receiptType)+'</div><strong>'+esc(employee.full_name)+'</strong><div class="muted">Matrícula '+esc(employee.employee_number)+' • '+esc(when)+'</div><div class="muted"><b>Equipe trabalhada:</b> '+esc(deviceTeam?.name||'Equipe do aparelho')+'</div><div class="muted">GPS ±'+Math.round(Number(gps.accuracy_m||0))+' m • salvo neste aparelho</div>'+(teamChanged?'<div class="pill warn" style="margin-top:8px">Troca de equipe registrada: '+esc(previousTeamName||'outra equipe')+' → '+esc(deviceTeam?.name||'equipe atual')+'</div>':'')+'<div class="pill warn" style="margin-top:8px">Aguardando sincronização ⟳</div>';
+ $('#pointMatricula').value='';
+ $('#nextPointLabel').textContent='Digite a matrícula';
+ await updateOfflineQueueBadge();
+}
+
+async function registerOfflinePointFace(employee,faceDistance,selfie){
+ const msg=$('#pointMsg');
+ if(!employee)throw new Error('Funcionário não identificado.');
+ const nextEvent=await offlineNextPoint(employee.id);
+ if(nextEvent==='finished')throw new Error('Jornada já encerrada hoje para este funcionário.');
+ const day=localDateBR();
+ const cached=await offlineCacheGet(offlineTeamKey('point_events',day))||[];
+ const queued=(await offlineQueueList()).filter(x=>x.type==='attendance'&&x.payload?.employee_id===employee.id&&saoPauloDateKey(x.payload?.occurred_at)===day).map(x=>x.payload);
+ const prior=cached.filter(x=>x.employee_id===employee.id).concat(queued).sort((a,b)=>new Date(a.occurred_at)-new Date(b.occurred_at));
+ const lastWithTeam=[...prior].reverse().find(x=>pointEventTeamId(x));
+ const previousTeamId=lastWithTeam?pointEventTeamId(lastWithTeam):null;
+ const previousTeamName=lastWithTeam?pointEventTeamName(lastWithTeam,{}):null;
+ const teamChanged=!!(previousTeamId&&deviceAccess?.team_id&&previousTeamId!==deviceAccess.team_id);
+ msg.className='muted';msg.textContent='Face reconhecida. Obtendo GPS e salvando no celular...';
+ const gps=await getGPS();
+ const occurredAt=new Date().toISOString(),offlineId=makeOfflineId('point-face');
+ const userId=session()?.user?.id||null;
+ const payload={
+  company_id:companyId,employee_id:employee.id,occurred_at:occurredAt,event_type:nextEvent,
+  latitude:gps.latitude,longitude:gps.longitude,accuracy_m:gps.accuracy_m,
+  method:'face',device_id:navigator.userAgent.slice(0,180),offline_event_id:offlineId,
+  work_team_id:deviceAccess?.team_id||null,device_access_id:deviceAccess?.id||null,
+  metadata:{beta:true,source:'team_device_offline',identification_method:'face',offline_captured:true,offline_captured_at:occurredAt,selfie_evidence:true,selfie_pending_upload:true,selfie_storage_path:null,face_distance:Number(faceDistance||0),work_team_id:deviceAccess?.team_id||null,work_team_name:deviceTeam?.name||null,device_access_id:deviceAccess?.id||null,device_name:deviceAccess?.device_name||null,team_changed:teamChanged,previous_team_name:previousTeamName||null},
+  created_by:userId
+ };
+ await offlineQueueAdd({id:offlineId,type:'attendance',company_id:companyId,team_id:deviceAccess?.team_id||null,created_at:occurredAt,payload,selfie_blob:selfie});
+ await appendCachedOfflinePoint(payload);
+ const receiptType=pointLabels[nextEvent]||nextEvent,when=new Date(occurredAt).toLocaleString('pt-BR');
+ msg.className='okmsg';msg.textContent=receiptType+' salvo com reconhecimento facial para '+employee.full_name+'. Será sincronizado quando a internet voltar.';
+ const receipt=$('#pointReceipt');
+ receipt.className='card';
+ receipt.innerHTML='<div class="label">COMPROVANTE DE PONTO • FACIAL OFFLINE</div><div style="font-size:18px;font-weight:900;margin:3px 0">'+esc(receiptType)+'</div><strong>'+esc(employee.full_name)+'</strong><div class="muted">Matrícula '+esc(employee.employee_number)+' • '+esc(when)+'</div><div class="muted"><b>Equipe trabalhada:</b> '+esc(deviceTeam?.name||'Equipe do aparelho')+'</div><div class="muted">Face reconhecida neste aparelho • GPS ±'+Math.round(Number(gps.accuracy_m||0))+' m</div>'+(teamChanged?'<div class="pill warn" style="margin-top:8px">Troca de equipe registrada: '+esc(previousTeamName||'outra equipe')+' → '+esc(deviceTeam?.name||'equipe atual')+'</div>':'')+'<div class="pill ok" style="margin-top:8px">Face reconhecida ✓</div><div class="pill warn" style="margin-top:8px">Aguardando sincronização ⟳</div>';
+ await updateOfflineQueueBadge();
+}
+
+async function v2Rest(table,query='',method='GET',body=null){
+ const path='/rest/v1/'+table+(query?('?'+query):'');
+ const opts={method,headers:{'Content-Type':'application/json',Prefer:'return=representation'}};
+ if(body!==null)opts.body=JSON.stringify(body);
+ const r=await authFetch(path,opts,true);
+ return await parseResponse(r);
+}
+// Compatibilidade global: módulos antigos do sistema chamam rest(...).
+// A 5.18/5.19 preservou essas chamadas, mas perdeu a função original.
+async function rest(table,query='',method='GET',body=null){
+  return await v2Rest(table,query,method,body);
+}
+async function restInsert(table,payload){
+  return await rest(table,'','POST',payload);
+}
+async function enterApp(authUser){
+  const user=authUser||await getUser();
+  if(!user||!user.id)throw new Error('Não foi possível identificar o usuário.');
+  if(isDeviceUser(user))return await enterDeviceApp(user);
+  deviceMode=false;deviceAccess=null;deviceTeam=null;document.body.classList.remove('device-mode');
+  debug('Login confirmado. Carregando empresa...');
+  const members=await v2Rest('v2_company_members','select=company_id,role_id&user_id=eq.'+encodeURIComponent(user.id)+'&status=eq.active');
+  const ids=(members||[]).map(function(x){return x.company_id});
+  if(!ids.length)throw new Error('Seu usuário ainda não possui empresa V2.');
+  const filter=ids.map(function(id){return '"'+id+'"'}).join(',');
+  const companies=await v2Rest('v2_companies','select=id,legal_name,trade_name,tax_id,timezone,metadata&status=eq.active&id=in.('+encodeURIComponent(filter)+')');
+  const realCompany=(companies||[]).find(function(x){
+    return !String(x.legal_name||'').toUpperCase().includes('DADOS FICTÍCIOS');
+  })||(companies||[])[0];
+  if(!realCompany)throw new Error('Empresa não encontrada.');
+  companyId=realCompany.id;
+  companyProfile=withOfficialEmployer(realCompany);
+  const activeMember=(members||[]).find(function(x){return x.company_id===companyId});
+  if(activeMember&&activeMember.role_id){
+    try{
+      const roles=await v2Rest('v2_roles','select=code,name&id=eq.'+activeMember.role_id);
+      currentRoleCode=roles?.[0]?.code||null;
+    }catch(_){currentRoleCode=null}
+  }
+  isAdminGeneral=['owner','admin','general_admin'].includes(String(currentRoleCode||'').toLowerCase());
+  $('#companyName').textContent=cleanCompanyName(companyProfile.trade_name||companyProfile.legal_name);
+  $('#login').classList.add('hidden');
+  $('#app').classList.remove('hidden');
+  $('#logout').classList.remove('hidden');
+  document.body.classList.add('app-ready');
+  initScreenRouter();
+  const onvioReturn=new URLSearchParams(location.search).get('onvio');
+  await v2Go(onvioReturn?'integracoes':'inicio');
+  debug('');
+  refreshAll().catch(function(e){console.warn('refresh',e)});
+}
+$('#showAdminLogin').addEventListener('click',()=>{$('#deviceSetupCard').classList.add('hidden');$('#adminLoginCard').classList.remove('hidden')});
+$('#backDeviceSetup').addEventListener('click',()=>{$('#adminLoginCard').classList.add('hidden');$('#deviceSetupCard').classList.remove('hidden')});
+$('#deviceActivateBtn').addEventListener('click',async()=>{
+ const b=$('#deviceActivateBtn'),m=$('#deviceMsg');if(b.disabled)return;b.disabled=true;m.className='muted';m.textContent='Ativando este celular...';
+ try{await activateDevice($('#deviceCode').value);m.className='okmsg';m.textContent='Celular ativado.'}
+ catch(e){m.className='error';m.textContent=(e.message||String(e))+((e.message||'').toLowerCase().includes('anonymous')?' • No Supabase, ative Authentication > Providers > Anonymous Sign-Ins.':'')}
+ finally{b.disabled=false}
+});
+$('#deviceCode').addEventListener('keydown',e=>{if(e.key==='Enter')$('#deviceActivateBtn').click()});
+$('#loginBtn').addEventListener('click',async()=>{
+  const btn=$('#loginBtn');
+  if(btn.disabled)return;
+  btn.disabled=true;
+  setMsg('Entrando...');
+  debug('Autenticando...');
+  try{
+    const data=await login($('#email').value.trim(),$('#password').value);
+    setMsg('Login confirmado. Carregando painel...','okmsg');
+    await enterApp(data&&data.user ? data.user : null);
+  }catch(e){
+    setMsg(e.message||String(e),'error');
+    debug('Se continuar, me envie esta mensagem.');
+  }finally{
+    btn.disabled=false;
+  }
+});
+$('#password').addEventListener('keydown',e=>{if(e.key==='Enter')$('#loginBtn').click()});
+$('#logout').addEventListener('click',()=>{
+ if(deviceMode&&!confirm('Trocar o acesso deste celular? Depois será necessário gerar um novo código para vinculá-lo novamente.'))return;
+ clearSession();location.reload();
+});
+async function refreshAll(){
+ if(!companyId)return;
+ await loadDashboard();
+ // Dados das outras telas serão buscados quando a aba for aberta.
+}
+async function dashRest(table,query,timeoutMs=7000){
+ return await Promise.race([
+   rest(table,query),
+   new Promise((_,reject)=>setTimeout(()=>reject(new Error('Tempo de resposta excedido')),timeoutMs))
+ ]);
+}
+async function loadPoultryDashboard(){
+ const k=$('#poultryDashKpis'),list=$('#poultryDashTeams'); if(!k||!list)return;
+ try{
+  const ops=await rest('v2_operations','select=id,team_id,scheduled_start,actual_start,actual_end,status,planned_birds,actual_birds,price_per_thousand,price_per_bird,actual_revenue&company_id=eq.'+companyId+'&operation_type=eq.poultry_catching&order=scheduled_start.desc');
+  const today=ops.filter(o=>o.scheduled_start&&new Date(o.scheduled_start).toDateString()===new Date().toDateString());
+  let mins=0,doneBirds=0,revenue=0;
+  today.filter(o=>o.status==='completed').forEach(o=>{
+   if(o.actual_start&&o.actual_end)mins+=Math.max(0,(new Date(o.actual_end)-new Date(o.actual_start))/60000);
+   doneBirds+=poN(o.actual_birds);
+   revenue+=poN(o.actual_revenue)||poN(o.actual_birds)*poN(o.price_per_bird);
+  });
+  const birds=today.reduce((a,o)=>a+poN(o.actual_birds||o.planned_birds),0);
+  const avg=mins>0?Math.round(doneBirds/(mins/60)):0;
+  k.innerHTML=[['APANHAS',today.length],['AVES',birds.toLocaleString('pt-BR')],['MÉDIA AVES/H',avg?avg.toLocaleString('pt-BR'):'—'],['VALOR REALIZADO',money(revenue)]].map(x=>`<div class="v2kpi"><div class="t">${x[0]}</div><div class="v">${x[1]}</div></div>`).join('');
+  const bt={};
+  today.forEach(o=>{
+   const n=poultryTeams.find(x=>x.id===o.team_id)?.name||'Equipe não informada';
+   if(!bt[n])bt[n]={ops:0,birds:0,done:0};
+   bt[n].ops++; bt[n].birds+=poN(o.actual_birds||o.planned_birds); if(o.status==='completed')bt[n].done++;
+  });
+  list.innerHTML=Object.keys(bt).length?Object.entries(bt).map(([n,v])=>`<div class="item"><div class="toolbar" style="justify-content:space-between"><strong>${esc(n)}</strong><span class="pill">${v.done}/${v.ops} concluídas</span></div><div class="muted">${v.birds.toLocaleString('pt-BR')} aves no dia</div></div>`).join(''):'<div class="v2-empty">Nenhuma apanha programada para hoje.</div>';
+ }catch(e){list.innerHTML='<div class="error">'+esc(e.message)+'</div>'}
+}
+async function dashSafe(table,query,timeoutMs=7000){
+ try{return await dashRest(table,query,timeoutMs)||[]}catch(e){console.warn('Dashboard '+table,e);return[]}
+}
+function dashLocalBounds(){
+ const n=new Date(),todayStart=new Date(n.getFullYear(),n.getMonth(),n.getDate()),tomorrow=new Date(n.getFullYear(),n.getMonth(),n.getDate()+1);
+ const monthStart=new Date(n.getFullYear(),n.getMonth(),1),nextMonth=new Date(n.getFullYear(),n.getMonth()+1,1);
+ const dateOnly=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+ return {todayStart:todayStart.toISOString(),tomorrow:tomorrow.toISOString(),monthStart:monthStart.toISOString(),nextMonth:nextMonth.toISOString(),monthDate:dateOnly(monthStart),nextMonthDate:dateOnly(nextMonth)};
+}
+function dashboardOperationStatus(o){
+ const map={planned:'Programada',scheduled:'Programada',in_progress:'Em andamento',completed:'Concluída',cancelled:'Cancelada'};
+ return map[o.status]||o.status||'—';
+}
+async function loadDashboard(){
+ try{
+  const dashboardMounted=!!document.querySelector('#screenHost [data-screen="inicio"]');
+  if(!dashboardMounted)return;
+  const b=dashLocalBounds();
+  if($('#todayList'))$('#todayList').innerHTML='<div class="v2-empty">Atualizando painel...</div>';
+
+  const [employees,teams,vehicles,vehicleDocs,opsMonth,fuelMonth,financeMonth,maintenance,attendanceToday,devices]=await Promise.all([
+   dashSafe('v2_employees','select=id,full_name,primary_team,status&company_id=eq.'+companyId+'&status=eq.active'),
+   dashSafe('v2_teams','select=id,name,code,supervisor_employee_id,status,metadata&company_id=eq.'+companyId+'&status=eq.active&order=name.asc'),
+   dashSafe('v2_vehicles','select=id,description,plate,model,current_odometer_km,status,renavam,metadata&company_id=eq.'+companyId+'&status=eq.active&order=description.asc'),
+   dashSafe('v2_vehicle_documents','select=id,vehicle_id,document_type,expires_at,status&company_id=eq.'+companyId+'&status=eq.active'),
+   dashSafe('v2_operations','select=id,team_id,title,customer_name,location_name,scheduled_start,actual_start,actual_end,status,planned_birds,actual_birds,actual_revenue,actual_cost&company_id=eq.'+companyId+'&operation_type=eq.poultry_catching&scheduled_start=gte.'+encodeURIComponent(b.monthStart)+'&scheduled_start=lt.'+encodeURIComponent(b.nextMonth)+'&order=scheduled_start.desc'),
+   dashSafe('v2_fuel_logs','select=id,vehicle_id,fueled_at,liters,total_amount,odometer_km&company_id=eq.'+companyId+'&fueled_at=gte.'+encodeURIComponent(b.monthStart)+'&fueled_at=lt.'+encodeURIComponent(b.nextMonth)),
+   dashSafe('v2_financial_entries','select=id,entry_type,amount,status,competence_date,paid_at&company_id=eq.'+companyId+'&competence_date=gte.'+b.monthDate+'&competence_date=lt.'+b.nextMonthDate+'&status=neq.cancelled'),
+   dashSafe('v2_maintenance_plans','select=id,vehicle_id,name,next_due_at,next_due_odometer_km,active&company_id=eq.'+companyId+'&active=eq.true'),
+   dashSafe('v2_attendance_events','select=id,employee_id,event_type,occurred_at&company_id=eq.'+companyId+'&occurred_at=gte.'+encodeURIComponent(b.todayStart)+'&occurred_at=lt.'+encodeURIComponent(b.tomorrow)),
+   dashSafe('v2_device_access','select=id,team_id,device_name,active,last_seen_at&company_id=eq.'+companyId+'&active=eq.true')
+  ]);
+
+  const now=Date.now();
+  const todayOps=opsMonth.filter(o=>{
+   if(!o.scheduled_start)return false;
+   const d=new Date(o.scheduled_start);return d>=new Date(b.todayStart)&&d<new Date(b.tomorrow);
+  });
+  const birdsToday=todayOps.reduce((a,o)=>a+poN(o.actual_birds||o.planned_birds),0);
+  const birdsMonth=opsMonth.reduce((a,o)=>a+poN(o.actual_birds||o.planned_birds),0);
+  const fuelLiters=fuelMonth.reduce((a,x)=>a+poN(x.liters),0);
+  const fuelCost=fuelMonth.reduce((a,x)=>a+poN(x.total_amount),0);
+  const income=financeMonth.filter(x=>x.entry_type==='income').reduce((a,x)=>a+poN(x.amount),0);
+  const expense=financeMonth.filter(x=>x.entry_type==='expense').reduce((a,x)=>a+poN(x.amount),0);
+  const balance=income-expense;
+  const pointedEmployees=new Set(attendanceToday.map(x=>x.employee_id).filter(Boolean)).size;
+
+  const overdueMaintenance=maintenance.filter(p=>{
+   const v=vehicles.find(x=>x.id===p.vehicle_id),cur=poN(v?.current_odometer_km),due=poN(p.next_due_odometer_km);
+   const byKm=due>0&&cur>=due;
+   const byDate=p.next_due_at&&new Date(String(p.next_due_at).slice(0,10)+'T23:59:59').getTime()<now;
+   return byKm||byDate;
+  }).length;
+  const upcomingMaintenance=maintenance.filter(p=>{
+   const v=vehicles.find(x=>x.id===p.vehicle_id),cur=poN(v?.current_odometer_km),due=poN(p.next_due_odometer_km);
+   const kmLeft=due>0?due-cur:null;
+   const days=p.next_due_at?daysUntil(p.next_due_at):null;
+   const overdue=(kmLeft!==null&&kmLeft<=0)||(days!==null&&days<0);
+   return !overdue&&((kmLeft!==null&&kmLeft<=1000)||(days!==null&&days<=30));
+  }).length;
+
+  const activeCrlvByVehicle={};
+  (vehicleDocs||[]).forEach(d=>{if(isVehicleCrlv(d.document_type)&&!activeCrlvByVehicle[d.vehicle_id])activeCrlvByVehicle[d.vehicle_id]=d});
+  let licensingDanger=0,licensingWarn=0,missingCrlv=0;
+  vehicles.forEach(v=>{
+   const d=activeCrlvByVehicle[v.id];
+   if(!d){missingCrlv++;return}
+   const s=licensingStatusForVehicle(v,d);
+   if(s.cls==='danger')licensingDanger++;
+   else if(s.cls==='warn')licensingWarn++;
+  });
+  const fleetAttention=licensingDanger+licensingWarn+missingCrlv;
+
+  const completedToday=todayOps.filter(o=>o.status==='completed').length;
+  const opsCompletionPct=todayOps.length?Math.round(completedToday/todayOps.length*100):100;
+  const pointPct=employees.length?Math.round(pointedEmployees/employees.length*100):0;
+  const deviceCoveragePct=teams.length?Math.min(100,Math.round(new Set(devices.map(d=>d.team_id).filter(Boolean)).size/teams.length*100)):100;
+  const health=$('#dashboardHealth');
+  if(health)health.innerHTML=[
+   ['Operação do dia',todayOps.length?opsCompletionPct+'% concluída':'Sem apanhas hoje',todayOps.length?(completedToday+' de '+todayOps.length+' concluídas'):'Nenhuma operação programada','operacoes',opsCompletionPct>=100?'ok':opsCompletionPct>0?'warn':'neutral'],
+   ['Ponto hoje',pointPct+'%',pointedEmployees+' de '+employees.length+' funcionários','ponto',pointPct>=90?'ok':pointPct>0?'warn':'neutral'],
+   ['Frota & CRLV',fleetAttention?fleetAttention+' atenção(ões)':'Tudo em dia',licensingDanger?licensingDanger+' crítica(s)':missingCrlv?missingCrlv+' sem CRLV':licensingWarn?licensingWarn+' pendente(s)':'Documentação confirmada','frota',licensingDanger?'danger':fleetAttention?'warn':'ok'],
+   ['Manutenção',overdueMaintenance?overdueMaintenance+' vencida(s)':upcomingMaintenance?upcomingMaintenance+' próxima(s)':'Em dia',overdueMaintenance?'Requer atenção':upcomingMaintenance?'Até 30 dias / 1.000 km':'Nenhuma pendência','manutencoes',overdueMaintenance?'danger':upcomingMaintenance?'warn':'ok'],
+   ['Equipes com aparelho',deviceCoveragePct+'%',devices.length+' aparelho(s) ativo(s)','equipes',deviceCoveragePct>=100?'ok':'warn']
+  ].map(x=>'<button class="dash-health-card '+x[5]+'" data-jump="'+x[4]+'" type="button"><span class="dash-health-label">'+esc(x[0])+'</span><strong>'+esc(x[1])+'</strong><small>'+esc(x[2])+'</small><span class="dash-health-arrow">›</span></button>').join('');
+
+  const cards=[
+   ['FUNCIONÁRIOS',employees.length,'ativos','👥'],
+   ['EQUIPES',teams.length,devices.length+' celular(es) ativo(s)','📱'],
+   ['CONDUÇÕES',vehicles.length,(fleetAttention?fleetAttention+' alerta(s) de documento':'documentos em dia'),'🚌'],
+   ['APANHAS HOJE',todayOps.length,completedToday+' concluída(s)','🐔'],
+   ['AVES HOJE',birdsToday.toLocaleString('pt-BR'),birdsMonth.toLocaleString('pt-BR')+' no mês','▣'],
+   ['SALDO DO MÊS',money(balance),'Entradas '+money(income),'💰']
+  ];
+  const cardTabs=['funcionarios','equipes','frota','operacoes','operacoes','financeiro'];
+  $('#kpis').innerHTML=cards.map((x,i)=>'<button class="v2kpi dash-kpi dash-kpi-'+i+'" data-jump="'+cardTabs[i]+'" type="button"><div class="t">'+esc(x[0])+'</div><div class="v">'+esc(x[1])+'</div><div class="s">'+esc(x[2])+'</div><div class="v2ico">'+x[3]+'</div></button>').join('');
+
+  $('#todayList').innerHTML=todayOps.length?todayOps.slice().sort((a,b)=>new Date(a.scheduled_start)-new Date(b.scheduled_start)).map(o=>{
+   const late=!o.actual_start&&o.status!=='completed'&&o.status!=='cancelled'&&new Date(o.scheduled_start).getTime()<now;
+   const minutes=late?Math.max(0,Math.round((now-new Date(o.scheduled_start).getTime())/60000)):0;
+   const team=teams.find(t=>t.id===o.team_id);
+   return '<div class="item"><div class="toolbar" style="justify-content:space-between"><div><strong>'+esc(o.title||o.customer_name||'Apanha')+'</strong><div class="muted">'+esc(team?.name||'Equipe não informada')+' • '+esc(o.customer_name||'Integrado não informado')+' • '+esc(o.location_name||'Local não informado')+'</div></div><span class="pill '+(o.status==='completed'?'ok':late?'danger':o.status==='in_progress'?'warn':'')+'">'+esc(late?'Atrasada '+minutes+' min':dashboardOperationStatus(o))+'</span></div></div>';
+  }).join(''):'<div class="v2-empty">Nenhuma apanha programada para hoje.</div>';
+
+  {
+   const planned=todayOps.filter(o=>['planned','scheduled'].includes(o.status)).length;
+   const inProgress=todayOps.filter(o=>o.status==='in_progress').length;
+   const completed=todayOps.filter(o=>o.status==='completed').length;
+   const total=Math.max(1,todayOps.length);
+   $('#v2OpsSummary').innerHTML=[
+    ['Programadas',planned,'📅',Math.round(planned/total*100)],
+    ['Em andamento',inProgress,'▶',Math.round(inProgress/total*100)],
+    ['Concluídas',completed,'✓',Math.round(completed/total*100)],
+    ['Aves',birdsToday.toLocaleString('pt-BR'),'🐔',todayOps.length?100:0]
+   ].map(x=>'<div class="dash-stat"><div class="dash-stat-top"><span class="dash-stat-icon">'+x[2]+'</span><span class="muted">'+esc(x[0])+'</span></div><b>'+esc(x[1])+'</b><div class="dash-progress"><i style="width:'+x[3]+'%"></i></div></div>').join('');
+  }
+
+  {
+   const presencePct=employees.length?Math.round(pointedEmployees/employees.length*100):0;
+   const devicePct=teams.length?Math.round(devices.length/teams.length*100):0;
+   $('#v2PeopleSummary').innerHTML=
+    '<div class="dash-ring-card"><div class="dash-ring" style="--p:'+presencePct+'"><div><b>'+presencePct+'%</b><span>ponto hoje</span></div></div><div class="dash-ring-copy"><strong>'+pointedEmployees+' de '+employees.length+'</strong><span>funcionários com registro hoje</span></div></div>'+
+    '<div class="dash-stat"><div class="dash-stat-top"><span class="dash-stat-icon">👥</span><span class="muted">Equipes</span></div><b>'+teams.length+'</b><div class="dash-progress"><i style="width:100%"></i></div></div>'+
+    '<div class="dash-stat"><div class="dash-stat-top"><span class="dash-stat-icon">📱</span><span class="muted">Celulares ativos</span></div><b>'+devices.length+'</b><div class="dash-progress"><i style="width:'+devicePct+'%"></i></div></div>';
+  }
+
+  $('#dashboardMonthStats').innerHTML=[
+   ['Apanhas',opsMonth.length,'🐔','neutral'],
+   ['Aves',birdsMonth.toLocaleString('pt-BR'),'▣','neutral'],
+   ['Combustível',fuelLiters.toLocaleString('pt-BR',{maximumFractionDigits:1})+' L','⛽','neutral'],
+   ['Custo combustível',money(fuelCost),'↘','expense'],
+   ['Entradas',money(income),'↗','income'],
+   ['Saídas',money(expense),'↘','expense']
+  ].map(x=>'<div class="dash-month '+x[3]+'"><div><span>'+x[2]+'</span><small>'+esc(x[0])+'</small></div><b>'+esc(x[1])+'</b></div>').join('');
+
+  const byTeam={};
+  opsMonth.forEach(o=>{
+   const n=teams.find(t=>t.id===o.team_id)?.name||'Sem equipe';
+   if(!byTeam[n])byTeam[n]={ops:0,birds:0};byTeam[n].ops++;byTeam[n].birds+=poN(o.actual_birds||o.planned_birds);
+  });
+  const byCustomer={};
+  opsMonth.forEach(o=>{const n=o.customer_name||'Não informado';if(!byCustomer[n])byCustomer[n]=0;byCustomer[n]+=poN(o.actual_birds||o.planned_birds)});
+  const teamRows=Object.entries(byTeam).sort((a,b)=>b[1].birds-a[1].birds).slice(0,5);
+  const customerRows=Object.entries(byCustomer).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  {
+   const maxTeam=Math.max(1,...teamRows.map(x=>x[1].birds));
+   const maxCustomer=Math.max(1,...customerRows.map(x=>x[1]));
+   $('#dashboardMonthProduction').innerHTML=(teamRows.length||customerRows.length)?
+    '<div class="dash-prod-grid">'+
+     '<div class="dash-prod-block"><strong>Por equipe</strong><div class="dash-prod-list">'+(teamRows.map(([n,v])=>'<div class="dash-prod-row"><div><span>'+esc(n)+'</span><b>'+v.birds.toLocaleString('pt-BR')+'</b></div><div class="dash-prod-bar"><i style="width:'+Math.max(4,Math.round(v.birds/maxTeam*100))+'%"></i></div></div>').join('')||'<div class="muted">Sem produção por equipe.</div>')+'</div></div>'+
+     '<div class="dash-prod-block"><strong>Principais integrados</strong><div class="dash-prod-list">'+(customerRows.map(([n,v])=>'<div class="dash-prod-row"><div><span>'+esc(n)+'</span><b>'+v.toLocaleString('pt-BR')+'</b></div><div class="dash-prod-bar"><i style="width:'+Math.max(4,Math.round(v/maxCustomer*100))+'%"></i></div></div>').join('')||'<div class="muted">Sem integrados no mês.</div>')+'</div></div>'+
+    '</div>'
+    :'<div class="v2-empty">Ainda não há apanhas registradas neste mês.</div>';
+  }
+
+  $('#dashboardTeams').innerHTML=teams.length?teams.map(t=>{
+   const members=employees.filter(e=>String(e.primary_team||'').trim().toLowerCase()===String(t.name||'').trim().toLowerCase()).length;
+   const vehicleId=t.metadata?.primary_vehicle_id||null,v=vehicles.find(x=>x.id===vehicleId),dev=devices.find(x=>x.team_id===t.id);
+   const supervisor=employees.find(e=>e.id===t.supervisor_employee_id);
+   const last=dev?.last_seen_at?new Date(dev.last_seen_at).toLocaleString('pt-BR'):'—';
+   const initials=String(t.name||'E').split(/\s+/).slice(0,2).map(x=>x[0]||'').join('').toUpperCase();
+   return '<div class="dash-team-card"><div class="dash-team-avatar">'+esc(initials)+'</div><div class="dash-team-main"><div class="dash-team-head"><strong>'+esc(t.name)+'</strong><span class="pill '+(dev?'ok':'warn')+'">'+(dev?'CELULAR ATIVO':'SEM CELULAR')+'</span></div><div class="dash-team-meta"><span>👥 '+members+' funcionários</span><span>👤 '+esc(supervisor?.full_name||'Encarregado não informado')+'</span><span>🚌 '+esc(v?(v.description||v.model||'Condução')+(v.plate?' • '+v.plate:''):'Sem condução vinculada')+'</span></div>'+(dev?'<div class="dash-team-last">Último acesso: '+esc(last)+'</div>':'')+'</div></div>';
+  }).join(''):'<div class="v2-empty">Nenhuma equipe ativa cadastrada.</div>';
+
+  const clientName=cleanCompanyName(companyProfile.trade_name||companyProfile.legal_name);
+  if($('#dashboardTitle'))$('#dashboardTitle').textContent='Painel Geral';
+  if($('#dashboardLastUpdate'))$('#dashboardLastUpdate').textContent='Atualizado em '+new Date().toLocaleString('pt-BR')+' • '+clientName;
+  await loadSmartAlerts();
+ }catch(e){
+  console.error('Dashboard',e);
+  if($('#todayList'))$('#todayList').innerHTML='<div class="error">Falha ao atualizar o painel: '+esc(e.message||String(e))+'</div>';
+ }
+}
+async function loadTeams(){
+ try{
+  const [r,v,e,d]=await Promise.all([
+   rest('v2_teams','select=id,name,code,status,supervisor_employee_id,metadata&company_id=eq.'+companyId+'&order=name.asc'),
+   rest('v2_vehicles','select=id,description,plate,status&company_id=eq.'+companyId+'&order=description.asc'),
+   rest('v2_employees','select=id,full_name,employee_number,phone,primary_team,status&company_id=eq.'+companyId+'&status=eq.active&order=full_name.asc'),
+   rest('v2_device_access','select=id,team_id,device_name,device_info,active,paired_at,last_seen_at,permissions&company_id=eq.'+companyId+'&order=paired_at.desc')
+  ]);
+  window.__teams=r||[];window.__teamVehicles=v||[];window.__teamEmployees=e||[];window.__teamDevices=d||[];
+  const contractors=[...new Set((r||[]).map(x=>(x.metadata?.contractor_name||'').trim()).filter(Boolean))].sort();
+  const dl=$('#teamContractors');if(dl)dl.innerHTML=contractors.map(n=>`<option value="${esc(n)}"></option>`).join('');
+  const list=$('#teamsList');
+  if(list){
+   list.innerHTML=(r||[]).map(x=>{
+    const vid=x.metadata?.primary_vehicle_id||'',veh=(v||[]).find(z=>z.id===vid),sup=(e||[]).find(z=>z.id===x.supervisor_employee_id);
+    const members=(e||[]).filter(z=>(z.primary_team||'').trim().toLowerCase()===(x.name||'').trim().toLowerCase());
+    const contractor=x.metadata?.contractor_name||'Contratante não informada';
+    const devices=(d||[]).filter(z=>z.team_id===x.id&&z.active);
+    return `<div class="item"><div class="toolbar" style="justify-content:space-between;gap:10px"><div><strong>${esc(x.name)}</strong> <span class="pill ${x.status==='active'?'ok':'warn'}">${x.status==='active'?'Ativa':'Inativa'}</span> <span class="pill ${devices.length?'ok':''}">📱 ${devices.length} celular(es)</span><div style="margin-top:5px"><span class="pill">🏭 ${esc(contractor)}</span></div><div class="muted" style="margin-top:5px">${esc(x.code||'Sem código')} • ${members.length} funcionário(s)</div><div style="margin-top:7px"><b>🚌 ${esc(veh?(veh.description+(veh.plate?' • '+veh.plate:'')):'Sem veículo vinculado')}</b>${sup?`<div class="muted">Responsável: ${esc(sup.full_name)}</div>`:''}</div></div><div class="toolbar"><button class="btn primary createDeviceCode" type="button" data-team="${x.id}" data-name="${esc(x.name)}">📱 Ativar celular</button><button class="btn soft" type="button" onclick="openTeamEdit('${x.id}')">Editar</button></div></div></div>`;
+   }).join('')||'<div class="muted">Sem equipes. Toque em + Nova equipe para cadastrar.</div>';
+  }
+  renderTeamDevices(d||[],r||[]);
+ }catch(e){
+  const list=$('#teamsList');if(list)list.innerHTML='<div class="error">'+esc(e.message)+'</div>';
+  const dev=$('#teamDevicesList');if(dev)dev.innerHTML='<div class="error">'+esc(e.message)+'</div>';
+ }
+}
+function deviceTimeLabel(v){
+ if(!v)return 'Nunca acessou';
+ try{return new Date(v).toLocaleString('pt-BR',{timeZone:(companyProfile?.timezone||'America/Sao_Paulo')})}catch(_){return String(v)}
+}
+function deviceSeenLabel(v){
+ if(!v)return 'Nunca acessou';
+ const ms=Date.now()-new Date(v).getTime();
+ if(ms<5*60000)return 'Agora há pouco';
+ if(ms<60*60000)return Math.max(1,Math.floor(ms/60000))+' min atrás';
+ if(ms<24*3600000)return Math.max(1,Math.floor(ms/3600000))+' h atrás';
+ return deviceTimeLabel(v);
+}
+function renderTeamDevices(devices,teams){
+ const list=$('#teamDevicesList');if(!list)return;
+ if(!devices.length){list.innerHTML='<div class="muted">Nenhum celular vinculado ainda. Ao ativar um aparelho de campo, ele aparecerá aqui.</div>';return}
+ list.innerHTML=devices.map(d=>{
+  const team=teams.find(t=>t.id===d.team_id),active=!!d.active,info=d.device_info||{};
+  const model=info.model||d.device_name||'Celular da equipe';
+  const system=[info.platform,info.platform_version].filter(Boolean).join(' ')||'Não informado';
+  const browser=[info.browser,info.browser_version?String(info.browser_version).split('.')[0]:''].filter(Boolean).join(' ')||'Não informado';
+  const code=info.device_code||String(d.id||'').slice(0,8).toUpperCase();
+  return '<div class="device-admin-card"><div class="device-admin-main"><div style="flex:1"><div class="device-admin-title"><strong>📱 '+esc(model)+'</strong><span class="pill '+(active?'ok':'warn')+'">'+(active?'VINCULADO':'DESVINCULADO')+'</span><span class="pill">'+esc(team?.name||'Equipe')+'</span></div>'+
+   '<div class="muted" style="margin-top:5px">'+esc(d.device_name||model)+'</div>'+
+   '<div class="device-admin-meta"><div><b>CÓDIGO DO APARELHO</b><span class="device-admin-id">#'+esc(code)+'</span></div><div><b>SISTEMA / NAVEGADOR</b>'+esc(system)+' • '+esc(browser)+'</div><div><b>VINCULADO EM</b>'+esc(deviceTimeLabel(d.paired_at))+'</div><div><b>ÚLTIMO ACESSO</b>'+esc(deviceSeenLabel(d.last_seen_at))+'</div></div></div>'+
+   (active?'<button class="btn danger revokeTeamDevice" type="button" data-id="'+esc(d.id)+'" data-name="'+esc(model)+'">DESVINCULAR</button>':'')+'</div></div>';
+ }).join('');
+}
+async function revokeTeamDevice(id,name){
+ if(!id)return;
+ if(!confirm('Desvincular '+(name||'este celular')+'? Ele perderá o acesso à equipe assim que voltar a se conectar e precisará de uma nova ativação para entrar novamente.'))return;
+ try{
+   await rest('v2_device_access','id=eq.'+encodeURIComponent(id),'PATCH',{active:false});
+   c360Toast('Celular desvinculado',(name||'O aparelho')+' não tem mais acesso à equipe.','success');
+   await loadTeams();
+ }catch(e){alert('Não foi possível desvincular o celular: '+(e.message||String(e)))}
+}
+async function createDevicePairingCode(teamId,teamName){
+ const card=$('#teamDeviceCodeCard'),codeEl=$('#teamDeviceCode'),nameEl=$('#teamDeviceCodeName');
+ if(card)card.style.display='block';if(codeEl)codeEl.textContent='GERANDO...';if(nameEl)nameEl.textContent=teamName||'Equipe';
+ try{
+  const r=await rpc('v2_create_device_pairing_code',{p_company_id:companyId,p_team_id:teamId,p_device_name:'Celular '+(teamName||'Equipe'),p_valid_minutes:60});
+  const row=Array.isArray(r)?r[0]:r;if(!row||!row.pairing_code)throw new Error('Código não retornado.');
+  if(codeEl){codeEl.textContent=row.pairing_code;codeEl.dataset.code=row.pairing_code}
+  if(nameEl)nameEl.textContent=(row.team_name||teamName||'Equipe')+' • válido por até 60 minutos';
+  if(card)card.scrollIntoView({behavior:'smooth',block:'center'});
+ }catch(e){if(codeEl)codeEl.textContent='ERRO';if(nameEl)nameEl.textContent=e.message||String(e)}
+}
+function renderTeamMembers(t={}){const list=$('#teamMembersList');if(!list)return;const emps=window.__teamEmployees||[];const teamName=(t.name||'').trim().toLowerCase();list.innerHTML=emps.map(e=>{const current=(e.primary_team||'').trim();const checked=teamName&&current.toLowerCase()===teamName;const other=current&&(!checked);return `<label class="item" style="display:flex;align-items:center;gap:10px;cursor:pointer"><input class="team-member-check" type="checkbox" value="${e.id}" ${checked?'checked':''} style="width:20px;height:20px"/><div style="flex:1"><strong>${esc(e.full_name)}</strong><div class="muted">Matrícula ${esc(e.employee_number||'')} • ${other?'Equipe atual: '+esc(current):checked?'Nesta equipe':'Sem equipe'}</div></div></label>`}).join('')||'<div class="muted">Nenhum funcionário ativo cadastrado.</div>';updateTeamMembersCount()}
+function updateTeamMembersCount(){const n=document.querySelectorAll('#teamMembersList .team-member-check:checked').length;const el=$('#teamMembersCount');if(el)el.textContent=n+' selecionado(s)'}
+function fillTeamEditSelectors(t={}){
+ const vehicles=(window.__teamVehicles||[]).filter(v=>v.status==='active'||v.id===t.metadata?.primary_vehicle_id);
+ $('#editTeamVehicle').innerHTML='<option value="">Sem veículo vinculado</option>'+vehicles.map(v=>`<option value="${v.id}">${esc(v.description)}${v.plate?' • '+esc(v.plate):''}</option>`).join('');
+ $('#editTeamVehicle').value=t.metadata?.primary_vehicle_id||'';
+ const emps=window.__teamEmployees||[];
+ $('#editTeamSupervisor').innerHTML='<option value="">Não informado</option>'+emps.map(e=>`<option value="${e.id}">${esc(e.full_name)} • ${esc(e.employee_number||'')}</option>`).join('');
+ $('#editTeamSupervisor').value=t.supervisor_employee_id||'';
+ const sup=emps.find(e=>e.id===t.supervisor_employee_id);
+ if($('#editTeamSupervisorPhone'))$('#editTeamSupervisorPhone').value=t.metadata?.supervisor_phone||sup?.phone||'';
+ renderTeamMembers(t)
+}
+window.openTeamEdit=function(id){const t=(window.__teams||[]).find(x=>x.id===id);if(!t)return;$('#teamEditTitle').textContent='Editar equipe';$('#editTeamId').value=t.id;$('#editTeamName').value=t.name||'';$('#editTeamContractor').value=t.metadata?.contractor_name||'';$('#editTeamCode').value=t.code||'';$('#editTeamStatus').value=t.status||'active';fillTeamEditSelectors(t);$('#archiveTeamBtn').style.display='inline-flex';$('#deleteTeamBtn').style.display='inline-flex';$('#teamEditMsg').textContent='';$('#teamEditCard').style.display='block';$('#teamEditCard').scrollIntoView({behavior:'smooth',block:'start'})}
+function openNewTeam(){ $('#teamEditTitle').textContent='Nova equipe';$('#editTeamId').value='';$('#editTeamName').value='';$('#editTeamContractor').value='';$('#editTeamCode').value='';$('#editTeamStatus').value='active';fillTeamEditSelectors({name:''});if($('#editTeamSupervisorPhone'))$('#editTeamSupervisorPhone').value='';$('#archiveTeamBtn').style.display='none';$('#deleteTeamBtn').style.display='none';$('#teamEditMsg').textContent='';$('#teamEditCard').style.display='block';$('#teamEditCard').scrollIntoView({behavior:'smooth',block:'start'})}
+
+const employeePhotoUrls={};
+async function employeePhotoObjectUrl(path){
+ if(!path)return '';
+ if(employeePhotoUrls[path])return employeePhotoUrls[path];
+ try{const r=await authFetch('/storage/v1/object/employee-documents/'+path);if(!r.ok)throw new Error('Foto indisponível');const b=await r.blob();const u=URL.createObjectURL(b);employeePhotoUrls[path]=u;return u}catch(e){console.warn('employee photo',e);return ''}
+}
+async function uploadEmployeeProfilePhoto(file,employeeId){
+ if(!file)return null;if(file.size>5*1024*1024)throw new Error('A foto deve ter no máximo 5 MB.');
+ const s=session(),ext=file.type==='image/png'?'png':file.type==='image/webp'?'webp':'jpg';const path=companyId+'/'+employeeId+'/profile-'+Date.now()+'.'+ext;
+ const r=await fetch(API_URL+'/storage/v1/object/employee-documents/'+path,{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+s.access_token,'Content-Type':file.type||'image/jpeg','x-upsert':'false'},body:file});await parseResponse(r);return path
+}
+function employeeInitials(name){return String(name||'?').trim().split(/\s+/).slice(0,2).map(x=>x[0]||'').join('').toUpperCase()||'?'}
+function employeePlaceholder(name){const initials=employeeInitials(name);return 'data:image/svg+xml;charset=UTF-8,'+encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160"><rect width="100%" height="100%" fill="#e2e8f0"/><text x="50%" y="54%" text-anchor="middle" dominant-baseline="middle" font-family="Arial" font-size="52" font-weight="700" fill="#475569">${initials}</text></svg>`)}
+async function hydrateEmployeePhotos(){for(const e of (window.__rhEmployees||[])){const img=document.querySelector(`[data-employee-photo="${e.id}"]`);if(!img)continue;img.src=employeePlaceholder(e.full_name);if(e.photo_path){const u=await employeePhotoObjectUrl(e.photo_path);if(u)img.src=u}}}
+async function loadEmployees(){try{const r=await rest('v2_employees','select=id,employee_number,full_name,cpf,rg,birth_date,phone,address,photo_path,primary_team,status,job_title,admission_date&company_id=eq.'+companyId+'&order=full_name.asc');window.__rhEmployees=r;let en=[];try{en=await rest('v2_employee_face_enrollments','select=employee_id,status&company_id=eq.'+companyId)}catch{}const set=new Set(en.filter(x=>x.status==='active').map(x=>x.employee_id));const list=$('#employeesList');if(list)list.innerHTML=r.map(x=>`<div class="item"><div class="toolbar" style="justify-content:space-between;gap:10px"><div style="display:flex;align-items:center;gap:12px"><img data-employee-photo="${x.id}" alt="Foto" style="width:52px;height:52px;object-fit:cover;border-radius:14px;border:1px solid #cbd5e1;background:#f8fafc"/><div><strong>${esc(x.full_name)}</strong> <span class="pill ${x.status==='active'?'ok':'warn'}">${x.status==='active'?'Ativo':'Arquivado'}</span> <span class="pill ${set.has(x.id)?'ok':'warn'}">${set.has(x.id)?'Biometria cadastrada':'Sem biometria'}</span><div class="muted">Matrícula ${esc(x.employee_number)} • ${esc(x.job_title||'Cargo não informado')} • ${esc(x.primary_team||'Sem equipe')}</div></div></div><button class="btn soft" type="button" onclick="openEmployeeEdit('${x.id}')">Editar</button></div></div>`).join('');hydrateEmployeePhotos();const active=r.filter(x=>x.status==='active');if($('#faceEmployee'))$('#faceEmployee').innerHTML='<option value="">Selecione...</option>'+active.map(x=>`<option value="${x.id}">${esc(x.full_name)} • ${esc(x.employee_number)}</option>`).join('');if($('#scheduleEmployee'))$('#scheduleEmployee').innerHTML='<option value="">Selecione...</option>'+active.map(x=>`<option value="${x.id}">${esc(x.full_name)} • ${esc(x.employee_number)}</option>`).join('');if($('#monthlyEmployee'))$('#monthlyEmployee').innerHTML='<option value="">Selecione...</option>'+active.map(x=>`<option value="${x.id}">${esc(x.full_name)} • ${esc(x.employee_number)}</option>`).join('');if($('#monthlyMonth')&&!$('#monthlyMonth').value)$('#monthlyMonth').value=localDateBR().slice(0,7);if($('#faceEnrollmentList'))$('#faceEnrollmentList').innerHTML=active.filter(x=>set.has(x.id)).map(x=>`<div class="item"><strong>${esc(x.full_name)}</strong><span class="pill ok">Biometria cadastrada ✓</span></div>`).join('')||'<div class="muted">Nenhuma biometria cadastrada.</div>'}catch(e){if($('#employeesList'))$('#employeesList').innerHTML='<div class="error">'+esc(e.message)+'</div>'}}
+function employeeAddressText(a){if(!a)return'';if(typeof a==='string')return a;if(a.formatted)return a.formatted;return [a.street||a.address||a.logradouro,a.number||a.numero,a.neighborhood||a.bairro,a.city||a.municipio,a.state||a.uf,a.zip||a.cep].filter(Boolean).join(', ')}
+window.openEmployeeEdit=function(id){const e=(window.__rhEmployees||[]).find(x=>x.id===id);if(!e)return;$('#editEmployeeId').value=e.id;$('#editEmployeeName').value=e.full_name||'';$('#editEmployeeNumber').value=e.employee_number||'';$('#editEmployeeCpf').value=e.cpf||'';$('#editEmployeeRg').value=e.rg||'';$('#editEmployeeBirth').value=e.birth_date||'';$('#editEmployeePhone').value=e.phone||'';$('#editEmployeeJob').value=e.job_title||'';$('#editEmployeeTeam').value=e.primary_team||'';$('#editEmployeeAdmission').value=e.admission_date||'';$('#editEmployeeAddress').value=employeeAddressText(e.address);window.__employeePhotoFile=null;window.__removeEmployeePhoto=false;const pp=$('#editEmployeePhotoPreview');pp.src=employeePlaceholder(e.full_name);if(e.photo_path)employeePhotoObjectUrl(e.photo_path).then(u=>{if(u&&$('#editEmployeeId').value===e.id)pp.src=u});$('#employeeEditMsg').textContent='';$('#employeeEditCard').style.display='block';$('#employeeEditCard').scrollIntoView({behavior:'smooth',block:'start'})}
+
+async function loadOperations(){try{const r=await rest('v2_operations','select=operation_number,title,status,customer_name,location_name,scheduled_start,planned_revenue,actual_revenue&company_id=eq.'+companyId+'&order=scheduled_start.desc&limit=50');$('#operationsList').innerHTML=r.map(x=>`<div class="item"><strong>#${esc(x.operation_number)} • ${esc(x.title)}</strong><span class="pill">${esc(x.status)}</span><div class="muted">${esc(x.customer_name||'')} • ${esc(x.location_name||'')}</div><div class="muted">Previsto: ${money(x.planned_revenue)} • Real: ${money(x.actual_revenue)}</div></div>`).join('')||'<div class="muted">Ainda não há operações cadastradas.</div>'}catch(e){$('#operationsList').innerHTML='<div class="error">'+esc(e.message)+'</div>'}}
+const vehiclePhotoUrls={};
+function vehiclePlaceholder(name='Veículo'){const t=(name||'V').trim().slice(0,2).toUpperCase();return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="220" height="164"><rect width="100%" height="100%" fill="#e2e8f0"/><text x="50%" y="54%" text-anchor="middle" font-family="Arial" font-size="38" fill="#64748b">${t}</text></svg>`)}`}
+async function vehiclePhotoObjectUrl(path){if(!path)return '';if(vehiclePhotoUrls[path])return vehiclePhotoUrls[path];try{const r=await authFetch('/storage/v1/object/employee-documents/'+path);if(!r.ok)throw new Error('Foto indisponível');const b=await r.blob();const u=URL.createObjectURL(b);vehiclePhotoUrls[path]=u;return u}catch(e){console.warn('vehicle photo',e);return ''}}
+async function uploadVehiclePhoto(file,vehicleId){const sess=session();const ext=file.type==='image/png'?'png':file.type==='image/webp'?'webp':'jpg';const path=companyId+'/vehicles/'+vehicleId+'/profile-'+Date.now()+'.'+ext;const r=await fetch(API_URL+'/storage/v1/object/employee-documents/'+path,{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+sess.access_token,'Content-Type':file.type||'image/jpeg','x-upsert':'false'},body:file});await parseResponse(r);return path}
+async function hydrateVehiclePhotos(){for(const v of (window.__fleetVehicles||[])){const img=document.querySelector(`[data-vehicle-photo="${v.id}"]`);if(!img)continue;img.src=vehiclePlaceholder(v.description);const p=v.metadata?.vehicle_photo_path;if(p){const u=await vehiclePhotoObjectUrl(p);if(u)img.src=u}}}
+function licensingStatusForVehicle(v,crlv){
+ const category=inferVehicleLicenseCategory(v);
+ const confirmedYear=Number(v?.metadata?.crlv?.licensing_year||0);
+ const currentYear=new Date().getFullYear();
+ const cycleYear=confirmedYear>0?confirmedYear+1:currentYear;
+ const deadline=spLicensingDueDate(v?.plate,category,cycleYear);
+ const today=new Date();today.setHours(0,0,0,0);
+ const due=deadline?new Date(deadline+'T00:00:00'):null;
+ const deadlineText=deadline?due.toLocaleDateString('pt-BR'):'não calculado';
+ const days=due?Math.ceil((due-today)/86400000):null;
+
+ if(confirmedYear>0){
+  if(days!==null&&days<0){
+   return {
+    cls:'danger',
+    label:'LICENCIAMENTO ATRASADO',
+    detail:'CRLV exercício '+confirmedYear+' • renovação '+cycleYear+' venceu em '+deadlineText,
+    deadline,confirmedYear,cycleYear,confirmed:true
+   };
+  }
+  if(days!==null&&days<=30){
+   return {
+    cls:'warn',
+    label:'LICENCIADO '+confirmedYear,
+    detail:'Próxima renovação '+cycleYear+' até '+deadlineText+' • faltam '+days+' dia(s)',
+    deadline,confirmedYear,cycleYear,confirmed:true
+   };
+  }
+  return {
+   cls:'ok',
+   label:'LICENCIADO '+confirmedYear,
+   detail:'Próxima renovação '+cycleYear+(deadline?' até '+deadlineText:''),
+   deadline,confirmedYear,cycleYear,confirmed:true
+  };
+ }
+
+ const fallbackDeadline=spLicensingDueDate(v?.plate,category,currentYear);
+ const fallbackDue=fallbackDeadline?new Date(fallbackDeadline+'T00:00:00'):null;
+ const fallbackDays=fallbackDue?Math.ceil((fallbackDue-today)/86400000):null;
+ const fallbackText=fallbackDeadline?fallbackDue.toLocaleDateString('pt-BR'):'não calculado';
+
+ if(fallbackDays!==null&&fallbackDays<0){
+  return {cls:'danger',label:'VERIFICAR LICENCIAMENTO',detail:'Ano do CRLV não confirmado • prazo '+currentYear+' encerrou em '+fallbackText,deadline:fallbackDeadline,confirmedYear:null,cycleYear:currentYear,confirmed:false};
+ }
+ return {cls:'warn',label:'SITUAÇÃO NÃO CONFIRMADA',detail:'Ano do CRLV não confirmado • prazo '+currentYear+(fallbackDeadline?' até '+fallbackText:''),deadline:fallbackDeadline,confirmedYear:null,cycleYear:currentYear,confirmed:false};
+}
+
+function fleetLicenseTone(status,hasCrlv){
+ if(!hasCrlv)return 'neutral';
+ return ['ok','warn','danger'].includes(status?.cls)?status.cls:'neutral';
+}
+function fleetLicenseIcon(tone){
+ return tone==='ok'?'✓':tone==='warn'?'!':tone==='danger'?'!':'📄';
+}
+function updateFleetKpis(vehicles=[]){
+ const total=vehicles.length;
+ const active=vehicles.filter(v=>v.status==='active').length;
+ const maintenance=vehicles.filter(v=>v.status==='maintenance').length;
+ const inactive=vehicles.filter(v=>v.status==='inactive').length;
+ setTextSafe('fleetKpiTotal',total);
+ setTextSafe('fleetKpiActive',active);
+ setTextSafe('fleetKpiMaintenance',maintenance);
+ setTextSafe('fleetKpiInactive',inactive);
+}
+function fleetTrackingRow(vehicleId){
+ return (window.__fleetTracking||[]).find(x=>x.vehicle_id===vehicleId)||null;
+}
+function fleetTrackingState(t){
+ if(!t)return{cls:'neutral',label:'SEM RASTREAMENTO',dot:'',detail:'Localização ainda não recebida',age:'—'};
+ const age=movitAge(t.recorded_at||t.updated_at),speed=Number(t.speed_kmh||0);
+ if(age.stale)return{cls:'stale',label:'GPS DESATUALIZADO',dot:'stale',detail:'Última posição recebida',age:age.text};
+ if(speed>2)return{cls:'move',label:'ANDANDO • '+Math.round(speed)+' km/h',dot:'move',detail:'Veículo em movimento',age:age.text};
+ if(t.ignition===true)return{cls:'on',label:'LIGADO • PARADO',dot:'on',detail:'Ignição ligada',age:age.text};
+ return{cls:'stopped',label:'PARADO • DESLIGADO',dot:'',detail:'Ignição desligada',age:age.text};
+}
+function fleetTrackingLocation(t){
+ if(!t)return'Localização indisponível';
+ const address=t.address||t.raw_data?.address;
+ if(address)return String(address);
+ const lat=Number(t.latitude),lon=Number(t.longitude);
+ return Number.isFinite(lat)&&Number.isFinite(lon)?lat.toFixed(5)+', '+lon.toFixed(5):'Sem coordenadas';
+}
+function fuelLogIsFull(x){
+ const v=x?.metadata?.tank_filled_full;
+ return v===true||v==='true'||v===1||v==='1';
+}
+function fuelPlausibleKmL(v){
+ const n=Number(v||0);
+ return Number.isFinite(n)&&n>=0.5&&n<=20;
+}
+function fuelEconomyEstimate(vehicleId,logs=[]){
+ const rows=(logs||[]).filter(x=>x.vehicle_id===vehicleId&&Number(x.odometer_km)>0&&Number(x.liters)>0)
+  .sort((a,b)=>new Date(a.fueled_at)-new Date(b.fueled_at));
+ if(rows.length<2)return null;
+
+ const fullIndexes=[];
+ rows.forEach((x,i)=>{if(fuelLogIsFull(x))fullIndexes.push(i)});
+ let totalKm=0,totalLiters=0,cycles=0;
+ for(let k=1;k<fullIndexes.length;k++){
+  const a=fullIndexes[k-1],b=fullIndexes[k];
+  const km=Number(rows[b].odometer_km)-Number(rows[a].odometer_km);
+  const liters=rows.slice(a+1,b+1).reduce((s,x)=>s+Number(x.liters||0),0);
+  const rate=liters>0?km/liters:0;
+  if(km>0&&liters>0&&fuelPlausibleKmL(rate)){
+   totalKm+=km;totalLiters+=liters;cycles++;
+  }
+ }
+ if(cycles&&totalLiters>0){
+  return {km_l:totalKm/totalLiters,source:'full_cycles',cycles};
+ }
+
+ // Enquanto ainda não há dois "tanque cheio", usa uma mediana aproximada
+ // dos abastecimentos com KM para começar a estimar sem inventar um consumo fixo.
+ const rates=[];
+ for(let i=1;i<rows.length;i++){
+  const km=Number(rows[i].odometer_km)-Number(rows[i-1].odometer_km);
+  const liters=Number(rows[i].liters||0);
+  const rate=liters>0?km/liters:0;
+  if(km>0&&fuelPlausibleKmL(rate))rates.push(rate);
+ }
+ if(!rates.length)return null;
+ const recent=rates.slice(-8).sort((a,b)=>a-b);
+ const mid=Math.floor(recent.length/2);
+ const median=recent.length%2?recent[mid]:(recent[mid-1]+recent[mid])/2;
+ return {km_l:median,source:'approx_history',cycles:0};
+}
+function fuelLevelLabel(pct){
+ if(pct>=90)return 'Cheio';
+ if(pct>=65)return '≈ 3/4 do tanque';
+ if(pct>=40)return '≈ Meio tanque';
+ if(pct>=20)return '≈ 1/4 do tanque';
+ return 'Reserva estimada';
+}
+function vehicleFuelLevelEstimate(v,tracking=null){
+ const capacity=Number(v?.fuel_tank_capacity_liters||0);
+ if(!(capacity>0))return {state:'missing_capacity'};
+ const logs=(window.__fleetFuelLogs||[]).filter(x=>x.vehicle_id===v.id)
+  .sort((a,b)=>new Date(a.fueled_at)-new Date(b.fueled_at));
+ const fulls=logs.filter(x=>fuelLogIsFull(x)&&Number(x.odometer_km)>0);
+ if(!fulls.length)return {state:'need_full',capacity};
+ const ref=fulls[fulls.length-1];
+ const economy=fuelEconomyEstimate(v.id,logs);
+ if(!economy){
+  return {state:'learning',capacity,liters:capacity,pct:100,label:'Cheio',ref};
+ }
+ const latestLogKm=Math.max(0,...logs.map(x=>Number(x.odometer_km||0)).filter(Number.isFinite));
+ const currentKm=Math.max(Number(v.current_odometer_km||0),Number(tracking?.odometer_km||0),latestLogKm,Number(ref.odometer_km||0));
+ const distance=Math.max(0,currentKm-Number(ref.odometer_km||0));
+ const addedAfterRef=logs.filter(x=>new Date(x.fueled_at)>new Date(ref.fueled_at))
+  .reduce((s,x)=>s+Number(x.liters||0),0);
+ let liters=capacity-(distance/economy.km_l)+addedAfterRef;
+ liters=Math.max(0,Math.min(capacity,liters));
+ const pct=Math.max(0,Math.min(100,(liters/capacity)*100));
+ return {
+  state:'ready',capacity,liters,pct,label:fuelLevelLabel(pct),distance,
+  km_l:economy.km_l,quality:economy.source,ref,currentKm
+ };
+}
+function fleetDistanceRow(vehicleId){
+ return (window.__fleetDistanceSummary||[]).find(x=>x.vehicle_id===vehicleId)||null;
+}
+function fleetDistanceKm(v){
+ const n=Math.max(0,Number(v||0));
+ return n.toLocaleString('pt-BR',{minimumFractionDigits:n<10?1:0,maximumFractionDigits:1})+' km';
+}
+function fleetDistanceHtml(v){
+ const d=fleetDistanceRow(v.id);
+ if(!d||Number(d.sample_count||0)<1){
+  return '<div class="fleet-distance"><div class="fleet-distance-box"><div class="fleet-distance-head"><strong>🛣️ KM rodado pelo rastreador</strong><span>Iniciando histórico</span></div><div class="fleet-distance-note">O Comando 360 começou a guardar o hodômetro do MOVIT. Os totais aparecem conforme novas leituras forem chegando.</div></div></div>';
+ }
+ const samples=Number(d.sample_count||0);
+ return '<div class="fleet-distance"><div class="fleet-distance-box">'+
+  '<div class="fleet-distance-head"><strong>🛣️ KM rodado pelo rastreador</strong><span>'+samples+' leitura'+(samples===1?'':'s')+'</span></div>'+
+  '<div class="fleet-distance-grid">'+
+   '<div class="fleet-distance-cell"><b>'+fleetDistanceKm(d.today_km)+'</b><small>HOJE</small></div>'+
+   '<div class="fleet-distance-cell"><b>'+fleetDistanceKm(d.yesterday_km)+'</b><small>ONTEM</small></div>'+
+   '<div class="fleet-distance-cell"><b>'+fleetDistanceKm(d.last_7_days_km)+'</b><small>ÚLTIMOS 7 DIAS</small></div>'+
+   '<div class="fleet-distance-cell"><b>'+fleetDistanceKm(d.month_km)+'</b><small>MÊS ATUAL</small></div>'+
+  '</div>'+
+  '<div class="fleet-distance-note">Calculado automaticamente pelas variações do hodômetro enviado pelo MOVIT. O histórico começou a ser coletado agora.</div>'+
+ '</div></div>';
+}
+
+function fleetFuelHtml(v,tracking){
+ const f=vehicleFuelLevelEstimate(v,tracking);
+ if(f.state==='missing_capacity'){
+  return '<div class="fleet-fuel"><div class="fleet-fuel-box muted"><div class="fleet-fuel-head"><strong>⛽ Combustível estimado</strong><b>Configurar</b></div><div class="fleet-fuel-detail">Cadastre a capacidade do tanque em Editar veículo.</div></div></div>';
+ }
+ if(f.state==='need_full'){
+  return '<div class="fleet-fuel"><div class="fleet-fuel-box muted"><div class="fleet-fuel-head"><strong>⛽ Combustível estimado</strong><b>Sem referência</b></div><div class="fleet-fuel-detail">No próximo abastecimento até encher, marque “Completou o tanque?”.</div></div></div>';
+ }
+ if(f.state==='learning'){
+  return '<div class="fleet-fuel"><div class="fleet-fuel-box ok"><div class="fleet-fuel-head"><strong>⛽ Combustível estimado</strong><b>Cheio • 100%</b></div><div class="fleet-fuel-bar"><i style="width:100%"></i></div><div class="fleet-fuel-detail">'+Number(f.capacity).toLocaleString('pt-BR',{maximumFractionDigits:1})+' L de capacidade • referência criada; aprendendo o consumo da condução.</div></div></div>';
+ }
+ const cls=f.pct<20?'danger':f.pct<40?'warn':'ok';
+ const quality=f.quality==='full_cycles'?'consumo aprendido por tanques completos':'consumo aproximado pelo histórico';
+ return '<div class="fleet-fuel"><div class="fleet-fuel-box '+cls+'"><div class="fleet-fuel-head"><strong>⛽ Combustível estimado</strong><b>'+esc(f.label)+' • '+Math.round(f.pct)+'%</b></div><div class="fleet-fuel-bar"><i style="width:'+Math.max(2,Math.round(f.pct))+'%"></i></div><div class="fleet-fuel-detail">≈ '+Number(f.liters).toLocaleString('pt-BR',{maximumFractionDigits:1})+' L de '+Number(f.capacity).toLocaleString('pt-BR',{maximumFractionDigits:1})+' L • '+Number(f.km_l).toLocaleString('pt-BR',{maximumFractionDigits:2})+' km/L ('+quality+').</div></div></div>';
+}
+
+function renderFleetVehicles(){
+ const vehicles=[...(window.__fleetVehicles||[])];
+ const teams=window.__fleetTeams||[];
+ const docs=vehicleDocsCache||[];
+ const search=String(document.getElementById('fleetSearch')?.value||'').trim().toLowerCase();
+ const statusFilter=document.getElementById('fleetStatusFilter')?.value||'all';
+ const licenseFilter=document.getElementById('fleetLicenseFilter')?.value||'all';
+ const sort=document.getElementById('fleetSort')?.value||'name';
+
+ updateFleetKpis(vehicles);
+
+ let rows=vehicles.map(v=>{
+  const team=teams.find(t=>t.metadata?.primary_vehicle_id===v.id);
+  const crlv=docs.find(d=>d.vehicle_id===v.id&&isVehicleCrlv(d.document_type));
+  const crlvFile=crlv?.file_id?vehicleDocFiles[crlv.file_id]:null;
+  const licenseStatus=licensingStatusForVehicle(v,crlv);
+  const tracking=fleetTrackingRow(v.id);
+  return {v,team,crlv,crlvFile,licenseStatus,tracking};
+ });
+
+ if(search){
+  rows=rows.filter(({v,team})=>{
+   const hay=[v.description,v.plate,v.make,v.model,v.model_year,v.renavam,team?.name,team?.metadata?.contractor_name].filter(Boolean).join(' ').toLowerCase();
+   return hay.includes(search);
+  });
+ }
+ if(statusFilter!=='all')rows=rows.filter(({v})=>v.status===statusFilter);
+ if(licenseFilter!=='all'){
+  rows=rows.filter(({crlv,licenseStatus})=>{
+   if(licenseFilter==='missing')return !crlv;
+   return !!crlv&&licenseStatus.cls===licenseFilter;
+  });
+ }
+
+ rows.sort((a,b)=>{
+  if(sort==='plate')return String(a.v.plate||'').localeCompare(String(b.v.plate||''),'pt-BR');
+  if(sort==='status')return String(a.v.status||'').localeCompare(String(b.v.status||''),'pt-BR')||String(a.v.description||'').localeCompare(String(b.v.description||''),'pt-BR');
+  return String(a.v.description||a.v.model||'').localeCompare(String(b.v.description||b.v.model||''),'pt-BR');
+ });
+
+ setTextSafe('fleetResultCount',rows.length+' veículo'+(rows.length===1?'':'s'));
+
+ const list=document.getElementById('vehiclesList');
+ if(!list)return;
+
+ list.innerHTML=rows.map(({v,team,crlv,crlvFile,licenseStatus,tracking})=>{
+  const contractor=team?.metadata?.contractor_name||'';
+  const statusText=v.status==='active'?'Ativo':v.status==='maintenance'?'Em manutenção':'Inativo';
+  const statusCls=v.status==='active'?'ok':v.status==='maintenance'?'warn':'danger';
+  const tone=fleetLicenseTone(licenseStatus,!!crlv);
+  const model=[v.make,v.model,v.model_year].filter(Boolean).join(' ')||'Modelo não informado';
+  const meta=[v.plate||'Sem placa',model,Number(v.current_odometer_km||0).toLocaleString('pt-BR')+' km'].join(' • ');
+  const licenseTitle=crlv?licenseStatus.label:'CRLV não cadastrado';
+  const licenseDetail=crlv?licenseStatus.detail:'Cadastre o documento para acompanhar exercício e próxima renovação.';
+  const tags=(team?'<span class="fleet-tag">👥 '+esc(team.name)+'</span>':'')+(contractor?'<span class="fleet-tag">🏭 '+esc(contractor)+'</span>':'')+(v.renavam?'<span class="fleet-tag">RENAVAM '+esc(v.renavam)+'</span>':'');
+  const crlvAction=crlvFile
+   ?'<button class="btn soft fleet-open-crlv vehicleDocView" data-file="'+crlvFile.id+'" type="button">📄 Abrir CRLV</button>'
+   :'<button class="btn soft" type="button" onclick="openVehicleEdit(\''+v.id+'\')">＋ Cadastrar CRLV</button>';
+  const retry=(crlvFile&&!licenseStatus.confirmed)
+   ?'<button class="btn soft vehicleCrlvRead" data-file="'+crlvFile.id+'" data-vehicle="'+v.id+'" type="button">↻ Tentar leitura</button>'
+   :'';
+  const trackState=fleetTrackingState(tracking);
+  const trackLocation=fleetTrackingLocation(tracking);
+  const hasTrackPos=tracking&&Number.isFinite(Number(tracking.latitude))&&Number.isFinite(Number(tracking.longitude));
+  const trackingHtml='<div class="fleet-tracking"><div class="fleet-tracking-box '+trackState.cls+'">'+
+   '<div class="fleet-tracking-title"><span class="tracking-dot '+trackState.dot+'"></span><span>'+esc(trackState.label)+'</span></div>'+
+   '<div class="fleet-tracking-detail" title="'+esc(trackLocation)+'">📍 '+esc(trackLocation)+'</div>'+
+   '<div class="fleet-tracking-age">'+esc(trackState.detail)+' • '+esc(trackState.age)+'</div>'+
+   (hasTrackPos?'<div class="toolbar" style="margin-top:8px"><button class="btn primary fleet-tracking-map vehicle-route-button" type="button" data-route-lat="'+tracking.latitude+'" data-route-lon="'+tracking.longitude+'" data-route-name="'+esc(v.description||v.model||'Condução')+'" data-route-plate="'+esc(v.plate||'')+'">🚗 IR ATÉ</button><button class="btn soft fleet-tracking-map" type="button" onclick="window.__movitFocusVehicleId=\''+v.id+'\';v2Go(\'rastreamento\')">📍 MAPA</button></div>':'')+
+  '</div></div>';
+
+  return '<div class="fleet-card" data-fleet-vehicle="'+v.id+'">'+
+   '<div class="fleet-main">'+
+    '<img class="fleet-photo" data-vehicle-photo="'+v.id+'" alt="Foto de '+esc(v.description||v.model||'veículo')+'"/>'+
+    '<div style="min-width:0">'+
+     '<div><span class="fleet-name">'+esc(v.description||v.model||'Veículo')+'</span><span class="pill '+statusCls+' fleet-status">'+esc(statusText)+'</span></div>'+
+     '<div class="fleet-meta">'+esc(meta)+'</div>'+
+     '<div class="fleet-tags">'+tags+'</div>'+
+    '</div>'+
+   '</div>'+
+   trackingHtml+
+   fleetDistanceHtml(v)+
+   fleetFuelHtml(v,tracking)+
+   '<div class="fleet-license">'+
+    '<div class="fleet-license-box '+tone+'">'+
+     '<div class="fleet-license-title"><span>'+fleetLicenseIcon(tone)+'</span><span>'+esc(licenseTitle)+'</span></div>'+
+     '<div class="fleet-license-detail">'+esc(licenseDetail)+'</div>'+
+    '</div>'+
+   '</div>'+
+   '<div class="fleet-actions">'+crlvAction+retry+
+    '<button class="btn fleet-edit-btn" type="button" onclick="openVehicleEdit(\''+v.id+'\')">Editar</button>'+
+   '</div>'+
+  '</div>';
+ }).join('')||'<div class="fleet-empty"><strong>Nenhum veículo encontrado</strong><div class="muted" style="margin-top:6px">Ajuste os filtros ou cadastre uma nova condução.</div></div>';
+
+ hydrateVehiclePhotos();
+}
+async function loadVehicles(){
+ try{
+  if(c360NetOnline()){try{await movitInvoke('sync')}catch(e){console.warn('MOVIT na Frota',e)}}
+  const [r,t,docs,files,tracking,fuelLogs,distanceSummary]=await Promise.all([
+   rest('v2_vehicles','select=id,description,plate,make,model,model_year,renavam,current_odometer_km,fuel_tank_capacity_liters,status,metadata&company_id=eq.'+companyId+'&order=description.asc'),
+   rest('v2_teams','select=id,name,status,metadata,supervisor_employee_id&company_id=eq.'+companyId+'&order=name.asc'),
+   rest('v2_vehicle_documents','select=id,vehicle_id,document_type,expires_at,status,file_id,created_at&company_id=eq.'+companyId+'&status=eq.active&order=created_at.desc'),
+   rest('v2_files','select=id,storage_bucket,storage_path,original_name,mime_type,size_bytes&company_id=eq.'+companyId+'&category=eq.vehicle_document&archived_at=is.null&order=created_at.desc'),
+   rest('v2_vehicle_tracking_current','select=vehicle_id,provider,latitude,longitude,speed_kmh,ignition,odometer_km,recorded_at,raw_data,updated_at&company_id=eq.'+companyId+'&provider=eq.movit'),
+   rest('v2_fuel_logs','select=id,vehicle_id,fueled_at,odometer_km,liters,total_amount,metadata&company_id=eq.'+companyId+'&order=fueled_at.asc&limit=1500'),
+   rpc('v2_vehicle_tracking_distance_summary',{p_company_id:companyId})
+  ]);
+  window.__fleetVehicles=r||[];
+  window.__fleetTeams=t||[];
+  vehicleDocsCache=docs||[];
+  vehicleDocFiles=Object.fromEntries((files||[]).map(f=>[f.id,f]));
+  window.__fleetTracking=tracking||[];
+  window.__fleetFuelLogs=fuelLogs||[];
+  window.__fleetDistanceSummary=distanceSummary||[];
+  renderFleetVehicles();
+  scheduleAutomaticCrlvRead();
+ }catch(e){
+  const l=document.getElementById('vehiclesList');
+  if(l)l.innerHTML='<div class="error">'+esc(e.message)+'</div>';
+ }
+}
+
+function fillVehicleTeamSelect(vehicleId=''){const sel=$('#editVehicleTeam');if(!sel)return;const teams=(window.__fleetTeams||[]).filter(t=>t.status==='active'||t.metadata?.primary_vehicle_id===vehicleId);sel.innerHTML='<option value="">Sem equipe vinculada</option>'+teams.map(t=>`<option value="${t.id}">${esc(t.name)}</option>`).join('');const linked=teams.find(t=>t.metadata?.primary_vehicle_id===vehicleId);sel.value=linked?.id||'';updateVehicleContractor()}
+function updateVehicleContractor(){const t=(window.__fleetTeams||[]).find(x=>x.id===$('#editVehicleTeam')?.value);const el=$('#editVehicleContractor');if(el)el.textContent=t?.metadata?.contractor_name?'Contratante: '+t.metadata.contractor_name:''}
+window.openVehicleEdit=async function(id=''){const v=(window.__fleetVehicles||[]).find(x=>x.id===id)||{};$('#editVehicleId').value=v.id||'';$('#vehicleEditTitle').textContent=v.id?'Editar veículo':'Novo veículo';$('#editVehicleDescription').value=v.description||'';$('#editVehiclePlate').value=v.plate||'';$('#editVehicleMake').value=v.make||'';$('#editVehicleModel').value=v.model||'';$('#editVehicleYear').value=v.model_year||'';$('#editVehicleRenavam').value=v.renavam||'';$('#editVehicleKm').value=v.current_odometer_km||'';$('#editVehicleTankCapacity').value=v.fuel_tank_capacity_liters||'';$('#editVehicleStatus').value=v.status||'active';window.__vehiclePhotoFile=null;window.__removeVehiclePhoto=false;const pp=$('#editVehiclePhotoPreview');pp.src=vehiclePlaceholder(v.description);const p=v.metadata?.vehicle_photo_path;if(p){const u=await vehiclePhotoObjectUrl(p);if(u)pp.src=u}fillVehicleTeamSelect(v.id||'');$('#archiveVehicleBtn').style.display=v.id?'':'none';$('#deleteVehicleBtn').style.display=v.id?'':'none';$('#vehicleEditMsg').textContent='';$('#vehicleEditCard').style.display='block';$('#vehicleDocEditCard').style.display='none';await loadVehicleDocs(v.id||'');$('#vehicleEditCard').scrollIntoView({behavior:'smooth',block:'start'})}
+
+async function loadAlerts(){try{const r=await rest('v2_alerts','select=title,message,severity,status,created_at&company_id=eq.'+companyId+'&status=in.(open,seen)&order=created_at.desc&limit=50');$('#alertsList').innerHTML=r.map(x=>`<div class="item"><strong>${esc(x.title)}</strong><span class="pill ${x.severity==='critical'?'danger':x.severity==='warning'?'warn':'ok'}">${esc(x.severity)}</span><div class="muted">${esc(x.message||'')}</div></div>`).join('')||'<div class="muted">Nenhum alerta aberto.</div>'}catch(e){$('#alertsList').innerHTML='<div class="error">'+esc(e.message)+'</div>'}}
+
+
+function monthBoundsBR(yyyyMm){
+  const [y,m]=yyyyMm.split('-').map(Number);
+  const startLocal=`${String(y).padStart(4,'0')}-${String(m).padStart(2,'0')}-01T00:00:00-03:00`;
+  const nextMonth = m===12 ? `${y+1}-01-01T00:00:00-03:00` : `${y}-${String(m+1).padStart(2,'0')}-01T00:00:00-03:00`;
+  return {start:new Date(startLocal).toISOString(),end:new Date(nextMonth).toISOString()};
+}
+
+async function loadMonthlyMirror(){
+  if(!companyId)return;
+  const employeeId=$('#monthlyEmployee')?.value;
+  const month=$('#monthlyMonth')?.value;
+  const list=$('#monthlyMirrorList'), summary=$('#monthlySummary');
+  if(!list||!summary)return;
+  if(!employeeId||!month){
+    list.innerHTML='<div class="muted">Selecione um funcionário e um mês.</div>';
+    summary.innerHTML='';
+    return;
+  }
+
+  list.innerHTML='<div class="muted">Carregando espelho mensal...</div>';
+
+  try{
+    const bounds=monthBoundsBR(month);
+    const queryStart=new Date(new Date(bounds.start).getTime()-18*60*60*1000).toISOString();
+
+    const rows=await rest(
+      'v2_attendance_events',
+      'select=id,employee_id,occurred_at,event_type,method,accuracy_m,nsr,integrity_hash,work_team_id,device_access_id,metadata&company_id=eq.'+companyId+
+      '&employee_id=eq.'+encodeURIComponent(employeeId)+
+      '&occurred_at=gte.'+encodeURIComponent(queryStart)+
+      '&occurred_at=lt.'+encodeURIComponent(bounds.end)+
+      '&order=occurred_at.asc&limit=3000'
+    );
+
+    const empRows=await rest(
+      'v2_employees',
+      'select=id,full_name,employee_number,cpf,primary_team&company_id=eq.'+companyId+
+      '&id=eq.'+encodeURIComponent(employeeId)+'&limit=1'
+    );
+    const emp=empRows?.[0]||{};
+    const teamRows=await rest('v2_teams','select=id,name,code,status&company_id=eq.'+companyId+'&order=name.asc');
+    const teamMap=Object.fromEntries((teamRows||[]).map(t=>[t.id,t]));
+    const originalSel=$('#treatmentOriginalId');
+    if(originalSel)originalSel.innerHTML='<option value="">Sem vínculo / inclusão manual</option>'+rows.map(x=>{const tn=pointEventTeamName(x,teamMap);return '<option value="'+esc(x.id)+'">'+esc(new Date(x.occurred_at).toLocaleString('pt-BR',{timeZone:(companyProfile?.timezone||'America/Sao_Paulo')}))+' • '+esc(pointLabels[x.event_type]||x.event_type)+(tn?' • '+esc(tn):'')+'</option>';}).join('');
+    list.dataset.employeeName=emp.full_name||'';
+    list.dataset.employeeNumber=emp.employee_number||'';
+    list.dataset.cpf=emp.cpf||'';
+    list.dataset.role=emp.primary_team||'';
+    list.dataset.employeeId=employeeId;
+    list.dataset.month=month;
+
+    const sessions=buildWorkSessions(rows).filter(s=>{
+      const shiftDay=localDayFromIso(s.start);
+      return shiftDay.slice(0,7)===month;
+    });
+
+    let totalWorked=0,totalBreak=0,totalExtra=0,totalLate=0,totalEarly=0,totalBalance=0,incompleteDays=0;
+
+    const rendered=sessions.map(session=>{
+      const shiftDay=localDayFromIso(session.start);
+      const isToday=shiftDay===localDateBR();
+      const mt=computeDayMetrics(session.events,{live:isToday && !session.end,expectedMinutes:expectedMinutesFor(employeeId)});
+
+      const sch=getEmployeeSchedule(employeeId);
+      const firstIn=session.events.find(e=>e.event_type==='in');
+      const finalOut=[...session.events].reverse().find(e=>e.event_type==='out');
+      let late=0,early=0;
+      if(firstIn&&sch?.start){
+        late=Math.max(0,eventLocalMinutes(firstIn.occurred_at)-timeToMinutes(sch.start)-Number(sch.tolerance||0));
+      }
+      if(finalOut&&sch?.end){
+        let actual=eventLocalMinutes(finalOut.occurred_at),planned=timeToMinutes(sch.end);
+        if(localDayFromIso(finalOut.occurred_at)!==shiftDay)actual+=1440;
+        if(planned<timeToMinutes(sch.start||'00:00'))planned+=1440;
+        early=Math.max(0,planned-actual-Number(sch.tolerance||0));
+      }
+      // An open/incomplete journey is not a closed daily balance yet.
+      // Keep worked/break time visible, but do not turn it into contractual deficit.
+      if(mt.incomplete) early=0;
+      const balance=mt.incomplete ? 0 : (mt.worked-expectedMinutesFor(employeeId));
+      totalWorked+=mt.worked;
+      totalBreak+=mt.breakMinutes;
+      totalExtra+=mt.overtime;
+      totalLate+=mt.incomplete?0:late;
+      totalEarly+=early;
+      totalBalance+=balance;
+      if(mt.incomplete)incompleteDays++;
+
+      const fmt=t=>new Date(t).toLocaleTimeString('pt-BR',{
+        hour:'2-digit',minute:'2-digit',timeZone:(companyProfile?.timezone||'America/Sao_Paulo')
+      });
+
+      const first=session.events[0];
+      const last=session.events[session.events.length-1];
+      const dateLabel=new Date(shiftDay+'T12:00:00-03:00').toLocaleDateString('pt-BR',{
+        timeZone:(companyProfile?.timezone||'America/Sao_Paulo')
+      });
+
+      const crossedMidnight=localDayFromIso(first.occurred_at)!==localDayFromIso(last.occurred_at);
+      const statusText=mt.incomplete
+        ? (isToday?'Jornada em andamento':'Batidas incompletas')
+        : (statusLabels[mt.status]||mt.status);
+
+      const sessionTeams=[...new Set(session.events.map(e=>pointEventTeamName(e,teamMap)).filter(Boolean))];
+      return `<div class="item">
+        <strong>${esc(dateLabel)}${crossedMidnight?' • virou a meia-noite':''}</strong>
+        <span class="pill ${mt.incomplete?'warn':(statusClass[mt.status]||'')}">${esc(statusText)}</span>
+        <div class="muted">Primeira: ${fmt(first.occurred_at)} • Última: ${fmt(last.occurred_at)}</div>
+        <div class="muted"><b>Equipe(s) trabalhada(s):</b> ${esc(sessionTeams.length?sessionTeams.join(' → '):(emp.primary_team||'Não identificada'))}</div>
+        <div class="muted">Trabalhado: <b>${fmtMinutes(mt.worked)}</b> • Intervalo: ${fmtMinutes(mt.breakMinutes)} • Extra: <b>${fmtMinutes(mt.overtime)}</b> • Saldo: <b>${mt.incomplete?'Em aberto':fmtSignedMinutes(balance)}</b>${late?' • '+(mt.incomplete?'Atraso provisório':'Atraso')+': <b>'+fmtMinutes(late)+'</b>':''}${early?' • Saída antecipada: <b>'+fmtMinutes(early)+'</b>':''}</div>
+        <div class="muted"><b>Marcações originais:</b> ${session.events.map(e=>{const tn=pointEventTeamName(e,teamMap);return `${fmt(e.occurred_at)} ${pointLabels[e.event_type]||e.event_type}${tn?' [Equipe '+tn+']':''}${e.nsr?' [NSR '+e.nsr+']':''}${e.integrity_hash?' [SHA-256 '+e.integrity_hash.slice(0,12)+'…]':''}`;}).join(' • ')}</div>
+      </div>`;
+    }).join('');
+
+    summary.innerHTML=[
+      ['Jornadas com registro',sessions.length],
+      ['Horas trabalhadas',fmtMinutes(totalWorked)],
+      ['Horas extras',fmtMinutes(totalExtra)],
+      ['Atrasos confirmados',fmtMinutes(totalLate)],
+      ['Saídas antecipadas',fmtMinutes(totalEarly)],
+      ['Saldo de jornadas encerradas',fmtSignedMinutes(totalBalance)],
+      ['Jornadas incompletas',incompleteDays]
+    ].map(x=>`<div class="card" style="margin:0"><div class="kpi" style="font-size:20px">${esc(x[1])}</div><div class="label">${esc(x[0])}</div></div>`).join('');
+
+    list.innerHTML=rendered||'<div class="muted">Nenhuma jornada encontrada nesse mês.</div>';
+    if(!$('#treatmentCard')?.classList.contains('hidden'))await refreshTreatmentHistory();
+  }catch(e){
+    summary.innerHTML='';
+    list.innerHTML='<div class="error">'+esc(e.message||String(e))+'</div>';
+  }
+}
+
+function printMonthlyMirror(){
+  const empSel=$('#monthlyEmployee');
+  const employeeId=empSel?.value||'';
+  const month=$('#monthlyMonth')?.value||'';
+  const empName=empSel?.selectedOptions?.[0]?.textContent||'Funcionário';
+  const mirror=$('#monthlyMirrorList');
+  const employeeNumber=mirror?.dataset?.employeeNumber||'';
+  const cpf=mirror?.dataset?.cpf||'';
+  const role=mirror?.dataset?.role||'';
+  const content=mirror?.innerHTML||'';
+  const summary=$('#monthlySummary')?.innerHTML||'';
+  const emitted=new Date().toLocaleString('pt-BR',{timeZone:(companyProfile?.timezone||'America/Sao_Paulo')});
+  const employer=companyProfile.legal_name||companyProfile.trade_name||'Empresa';
+  const cnpj=companyProfile.tax_id||'';
+  const schedule=scheduleText(employeeId);
+  const docId='CTRL-'+month.replace('-','')+'-'+String(employeeId).slice(0,8).toUpperCase()+'-'+Date.now().toString(36).toUpperCase();
+  const w=window.open('','_blank');
+  if(!w)return alert('Permita pop-ups para gerar o PDF.');
+  w.document.write(`<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Espelho de ponto - ${esc(empName)}</title>
+  <style>
+  *{box-sizing:border-box}body{font-family:Arial,sans-serif;padding:22px;color:#111;font-size:12px}
+  h1{margin:0;font-size:22px}.head{border-bottom:2px solid #111;padding-bottom:12px;margin-bottom:12px}
+  .muted{color:#555;font-size:11px}.meta{display:grid;grid-template-columns:1fr 1fr;gap:5px 18px;margin:12px 0}
+  .item{border:1px solid #bbb;border-radius:7px;padding:9px;margin:7px 0;break-inside:avoid}.pill{display:inline-block;padding:3px 7px;border-radius:999px;background:#eee;font-size:10px}
+  .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}.card{border:1px solid #bbb;border-radius:7px;padding:8px}.kpi{font-weight:700;font-size:16px}.label{font-size:10px;color:#555}
+  .legal{margin-top:14px;padding:10px;border:1px solid #bbb;background:#fafafa}.footer{margin-top:16px;border-top:1px solid #bbb;padding-top:8px;font-size:10px;color:#555}
+  @media print{body{padding:0}@page{size:A4;margin:12mm}}
+  </style></head><body>
+  <div class="head"><h1>ESPELHO DE PONTO ELETRÔNICO</h1><div class="muted">Documento gerado pelo Comando 360 • ID ${esc(docId)}</div></div>
+  <div class="meta">
+    <div><b>Empregador:</b> ${esc(employer)}</div><div><b>CNPJ:</b> ${esc(cnpj||'Não informado')}</div>
+    <div><b>Trabalhador:</b> ${esc(empName)}</div><div><b>Período:</b> ${esc(month)}</div>
+    <div><b>Matrícula:</b> ${esc(employeeNumber||'Não informada')}</div><div><b>CPF:</b> ${esc(cpf||'Não informado')}</div>
+    <div><b>Equipe/lotação:</b> ${esc(role||'Não informada')}</div><div><b>Emissão:</b> ${esc(emitted)}</div>
+    <div style="grid-column:1/-1"><b>Jornada cadastrada:</b> ${esc(schedule)}</div>
+  </div>
+  <div class="grid" style="margin:12px 0">${summary}</div>
+  ${content}
+  <div class="legal"><b>Rastreabilidade:</b> novas marcações recebem NSR sequencial e hash SHA-256 no banco de dados. Os campos essenciais da marcação original são protegidos contra alteração e exclusão. Registros antigos, anteriores à implantação desta camada, podem aparecer sem NSR/hash e não devem ser retroativamente apresentados como se tivessem sido gerados com essa proteção.</div>
+  <div class="footer">Este relatório é uma versão operacional em evolução. A conformidade integral como REP-P ainda depende da implementação e validação dos demais requisitos técnicos aplicáveis, incluindo AFD/AEJ, comprovantes eletrônicos e assinatura eletrônica quando exigida.</div>
+  <script>window.onload=()=>window.print();<\/script></body></html>`);
+  w.document.close();
+}
+
+function setTextSafe(id,value){const el=document.getElementById(id);if(el)el.textContent=value}
+function setHtmlSafe(id,value){const el=document.getElementById(id);if(el)el.innerHTML=value}
+async function loadTeamPoint(){
+ if(!companyId)return;
+ try{
+   let employees=[],events=[];
+   const day=localDateBR();
+   const teamId=deviceAccess?.team_id||deviceTeam?.id||null;
+   const teamName=deviceTeam?.name||'Equipe do aparelho';
+
+   if(deviceMode&&!c360NetOnline()){
+    employees=await offlineCacheGet(offlineTeamKey('point_employees'))||[];
+    events=await offlineCacheGet(offlineTeamKey('point_events',day))||[];
+    const pending=(await offlineQueueList()).filter(x=>x.type==='attendance'&&saoPauloDateKey(x.payload?.occurred_at)===day).map(x=>({
+      id:null,
+      employee_id:x.payload.employee_id,
+      occurred_at:x.payload.occurred_at,
+      event_type:x.payload.event_type,
+      method:x.payload.method,
+      accuracy_m:x.payload.accuracy_m,
+      offline_event_id:x.payload.offline_event_id,
+      work_team_id:x.payload.work_team_id||x.team_id||null,
+      device_access_id:x.payload.device_access_id||null,
+      metadata:x.payload.metadata||{},
+      offline_pending:true
+    }));
+    const seen=new Set(events.map(x=>x.offline_event_id).filter(Boolean));
+    events=events.concat(pending.filter(x=>!seen.has(x.offline_event_id)));
+   }else{
+    employees=await devicePointEmployees();
+    events=await devicePointEventsToday();
+    await cachePointContext(employees,events);
+   }
+
+   if(!employees.length&&deviceMode&&!c360NetOnline()){
+    const p=$('#presenceList');
+    if(p)p.innerHTML='<div class="error">Ainda não há funcionários salvos para uso offline. Conecte este celular à internet uma vez.</div>';
+   }
+
+   const activeEmployeeIds=new Set(employees.map(e=>e.id));
+   events=events.filter(ev=>activeEmployeeIds.has(ev.employee_id));
+   const map=Object.fromEntries(employees.map(e=>[e.id,e]));
+   const by={};
+   for(const ev of events)(by[ev.employee_id]??=[]).push(ev);
+
+   const metrics={};
+   const currentIds=new Set();
+   for(const e of employees){
+     const evs=(by[e.id]||[]).sort((a,b)=>new Date(a.occurred_at)-new Date(b.occurred_at));
+     metrics[e.id]=computeDayMetrics(evs,{live:true,expectedMinutes:expectedMinutesFor(e.id)});
+     const latestWithTeam=[...evs].reverse().find(x=>pointEventTeamId(x));
+     if(latestWithTeam&&pointEventTeamId(latestWithTeam)===teamId)currentIds.add(e.id);
+   }
+
+   const currentEmployees=employees.filter(e=>currentIds.has(e.id));
+   const teamEvents=events.filter(ev=>pointEventTeamId(ev)===teamId);
+   let total=0,extra=0;
+   for(const e of currentEmployees){
+     total+=metrics[e.id]?.worked||0;
+     extra+=metrics[e.id]?.overtime||0;
+   }
+
+   const teamAverageWorked=currentEmployees.length?Math.round(total/currentEmployees.length):0;
+   const teamAverageOvertime=currentEmployees.length?Math.round(extra/currentEmployees.length):0;
+   setTextSafe('pointToday',currentEmployees.length);
+   setTextSafe('pointEvents',teamEvents.length);
+   setTextSafe('pointWorked',fmtMinutes(teamAverageWorked));
+   setTextSafe('pointOvertime',fmtMinutes(teamAverageOvertime));
+
+   const presence=$('#presenceList');
+   if(presence)presence.innerHTML=currentEmployees.map(e=>{
+     const mt=metrics[e.id],st=mt?.status||'none';
+     const cadastro=e.primary_team&&!sameTeamName(e.primary_team,teamName)?' • Cadastro: '+esc(e.primary_team):'';
+     return '<div class="item"><strong>'+esc(e.full_name)+'</strong><span class="pill '+(statusClass[st]||'')+'">'+esc(statusLabels[st]||st)+'</span><div class="muted"><b>Equipe hoje:</b> '+esc(teamName)+cadastro+' • Jornada: '+fmtMinutes(mt?.worked||0)+'</div></div>';
+   }).join('')||'<div class="muted">Nenhum funcionário trabalhando nesta equipe agora.</div>';
+
+   const list=$('#pointList');
+   if(list)list.innerHTML=[...teamEvents].reverse().slice(0,80).map(x=>{
+     const e=map[x.employee_id]||{};
+     return '<div class="item"><strong>'+esc(e.full_name||'Funcionário')+'</strong><span class="pill '+(x.offline_pending?'warn':'')+'">'+esc(pointLabels[x.event_type]||x.event_type)+(x.offline_pending?' • OFFLINE':'')+'</span><div class="muted">'+esc(new Date(x.occurred_at).toLocaleString('pt-BR',{timeZone:(companyProfile?.timezone||'America/Sao_Paulo')}))+' • '+esc(x.method||'matrícula')+' • <b>'+esc(teamName)+'</b></div></div>';
+   }).join('')||'<div class="muted">Nenhuma batida registrada por esta equipe hoje.</div>';
+
+   const mirror=$('#timeMirrorList');
+   if(mirror)mirror.innerHTML=currentEmployees.map(e=>{
+     const mt=metrics[e.id]||{};
+     return '<div class="item"><strong>'+esc(e.full_name)+'</strong><div class="muted"><b>Equipe atual:</b> '+esc(teamName)+' • Trabalhado no dia: <b>'+fmtMinutes(mt.worked||0)+'</b> • Intervalo: '+fmtMinutes(mt.breakMinutes||0)+' • Extra: <b>'+fmtMinutes(mt.overtime||0)+'</b></div></div>';
+   }).join('')||'<div class="muted">Nenhum funcionário nesta equipe agora.</div>';
+ }catch(e){
+   ['presenceList','pointList','timeMirrorList'].forEach(id=>{
+     const el=$('#'+id);
+     if(el)el.innerHTML='<div class="error">'+esc(e.message||String(e))+'</div>';
+   });
+ }
+}
+async function loadRHPoint(){
+ if(!companyId)return;
+ try{
+   const today=localDateBR();
+   const bounds=saoPauloDayUtcBounds(today);
+   const [employees,teams,days,rawEvents]=await Promise.all([
+     rest('v2_employees','select=id,employee_number,full_name,primary_team,status&company_id=eq.'+companyId+'&status=eq.active&order=full_name.asc'),
+     rest('v2_teams','select=id,name,code,status&company_id=eq.'+companyId+'&order=name.asc'),
+     rest('v2_attendance_days','select=employee_id,status,worked_minutes,late_minutes,absence_minutes,work_date&company_id=eq.'+companyId+'&work_date=eq.'+today),
+     rest('v2_attendance_events','select=id,employee_id,occurred_at,event_type,method,accuracy_m,nsr,integrity_hash,work_team_id,device_access_id,metadata&company_id=eq.'+companyId+'&occurred_at=gte.'+encodeURIComponent(bounds.start)+'&occurred_at=lt.'+encodeURIComponent(bounds.end)+'&order=occurred_at.asc&limit=500')
+   ]);
+
+   setTextSafe('rhActive',employees.length);
+   const activeEmployeeIds=new Set(employees.map(e=>e.id));
+   const events=(rawEvents||[]).filter(ev=>activeEmployeeIds.has(ev.employee_id));
+   const map=Object.fromEntries(employees.map(e=>[e.id,e]));
+   const teamMap=Object.fromEntries((teams||[]).map(t=>[t.id,t]));
+   const byEmployee={};
+   for(const ev of events)(byEmployee[ev.employee_id]??=[]).push(ev);
+
+   const metricsByEmployee={};
+   const currentTeamByEmployee={};
+   const switchEventIds=new Set();
+   let totalWorked=0,totalOvertime=0,withEvents=0;
+
+   for(const e of employees){
+     const evs=(byEmployee[e.id]||[]).sort((a,b)=>new Date(a.occurred_at)-new Date(b.occurred_at));
+     let previousTeamId=null;
+     for(const ev of evs){
+       const tid=pointEventTeamId(ev);
+       if(tid&&previousTeamId&&tid!==previousTeamId)switchEventIds.add(ev.id);
+       if(tid)previousTeamId=tid;
+     }
+
+     const latestWithTeam=[...evs].reverse().find(x=>pointEventTeamId(x));
+     currentTeamByEmployee[e.id]=latestWithTeam?pointEventTeamName(latestWithTeam,teamMap):(e.primary_team||'Sem equipe');
+
+     const metrics=computeDayMetrics(evs,{live:true,expectedMinutes:expectedMinutesFor(e.id)});
+     const sch=getEmployeeSchedule(e.id);
+     let late=0;
+     if(evs.length&&sch?.start){
+       const firstIn=evs.find(x=>x.event_type==='in');
+       if(firstIn){
+         const diff=eventLocalMinutes(firstIn.occurred_at)-timeToMinutes(sch.start)-Number(sch.tolerance||0);
+         late=Math.max(0,diff);
+       }
+     }
+     metrics.late=late;
+     metricsByEmployee[e.id]=metrics;
+     if(evs.length)withEvents++;
+     totalWorked+=metrics.worked;
+     totalOvertime+=metrics.overtime;
+   }
+
+   setTextSafe('rhWorking',withEvents);
+   setTextSafe('pointToday',withEvents);
+   setTextSafe('pointEvents',events.length);
+   const averageWorked=withEvents?Math.round(totalWorked/withEvents):0;
+   const averageOvertime=withEvents?Math.round(totalOvertime/withEvents):0;
+   setTextSafe('pointWorked',fmtMinutes(averageWorked));
+   setTextSafe('pointOvertime',fmtMinutes(averageOvertime));
+
+   const presenceEl=$('#presenceList');
+   if(presenceEl)presenceEl.innerHTML=employees.map(e=>{
+     const d=days.find(x=>x.employee_id===e.id);
+     const mt=metricsByEmployee[e.id];
+     const hasEvents=(byEmployee[e.id]||[]).length>0;
+     const status=hasEvents?mt.status:(d?.status||'none');
+     const txt=status==='none'?'Sem registro hoje':(statusLabels[status]||status);
+     const cls=status==='none'?'warn':(statusClass[status]||'');
+     const mins=hasEvents?mt.worked:Number(d?.worked_minutes||0);
+     const teamToday=currentTeamByEmployee[e.id]||e.primary_team||'Sem equipe';
+     const cadastro=e.primary_team&&!sameTeamName(e.primary_team,teamToday)?' • Cadastro: '+esc(e.primary_team):'';
+     return '<div class="item"><strong>'+esc(e.full_name)+'</strong><span class="pill '+cls+'">'+esc(txt)+'</span><div class="muted"><b>Equipe hoje:</b> '+esc(teamToday)+cadastro+(hasEvents||d?' • '+fmtMinutes(mins):'')+'</div></div>';
+   }).join('')||'<div class="muted">Sem funcionários ativos.</div>';
+
+   const mirrorEl=$('#timeMirrorList');
+   if(mirrorEl)mirrorEl.innerHTML=employees.map(e=>{
+     const evs=byEmployee[e.id]||[];
+     if(!evs.length)return '';
+     const mt=metricsByEmployee[e.id];
+     const first=evs[0],last=evs[evs.length-1];
+     const fmt=t=>new Date(t).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',timeZone:(companyProfile?.timezone||'America/Sao_Paulo')});
+     const status=statusLabels[mt.status]||mt.status;
+     const teamToday=currentTeamByEmployee[e.id]||e.primary_team||'Sem equipe';
+     const cadastro=e.primary_team&&!sameTeamName(e.primary_team,teamToday)?' • Cadastro: '+esc(e.primary_team):'';
+     return '<div class="item"><strong>'+esc(e.full_name)+'</strong><span class="pill '+(statusClass[mt.status]||'')+'">'+esc(status)+'</span><div class="muted"><b>Equipe hoje:</b> '+esc(teamToday)+cadastro+'</div><div class="muted">Primeira batida: '+fmt(first.occurred_at)+' • Última: '+fmt(last.occurred_at)+'</div><div class="muted">Trabalhado: <b>'+fmtMinutes(mt.worked)+'</b> • Intervalo: '+fmtMinutes(mt.breakMinutes)+' • Extra: <b>'+fmtMinutes(mt.overtime)+'</b>'+(mt.late?' • Atraso: <b>'+fmtMinutes(mt.late)+'</b>':'')+'</div></div>';
+   }).join('')||'<div class="muted">Nenhum registro de ponto hoje.</div>';
+
+   const pointListEl=$('#pointList');
+   if(pointListEl)pointListEl.innerHTML=[...events].reverse().slice(0,100).map(x=>{
+     const e=map[x.employee_id]||{};
+     const dt=new Date(x.occurred_at).toLocaleString('pt-BR',{timeZone:(companyProfile?.timezone||'America/Sao_Paulo')});
+     const teamName=pointEventTeamName(x,teamMap)||e.primary_team||'Equipe não identificada';
+     const switched=switchEventIds.has(x.id);
+     return '<div class="item"><strong>'+esc(e.full_name||'Funcionário')+'</strong><span class="pill">'+esc(pointLabels[x.event_type]||x.event_type)+'</span>'+(switched?' <span class="pill warn">TROCA DE EQUIPE</span>':'')+'<div class="muted">'+esc(dt)+' • '+esc(x.method||'método não informado')+' • <b>'+esc(teamName)+'</b>'+(x.accuracy_m?' • GPS ±'+esc(x.accuracy_m)+' m':'')+'</div></div>';
+   }).join('')||'<div class="muted">Nenhuma batida registrada hoje.</div>';
+
+   const vacations=await rest('v2_vacation_alerts','select=employee_id,concession_deadline,status,alert_level,days&company_id=eq.'+companyId+'&order=concession_deadline.asc&limit=50');
+   setTextSafe('rhVacation',vacations.filter(v=>v.alert_level&&v.alert_level!=='ok').length);
+   if($('#vacationList'))$('#vacationList').innerHTML=vacations.map(v=>{
+     const e=map[v.employee_id]||{};
+     const cls=v.alert_level==='critical'?'danger':v.alert_level==='warning'?'warn':'ok';
+     return '<div class="item"><strong>'+esc(e.full_name||'Funcionário')+'</strong><span class="pill '+cls+'">'+esc(v.alert_level||v.status||'férias')+'</span><div class="muted">Prazo: '+esc(v.concession_deadline||'-')+' • '+esc(v.days||0)+' dias</div></div>';
+   }).join('')||'<div class="muted">Nenhum alerta de férias.</div>';
+ }catch(e){
+   ['presenceList','pointList','vacationList','timeMirrorList'].forEach(id=>{
+     const el=$('#'+id);
+     if(el)el.innerHTML='<div class="error">'+esc(e.message||String(e))+'</div>';
+   });
+ }
+}
+
+function getGPS(){
+ return new Promise((resolve,reject)=>{
+  if(!navigator.geolocation)return reject(new Error('Este navegador não oferece localização GPS.'));
+  navigator.geolocation.getCurrentPosition(
+   p=>resolve({latitude:p.coords.latitude,longitude:p.coords.longitude,accuracy_m:p.coords.accuracy}),
+   ()=>reject(new Error('Não foi possível obter a localização. Autorize o GPS do navegador.')),
+   {enableHighAccuracy:true,timeout:15000,maximumAge:0}
+  );
+ });
+}
+
+$('#saveFaceReference').addEventListener('click',async()=>{
+ const b=$('#saveFaceReference'),m=$('#faceEnrollMsg'),eid=$('#faceEmployee').value,f=$('#faceReference').files?.[0];
+ if(!eid){m.className='error';m.textContent='Selecione o funcionário.';return}
+ if(!f){m.className='error';m.textContent='Capture a foto facial.';return}
+ b.disabled=true;m.className='muted';m.textContent='Validando rosto e atualizando biometria...';
+ try{
+  await enrollEmployeeFaceFromFile(f,eid);
+  m.className='okmsg';m.textContent='Biometria facial atualizada ✓';
+  $('#faceReference').value='';await loadEmployees();
+ }catch(e){m.className='error';m.textContent=e.message||String(e)}
+ finally{b.disabled=false}
+});
+if($('#useProfileFace'))$('#useProfileFace').addEventListener('click',async()=>{
+ const b=$('#useProfileFace'),m=$('#faceEnrollMsg'),eid=$('#faceEmployee').value;
+ if(!eid){m.className='error';m.textContent='Selecione o funcionário.';return}
+ const emp=(window.__rhEmployees||[]).find(x=>x.id===eid);
+ if(!emp?.photo_path){m.className='error';m.textContent='Este funcionário ainda não possui foto de perfil.';return}
+ b.disabled=true;m.className='muted';m.textContent='Lendo a foto de perfil e cadastrando o rosto...';
+ try{
+  const f=await profilePhotoAsFile(emp);
+  await enrollEmployeeFaceFromFile(f,eid);
+  m.className='okmsg';m.textContent='Foto de perfil ativada como referência facial ✓';
+  await loadEmployees();
+ }catch(e){m.className='error';m.textContent=e.message||String(e)}
+ finally{b.disabled=false}
+});
+$('#pointMatricula').addEventListener('input',()=>{clearTimeout(window.__pt);window.__pt=setTimeout(previewNextPoint,250)});
+$('#pointMatricula').addEventListener('blur',previewNextPoint);
+
+
+
+window.pointMethod='employee_number';
+function clearPointFaceState(){
+ window.__pointFaceMatch=null;
+ const b=$('#registerPoint');if(b&&window.pointMethod==='face')b.disabled=true;
+}
+function setPointMethod(method){
+ window.pointMethod=method;
+ const isFace=method==='face';
+ $('#matriculaMode').classList.toggle('hidden',isFace);
+ $('#faceMode').classList.toggle('hidden',!isFace); if($('#cameraChoice'))$('#cameraChoice').classList.toggle('hidden',!isFace);
+ $('#methodMatricula').className='btn '+(!isFace?'primary':'soft');
+ $('#methodFace').className='btn '+(isFace?'primary':'soft');
+ $('#nextPointLabel').textContent=isFace?'Capture a selfie para identificar o funcionário':'Digite a matrícula';
+ $('#pointMsg').textContent='';
+ clearPointFaceState();
+ if($('#registerPoint'))$('#registerPoint').disabled=isFace;
+}
+$('#methodMatricula').addEventListener('click',()=>setPointMethod('employee_number'));
+$('#methodFace').addEventListener('click',()=>{
+ setPointMethod('face');
+ $('#cameraChoice').classList.remove('hidden');
+});
+$('#openFrontCamera').addEventListener('click',()=>{
+ const input=$('#pointSelfieFront');input.value='';input.click();
+});
+$('#openBackCamera').addEventListener('click',()=>{
+ const input=$('#pointSelfieBack');input.value='';input.click();
+});
+
+async function preRecognizePointSelfie(file){
+ const msg=$('#pointMsg'),label=$('#nextPointLabel'),btn=$('#registerPoint');
+ clearPointFaceState();
+ if(btn)btn.disabled=true;
+ label.textContent='Analisando rosto...';
+ msg.className='muted';
+ msg.textContent=c360NetOnline()?'Identificando funcionário...':'Identificando funcionário offline...';
+ try{
+  const descriptor=await faceDescriptorFromFile(file);
+  let employee=null,distance=null;
+  if(deviceMode){
+   const employees=c360NetOnline()?await devicePointEmployees():await offlinePointEmployees();
+   let m=null;
+   if(c360NetOnline()){
+    const match=await rpc('v2_device_match_employee_face',{p_company_id:companyId,p_descriptor:descriptor,p_threshold:.50});
+    m=(match||[])[0]||null;
+   }else{
+    m=await offlineMatchEmployeeFace(descriptor,.50);
+   }
+   if(!m)throw new Error(c360NetOnline()?'Rosto não reconhecido ou biometria ainda não cadastrada.':'Rosto não reconhecido no cache deste celular. Conecte à internet uma vez para atualizar as biometrias.');
+   employee=(employees||[]).find(e=>e.id===m.employee_id)||null;
+   if(!employee)throw new Error('Funcionário reconhecido, mas não está disponível neste aparelho.');
+   distance=Number(m.distance||0);
+  }else{
+   if(!c360NetOnline())throw new Error('No acesso administrativo, o reconhecimento facial exige internet.');
+   const match=await rpc('v2_match_employee_face',{p_company_id:companyId,p_descriptor:descriptor,p_threshold:.50});
+   const m=(match||[])[0];
+   if(!m)throw new Error('Rosto não reconhecido ou biometria ainda não cadastrada.');
+   const rows=await rest('v2_employees','select=id,full_name,employee_number,cpf,primary_team&company_id=eq.'+companyId+'&id=eq.'+encodeURIComponent(m.employee_id)+'&status=eq.active&limit=1');
+   employee=rows?.[0]||null;
+   if(!employee)throw new Error('Funcionário reconhecido, mas não está ativo.');
+   distance=Number(m.distance||0);
+  }
+  const nextEvent=(deviceMode&&!c360NetOnline())?await offlineNextPoint(employee.id):await getNextPoint(employee.id);
+  if(nextEvent==='finished')throw new Error('Jornada já encerrada hoje para '+employee.full_name+'.');
+  window.__pointFaceMatch={file,employee,distance,descriptor,offline:!c360NetOnline()};
+  label.textContent=employee.full_name+' • '+(pointLabels[nextEvent]||nextEvent);
+  msg.className=c360NetOnline()?'okmsg':'warn';
+  msg.textContent='✓ '+employee.full_name+' reconhecido'+(c360NetOnline()?'.':'. Modo offline — o ponto ficará salvo neste celular.');
+  if(btn)btn.disabled=false;
+ }catch(e){
+  window.__pointFaceMatch=null;
+  label.textContent='Rosto não reconhecido';
+  msg.className='error';
+  msg.textContent=e.message||String(e);
+  if(btn)btn.disabled=true;
+ }
+}
+
+async function handlePointSelfieChange(input){
+ const f=input.files?.[0],wrap=$('#selfiePreviewWrap'),img=$('#selfiePreview');
+ if(!f){
+  wrap.classList.add('hidden');img.removeAttribute('src');window.__pointSelfieFile=null;clearPointFaceState();return;
+ }
+ window.__pointSelfieFile=f;
+ const u=URL.createObjectURL(f);img.src=u;wrap.classList.remove('hidden');
+ $('#nextPointLabel').textContent='Selfie capturada • identificando...';
+ await preRecognizePointSelfie(f);
+}
+$('#pointSelfieFront').addEventListener('change',()=>handlePointSelfieChange($('#pointSelfieFront')));
+$('#pointSelfieBack').addEventListener('change',()=>handlePointSelfieChange($('#pointSelfieBack')));
+
+$('#registerPoint').addEventListener('click',async()=>{
+ const btn=$('#registerPoint'),msg=$('#pointMsg'),withSelfie=window.pointMethod==='face';
+ const selfie=withSelfie?(window.__pointSelfieFile||null):null;
+ const matricula=withSelfie?'':$('#pointMatricula').value.trim();
+ if(!withSelfie&&!matricula){msg.className='error';msg.textContent='Digite a matrícula.';return}
+ if(withSelfie&&!selfie){msg.className='error';msg.textContent='Capture a selfie antes de bater o ponto.';return}
+
+ if(deviceMode&&!c360NetOnline()){
+  btn.disabled=true;
+  try{
+   if(withSelfie){
+    let fm=window.__pointFaceMatch;
+    if(!fm||fm.file!==selfie){
+     await preRecognizePointSelfie(selfie);
+     fm=window.__pointFaceMatch;
+    }
+    if(!fm?.employee)throw new Error('Não foi possível reconhecer o funcionário offline.');
+    await registerOfflinePointFace(fm.employee,fm.distance,selfie);
+    if($('#pointSelfieFront'))$('#pointSelfieFront').value='';
+    if($('#pointSelfieBack'))$('#pointSelfieBack').value='';
+    window.__pointSelfieFile=null;clearPointFaceState();
+    $('#selfiePreviewWrap').classList.add('hidden');$('#selfiePreview').removeAttribute('src');
+    $('#nextPointLabel').textContent='Capture a selfie para identificar o funcionário';
+   }else{
+    await registerOfflinePointByNumber(matricula);
+   }
+  }catch(e){msg.className='error';msg.textContent=e.message||String(e)}
+  finally{btn.disabled=withSelfie}
+  return;
+ }
+
+ btn.disabled=true;
+ msg.className='muted';
+ msg.textContent=withSelfie?'Confirmando reconhecimento...':'Localizando funcionário...';
+
+ try{
+  let employee,faceDistance=null;
+  let deviceEmployees=null;
+
+  if(deviceMode)deviceEmployees=await devicePointEmployees();
+
+  if(withSelfie){
+   const fm=window.__pointFaceMatch;
+   if(fm&&fm.file===selfie&&fm.employee){
+    employee=fm.employee;
+    faceDistance=Number(fm.distance||0);
+   }else{
+    const descriptor=await faceDescriptorFromFile(selfie);
+    const match=await rpc(deviceMode?'v2_device_match_employee_face':'v2_match_employee_face',{p_company_id:companyId,p_descriptor:descriptor,p_threshold:.50});
+    const m=(match||[])[0];
+    if(!m)throw new Error('Rosto não reconhecido ou biometria ainda não cadastrada.');
+    if(deviceMode){
+     employee=(deviceEmployees||[]).find(e=>e.id===m.employee_id);
+     if(!employee)throw new Error('Funcionário reconhecido, mas não está ativo nesta empresa.');
+    }else{
+     const rows=await rest('v2_employees','select=id,full_name,employee_number,cpf,primary_team&company_id=eq.'+companyId+'&id=eq.'+encodeURIComponent(m.employee_id)+'&status=eq.active&limit=1');
+     if(!rows.length)throw new Error('Funcionário reconhecido, mas não está ativo nesta empresa.');
+     employee=rows[0];
+    }
+    faceDistance=Number(m.distance||0);
+   }
+   msg.textContent=employee.full_name+' reconhecido. Obtendo GPS...';
+  }else{
+   if(deviceMode){
+    employee=(deviceEmployees||[]).find(e=>String(e.employee_number||'').trim()===matricula);
+    if(!employee)throw new Error('Matrícula não encontrada ou funcionário inativo.');
+   }else{
+    const rows=await rest('v2_employees','select=id,full_name,employee_number,cpf,primary_team&company_id=eq.'+companyId+'&employee_number=eq.'+encodeURIComponent(matricula)+'&status=eq.active&limit=1');
+    if(!rows.length)throw new Error('Matrícula não encontrada ou funcionário inativo.');
+    employee=rows[0];
+   }
+  }
+
+  const nextEvent=await getNextPoint(employee.id);
+  if(nextEvent==='finished')throw new Error('Jornada já encerrada hoje para este funcionário.');
+
+  let teamChanged=false,previousTeamName=null;
+  if(deviceMode&&deviceAccess?.team_id){
+   const previous=(await devicePointEventsToday()).filter(x=>x.employee_id===employee.id);
+   const lastWithTeam=[...(previous||[])].reverse().find(x=>pointEventTeamId(x));
+   if(lastWithTeam&&pointEventTeamId(lastWithTeam)!==deviceAccess.team_id){
+    teamChanged=true;previousTeamName=pointEventTeamName(lastWithTeam,{})||'outra equipe';
+   }
+  }
+
+  const gps=await getGPS(),user=await getUser(),occurredAt=new Date().toISOString();
+  let selfiePath=null;
+  if(withSelfie){msg.textContent='Salvando comprovante facial...';selfiePath=await uploadSelfie(selfie,employee.id)}
+
+  const workTeamId=deviceMode?(deviceAccess?.team_id||null):null;
+  const deviceAccessId=deviceMode?(deviceAccess?.id||null):null;
+  const payload={
+   company_id:companyId,employee_id:employee.id,occurred_at:occurredAt,event_type:nextEvent,
+   latitude:gps.latitude,longitude:gps.longitude,accuracy_m:gps.accuracy_m,
+   method:withSelfie?'face':'employee_number',device_id:navigator.userAgent.slice(0,180),
+   offline_event_id:'beta544-'+Date.now()+'-'+Math.random().toString(36).slice(2),
+   work_team_id:workTeamId,device_access_id:deviceAccessId,
+   metadata:{beta:true,source:deviceMode?'team_device':'controla_beta_web',identification_method:withSelfie?'face':'employee_number',selfie_evidence:withSelfie,selfie_storage_path:selfiePath,face_distance:faceDistance,work_team_id:workTeamId,work_team_name:deviceMode?(deviceTeam?.name||null):null,device_access_id:deviceAccessId,device_name:deviceMode?(deviceAccess?.device_name||null):null,team_changed:teamChanged,previous_team_name:previousTeamName},
+   created_by:user.id
+  };
+
+  const saved=await restInsert('v2_attendance_events',payload),eventId=saved?.[0]?.id||null;
+  if(withSelfie&&eventId){
+   try{
+    if(deviceMode){
+     await restInsert('v2_attendance_face_checks',{company_id:companyId,attendance_event_id:eventId,employee_id:employee.id,selfie_path:selfiePath,verified:true,score:Math.max(0,1-faceDistance),algorithm:'face-api.js_0.22.2',failure_reason:null,metadata:{source:'team_device'}});
+    }else{
+     await restInsert('point_face_checks',{point_event_id:eventId,verified:true,score:Math.max(0,1-faceDistance),algorithm:'face-api.js_0.22.2',selfie_storage_path:selfiePath,failure_reason:null});
+    }
+   }catch(e){console.warn(e)}
+  }
+
+  const receiptType=pointLabels[nextEvent]||nextEvent;
+  const when=new Date(occurredAt).toLocaleString('pt-BR');
+  msg.className='okmsg';
+  msg.textContent=receiptType+' registrado para '+employee.full_name+'.'+(teamChanged?' Troca para '+(deviceTeam?.name||'a equipe deste aparelho')+' registrada.':'');
+  const receipt=$('#pointReceipt');
+  receipt.className='card';
+  receipt.innerHTML='<div class="label">COMPROVANTE DE PONTO</div><div style="font-size:18px;font-weight:900;margin:3px 0">'+esc(receiptType)+'</div><strong>'+esc(employee.full_name)+'</strong><div class="muted">Matrícula '+esc(employee.employee_number)+' • '+esc(when)+'</div>'+(deviceMode?'<div class="muted"><b>Equipe trabalhada:</b> '+esc(deviceTeam?.name||'Equipe do aparelho')+'</div>':'')+'<div class="muted">'+(withSelfie?'Reconhecimento facial aprovado':'Identificação por matrícula')+' • GPS ±'+Math.round(Number(gps.accuracy_m||0))+' m • horário enviado ao servidor</div>'+(teamChanged?'<div class="pill warn" style="margin-top:8px">Troca de equipe registrada: '+esc(previousTeamName||'outra equipe')+' → '+esc(deviceTeam?.name||'equipe atual')+'</div>':'')+(withSelfie?'<div class="pill ok" style="margin-top:8px">Face reconhecida ✓</div>':'');
+
+  $('#pointMatricula').value='';
+  if($('#pointSelfieFront'))$('#pointSelfieFront').value='';
+  if($('#pointSelfieBack'))$('#pointSelfieBack').value='';
+  window.__pointSelfieFile=null;clearPointFaceState();
+  $('#selfiePreviewWrap').classList.add('hidden');$('#selfiePreview').removeAttribute('src');
+  $('#nextPointLabel').textContent=withSelfie?'Capture a selfie para identificar o funcionário':'Digite a matrícula';
+
+  if(deviceMode)await loadTeamPoint();else await loadRHPoint();
+ }catch(e){
+  msg.className='error';msg.textContent=e.message||String(e);
+ }finally{
+  btn.disabled=withSelfie&&!window.__pointFaceMatch;
+ }
+});
+$('#refreshPoint').addEventListener('click',()=>deviceMode?loadTeamPoint():loadRHPoint());
+$('#refreshMirror').addEventListener('click',()=>deviceMode?loadTeamPoint():loadRHPoint());
+$('#refreshMonthlyMirror').addEventListener('click',loadMonthlyMirror);
+$('#monthlyEmployee').addEventListener('change',loadMonthlyMirror);
+$('#monthlyMonth').addEventListener('change',loadMonthlyMirror);
+$('#printMonthlyMirror').addEventListener('click',printMonthlyMirror);
+
+$('#scheduleEmployee').addEventListener('change',()=>{
+ const id=$('#scheduleEmployee').value,s=id?getEmployeeSchedule(id):null;
+ $('#scheduleStart').value=s?.start||'08:00';
+ $('#scheduleBreakStart').value=s?.break_start||'12:00';
+ $('#scheduleBreakEnd').value=s?.break_end||'13:00';
+ $('#scheduleEnd').value=s?.end||'17:00';
+ $('#scheduleDuration').value=minutesToHHMM(s?.daily_minutes||480);
+ $('#scheduleTolerance').value=s?.tolerance??10;
+ $('#scheduleMsg').className='muted';
+ $('#scheduleMsg').textContent=s?'Jornada carregada do banco de dados.':'Nenhuma jornada cadastrada ainda para este funcionário.';
+});
+
+$('#saveSchedule').addEventListener('click',async()=>{
+ const id=$('#scheduleEmployee').value,msg=$('#scheduleMsg'),btn=$('#saveSchedule');
+ if(!id){msg.className='error';msg.textContent='Selecione o funcionário.';return}
+ const payload={
+   company_id:companyId,
+   employee_id:id,
+   start_time:$('#scheduleStart').value||'08:00',
+   break_start_time:$('#scheduleBreakStart').value||null,
+   break_end_time:$('#scheduleBreakEnd').value||null,
+   end_time:$('#scheduleEnd').value||null,
+   daily_minutes:durationToMinutes($('#scheduleDuration').value),
+   tolerance_minutes:Number($('#scheduleTolerance').value||0),
+   days_of_week:[1,2,3,4,5],
+   updated_at:new Date().toISOString()
+ };
+ btn.disabled=true;msg.className='muted';msg.textContent='Salvando jornada no banco...';
+ try{
+   await restUpsert('v2_employee_schedules',payload,'company_id,employee_id');
+   await loadSchedules();
+   msg.className='okmsg';msg.textContent='Jornada salva no banco de dados ✓';
+   await loadRHPoint();
+   if($('#monthlyEmployee').value===id)await loadMonthlyMirror();
+ }catch(e){
+   msg.className='error';msg.textContent=e.message||String(e);
+ }finally{btn.disabled=false}
+});
+
+if($('#lastReceiptBtn')) $('#lastReceiptBtn').addEventListener('click',()=>lastPointReceipt&&openReceipt(lastPointReceipt));
+if($('#openTreatment')) $('#openTreatment').addEventListener('click',async()=>{
+ const card=$('#treatmentCard');card.classList.toggle('hidden');
+ if(!card.classList.contains('hidden')){
+  if(!$('#treatmentDateTime').value)$('#treatmentDateTime').value=poLocalInputDate();
+  await refreshTreatmentHistory();
+ }
+});
+if($('#saveTreatment')) $('#saveTreatment').addEventListener('click',async()=>{
+ const employee_id=$('#monthlyEmployee').value,reason=$('#treatmentReason').value.trim(),m=$('#treatmentMsg');
+ if(!employee_id||reason.length<3){m.className='error';m.textContent='Selecione o funcionário e informe uma justificativa.';return}
+ try{
+  const user=await getUser(),d=$('#treatmentDateTime').value,original=$('#treatmentOriginalId').value||null;
+  await restInsert('v2_attendance_treatments',{company_id:companyId,employee_id,treatment_type:$('#treatmentType').value,event_type:$('#treatmentEventType').value,occurred_at:d?new Date(d).toISOString():null,original_event_id:original,reason,created_by:user.id,metadata:{source:'agro_souzas_admin_v6_25'}});
+  m.className='okmsg';m.textContent='Tratamento registrado com rastreabilidade ✓';$('#treatmentReason').value='';
+  await refreshTreatmentHistory();await loadMonthlyMirror();
+ }catch(x){m.className='error';m.textContent=x.message||String(x)}
+});
+if($('#exportAFD')) $('#exportAFD').addEventListener('click',async()=>{
+ const e=$('#monthlyEmployee').value,mo=$('#monthlyMonth').value;if(!e||!mo)return alert('Selecione funcionário e mês.');
+ const b=monthBoundsBR(mo),r=await rest('v2_attendance_events','select=nsr,occurred_at,server_received_at,device_id,integrity_hash,event_type&company_id=eq.'+companyId+'&employee_id=eq.'+e+'&occurred_at=gte.'+encodeURIComponent(b.start)+'&occurred_at=lt.'+encodeURIComponent(b.end)+'&order=occurred_at.asc');
+ downloadText('AFD_PREVIA_'+mo+'.txt',['AFD - PRÉVIA TÉCNICA','NÃO É AFD FISCAL HOMOLOGADO','Empregador: '+cleanCompanyName(companyProfile.legal_name||companyProfile.trade_name||''),''].concat(r.map(x=>[x.nsr||'',x.occurred_at,x.server_received_at||'',x.event_type||'',x.device_id||'',x.integrity_hash||''].join(';'))).join('\n'));
+});
+if($('#exportAEJ')) $('#exportAEJ').addEventListener('click',async()=>{
+ const e=$('#monthlyEmployee').value,mo=$('#monthlyMonth').value;if(!e||!mo)return alert('Selecione funcionário e mês.');
+ const b=monthBoundsBR(mo),events=await rest('v2_attendance_events','select=occurred_at,event_type,nsr&company_id=eq.'+companyId+'&employee_id=eq.'+e+'&occurred_at=gte.'+encodeURIComponent(b.start)+'&occurred_at=lt.'+encodeURIComponent(b.end)+'&order=occurred_at.asc');
+ const treatments=await rest('v2_attendance_treatments','select=treatment_type,event_type,occurred_at,reason,created_at&company_id=eq.'+companyId+'&employee_id=eq.'+e+'&created_at=gte.'+encodeURIComponent(b.start)+'&created_at=lt.'+encodeURIComponent(b.end)+'&order=created_at.asc');
+ const txt=['AEJ - PRÉVIA TÉCNICA','NÃO É AEJ FISCAL HOMOLOGADO','Período: '+mo,'','MARCAÇÕES'].concat(events.map(x=>[x.nsr||'',x.occurred_at,x.event_type||''].join(';')),['','TRATAMENTOS'],treatments.map(x=>[x.treatment_type,x.event_type||'',x.occurred_at||'',x.reason||'',x.created_at].join(';'))).join('\n');
+ downloadText('AEJ_PREVIA_'+mo+'.txt',txt);
+});
+
+
+
+let poultryTeams=[],poultryFarms=[],poultryBarns=[],poultryLoadings=[],poultryTruckLoads=[],poultryOpsCache=[];
+function poN(v){return Number(v)||0}
+function poSL(v){return ({planned:'Programada',in_progress:'Em andamento',completed:'Concluída',cancelled:'Cancelada'})[v]||v||'—'}
+function poLocalInputDate(d=new Date()){const x=new Date(d);x.setMinutes(x.getMinutes()-x.getTimezoneOffset());return x.toISOString().slice(0,16)}
+function applyPoultryRoleUI(){
+ const planning=document.getElementById('poAdminPlanning');
+ if(planning)planning.classList.toggle('hidden',!isAdminGeneral);
+ document.querySelectorAll('.poFinance').forEach(el=>el.classList.toggle('hidden',!isAdminGeneral));
+ const finance=document.getElementById('poFinanceCard');
+ if(finance)finance.classList.add('hidden');
+ const teamBlock=document.getElementById('poTeamBlock');
+ if(teamBlock)teamBlock.classList.toggle('hidden',!!deviceMode);
+ const endBlock=document.getElementById('poEndBlock');
+ if(endBlock)endBlock.classList.toggle('hidden',!!deviceMode);
+ const truckContext=document.getElementById('poTruckContextSection');
+ if(truckContext)truckContext.classList.toggle('hidden',!!deviceMode);
+ const quickTeam=document.getElementById('quickTeamBtn');
+ if(quickTeam)quickTeam.classList.toggle('hidden',!!deviceMode);
+}
+function populateSavedFarmOptions(){
+ const saved=$('#poSavedAviary');
+ if(!saved)return;
+ saved.innerHTML='<option value="">Nova / selecione...</option>'+poultryFarms.map(f=>{
+  const label=[f.producer_name||'Integrado',f.farm_name||'',f.city||f.address?.city||''].filter(Boolean).join(' • ');
+  return '<option value="'+esc(f.id)+'">'+esc(label)+'</option>';
+ }).join('');
+}
+async function loadDevicePoultryContext(){
+ try{
+  if(deviceMode&&!c360NetOnline()){
+   const cached=await offlineCacheGet(offlineTeamKey('poultry_context'))||{};
+   poultryTeams=cached.teams||[];
+   poultryFarms=cached.farms||[];
+   poultryBarns=cached.barns||[];
+   poultryLoadings=cached.loadings||[];
+   if(!poultryTeams.length&&deviceTeam)poultryTeams=[deviceTeam];
+  }else{
+   poultryTeams=await rest('v2_teams','select=id,name,status,metadata,supervisor_employee_id&company_id=eq.'+companyId+'&id=eq.'+encodeURIComponent(deviceAccess.team_id))||[];
+   if(!poultryTeams.length&&deviceTeam)poultryTeams=[deviceTeam];
+   poultryLoadings=await rest('v2_poultry_loadings','select=id,farm_id,operation_id,metadata,team_id,status&company_id=eq.'+companyId+'&team_id=eq.'+encodeURIComponent(deviceAccess.team_id)+'&order=created_at.desc&limit=200')||[];
+   poultryFarms=await rest('v2_poultry_farms','select=id,integrator_id,producer_name,farm_name,city,address,status,metadata&company_id=eq.'+companyId+'&status=eq.active&order=producer_name.asc')||[];
+   // Mantido apenas para ler histórico antigo; novos lançamentos não dependem de cadastro de aviário.
+   try{poultryBarns=await rest('v2_poultry_barns','select=id,farm_id,barn_number,outlet_type,energy_type,status&company_id=eq.'+companyId+'&status=eq.active&order=barn_number.asc')||[]}catch(_){poultryBarns=[]}
+   if(deviceMode)await offlineCacheSet(offlineTeamKey('poultry_context'),{teams:poultryTeams,farms:poultryFarms,barns:poultryBarns,loadings:poultryLoadings});
+   loadTruckDriverPairs().catch(()=>{});
+  }
+
+  if(deviceMode){
+   const pending=(await offlineQueueList()).filter(x=>x.type==='poultry_operation');
+   for(const item of pending){
+    const f=item.form||{},syntheticFarmId='offline-farm:'+item.id,farmId=f.source_farm_id||syntheticFarmId;
+    if(!f.source_farm_id&&!poultryFarms.some(x=>x.id===syntheticFarmId)){
+     poultryFarms.unshift({
+      id:syntheticFarmId,producer_name:f.integrated,farm_name:f.farm_name||f.integrated,city:f.city,address:{city:f.city},status:'active',
+      metadata:{offline_pending:true,outlet_type:f.outlet_type||null,energy_type:f.energy_type||null}
+     });
+    }
+    const loadingId='offline:'+item.id;
+    if(!poultryLoadings.some(x=>x.id===loadingId))poultryLoadings.unshift({
+     id:loadingId,operation_id:'offline:'+item.id,farm_id:farmId,team_id:item.team_id,status:'planned',metadata:{offline_pending:true}
+    });
+   }
+  }
+
+  const team=$('#poTeam');
+  if(team){
+   const t=poultryTeams[0]||deviceTeam;
+   team.innerHTML=t?'<option value="'+esc(t.id)+'">'+esc(t.name||'Equipe')+'</option>':'<option value="">Equipe do aparelho</option>';
+   if(t)team.value=t.id;
+   team.disabled=true;
+  }
+  populateSavedFarmOptions();
+  applyPoultryRoleUI();
+ }catch(e){
+  console.warn('Contexto da equipe',e);
+  poultryTeams=deviceTeam?[deviceTeam]:[];poultryFarms=[];poultryBarns=[];poultryLoadings=[];
+  const team=$('#poTeam');if(team&&deviceTeam){team.innerHTML='<option value="'+esc(deviceTeam.id)+'">'+esc(deviceTeam.name||'Equipe')+'</option>';team.value=deviceTeam.id;team.disabled=true}
+ }
+}
+async function loadPoultrySelectors(){
+ const team=$('#poTeam');
+ if(team)team.innerHTML='<option value="">Carregando equipes...</option>';
+ try{
+  poultryTeams=await rest('v2_teams','select=id,name,status,metadata&company_id=eq.'+companyId+'&status=eq.active&order=name.asc')||[];
+  if(team){
+   team.innerHTML='<option value="">Selecione...</option>'+poultryTeams.map(x=>`<option value="${x.id}">${esc(x.name)}</option>`).join('');
+   if(!poultryTeams.length)team.innerHTML='<option value="">Nenhuma equipe ativa cadastrada</option>';
+  }
+ }catch(e){
+  console.error('Erro somente ao carregar equipes',e);
+  if(team)team.innerHTML='<option value="">Erro ao carregar equipes</option>';
+ }
+ try{await rest('v2_poultry_integrators','select=id,name,status&company_id=eq.'+companyId+'&status=eq.active&order=name.asc')}catch(e){console.warn('Integrados não carregados',e)}
+ try{poultryFarms=await rest('v2_poultry_farms','select=id,integrator_id,producer_name,farm_name,city,address,status,metadata&company_id=eq.'+companyId+'&status=eq.active&order=producer_name.asc')||[]}catch(e){console.warn('Granjas não carregadas',e);poultryFarms=[]}
+ try{poultryBarns=await rest('v2_poultry_barns','select=id,farm_id,barn_number,outlet_type,energy_type,status&company_id=eq.'+companyId+'&status=eq.active&order=barn_number.asc')||[]}catch(e){poultryBarns=[]}
+ populateSavedFarmOptions();
+ applyPoultryRoleUI();
+}
+function setPoultryEnergy(value){
+ let v=String(value||'').trim();
+ if(v.includes('380'))v='380 V';
+ else if(v.includes('220'))v='220 V';
+ else v='';
+ const input=$('#poEnergyType');if(input)input.value=v;
+ document.querySelectorAll('.po-energy-btn').forEach(btn=>btn.classList.toggle('active',btn.dataset.energy===v));
+ return v;
+}
+function fillAviaryProfile(farmId){
+ const f=poultryFarms.find(x=>x.id===farmId);
+ if(!f)return;
+ $('#poIntegratedName').value=f.producer_name||'';
+ $('#poCity').value=f.city||f.address?.city||'';
+ $('#poFarmName').value=f.farm_name||'';
+ $('#poOutletType').value=f.metadata?.outlet_type||'';
+ setPoultryEnergy(f.metadata?.energy_type||'');
+}
+async function ensurePoultryIntegrator(name){
+ const clean=(name||'').trim();
+ if(!clean)throw new Error('Preencha o nome do integrado / produtor.');
+ let list=[];
+ try{
+  list=await rest('v2_poultry_integrators','select=id,name,status&company_id=eq.'+companyId+'&status=eq.active&order=name.asc')||[];
+ }catch(e){console.warn('Falha ao consultar integrados',e)}
+ let found=list.find(i=>String(i.name||'').trim().toLowerCase()===clean.toLowerCase());
+ if(found)return found;
+ const rows=await rest('v2_poultry_integrators','','POST',{company_id:companyId,name:clean,status:'active',metadata:{created_from:'apanha'}});
+ found=rows?.[0];
+ if(!found?.id)throw new Error('Não foi possível cadastrar o integrado / produtor.');
+ return found;
+}
+async function ensureAviaryProfile(){
+ const integrated=$('#poIntegratedName').value.trim(),city=$('#poCity').value.trim(),farmName=$('#poFarmName').value.trim();
+ const outlet=$('#poOutletType').value.trim()||null,energy=$('#poEnergyType').value.trim()||null;
+ if(!integrated||!city)throw new Error('Preencha nome do integrado e cidade.');
+ if(deviceMode){
+  const res=await rpc('v2_device_ensure_farm',{
+   p_company_id:companyId,p_integrated:integrated,p_city:city,p_farm_name:farmName||null,
+   p_outlet_type:outlet,p_energy_type:energy
+  });
+  const row=Array.isArray(res)?res[0]:res;
+  if(!row?.farm_id)throw new Error('Não foi possível salvar a granja para esta equipe.');
+  const farm={
+   id:row.farm_id,integrator_id:row.integrator_id,producer_name:row.producer_name,farm_name:row.farm_name,
+   city:row.city,address:{city:row.city},status:'active',
+   metadata:{outlet_type:row.outlet_type||null,energy_type:row.energy_type||null}
+  };
+  poultryFarms=[farm,...poultryFarms.filter(x=>x.id!==farm.id)];
+  populateSavedFarmOptions();
+  if($('#poSavedAviary'))$('#poSavedAviary').value=farm.id;
+  return {farm};
+ }
+ let farm=poultryFarms.find(f=>
+  String(f.producer_name||'').toLowerCase()===integrated.toLowerCase()&&
+  String(f.city||f.address?.city||'').toLowerCase()===city.toLowerCase()&&
+  String(f.farm_name||'').toLowerCase()===String(farmName||integrated).toLowerCase()
+ );
+ const integrator=await ensurePoultryIntegrator(integrated);
+ const metadata={...(farm?.metadata||{}),outlet_type:outlet,energy_type:energy};
+ if(!farm){
+  const rows=await rest('v2_poultry_farms','','POST',{
+   company_id:companyId,integrator_id:integrator.id,producer_name:integrated,farm_name:farmName||integrated,
+   city,address:{city},status:'active',metadata
+  });
+  farm=rows?.[0];
+ }else{
+  const rows=await rest('v2_poultry_farms','id=eq.'+farm.id,'PATCH',{
+   integrator_id:integrator.id,producer_name:integrated,farm_name:farmName||farm.farm_name,
+   city,address:{...(farm.address||{}),city},metadata
+  });
+  farm=rows?.[0]||{...farm,integrator_id:integrator.id,producer_name:integrated,farm_name:farmName||farm.farm_name,city,address:{...(farm.address||{}),city},metadata};
+ }
+ if(!farm?.id)throw new Error('Não foi possível salvar a granja.');
+ await loadPoultrySelectors();
+ if($('#poSavedAviary'))$('#poSavedAviary').value=farm.id;
+ return {farm};
+}
+async function saveAviaryProfile(){
+ try{
+  $('#aviaryMsg').textContent='Salvando...';
+  await ensureAviaryProfile();
+  $('#aviaryMsg').textContent='Dados da granja salvos ✓';
+ }catch(e){$('#aviaryMsg').textContent=e.message}
+}
+let poultryFarmAutoSaveTimer=null;
+async function autoSavePoultryFarm(){
+ if(!deviceMode)return;
+ const integrated=$('#poIntegratedName')?.value.trim()||'',city=$('#poCity')?.value.trim()||'';
+ if(!integrated||!city)return;
+ const msg=$('#aviaryMsg');
+ if(!c360NetOnline()){if(msg)msg.textContent='✓ Granja guardada no preenchimento e será sincronizada com a apanha.';return}
+ try{
+  if(msg)msg.textContent='Salvando granja automaticamente...';
+  await ensureAviaryProfile();
+  if(msg)msg.textContent='✓ Granja salva automaticamente.';
+ }catch(e){
+  console.warn('Salvamento automático da granja',e);
+  if(msg)msg.textContent='A granja será salva junto com a apanha.';
+ }
+}
+function scheduleAutoSavePoultryFarm(){
+ clearTimeout(poultryFarmAutoSaveTimer);
+ poultryFarmAutoSaveTimer=setTimeout(autoSavePoultryFarm,650);
+}
+async function findExistingOpenPoultryOperation(teamId,farmId){
+ if(!teamId||!farmId||!c360NetOnline())return null;
+ try{
+  const ls=await rest('v2_poultry_loadings',
+   'select=id,operation_id,farm_id,team_id,status,reported_trucks,reported_birds&company_id=eq.'+encodeURIComponent(companyId)+
+   '&team_id=eq.'+encodeURIComponent(teamId)+
+   '&farm_id=eq.'+encodeURIComponent(farmId)+
+   '&status=in.(planned,in_progress)&order=created_at.desc&limit=5')||[];
+  const candidate=ls.find(x=>Number(x.reported_trucks||0)===0);
+  if(!candidate?.operation_id)return null;
+  const ops=await rest('v2_operations',
+   'select=id,title,customer_name,status,scheduled_start,metadata&company_id=eq.'+encodeURIComponent(companyId)+
+   '&id=eq.'+encodeURIComponent(candidate.operation_id)+'&limit=1')||[];
+  const op=ops[0];
+  if(!op||op.status==='completed'||op.status==='cancelled')return null;
+  return {operation:op,loading:candidate};
+ }catch(e){
+  console.warn('Verificação de apanha já aberta',e);
+  return null;
+ }
+}
+async function savePoultryOperation(){
+ const t=poultryTeams.find(x=>x.id===$('#poTeam').value)||(deviceMode?deviceTeam:null);
+ if(!t||!$('#poStart').value)return $('#poMsg').textContent='Selecione a equipe e informe o início.';
+
+ if(deviceMode&&!c360NetOnline()){
+  const integrated=$('#poIntegratedName').value.trim(),city=$('#poCity').value.trim(),farmName=$('#poFarmName').value.trim();
+  if(!integrated||!city)return $('#poMsg').textContent='Preencha nome do integrado e cidade.';
+  try{
+   $('#poMsg').textContent='Salvando apanha neste celular...';
+   const id=makeOfflineId('apanha');
+   const selectedFarmId=$('#poSavedAviary')?.value||'';
+   const savedFarm=poultryFarms.find(f=>f.id===selectedFarmId)||null;
+   const form={
+    integrated,city,farm_name:farmName||null,source_farm_id:savedFarm?.id||null,
+    outlet_type:$('#poOutletType').value.trim()||null,
+    energy_type:$('#poEnergyType').value.trim()||null,
+    scheduled_start:new Date($('#poStart').value).toISOString(),
+    scheduled_end:$('#poEnd').value?new Date($('#poEnd').value).toISOString():null,
+    notes:$('#poNotes').value.trim()||null
+   };
+   await offlineQueueAdd({id,type:'poultry_operation',company_id:companyId,team_id:deviceAccess?.team_id||t.id,created_at:new Date().toISOString(),form});
+   $('#poultryForm').classList.add('hidden');
+   await loadDevicePoultryContext();
+   await loadPoultryOps();
+   openNextTruckForm({
+    operationId:'offline:'+id,loadingId:'offline:'+id,farmId:form.source_farm_id||('offline-farm:'+id),
+    name:integrated,sequence:1
+   });
+   $('#poTruckMsg').className='okmsg';
+   $('#poTruckMsg').textContent='Apanha salva offline ✓ Agora informe o aviário em cada caminhão.';
+  }catch(e){$('#poMsg').textContent=e.message||String(e)}
+  return;
+ }
+
+ try{
+  $('#poMsg').textContent='Salvando...';
+  const {farm}=await ensureAviaryProfile();
+  const existingOpen=await findExistingOpenPoultryOperation(t.id,farm.id);
+  if(existingOpen){
+   $('#poMsg').textContent='Esta apanha já estava aberta. Abrindo o Caminhão 1...';
+   $('#poultryForm').classList.add('hidden');
+   if(deviceMode)await loadDevicePoultryContext();
+   await loadPoultryOps();
+   openNextTruckForm({
+    operationId:existingOpen.operation.id,
+    loadingId:existingOpen.loading.id,
+    farmId:farm.id,
+    name:farm.producer_name||existingOpen.operation.title||'Apanha',
+    sequence:1
+   });
+   return;
+  }
+  // No celular de campo, cria operação + carregamento juntos no servidor.
+  // Assim não sobra apanha sem carregamento vinculado quando uma gravação falha.
+  if(deviceMode){
+   const syncId=makeOfflineId('online-apanha');
+   const res=await rpc('v2_device_sync_poultry_operation',{
+    p_company_id:companyId,
+    p_offline_event_id:syncId,
+    p_integrated:farm.producer_name||$('#poIntegratedName').value.trim(),
+    p_city:farm.city||farm.address?.city||$('#poCity').value.trim(),
+    p_farm_name:farm.farm_name||$('#poFarmName').value.trim()||null,
+    p_aviary:null,
+    p_outlet_type:farm.metadata?.outlet_type||$('#poOutletType').value.trim()||null,
+    p_energy_type:farm.metadata?.energy_type||$('#poEnergyType').value.trim()||null,
+    p_scheduled_start:new Date($('#poStart').value).toISOString(),
+    p_scheduled_end:$('#poEnd').value?new Date($('#poEnd').value).toISOString():null,
+    p_notes:$('#poNotes').value.trim()||null
+   });
+   const row=Array.isArray(res)?res[0]:res;
+   if(!row?.operation_id||!row?.loading_id)throw new Error('Não foi possível criar a apanha completa. Tente novamente.');
+   $('#poMsg').textContent='Apanha salva ✓ Agora registre o Caminhão 1.';
+   $('#poultryForm').classList.add('hidden');
+   await loadDevicePoultryContext();
+   await loadPoultryOps();
+   const syncedLoading=poultryLoadings.find(x=>x.id===row.loading_id);
+   openNextTruckForm({
+    operationId:row.operation_id,
+    loadingId:row.loading_id,
+    farmId:syncedLoading?.farm_id||farm.id,
+    name:farm.producer_name||'Apanha',
+    sequence:1
+   });
+   return;
+  }
+
+  const planned=isAdminGeneral?poN($('#poPlannedBirds')?.value):0;
+  const billing=t?.metadata?.billing||{};
+  const price=isAdminGeneral&&billing.mode==='per_bird'?poN(billing.rate):0;
+  const outlet=farm.metadata?.outlet_type||$('#poOutletType').value.trim()||null;
+  const energy=farm.metadata?.energy_type||$('#poEnergyType').value.trim()||null;
+  const location=[farm.city||farm.address?.city||'',farm.farm_name||farm.producer_name||''].filter(Boolean).join(' • ');
+  const opRows=await rest('v2_operations','','POST',{
+    company_id:companyId,operation_type:'poultry_catching',title:'Apanha - '+farm.producer_name,
+    customer_name:farm.producer_name,location_name:location,team_id:t.id,
+    scheduled_start:new Date($('#poStart').value).toISOString(),
+    scheduled_end:$('#poEnd').value?new Date($('#poEnd').value).toISOString():null,
+    status:'planned',planned_birds:planned||null,price_per_bird:price||null,
+    planned_revenue:planned&&price?planned*price:null,notes:$('#poNotes').value.trim()||null,
+    metadata:{team_name:t.name,farm_id:farm.id,city:farm.city,integrated_name:farm.producer_name,outlet_type:outlet,energy_type:energy}
+  });
+  const op=opRows?.[0];
+  if(!op)throw new Error('Apanha não foi criada.');
+  const loadingRows=await rest('v2_poultry_loadings','','POST',{
+    company_id:companyId,operation_id:op.id,integrator_id:farm.integrator_id,farm_id:farm.id,loading_date:$('#poStart').value.slice(0,10),
+    catching_method:'back',planned_birds:planned||null,reported_birds:0,planned_trucks:null,reported_trucks:0,status:'planned',team_id:t.id,
+    metadata:{source:'field_entry'}
+  });
+  const loading=loadingRows?.[0];
+  if(!loading?.id)throw new Error('Apanha criada, mas o carregamento não foi vinculado.');
+  $('#poMsg').textContent='Apanha salva ✓ Agora registre o Caminhão 1.';
+  $('#poultryForm').classList.add('hidden');
+  if(deviceMode)await loadDevicePoultryContext();
+  await loadPoultryOps();
+  openNextTruckForm({operationId:op.id,loadingId:loading.id,farmId:farm.id,name:farm.producer_name||op.title||'Apanha',sequence:1});
+ }catch(e){$('#poMsg').textContent=e.message}
+}
+async function loadPoultryOps(renderUi=true){
+ try{
+  let ops=[],loadings=[],trucks=[];
+  if(deviceMode&&!c360NetOnline()){
+   const cached=await offlineCacheGet(offlineTeamKey('poultry_ops'))||{};
+   ops=cached.ops||[];loadings=cached.loadings||[];trucks=cached.trucks||[];
+  }else{
+   [ops,loadings,trucks]=await Promise.all([
+    rest('v2_operations','select=id,operation_number,title,customer_name,location_name,team_id,scheduled_start,scheduled_end,actual_start,actual_end,status,planned_birds,actual_birds,price_per_thousand,price_per_bird,actual_revenue,notes,offline_event_id,metadata&company_id=eq.'+companyId+'&operation_type=eq.poultry_catching&order=scheduled_start.desc&limit=100'),
+    rest('v2_poultry_loadings','select=id,operation_id,farm_id,status,reported_birds,reported_trucks,metadata,team_id&company_id=eq.'+companyId+'&order=created_at.desc'),
+    rest('v2_poultry_truck_loads','select=id,loading_id,truck_sequence,truck_plate,driver_name,birds,started_at,completed_at,is_cata,external_reference,metadata&company_id=eq.'+companyId+'&order=created_at.asc')
+   ]);
+   if(deviceMode)await offlineCacheSet(offlineTeamKey('poultry_ops'),{ops,loadings,trucks});
+  }
+
+  if(deviceMode){
+   const queue=await offlineQueueList();
+   for(const item of queue.filter(x=>x.type==='poultry_operation')){
+    const f=item.form||{},opId='offline:'+item.id,loadingId='offline:'+item.id;
+    const syntheticFarmId='offline-farm:'+item.id,farmId=f.source_farm_id||syntheticFarmId;
+    if(!f.source_farm_id&&!poultryFarms.some(x=>x.id===syntheticFarmId))poultryFarms.unshift({
+     id:syntheticFarmId,producer_name:f.integrated,farm_name:f.farm_name||f.integrated,city:f.city,address:{city:f.city},status:'active',
+     metadata:{offline_pending:true,outlet_type:f.outlet_type||null,energy_type:f.energy_type||null}
+    });
+    if(!ops.some(o=>o.id===opId))ops.unshift({
+     id:opId,operation_number:null,title:'Apanha - '+f.integrated,customer_name:f.integrated,location_name:[f.city,f.farm_name||f.integrated].filter(Boolean).join(' • '),
+     team_id:item.team_id,scheduled_start:f.scheduled_start,scheduled_end:f.scheduled_end,status:'planned',notes:f.notes||null,
+     offline_event_id:item.id,metadata:{farm_id:farmId,city:f.city,integrated_name:f.integrated,outlet_type:f.outlet_type||null,energy_type:f.energy_type||null,offline_pending:true}
+    });
+    if(!loadings.some(l=>l.id===loadingId))loadings.unshift({id:loadingId,operation_id:opId,farm_id:farmId,status:'planned',reported_birds:0,reported_trucks:0,team_id:item.team_id,metadata:{offline_pending:true}});
+   }
+
+   for(const item of queue.filter(x=>x.type==='poultry_truck')){
+    const loadingId=item.loading_id||('offline:'+item.operation_offline_id);
+    if(!trucks.some(t=>t.external_reference===item.id))trucks.push({
+     id:'offline-truck:'+item.id,loading_id:loadingId,truck_sequence:item.payload?.truck_sequence,
+     truck_plate:item.payload?.truck_plate,driver_name:item.payload?.driver_name,birds:item.payload?.birds,
+     started_at:item.payload?.started_at,completed_at:item.payload?.completed_at,is_cata:!!item.payload?.is_cata,
+     external_reference:item.id,metadata:{aviary_number:item.payload?.is_cata?null:(item.barn_breakdown?.[0]?.barn_number||item.payload?.barn_breakdown?.[0]?.barn_number||null),barn_breakdown:item.barn_breakdown||item.payload?.barn_breakdown||[],notes:item.payload?.notes,...(item.payload?.sheet||{}),sheet_photo_path:item.sheet_blob?'local-pending':null,offline_pending:true}
+    });
+   }
+
+   for(const item of queue.filter(x=>x.type==='poultry_complete')){
+    const opId=item.operation_offline_id?'offline:'+item.operation_offline_id:item.operation_id;
+    const op=ops.find(o=>o.id===opId);if(op){op.status='completed';op.metadata={...(op.metadata||{}),offline_complete_pending:true}}
+    const loadingId=item.loading_id||('offline:'+item.operation_offline_id);
+    const l=loadings.find(x=>x.id===loadingId);if(l)l.status='completed';
+   }
+  }
+
+  if(deviceMode&&deviceAccess?.team_id){
+   const teamId=deviceAccess.team_id;
+   ops=ops.filter(o=>o.team_id===teamId);
+   const opIds=new Set(ops.map(o=>o.id));
+   loadings=loadings.filter(l=>l.team_id===teamId||opIds.has(l.operation_id));
+   const loadingIds=new Set(loadings.map(l=>l.id));
+   trucks=trucks.filter(t=>loadingIds.has(t.loading_id));
+  }
+  poultryOpsCache=ops;poultryLoadings=loadings;poultryTruckLoads=trucks;
+  if(!renderUi)return {ops,loadings,trucks};
+
+  const today=ops.filter(o=>o.scheduled_start&&saoPauloDateKey(o.scheduled_start)===localDateBR());
+  const todayTrucks=trucks.filter(tr=>today.some(o=>loadings.find(l=>l.operation_id===o.id)?.id===tr.loading_id));
+  const birdsToday=todayTrucks.reduce((a,t)=>a+poN(t.birds),0);
+  const revenueToday=today.filter(o=>o.status==='completed').reduce((a,o)=>a+poN(o.actual_revenue),0);
+  const poultryKpiData=[
+    ['APANHAS HOJE',today.length],
+    ['CAMINHÕES HOJE',todayTrucks.length],
+    ['AVES CARREGADAS',birdsToday.toLocaleString('pt-BR')],
+    ['CATAS',todayTrucks.filter(t=>t.is_cata).length]
+  ];
+  if(!deviceMode)poultryKpiData.push(['FATURAMENTO HOJE',money(revenueToday)]);
+  $('#poultryKpis').innerHTML=poultryKpiData.map(x=>'<div class="v2kpi"><div class="t">'+x[0]+'</div><div class="v">'+x[1]+'</div></div>').join('');
+
+  $('#poultryList').innerHTML=ops.length?ops.map(o=>{
+    const loading=loadings.find(l=>l.operation_id===o.id),opTrucks=loading?trucks.filter(t=>t.loading_id===loading.id):[];
+    const totalBirds=opTrucks.reduce((a,t)=>a+poN(t.birds),0);
+    const team=poultryTeams.find(t=>t.id===o.team_id);
+    const billing=team?.metadata?.billing||{};
+    const revenueRule=billing.mode==='per_bird'
+      ? (esc(billing.counterparty||team?.metadata?.contractor_name||'Zanchetta')+' • '+money(poN(billing.rate))+' por ave')
+      : billing.mode==='daily_fixed'
+        ? (esc(billing.counterparty||team?.metadata?.contractor_name||'Roseira')+' • '+money(poN(billing.daily_rate))+' por dia')
+        : 'Regra financeira não configurada';
+    const farm=poultryFarms.find(f=>f.id===(loading?.farm_id||o.metadata?.farm_id));
+    const barn=poultryBarns.find(b=>b.id===(o.metadata?.barn_id||loading?.metadata?.default_barn_id));
+    const pending=!!o.metadata?.offline_pending;
+    const truckHtml=opTrucks.length?opTrucks.map(t=>
+      '<div class="truck-row poultry-truck-card" style="padding:12px;border:1px solid #e5e7eb;border-radius:12px;margin:8px 0;background:#fff">'+
+       '<div class="toolbar" style="justify-content:space-between;align-items:flex-start"><div><b style="font-size:15px">🚚 Caminhão '+esc(t.truck_sequence||'')+'</b><div class="muted" style="margin-top:3px">'+esc(t.truck_plate||'')+' • '+esc(t.driver_name||'')+'</div></div>'+
+       (t.metadata?.offline_pending?'<span class="pill warn">OFFLINE • PENDENTE</span>':(t.is_cata?'<span class="pill warn">CATA</span>':''))+'</div>'+
+       '<div style="margin-top:8px"><b>'+poN(t.birds).toLocaleString('pt-BR')+' aves</b> • '+(t.started_at?new Date(t.started_at).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'—')+' → '+(t.completed_at?new Date(t.completed_at).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'—')+' • '+esc(Array.isArray(t.metadata?.barn_breakdown)&&t.metadata.barn_breakdown.length?t.metadata.barn_breakdown.map(x=>aviaryDisplayLabel(x.barn_number||poultryBarns.find(b=>b.id===x.barn_id)?.barn_number||'')+(t.is_cata?': '+poN(x.birds).toLocaleString('pt-BR')+' aves':'')).join(' • '):aviaryDisplayLabel(t.metadata?.aviary_number||poultryBarns.find(b=>b.id===t.metadata?.barn_id)?.barn_number||''))+'</div>'+
+       '<div class="muted" style="margin-top:4px">'+(t.metadata?.boxes_count?'Caixas: '+poN(t.metadata.boxes_count).toLocaleString('pt-BR')+' • ':'')+(t.metadata?.birds_per_box?'Aves/caixa: '+poN(t.metadata.birds_per_box).toLocaleString('pt-BR',{maximumFractionDigits:2})+' • ':'')+'Vazias: '+poN(t.metadata?.empty_boxes).toLocaleString('pt-BR')+' • Mortes: '+poN(t.metadata?.loading_deaths).toLocaleString('pt-BR')+(t.metadata?.sheet_photo_path?' • 📷 Ficha anexada':'')+'</div></div>'
+    ).join(''):'<div class="muted" style="padding:10px 0">Nenhum caminhão registrado ainda. Comece pelo Caminhão 1.</div>';
+
+    return '<div class="item poultry-op-card '+(o.status==='completed'?'is-completed':'')+'">'+
+      '<div class="toolbar" style="justify-content:space-between"><div><strong>'+esc(farm?.producer_name||o.customer_name||o.title)+'</strong><div class="muted">'+esc(farm?.city||o.metadata?.city||'')+' • '+esc(farm?.farm_name||'Granja não informada')+' • '+esc(team?.name||deviceTeam?.name||'Equipe')+'</div></div>'+
+      (pending?'<span class="pill warn">APANHA OFFLINE • PENDENTE</span>':'<span class="pill '+(o.status==='completed'?'ok':'')+'">'+esc(poSL(o.status))+'</span>')+'</div>'+
+      '<div class="site-memory po-site-card"><b>Tomada:</b> '+esc(farm?.metadata?.outlet_type||o.metadata?.outlet_type||'Não informada')+' &nbsp; • &nbsp; <b>Energia:</b> '+esc(farm?.metadata?.energy_type||o.metadata?.energy_type||'Não informada')+'</div>'+
+      '<div class="po-detail"><div><span class="muted">Caminhões</span><br><b>'+opTrucks.length+'</b></div><div><span class="muted">Aves carregadas</span><br><b>'+totalBirds.toLocaleString('pt-BR')+'</b></div><div><span class="muted">Catas</span><br><b>'+opTrucks.filter(t=>t.is_cata).length+'</b></div><div><span class="muted">Início previsto</span><br><b>'+(o.scheduled_start?new Date(o.scheduled_start).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'—')+'</b></div></div>'+
+      (!deviceMode&&o.status==='completed'?'<div class="site-memory po-revenue-card" style="margin-top:10px;background:#ecfdf5;border:1px solid #bbf7d0"><b>💰 Valor ganho: '+money(poN(o.actual_revenue))+'</b><div class="muted" style="margin-top:3px">'+revenueRule+' • lançado automaticamente no Financeiro</div></div>':'')+
+      '<div class="po-trucks-section" style="margin-top:14px;padding-top:12px;border-top:1px solid #e5e7eb"><div class="toolbar" style="justify-content:space-between;align-items:flex-end"><div><strong>🚚 Carregamento caminhão por caminhão</strong><div class="muted">Cada caminhão fica registrado separadamente nesta apanha.</div></div><div class="muted">'+opTrucks.length+' registrado(s)</div></div><div class="truck-list">'+truckHtml+'</div></div>'+
+      '<div class="po-actions" style="margin-top:12px">'+
+       (loading&&o.status!=='completed'?'<button class="btn primary poAddTruck" style="font-size:15px;padding:12px 18px" data-op="'+esc(o.id)+'" data-loading="'+esc(loading.id)+'" data-farm="'+esc(loading.farm_id||'')+'" data-name="'+esc(farm?.producer_name||o.title)+'" data-seq="'+(opTrucks.length+1)+'">+ ADICIONAR CAMINHÃO '+(opTrucks.length+1)+'</button>':'')+
+       (o.status==='completed'?'<span class="pill ok">APANHA CONCLUÍDA • '+opTrucks.length+' CAMINHÃO(ÕES)'+(o.metadata?.offline_complete_pending?' • AGUARDANDO SYNC':'')+'</span>':'')+
+       (o.status!=='completed'?'<button class="btn soft poCompleteOp" data-op="'+esc(o.id)+'" data-loading="'+esc(loading?.id||'')+'">✓ Concluir Apanha</button>':'')+
+       (isAdminGeneral&&o.status==='completed'?'<span class="pill ok">💰 Financeiro automático</span>':'')+
+       (isAdminGeneral&&!pending?'<button class="btn danger poDeleteOp" data-op="'+esc(o.id)+'" data-loading="'+esc(loading?.id||'')+'" type="button">Excluir Apanha</button>':'')+
+      '</div></div>';
+  }).join(''):'<div class="v2-empty">Nenhuma apanha cadastrada.</div>';
+ }catch(e){
+  const list=$('#poultryList');
+  if(list)list.innerHTML='<div class="error">'+esc(e.message||String(e))+'</div>';
+  else throw e;
+ }
+}
+async function refreshOperationBirdTotals(operationId,loadingId){
+ const trucks=await rest('v2_poultry_truck_loads','select=birds,started_at,completed_at&loading_id=eq.'+loadingId);
+ const total=trucks.reduce((a,t)=>a+poN(t.birds),0);
+ const starts=trucks.map(t=>t.started_at).filter(Boolean).sort(),ends=trucks.map(t=>t.completed_at).filter(Boolean).sort();
+ await rest('v2_poultry_loadings','id=eq.'+loadingId,'PATCH',{reported_birds:total,reported_trucks:trucks.length,status:'in_progress'});
+ await rest('v2_operations','id=eq.'+operationId,'PATCH',{actual_birds:total,status:'in_progress',actual_start:starts[0]||new Date().toISOString(),actual_end:null});
+}
+const POULTRY_SHEET_BUCKET='v2-poultry-sheets';
+async function uploadPoultrySheet(file,token){
+ if(!file)return null;
+ if(file.size>12*1024*1024)throw new Error('A foto da ficha deve ter no máximo 12 MB.');
+ const s=session();if(!s?.access_token)throw new Error('Sessão expirada.');
+ const ext=file.type==='image/png'?'png':file.type==='image/webp'?'webp':'jpg';
+ const teamId=deviceAccess?.team_id||deviceTeam?.id||'admin';
+ const path=companyId+'/'+teamId+'/'+String(token||Date.now())+'.'+ext;
+ const r=await authFetch('/storage/v1/object/'+POULTRY_SHEET_BUCKET+'/'+path,{method:'POST',headers:{'Content-Type':file.type||'image/jpeg','x-upsert':'false'},body:file},true);
+ await parseResponse(r);return path;
+}
+let poTruckAutoSheetPath=null;
+let poTruckAutoSheetUpload=null;
+function resetPoTruckAutoSheet(){
+ poTruckAutoSheetPath=null;
+ poTruckAutoSheetUpload=null;
+}
+async function autoSavePoultrySheetFile(file){
+ if(!file)return null;
+ if(deviceMode&&!c360NetOnline())return null;
+ const token=makeOfflineId('sheet-auto');
+ poTruckAutoSheetUpload=uploadPoultrySheet(file,token).then(path=>{
+  poTruckAutoSheetPath=path;
+  return path;
+ }).finally(()=>{poTruckAutoSheetUpload=null});
+ return poTruckAutoSheetUpload;
+}
+function normalizeAviaryNumber(v){return String(v||'').trim()}
+function aviaryDisplayLabel(v){
+ const s=String(v||'').trim();
+ if(!s)return 'Aviário não informado';
+ return /^avi[aá]rio\b/i.test(s)?s:'Aviário '+s;
+}
+function rawTruckCataRows(){
+ return [...document.querySelectorAll('#poTruckBarnChecks .truck-cata-row')].map(row=>({
+  barn_id:null,
+  barn_number:normalizeAviaryNumber(row.querySelector('.truck-barn-number')?.value),
+  birds:poN(row.querySelector('.truck-barn-birds')?.value)
+ }));
+}
+function renderTruckCataRows(rows=null){
+ const box=$('#poTruckBarnChecks');if(!box)return;
+ const list=Array.isArray(rows)&&rows.length?rows:[{barn_number:'',birds:''},{barn_number:'',birds:''}];
+ box.innerHTML=list.map((r,i)=>`<div class="truck-cata-row">
+   <div class="truck-cata-field"><label>Aviário ${i+1}</label><input class="truck-barn-number" autocomplete="off" inputmode="numeric" placeholder="Nº do aviário" value="${esc(r?.barn_number||'')}"></div>
+   <div class="truck-cata-field"><label>Aves carregadas</label><input class="truck-barn-birds" type="number" min="0" step="1" inputmode="numeric" placeholder="Quantidade de aves" value="${poN(r?.birds)||''}"></div>
+   <button class="btn soft truck-cata-remove" type="button" title="Remover aviário">×</button>
+  </div>`).join('');
+ calcTruckCataBirdTotal();
+}
+function addTruckCataRow(){
+ const rows=rawTruckCataRows();
+ rows.push({barn_number:'',birds:''});
+ renderTruckCataRows(rows);
+ const last=document.querySelector('#poTruckBarnChecks .truck-cata-row:last-child .truck-barn-number');
+ last?.focus();
+}
+function selectedTruckBarnBreakdown(){
+ const isCata=!!$('#poTruckCata')?.checked;
+ if(!isCata){
+  const n=normalizeAviaryNumber($('#poTruckAviaryNumber')?.value);
+  return n?[{barn_id:null,barn_number:n,birds:poN($('#poTruckBirds')?.value)}]:[];
+ }
+ return rawTruckCataRows().filter(x=>x.barn_number||x.birds);
+}
+function selectedTruckBarnLabels(){return selectedTruckBarnBreakdown().map(x=>x.barn_number).filter(Boolean)}
+function calcTruckCataBirdTotal(){
+ if(!$('#poTruckCata')?.checked)return poN($('#poTruckBirds')?.value);
+ const total=rawTruckCataRows().reduce((a,x)=>a+poN(x.birds),0);
+ const totalEl=$('#poTruckBirds'),hint=$('#poTruckBarnHint');
+ if(totalEl){totalEl.value=total||'';totalEl.readOnly=true}
+ if(hint)hint.textContent='Total da CATA: '+total.toLocaleString('pt-BR')+' aves.';
+ return total;
+}
+function truckSheetMetadata(){
+ return {
+  producer_name:$('#poTruckProducer').value.trim()||null,
+  city:$('#poTruckCity').value.trim()||null,
+  loading_date:$('#poTruckDate').value||null,
+  boxes_count:poN($('#poTruckBoxes').value)||0,
+  birds_per_box:poN($('#poTruckBirdsPerBox').value)||0,
+  empty_boxes:poN($('#poTruckEmptyBoxes').value)||0,
+  loading_deaths:poN($('#poTruckLoadingDeaths').value)||0,
+  sheet_aviaries:selectedTruckBarnLabels().join(' - ')||null,
+  barn_breakdown:selectedTruckBarnBreakdown(),
+  entry_mode:$('#poTruckSheetFile')?.files?.[0]?'photo_plus_manual':'manual'
+ };
+}
+function calcTruckSheetTotalHint(){
+ const hint=$('#poTruckCalcHint');
+ if($('#poTruckCata')?.checked){calcTruckCataBirdTotal();if(hint)hint.textContent='No CATA, o total é a soma das aves informadas por aviário.';return}
+ const boxes=poN($('#poTruckBoxes')?.value),per=poN($('#poTruckBirdsPerBox')?.value);
+ if(!hint)return;
+ if(boxes>0&&per>0){
+  const suggested=Math.round(boxes*per);
+  hint.textContent='Caixas × aves/caixa = '+suggested.toLocaleString('pt-BR')+' aves. Confira com o total escrito na ficha.';
+  if(!poN($('#poTruckBirds')?.value))$('#poTruckBirds').value=suggested;
+ }else hint.textContent='Informe caixas e aves/caixa para conferir o total.';
+}
+function loadTruckBarnOptions(){
+ if($('#poTruckAviaryNumber'))$('#poTruckAviaryNumber').value='';
+ renderTruckCataRows();
+}
+function toggleTruckCataAviaries(){
+ const cata=!!$('#poTruckCata')?.checked;
+ const singleWrap=$('#poTruckSingleBarnWrap'),multiWrap=$('#poTruckMultiBarnWrap'),totalEl=$('#poTruckBirds');
+ if(cata){
+  if(singleWrap)singleWrap.classList.add('hidden');
+  if(multiWrap)multiWrap.classList.remove('hidden');
+  if(!document.querySelector('#poTruckBarnChecks .truck-cata-row'))renderTruckCataRows();
+  calcTruckCataBirdTotal();
+ }else{
+  if(singleWrap)singleWrap.classList.remove('hidden');
+  if(multiWrap)multiWrap.classList.add('hidden');
+  if(totalEl)totalEl.readOnly=false;
+  calcTruckSheetTotalHint();
+ }
+}
+function normalizedPlate(v){return String(v||'').toUpperCase().replace(/[^A-Z0-9]/g,'')}
+function truckDriverPlatePairs(){
+ const map=new Map();
+ for(const p of poultryDriverPairs||[]){
+  if(!p?.driver_name||!p?.plate)continue;
+  map.set(normalizedPlate(p.plate),{driver_name:p.driver_name,plate:p.plate,use_count:Number(p.use_count||0),last_used_at:p.last_used_at||''});
+ }
+ for(const t of poultryTruckLoads||[]){
+  if(!t?.driver_name||!t?.truck_plate)continue;
+  const key=normalizedPlate(t.truck_plate);
+  if(!map.has(key))map.set(key,{driver_name:t.driver_name,plate:t.truck_plate,use_count:0,last_used_at:t.completed_at||t.started_at||''});
+ }
+ return [...map.values()].sort((a,b)=>String(b.last_used_at||'').localeCompare(String(a.last_used_at||'')));
+}
+function refreshTruckDriverSuggestions(){
+ const pairs=truckDriverPlatePairs();
+ const dlD=$('#poDriverSuggestions'),dlP=$('#poPlateSuggestions');
+ if(dlD)dlD.innerHTML=pairs.map(p=>`<option value="${esc(p.driver_name)}">${esc(p.plate)}</option>`).join('');
+ if(dlP)dlP.innerHTML=pairs.map(p=>`<option value="${esc(p.plate)}">${esc(p.driver_name)}</option>`).join('');
+}
+function fillTruckPairFrom(source){
+ const pairs=truckDriverPlatePairs();
+ if(source==='driver'){
+  const v=$('#poTruckDriver').value.trim().toLowerCase();
+  const m=pairs.find(p=>String(p.driver_name||'').trim().toLowerCase()===v);
+  if(m)$('#poTruckPlate').value=m.plate||'';
+ }else{
+  const v=normalizedPlate($('#poTruckPlate').value);
+  const m=pairs.find(p=>normalizedPlate(p.plate)===v);
+  if(m)$('#poTruckDriver').value=m.driver_name||'';
+ }
+}
+async function loadTruckDriverPairs(){
+ if(deviceMode&&!c360NetOnline()){
+  poultryDriverPairs=await offlineCacheGet(offlineTeamKey('driver_pairs'))||[];
+  refreshTruckDriverSuggestions();
+  return poultryDriverPairs;
+ }
+ const teamId=deviceMode?(deviceAccess?.team_id||deviceTeam?.id):($('#poTeam')?.value||'');
+ let q='select=id,team_id,driver_name,plate,status,use_count,last_used_at&company_id=eq.'+encodeURIComponent(companyId)+'&status=eq.active&order=last_used_at.desc&limit=300';
+ if(teamId)q+='&team_id=eq.'+encodeURIComponent(teamId);
+ try{poultryDriverPairs=await rest('v2_poultry_driver_vehicles',q)||[]}catch(e){console.warn('Motoristas/placas não carregados',e);poultryDriverPairs=[]}
+ if(deviceMode)await offlineCacheSet(offlineTeamKey('driver_pairs'),poultryDriverPairs);
+ refreshTruckDriverSuggestions();
+ return poultryDriverPairs;
+}
+async function saveTruckDriverPair(driver,plate,teamIdOverride=null,countUse=true){
+ const d=String(driver||'').trim(),p=String(plate||'').trim().toUpperCase();
+ if(!d||!p||!companyId)return;
+ const teamId=teamIdOverride||(deviceMode?(deviceAccess?.team_id||deviceTeam?.id):($('#poTeam')?.value||null));
+ if(!teamId)return;
+ const found=await rest('v2_poultry_driver_vehicles','select=id,use_count&company_id=eq.'+encodeURIComponent(companyId)+'&team_id=eq.'+encodeURIComponent(teamId)+'&plate=eq.'+encodeURIComponent(p)+'&limit=1');
+ if(found?.[0]?.id){
+  await rest('v2_poultry_driver_vehicles','id=eq.'+encodeURIComponent(found[0].id),'PATCH',{driver_name:d,plate:p,status:'active',use_count:Number(found[0].use_count||0)+(countUse?1:0),last_used_at:new Date().toISOString(),updated_at:new Date().toISOString()});
+ }else{
+  await rest('v2_poultry_driver_vehicles','','POST',{company_id:companyId,team_id:teamId,driver_name:d,plate:p,status:'active',use_count:countUse?1:0,last_used_at:new Date().toISOString(),updated_at:new Date().toISOString()});
+ }
+ await loadTruckDriverPairs();
+}
+async function rememberTruckDriverPairOffline(driver,plate,countUse=true){
+ const d=String(driver||'').trim(),p=String(plate||'').trim().toUpperCase();
+ if(!d||!p)return;
+ let list=await offlineCacheGet(offlineTeamKey('driver_pairs'))||[];
+ const key=normalizedPlate(p),idx=list.findIndex(x=>normalizedPlate(x.plate)===key);
+ const row={driver_name:d,plate:p,status:'active',use_count:Number(idx>=0?list[idx].use_count||0:0)+(countUse?1:0),last_used_at:new Date().toISOString()};
+ if(idx>=0)list[idx]={...list[idx],...row};else list.unshift(row);
+ list=list.slice(0,300);
+ poultryDriverPairs=list;
+ await offlineCacheSet(offlineTeamKey('driver_pairs'),list);
+ refreshTruckDriverSuggestions();
+}
+
+let poultryDriverAutoSaveTimer=null;
+async function autoSaveTruckDriverPair(){
+ if(!deviceMode)return;
+ const driver=$('#poTruckDriver')?.value.trim()||'',plate=$('#poTruckPlate')?.value.trim().toUpperCase()||'';
+ if(!driver||!plate)return;
+ try{
+  if(c360NetOnline())await saveTruckDriverPair(driver,plate,null,false);
+  else await rememberTruckDriverPairOffline(driver,plate,false);
+ }catch(e){console.warn('Salvamento automático motorista/placa',e)}
+}
+function scheduleAutoSaveTruckDriverPair(){
+ clearTimeout(poultryDriverAutoSaveTimer);
+ poultryDriverAutoSaveTimer=setTimeout(autoSaveTruckDriverPair,500);
+}
+function openNextTruckForm({operationId,loadingId,farmId,name,sequence}){
+ resetPoTruckAutoSheet();
+ $('#poTruckOperationId').value=operationId||'';
+ $('#poTruckLoadingId').value=loadingId||'';
+ $('#poTruckSequence').value=sequence||1;
+ $('#poTruckTitle').textContent='🚚 Caminhão '+(sequence||1);
+ $('#poTruckOpName').textContent=name||'';
+ const loading=poultryLoadings.find(l=>l.id===loadingId),defaultBarn=loading?.metadata?.default_barn_id||'';
+ loadTruckBarnOptions(farmId,defaultBarn);
+ $('#poTruckDriver').value='';$('#poTruckPlate').value='';$('#poTruckBirds').value='';
+ $('#poTruckBoxes').value='';$('#poTruckBirdsPerBox').value='';$('#poTruckEmptyBoxes').value='';$('#poTruckLoadingDeaths').value='';
+ $('#poTruckProducer').value=name||'';$('#poTruckCity').value='';
+ const op=poultryOpsCache.find(o=>o.id===operationId),farm=poultryFarms.find(f=>f.id===farmId);
+ $('#poTruckProducer').value=farm?.producer_name||op?.customer_name||name||'';
+ $('#poTruckCity').value=farm?.city||op?.metadata?.city||'';
+ $('#poTruckDate').value=(op?.scheduled_start||new Date().toISOString()).slice(0,10);
+ $('#poTruckCata').checked=false;toggleTruckCataAviaries();$('#poTruckNotes').value='';
+ $('#poTruckStart').value=poLocalInputDate();$('#poTruckEnd').value='';
+ const sf=$('#poTruckSheetFile');if(sf)sf.value='';
+ $('#poTruckSheetPreviewWrap').classList.add('hidden');$('#poTruckSheetPreview').removeAttribute('src');$('#poTruckSheetFileName').textContent='';
+ calcTruckSheetTotalHint();
+ $('#poTruckMsg').textContent='';
+ const truckCard=$('#poTruckCard');
+ truckCard.classList.remove('hidden');
+ loadTruckDriverPairs().catch(()=>{});
+ setTimeout(()=>{
+  truckCard.scrollIntoView({behavior:'smooth',block:'start'});
+  setTimeout(()=>$('#poTruckDriver')?.focus(),350);
+ },50);
+}
+
+async function saveTruckLoad(closeAfter=false){
+ const operationId=$('#poTruckOperationId').value,
+       loadingId=$('#poTruckLoadingId').value,
+       driver=$('#poTruckDriver').value.trim(),
+       plate=$('#poTruckPlate').value.trim().toUpperCase(),
+       isCata=!!$('#poTruckCata').checked,
+       barnBreakdown=selectedTruckBarnBreakdown(),
+       birds=isCata?barnBreakdown.reduce((a,x)=>a+poN(x.birds),0):poN($('#poTruckBirds').value),
+       start=$('#poTruckStart').value,
+       end=$('#poTruckEnd').value,
+       sheetFile=$('#poTruckSheetFile')?.files?.[0]||null;
+
+ if(!operationId||!loadingId||!driver||!plate||!birds||!start||!end)return $('#poTruckMsg').textContent='Preencha motorista, placa, total de aves, aviário, início e término.';
+ if(!isCata&&barnBreakdown.length!==1)return $('#poTruckMsg').textContent='Informe o número do aviário deste caminhão.';
+ if(isCata&&barnBreakdown.length<2)return $('#poTruckMsg').textContent='Para CATA, informe pelo menos 2 aviários.';
+ if(isCata&&barnBreakdown.some(x=>!x.barn_number||poN(x.birds)<=0))return $('#poTruckMsg').textContent='Informe o número e a quantidade de aves de cada aviário da CATA.';
+ const names=barnBreakdown.map(x=>x.barn_number.toLowerCase());
+ if(new Set(names).size!==names.length)return $('#poTruckMsg').textContent='Não repita o mesmo aviário no CATA.';
+
+ const existing=poultryTruckLoads.filter(t=>t.loading_id===loadingId);
+ const sequence=Number($('#poTruckSequence').value||existing.length+1);
+ const sheet=truckSheetMetadata();
+ const payload={
+  truck_sequence:sequence,truck_plate:plate,driver_name:driver,birds,
+  started_at:new Date(start).toISOString(),completed_at:new Date(end).toISOString(),
+  is_cata:isCata,barn_breakdown:barnBreakdown,notes:$('#poTruckNotes').value.trim()||null,sheet
+ };
+
+ if(deviceMode&&!c360NetOnline()){
+  try{
+   $('#poTruckMsg').textContent='Salvando caminhão e ficha neste celular...';
+   const id=makeOfflineId('truck');
+   const operationOfflineId=String(operationId).startsWith('offline:')?String(operationId).slice(8):null;
+   await offlineQueueAdd({
+    id,type:'poultry_truck',company_id:companyId,team_id:deviceAccess?.team_id||null,created_at:new Date().toISOString(),
+    operation_id:operationOfflineId?null:operationId,
+    loading_id:operationOfflineId?('offline:'+operationOfflineId):loadingId,
+    operation_offline_id:operationOfflineId,barn_breakdown:barnBreakdown,payload,sheet_blob:sheetFile||null
+   });
+   await rememberTruckDriverPairOffline(driver,plate);
+   const farmId=poultryLoadings.find(l=>l.id===loadingId)?.farm_id||'';
+   const opName=$('#poTruckOpName').textContent||'';
+   await loadPoultryOps();
+   if(closeAfter){$('#poTruckCard').classList.add('hidden');return}
+   openNextTruckForm({operationId,loadingId,farmId,name:opName,sequence:sequence+1});
+   $('#poTruckMsg').className='okmsg';
+   $('#poTruckMsg').textContent='Caminhão '+sequence+' salvo offline ✓ Agora registre o Caminhão '+(sequence+1)+'.';
+  }catch(e){$('#poTruckMsg').className='error';$('#poTruckMsg').textContent=e.message||String(e)}
+  return;
+ }
+
+ try{
+  $('#poTruckMsg').className='muted';$('#poTruckMsg').textContent=sheetFile?'Enviando foto da ficha e salvando caminhão...':'Salvando caminhão...';
+  const sheetPath=poTruckAutoSheetPath||(poTruckAutoSheetUpload?await poTruckAutoSheetUpload:null)||(sheetFile?await uploadPoultrySheet(sheetFile,makeOfflineId('sheet')):null);
+  const rows=await rest('v2_poultry_truck_loads','','POST',{
+   company_id:companyId,loading_id:loadingId,truck_sequence:sequence,truck_plate:plate,driver_name:driver,birds,
+   started_at:payload.started_at,completed_at:payload.completed_at,is_cata:payload.is_cata,
+   metadata:{
+    aviary_number:isCata?null:(barnBreakdown[0]?.barn_number||null),
+    barn_breakdown:barnBreakdown,notes:payload.notes,...sheet,sheet_photo_path:sheetPath
+   }
+  });
+  const truck=rows?.[0];if(!truck)throw new Error('Caminhão não foi salvo.');
+  try{await saveTruckDriverPair(driver,plate)}catch(e){console.warn('Motorista/placa não salvo no atalho',e)}
+  await refreshOperationBirdTotals(operationId,loadingId);
+  const farmId=poultryLoadings.find(l=>l.id===loadingId)?.farm_id||'';
+  const opName=$('#poTruckOpName').textContent||'';
+  await loadPoultryOps();
+  resetPoTruckAutoSheet();
+  if(closeAfter){$('#poTruckCard').classList.add('hidden');return}
+  openNextTruckForm({operationId,loadingId,farmId,name:opName,sequence:sequence+1});
+  $('#poTruckMsg').className='okmsg';$('#poTruckMsg').textContent='Caminhão '+sequence+' salvo ✓ Agora registre o Caminhão '+(sequence+1)+'.';
+ }catch(e){$('#poTruckMsg').className='error';$('#poTruckMsg').textContent=e.message||String(e)}
+}
+async function reopenPoultryOperationAndAddTruck(btn){
+ const opId=btn.dataset.op,loadingId=btn.dataset.loading;
+ if(!opId||!loadingId)return alert('Apanha sem carregamento vinculado.');
+ if(!confirm('Esta apanha está concluída. Reabrir para adicionar mais um caminhão?'))return;
+ try{
+  await rest('v2_operations','id=eq.'+opId,'PATCH',{status:'in_progress',actual_end:null});
+  await rest('v2_poultry_loadings','id=eq.'+loadingId,'PATCH',{status:'in_progress'});
+  await loadPoultryOps();
+  openNextTruckForm({
+   operationId:opId,
+   loadingId,
+   farmId:btn.dataset.farm||'',
+   name:btn.dataset.name||'',
+   sequence:Number(btn.dataset.seq||1)
+  });
+ }catch(e){alert(e.message||String(e))}
+}
+
+async function completePoultryOperation(operationId,loadingId){
+ if(deviceMode&&!c360NetOnline()){
+  try{
+   const trucks=poultryTruckLoads.filter(t=>t.loading_id===loadingId);
+   if(!trucks.length)return alert('Registre pelo menos um caminhão antes de concluir a apanha.');
+   const operationOfflineId=String(operationId).startsWith('offline:')?String(operationId).slice(8):null;
+   const id=makeOfflineId('complete');
+   await offlineQueueAdd({
+    id,type:'poultry_complete',company_id:companyId,team_id:deviceAccess?.team_id||null,created_at:new Date().toISOString(),
+    operation_id:operationOfflineId?null:operationId,
+    loading_id:operationOfflineId?('offline:'+operationOfflineId):loadingId,
+    operation_offline_id:operationOfflineId
+   });
+   await loadPoultryOps();
+   alert('Apanha concluída no celular ✓ A conclusão será sincronizada depois dos caminhões.');
+  }catch(e){alert(e.message||String(e))}
+  return;
+ }
+ try{
+  const trucks=await rest('v2_poultry_truck_loads','select=birds,started_at,completed_at&loading_id=eq.'+loadingId);
+  if(!trucks.length)return alert('Registre pelo menos um caminhão antes de concluir a apanha.');
+  const total=trucks.reduce((a,t)=>a+poN(t.birds),0),starts=trucks.map(t=>t.started_at).filter(Boolean).sort(),ends=trucks.map(t=>t.completed_at).filter(Boolean).sort();
+  await rest('v2_poultry_loadings','id=eq.'+loadingId,'PATCH',{reported_birds:total,reported_trucks:trucks.length,status:'completed'});
+  await rest('v2_operations','id=eq.'+operationId,'PATCH',{actual_birds:total,status:'completed',actual_start:starts[0]||null,actual_end:ends[ends.length-1]||new Date().toISOString()});
+  await loadPoultryOps();
+ }catch(e){alert(e.message)}
+}
+if($('#newPoultryOp'))$('#newPoultryOp').addEventListener('click',async()=>{
+ $('#poultryForm').classList.remove('hidden');
+ $('#poStart').value=poLocalInputDate();
+ $('#poEnd').value='';
+ $('#poNotes').value='';
+ $('#poMsg').textContent='';
+ if(deviceMode){
+   await loadDevicePoultryContext();
+   const team=$('#poTeam');if(team&&deviceAccess){team.value=deviceAccess.team_id;team.disabled=true}
+ }else{
+   const team=$('#poTeam');if(team)team.disabled=false;
+   await loadPoultrySelectors();
+ }
+ applyPoultryRoleUI();
+ $('#poSavedAviary').value='';
+ $('#poIntegratedName').value='';
+ $('#poCity').value='';
+ $('#poFarmName').value='';
+ $('#poOutletType').value='';
+ setPoultryEnergy('');
+ $('#aviaryMsg').textContent='✓ Sem botão de cadastro: a granja será salva automaticamente.';
+});
+if($('#closePoultryForm'))$('#closePoultryForm').addEventListener('click',()=>$('#poultryForm').classList.add('hidden'));
+if($('#savePoultryOp'))$('#savePoultryOp').addEventListener('click',savePoultryOperation);
+if($('#refreshPoultry'))$('#refreshPoultry').addEventListener('click',loadPoultryOps);
+if($('#poSavedAviary'))$('#poSavedAviary').addEventListener('change',e=>{fillAviaryProfile(e.target.value);scheduleAutoSavePoultryFarm()});
+['poIntegratedName','poCity','poFarmName','poOutletType'].forEach(id=>{
+ const el=$('#'+id);if(!el)return;
+ el.addEventListener('change',scheduleAutoSavePoultryFarm);
+ el.addEventListener('blur',scheduleAutoSavePoultryFarm);
+});
+document.querySelectorAll('.po-energy-btn').forEach(btn=>btn.addEventListener('click',()=>{setPoultryEnergy(btn.dataset.energy);scheduleAutoSavePoultryFarm()}));
+if($('#poTruckClose'))$('#poTruckClose').addEventListener('click',()=>$('#poTruckCard').classList.add('hidden'));
+if($('#poTruckSheetFile'))$('#poTruckSheetFile').addEventListener('change',async e=>{
+ const file=e.target.files?.[0],wrap=$('#poTruckSheetPreviewWrap'),img=$('#poTruckSheetPreview'),name=$('#poTruckSheetFileName');
+ resetPoTruckAutoSheet();
+ if(!file){wrap.classList.add('hidden');img.removeAttribute('src');name.textContent='';return}
+ img.src=URL.createObjectURL(file);wrap.classList.remove('hidden');
+ if(deviceMode&&!c360NetOnline()){
+  name.textContent=file.name+' • salva neste celular e será enviada automaticamente quando voltar a internet';
+  return;
+ }
+ name.textContent='Salvando foto automaticamente...';
+ try{
+  await autoSavePoultrySheetFile(file);
+  name.textContent='Foto salva automaticamente ✓';
+ }catch(err){
+  name.textContent='Foto selecionada • será enviada ao salvar o caminhão';
+  console.warn('auto-save foto da ficha',err);
+ }
+});
+['poTruckBoxes','poTruckBirdsPerBox'].forEach(id=>{if($('#'+id))$('#'+id).addEventListener('input',calcTruckSheetTotalHint)});
+if($('#poTruckCata'))$('#poTruckCata').addEventListener('change',toggleTruckCataAviaries);
+if($('#poTruckAddCataAviary'))$('#poTruckAddCataAviary').addEventListener('click',addTruckCataRow);
+if($('#poTruckBarnChecks'))$('#poTruckBarnChecks').addEventListener('input',()=>calcTruckCataBirdTotal());
+if($('#poTruckBarnChecks'))$('#poTruckBarnChecks').addEventListener('click',e=>{
+ const rm=e.target.closest('.truck-cata-remove');if(!rm)return;
+ const rows=[...document.querySelectorAll('#poTruckBarnChecks .truck-cata-row')];
+ if(rows.length<=2){
+  const row=rm.closest('.truck-cata-row');row?.querySelectorAll('input').forEach(x=>x.value='');
+ }else rm.closest('.truck-cata-row')?.remove();
+ calcTruckCataBirdTotal();
+});
+if($('#poTruckDriver')){
+ $('#poTruckDriver').addEventListener('input',()=>fillTruckPairFrom('driver'));
+ $('#poTruckDriver').addEventListener('change',()=>{fillTruckPairFrom('driver');scheduleAutoSaveTruckDriverPair()});
+ $('#poTruckDriver').addEventListener('blur',scheduleAutoSaveTruckDriverPair);
+}
+if($('#poTruckPlate')){
+ $('#poTruckPlate').addEventListener('input',()=>fillTruckPairFrom('plate'));
+ $('#poTruckPlate').addEventListener('change',()=>{fillTruckPairFrom('plate');scheduleAutoSaveTruckDriverPair()});
+ $('#poTruckPlate').addEventListener('blur',scheduleAutoSaveTruckDriverPair);
+}
+if($('#poTruckSave'))$('#poTruckSave').addEventListener('click',()=>saveTruckLoad(false));
+if($('#poTruckSaveClose'))$('#poTruckSaveClose').addEventListener('click',()=>saveTruckLoad(true));
+document.addEventListener('click',async e=>{
+ const a=e.target.closest('.poAddTruck');
+ if(a){
+   openNextTruckForm({operationId:a.dataset.op,loadingId:a.dataset.loading,farmId:a.dataset.farm,name:a.dataset.name||'',sequence:Number(a.dataset.seq||1)});
+   return;
+ }
+ const ra=e.target.closest('.poReopenAddTruck');
+ if(ra){
+   e.preventDefault();
+   if(deviceMode&&!c360NetOnline())return alert('Para reabrir uma apanha concluída, conecte o celular à internet.');
+   await reopenPoultryOperationAndAddTruck(ra);
+   return;
+ }
+ const c=e.target.closest('.poCompleteOp');if(c){await completePoultryOperation(c.dataset.op,c.dataset.loading);return}
+});
+async function loadTeamHome(){if(!deviceMode)return}
+let teamCatchReports=[];
+let poultryDriverPairs=[];
+
+function formatCompanyTaxId(v){
+ const d=String(v||'').replace(/\D/g,'');
+ if(d.length===14)return d.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/,'$1.$2.$3/$4-$5');
+ if(d.length===11)return d.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/,'$1.$2.$3-$4');
+ return v||'Não informado';
+}
+function catchTime(v){return v?new Date(v).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',timeZone:(companyProfile?.timezone||'America/Sao_Paulo')}):'—'}
+function catchDate(v){return v?new Date(v).toLocaleDateString('pt-BR',{timeZone:(companyProfile?.timezone||'America/Sao_Paulo')}):'—'}
+function catchDuration(start,end){
+ if(!start||!end)return '—';
+ const m=Math.max(0,Math.round((new Date(end)-new Date(start))/60000));
+ return Math.floor(m/60)+'h '+String(m%60).padStart(2,'0')+'min';
+}
+async function getDeviceSupervisorReportInfo(){
+ const ss=session(),uid=ss?.user?.id||null;
+ const cached=uid?await offlineCacheGet('device_identity:'+uid):null;
+ let name=cached?.supervisorInfo?.full_name||'';
+ let phone=deviceTeam?.metadata?.supervisor_phone||cached?.supervisorInfo?.phone||'';
+ if(c360NetOnline()&&deviceTeam?.supervisor_employee_id){
+  try{
+   const rows=await rest('v2_employees','select=id,full_name,phone&id=eq.'+encodeURIComponent(deviceTeam.supervisor_employee_id)+'&limit=1');
+   if(rows?.[0]){name=rows[0].full_name||name;phone=deviceTeam?.metadata?.supervisor_phone||rows[0].phone||phone}
+  }catch(_){}
+ }
+ return {name:name||'Não informado',phone:phone||'Não cadastrado'};
+}
+async function buildCatchReportsForDay(day){
+ await loadDevicePoultryContext();
+ await loadPoultryOps(false);
+ const supervisor=await getDeviceSupervisorReportInfo();
+ const team=deviceTeam||poultryTeams.find(x=>x.id===deviceAccess?.team_id)||{};
+ const contractor=team.metadata?.contractor_name||'Não informada';
+ const ops=(poultryOpsCache||[]).filter(o=>o.team_id===deviceAccess?.team_id&&o.scheduled_start&&saoPauloDateKey(o.scheduled_start)===day);
+ return ops.map(op=>{
+  const loading=poultryLoadings.find(l=>l.operation_id===op.id);
+  const trucks=loading?poultryTruckLoads.filter(t=>t.loading_id===loading.id).sort((a,b)=>Number(a.truck_sequence||0)-Number(b.truck_sequence||0)):[];
+  const farm=poultryFarms.find(f=>f.id===(loading?.farm_id||op.metadata?.farm_id))||{};
+  const defaultBarn=poultryBarns.find(b=>b.id===(op.metadata?.barn_id||loading?.metadata?.default_barn_id))||{};
+  const totalBirds=trucks.reduce((a,t)=>a+poN(t.birds),0);
+  const starts=trucks.map(t=>t.started_at).filter(Boolean).sort();
+  const ends=trucks.map(t=>t.completed_at).filter(Boolean).sort();
+  return {op,loading,trucks,farm,defaultBarn,team,supervisor,contractor,totalBirds,catas:trucks.filter(t=>t.is_cata).length,actualStart:starts[0]||op.actual_start||null,actualEnd:ends[ends.length-1]||op.actual_end||null};
+ });
+}
+async function loadTeamReport(){
+ if(!deviceMode)return;
+ const dateEl=$('#teamReportDate');
+ if(dateEl&&!dateEl.value)dateEl.value=localDateBR();
+ const day=dateEl?.value||localDateBR(),list=$('#teamReportToday'),sub=$('#teamReportSubtitle');
+ const dayLabel=new Date(day+'T12:00:00').toLocaleDateString('pt-BR');
+ if(sub)sub.textContent=(deviceTeam?.name||'Equipe')+' • '+dayLabel+' • relatório para a granja';
+ try{
+  teamCatchReports=await buildCatchReportsForDay(day);
+  if(!teamCatchReports.length){
+   list.innerHTML='<div class="card"><strong>Nenhuma apanha nesta data</strong><div class="muted" style="margin-top:5px">Selecione outro dia ou registre a apanha primeiro.</div></div>';
+   return;
+  }
+  list.innerHTML=teamCatchReports.map((r,idx)=>{
+   const farmName=r.farm.farm_name||r.farm.producer_name||r.op.customer_name||r.op.title||'Granja';
+   const integrated=r.farm.producer_name||r.op.customer_name||'Não informado';
+   return '<div class="catch-report-card"><div class="catch-report-title"><div><div class="muted">RELATÓRIO DE APANHA DE AVES'+(r.op.operation_number?' • Nº '+esc(r.op.operation_number):'')+'</div><h3>'+esc(integrated)+'</h3><div class="muted">'+esc(farmName)+' • '+esc(r.farm.city||r.op.metadata?.city||'Cidade não informada')+'</div></div><span class="pill '+(r.op.metadata?.offline_pending?'warn':(r.op.status==='completed'?'ok':''))+'">'+esc(r.op.metadata?.offline_pending?'OFFLINE • PENDENTE':poSL(r.op.status))+'</span></div><div class="catch-report-meta"><div><span class="muted">Total de aves</span><div class="catch-report-total">'+r.totalBirds.toLocaleString('pt-BR')+'</div></div><div><span class="muted">Caminhões</span><div class="catch-report-total">'+r.trucks.length+'</div></div><div><span class="muted">Horário</span><div><b>'+catchTime(r.actualStart)+' → '+catchTime(r.actualEnd)+'</b><br><span class="muted">Duração '+catchDuration(r.actualStart,r.actualEnd)+'</span></div></div><div><span class="muted">Encarregado</span><div><b>'+esc(r.supervisor.name)+'</b><br><span class="muted">'+esc(r.supervisor.phone)+'</span></div></div></div><div class="toolbar" style="margin-top:12px"><button class="btn primary catchReportPrint" type="button" data-index="'+idx+'">🧾 IMPRIMIR 80 MM</button><button class="btn soft catchReportA4" type="button" data-index="'+idx+'">📄 PDF / IMPRESSÃO A4</button></div></div>';
+  }).join('');
+ }catch(e){list.innerHTML='<div class="error">'+esc(e.message||String(e))+'</div>'}
+}
+function printCatchReport(index,format='80'){
+ const r=teamCatchReports[Number(index)];
+ const isA4=format==='a4';
+ if(!r)return alert('Relatório não encontrado. Atualize a tela e tente novamente.');
+
+ const op=r.op,farm=r.farm,barn=r.defaultBarn,team=r.team,sup=r.supervisor;
+ const companyName=companyProfile?.trade_name||companyProfile?.legal_name||"Empresa";
+ const legalName=companyProfile?.legal_name||companyName;
+ const tax=formatCompanyTaxId(companyProfile?.tax_id);
+ const farmName=farm.farm_name||farm.producer_name||op.customer_name||'Não informado';
+ const integrated=farm.producer_name||op.customer_name||'Não informado';
+ const city=farm.city||op.metadata?.city||'Não informada';
+ const reportNo=op.operation_number?'Nº '+op.operation_number:'Registro '+catchDate(op.scheduled_start);
+
+ const groups={};
+ r.trucks.forEach(t=>{
+  let breakdown=Array.isArray(t.metadata?.barn_breakdown)?t.metadata.barn_breakdown.filter(x=>poN(x?.birds)>0):[];
+  if(!breakdown.length){
+   const tb=poultryBarns.find(b=>b.id===t.metadata?.barn_id)||barn;
+   const legacyAviary=(t.is_cata&&t.metadata?.sheet_aviaries)?t.metadata.sheet_aviaries:(tb?.barn_number||t.metadata?.sheet_aviaries||'Não informado');
+   breakdown=[{barn_id:tb?.id||t.metadata?.barn_id||null,barn_number:legacyAviary,birds:poN(t.birds)}];
+  }
+  breakdown.forEach(seg=>{
+   const b=poultryBarns.find(x=>x.id===seg.barn_id);
+   const aviary=seg.barn_number||b?.barn_number||'Não informado';
+   (groups[aviary]??=[]).push({truck:t,birds:poN(seg.birds)});
+  });
+ });
+ const aviarySections=Object.entries(groups).map(([aviary,segments])=>{
+  const truckHtml=segments.map(seg=>{
+   const t=seg.truck;
+   return '<div class="truck"><div class="truck-head">CAMINHÃO '+esc(t.truck_sequence||'')+(t.is_cata?' • CATA':'')+'</div>'+
+   '<div>Placa: <b>'+esc(t.truck_plate||'—')+'</b></div>'+
+   '<div>Motorista: <b>'+esc(t.driver_name||'—')+'</b></div>'+
+   '<div>Início: <b>'+catchTime(t.started_at)+'</b></div><div>Fim: <b>'+catchTime(t.completed_at)+'</b></div>'+
+   (t.is_cata?'<div>Aves deste aviário: <b>'+poN(seg.birds).toLocaleString('pt-BR')+'</b></div>':
+    '<div>Caixas: <b>'+poN(t.metadata?.boxes_count).toLocaleString('pt-BR')+'</b></div>'+
+    '<div>Aves/caixa: <b>'+poN(t.metadata?.birds_per_box).toLocaleString('pt-BR',{maximumFractionDigits:2})+'</b></div>')+
+   '<div>Caixas vazias: <b>'+poN(t.metadata?.empty_boxes).toLocaleString('pt-BR')+'</b></div>'+
+   '<div>Morte carregamento: <b>'+poN(t.metadata?.loading_deaths).toLocaleString('pt-BR')+'</b></div>'+
+   '<div class="truck-birds">'+poN(seg.birds).toLocaleString('pt-BR')+' AVES</div>'+
+   (t.metadata?.notes?'<div class="note">Obs.: '+esc(t.metadata.notes)+'</div>':'')+'</div>';
+  }).join('');
+  const birds=segments.reduce((a,s)=>a+poN(s.birds),0);
+  return '<div class="aviary-title">'+esc(aviaryDisplayLabel(aviary).toUpperCase())+'</div>'+truckHtml+
+   '<div class="aviary-total"><div>TOTAL '+esc(aviaryDisplayLabel(aviary).toUpperCase())+'</div><strong>'+birds.toLocaleString('pt-BR')+' AVES</strong></div>';
+ }).join('');
+ const truckNotes=r.trucks.filter(t=>t.metadata?.notes).map(t=>'Caminhão '+(t.truck_sequence||'')+': '+t.metadata.notes);
+ const notes=[op.notes,...truckNotes].filter(Boolean).join(' • ')||'Sem observações.';
+ const totalBoxes=r.trucks.reduce((a,t)=>a+poN(t.metadata?.boxes_count),0);
+ const totalEmpty=r.trucks.reduce((a,t)=>a+poN(t.metadata?.empty_boxes),0);
+ const totalDeaths=r.trucks.reduce((a,t)=>a+poN(t.metadata?.loading_deaths),0);
+
+ const w=window.open('','_blank');
+ if(!w)return alert('O navegador bloqueou a janela de impressão.');
+ w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>Apanha - '+esc(integrated)+'</title><style>'+
+ '@page{size:80mm auto;margin:2.5mm}*{box-sizing:border-box}html,body{margin:0;padding:0;width:75mm}body{font-family:Arial,Helvetica,sans-serif;color:#000;font-size:10.5px;line-height:1.28}.center{text-align:center}.brand{font-size:20px;font-weight:900;line-height:1.05}.legal{font-size:9px;margin-top:2px}.title{font-size:14px;font-weight:900;margin-top:9px}.sep{border-top:1px dashed #000;margin:8px 0}.row{margin:3px 0}.row b{font-size:11px}.label{font-size:8.5px;text-transform:uppercase;font-weight:700}.block{border:1px solid #000;padding:6px;margin:6px 0}.block-title{font-weight:900;font-size:10px;border-bottom:1px solid #000;padding-bottom:3px;margin-bottom:4px;text-transform:uppercase}.aviary-title{font-size:13px;font-weight:950;border-top:2px solid #000;border-bottom:1px solid #000;padding:5px 0;margin-top:10px}.truck{border:1px dashed #000;padding:6px;margin:6px 0}.truck-head{font-size:11px;font-weight:900;border-bottom:1px dashed #000;padding-bottom:3px;margin-bottom:4px}.truck-birds{text-align:center;font-size:18px;font-weight:950;margin-top:5px}.aviary-total{border:1px solid #000;padding:6px;text-align:center;margin:7px 0}.aviary-total strong{display:block;font-size:17px}.aviary-total small{display:block;margin-top:3px}.note{font-size:9px;margin-top:4px}.totals{border:2px solid #000;padding:7px;margin:10px 0;text-align:center}.total-big{font-size:25px;font-weight:950;line-height:1}.total-label{font-size:10px;font-weight:900;margin-bottom:3px}.totals-small{display:grid;grid-template-columns:repeat(2,1fr);gap:4px;margin-top:7px}.totals-small div{border-top:1px solid #000;padding-top:4px}.obs{border:1px solid #000;min-height:34px;padding:5px;margin-top:5px}.sign{margin-top:26px;border-top:1px solid #000;text-align:center;padding-top:3px;font-size:9px}.sign+.sign{margin-top:28px}.footer{text-align:center;font-size:8px;margin-top:10px;border-top:1px dashed #000;padding-top:6px}@media print{html,body{width:75mm}}'+
+ (isA4?'@page{size:A4 portrait;margin:14mm}html,body{width:auto!important;max-width:none!important}body{max-width:182mm!important;margin:0 auto!important;font-size:12px!important;line-height:1.4!important}.brand{font-size:27px!important}.legal{font-size:10px!important}.title{font-size:18px!important}.block{padding:10px!important;margin:9px 0!important;border-color:#475569!important}.block-title{font-size:12px!important}.aviary-title{font-size:15px!important;padding:7px 0!important}.truck{padding:9px!important;margin:8px 0!important;break-inside:avoid}.truck-head{font-size:12px!important}.truck-birds{font-size:20px!important}.aviary-total{padding:9px!important;break-inside:avoid}.aviary-total strong{font-size:20px!important}.totals{padding:12px!important;break-inside:avoid}.total-big{font-size:30px!important}.totals-small{grid-template-columns:repeat(3,1fr)!important;gap:7px!important}.obs{min-height:50px!important;padding:8px!important}.sign{margin-top:40px!important;font-size:10px!important}.footer{font-size:9px!important;margin-top:18px!important}@media print{html,body{width:auto!important}}':'')+
+ '</style></head><body>'+
+ '<div class="center"><div class="brand">'+esc(companyName)+'</div><div class="legal">'+esc(legalName)+'</div><div class="legal">CNPJ/CPF: '+esc(tax)+'</div></div><div class="sep"></div>'+
+ '<div class="center title">RELATÓRIO DE APANHA DE AVES</div><div class="center">'+esc(reportNo)+'</div><div class="center"><b>'+catchDate(op.scheduled_start)+'</b></div>'+
+ '<div class="sep"></div><div class="block"><div class="block-title">Equipe</div><div class="row">Equipe: <b>'+esc(team.name||'Não informada')+'</b></div><div class="row">Condução: <b>'+esc(deviceVehicleInfo?(deviceVehicleInfo.description||deviceVehicleInfo.model||'Condução')+(deviceVehicleInfo.plate?' • '+deviceVehicleInfo.plate:''):'Não informada')+'</b></div><div class="row">Encarregado: <b>'+esc(sup.name)+'</b></div><div class="row">Telefone: <b>'+esc(sup.phone)+'</b></div></div>'+
+ '<div class="block"><div class="block-title">Granja / Integrado</div><div class="row">Integrado: <b>'+esc(integrated)+'</b></div><div class="row">Granja: <b>'+esc(farmName)+'</b></div><div class="row">Cidade: <b>'+esc(city)+'</b></div><div class="row">Apanha: <b>'+catchTime(r.actualStart)+' → '+catchTime(r.actualEnd)+'</b></div><div class="row">Duração: <b>'+catchDuration(r.actualStart,r.actualEnd)+'</b></div></div>'+
+ aviarySections+
+ '<div class="totals"><div class="total-label">TOTAL DO INTEGRADO</div><div class="total-big">'+r.totalBirds.toLocaleString('pt-BR')+' AVES</div><div class="totals-small"><div>Aviários<br><b>'+Object.keys(groups).length+'</b></div><div>Caminhões<br><b>'+r.trucks.length+'</b></div><div>Caixas<br><b>'+totalBoxes.toLocaleString('pt-BR')+'</b></div><div>Caixas vazias<br><b>'+totalEmpty.toLocaleString('pt-BR')+'</b></div><div>Catas<br><b>'+r.catas+'</b></div><div>Mortes carregamento<br><b>'+totalDeaths.toLocaleString('pt-BR')+'</b></div></div></div>'+
+ '<div class="label">OBSERVAÇÕES</div><div class="obs">'+esc(notes)+'</div><div class="sign">'+esc(sup.name)+'<br>Encarregado da equipe</div><div class="sign">Responsável pela granja / integrado<br>Nome e assinatura</div>'+
+ '<div class="footer">Emitido pelo Comando 360<br>'+new Date().toLocaleString('pt-BR')+'<br><br>*** FIM DO RELATÓRIO ***</div><script>window.onload=function(){setTimeout(function(){window.print()},250)}<\/script></body></html>');
+ w.document.close();
+}
+document.addEventListener('click',function(e){
+ const b=e.target.closest('.catchReportPrint');
+ if(b){e.preventDefault();printCatchReport(b.dataset.index,'80');return}
+ const a4=e.target.closest('.catchReportA4');
+ if(a4){e.preventDefault();printCatchReport(a4.dataset.index,'a4')}
+});
+function renderDeviceModeBar(tab){const bar=$('#deviceModeBar');if(bar)bar.classList.toggle('hidden',!deviceMode||tab==='equipehome')}
+// Navegação resiliente: um único listener delegado atende desktop e mobile.
+document.addEventListener('click',function(e){
+  const team=e.target.closest('[data-teamtab]');if(team){e.preventDefault();v2Go(team.dataset.teamtab);return}
+  const code=e.target.closest('.createDeviceCode');if(code){e.preventDefault();createDevicePairingCode(code.dataset.team,code.dataset.name||'Equipe');return}
+  const revoke=e.target.closest('.revokeTeamDevice');if(revoke){e.preventDefault();revokeTeamDevice(revoke.dataset.id,revoke.dataset.name||'celular');return}
+  const side=e.target.closest('.v2navbtn[data-v2tab]');
+  if(side){ e.preventDefault(); v2Go(side.dataset.v2tab); return; }
+  const mobile=e.target.closest('#nav button[data-tab]');
+  if(mobile){ e.preventDefault(); v2Go(mobile.dataset.tab); return; }
+  const jump=e.target.closest('[data-jump]');
+  if(jump){ e.preventDefault(); v2Go(jump.dataset.jump); }
+});
+const v2ScreenStore={};
+function initScreenRouter(){
+ const host=document.getElementById('screenHost');
+ if(!host)return;
+ document.querySelectorAll('#app [data-screen]').forEach(function(el){
+   v2ScreenStore[el.dataset.screen]=el;
+ });
+ Object.keys(v2ScreenStore).forEach(function(k){
+   const el=v2ScreenStore[k];
+   if(el.parentNode)el.parentNode.removeChild(el);
+   el.hidden=false;
+   el.classList.remove('active');
+ });
+}
+
+let consumablesItems=[],consumablesMovements=[];
+function consumablesNum(v){const n=Number(v||0);return Number.isFinite(n)?n:0}
+function consumablesDateInput(d=new Date()){const z=n=>String(n).padStart(2,'0');return d.getFullYear()+'-'+z(d.getMonth()+1)+'-'+z(d.getDate())+'T'+z(d.getHours())+':'+z(d.getMinutes())}
+function consumablesPeriodDefaults(){
+ const now=new Date(),start=new Date(now.getFullYear(),now.getMonth(),1);
+ const a=document.getElementById('consumablesStart'),b=document.getElementById('consumablesEnd');
+ if(a&&!a.value)a.value=start.toISOString().slice(0,10);
+ if(b&&!b.value)b.value=now.toISOString().slice(0,10);
+}
+function consumableStock(itemId,movs=consumablesMovements){
+ return movs.filter(x=>x.item_id===itemId).reduce((s,x)=>s+(['in','adjustment_in','transfer_in'].includes(x.movement_type)?consumablesNum(x.quantity):-consumablesNum(x.quantity)),0);
+}
+function consumableItem(id){return consumablesItems.find(x=>x.id===id)}
+function consumablesRangeMovements(){
+ const a=document.getElementById('consumablesStart')?.value||'0000-01-01',b=document.getElementById('consumablesEnd')?.value||'9999-12-31';
+ return consumablesMovements.filter(x=>{const d=String(x.occurred_at||'').slice(0,10);return d>=a&&d<=b});
+}
+function consumableQty(v,unit){return consumablesNum(v).toLocaleString('pt-BR',{maximumFractionDigits:3})+' '+esc(unit||'')}
+function fillConsumableMovementItems(){
+ const s=document.getElementById('consumableMovementItem');if(!s)return;
+ s.innerHTML='<option value="">Selecione...</option>'+consumablesItems.map(x=>'<option value="'+esc(x.id)+'">'+esc(x.name)+' • '+esc(x.unit||'un')+'</option>').join('');
+}
+function renderConsumableMovementCalculated(){
+ const type=document.getElementById('consumableMovementType')?.value||'out';
+ const qty=consumablesNum(document.getElementById('consumableMovementQty')?.value);
+ const total=consumablesNum(document.getElementById('consumableMovementTotal')?.value);
+ const item=consumableItem(document.getElementById('consumableMovementItem')?.value);
+ const value=type==='in'?total:qty*consumablesNum(item?.current_avg_cost);
+ const el=document.getElementById('consumableMovementCalculated');if(el)el.value=money(value);
+}
+function openConsumableMovement(type){
+ if(!consumablesItems.length){c360Toast('Cadastre um insumo primeiro','Ex.: Óleo ou Sabão.','error');return}
+ const form=document.getElementById('consumableMovementForm');if(!form)return;
+ document.getElementById('consumableMovementType').value=type;
+ document.getElementById('consumableMovementTitle').textContent=type==='in'?'Entrada / compra de insumo':'Registrar consumo de insumo';
+ document.getElementById('consumableMovementSubtitle').textContent=type==='in'?'Registre a quantidade comprada e o valor total pago.':'Registre quanto foi usado. O custo é calculado pelo custo médio do estoque.';
+ document.getElementById('consumableMovementTotalWrap').style.display=type==='in'?'block':'none';
+ document.getElementById('consumableMovementQty').value='';
+ document.getElementById('consumableMovementTotal').value='';
+ document.getElementById('consumableMovementNotes').value='';
+ document.getElementById('consumableMovementDate').value=consumablesDateInput();
+ document.getElementById('consumableMovementMsg').textContent='';
+ fillConsumableMovementItems();
+ form.classList.add('open');
+ renderConsumableMovementCalculated();
+ form.scrollIntoView({behavior:'smooth',block:'start'});
+}
+function renderConsumables(){
+ consumablesPeriodDefaults();
+ const period=consumablesRangeMovements();
+ const ins=period.filter(x=>x.movement_type==='in');
+ const outs=period.filter(x=>x.movement_type==='out');
+ const purchases=ins.reduce((s,x)=>s+consumablesNum(x.quantity)*consumablesNum(x.unit_cost),0);
+ const consumedCost=outs.reduce((s,x)=>s+consumablesNum(x.quantity)*consumablesNum(x.unit_cost),0);
+ const liters=outs.filter(x=>String(consumableItem(x.item_id)?.unit||'').toLowerCase()==='l').reduce((s,x)=>s+consumablesNum(x.quantity),0);
+ const stockValue=consumablesItems.reduce((s,i)=>s+Math.max(0,consumableStock(i.id))*consumablesNum(i.current_avg_cost),0);
+ const k=document.getElementById('consumablesKpis');
+ if(k)k.innerHTML=
+  '<div class="v2kpi"><div class="t">COMPRAS NO PERÍODO</div><div class="v">'+money(purchases)+'</div><div class="s">valor pago em entradas</div></div>'+
+  '<div class="v2kpi"><div class="t">CONSUMIDO NO PERÍODO</div><div class="v">'+money(consumedCost)+'</div><div class="s">custo do que foi usado</div></div>'+
+  '<div class="v2kpi"><div class="t">LITROS CONSUMIDOS</div><div class="v">'+liters.toLocaleString('pt-BR',{maximumFractionDigits:2})+' L</div><div class="s">produtos controlados em litros</div></div>'+
+  '<div class="v2kpi"><div class="t">VALOR EM ESTOQUE</div><div class="v">'+money(stockValue)+'</div><div class="s">'+consumablesItems.length+' insumo(s) cadastrado(s)</div></div>';
+
+ const list=document.getElementById('consumablesStockList');
+ if(list){
+  list.innerHTML=consumablesItems.length?'<div class="tablewrap"><table><tr><th>Produto</th><th>Estoque atual</th><th>Custo médio</th><th>Valor em estoque</th><th>Consumido no período</th><th>Custo consumido</th></tr>'+
+   consumablesItems.map(i=>{
+    const stock=consumableStock(i.id),used=outs.filter(x=>x.item_id===i.id).reduce((s,x)=>s+consumablesNum(x.quantity),0);
+    const usedCost=outs.filter(x=>x.item_id===i.id).reduce((s,x)=>s+consumablesNum(x.quantity)*consumablesNum(x.unit_cost),0);
+    const min=consumablesNum(i.minimum_stock),low=min>0&&stock<=min;
+    return '<tr><td><b>'+esc(i.name)+'</b></td><td class="consumable-stock '+(low?'consumable-negative':'consumable-ok')+'">'+consumableQty(stock,i.unit)+(low?' ⚠':'')+'</td><td>'+money(i.current_avg_cost)+'</td><td>'+money(Math.max(0,stock)*consumablesNum(i.current_avg_cost))+'</td><td>'+consumableQty(used,i.unit)+'</td><td>'+money(usedCost)+'</td></tr>';
+   }).join('')+'</table></div>':'<div class="muted">Nenhum insumo cadastrado. Cadastre Óleo, Sabão ou outro produto.</div>';
+ }
+
+ const hist=document.getElementById('consumablesHistory');
+ if(hist){
+  const rows=[...period].sort((a,b)=>new Date(b.occurred_at)-new Date(a.occurred_at));
+  hist.innerHTML=rows.length?'<div class="tablewrap"><table><tr><th>Data</th><th>Movimento</th><th>Produto</th><th>Quantidade</th><th>Custo unit.</th><th>Total</th><th>Observação</th></tr>'+
+   rows.map(x=>{const i=consumableItem(x.item_id),total=consumablesNum(x.quantity)*consumablesNum(x.unit_cost);return '<tr><td>'+new Date(x.occurred_at).toLocaleString('pt-BR')+'</td><td><span class="pill '+(x.movement_type==='in'?'ok':'warn')+'">'+(x.movement_type==='in'?'ENTRADA':'CONSUMO')+'</span></td><td>'+esc(i?.name||'Insumo')+'</td><td>'+consumableQty(x.quantity,i?.unit)+'</td><td>'+money(x.unit_cost)+'</td><td>'+money(total)+'</td><td>'+esc(x.notes||'')+'</td></tr>'}).join('')+
+   '</table></div>':'<div class="muted">Nenhuma entrada ou consumo neste período.</div>';
+ }
+ fillConsumableMovementItems();
+}
+async function loadConsumables(){
+ consumablesPeriodDefaults();
+ const [items,movs]=await Promise.all([
+  rest('v2_inventory_items','select=*&company_id=eq.'+companyId+'&category=eq.insumo&status=eq.active&order=name.asc'),
+  rest('v2_inventory_movements','select=*&company_id=eq.'+companyId+'&order=occurred_at.desc&limit=1000')
+ ]);
+ consumablesItems=items||[];
+ const ids=new Set(consumablesItems.map(x=>x.id));
+ consumablesMovements=(movs||[]).filter(x=>ids.has(x.item_id));
+ renderConsumables();
+}
+async function saveConsumableItem(){
+ const msg=document.getElementById('consumableItemMsg');
+ const name=document.getElementById('consumableName').value.trim();
+ const unit=document.getElementById('consumableUnit').value;
+ if(!name){msg.className='error';msg.textContent='Informe o nome do produto.';return}
+ msg.className='muted';msg.textContent='Salvando...';
+ try{
+  const sku='INS-'+Date.now().toString(36).toUpperCase();
+  await rest('v2_inventory_items','','POST',{
+   company_id:companyId,sku,name,category:'insumo',unit,
+   minimum_stock:consumablesNum(document.getElementById('consumableMinStock').value),
+   current_avg_cost:0,tracks_lot:false,tracks_expiry:false,status:'active',
+   metadata:{source:'insumos',note:document.getElementById('consumableItemNote').value.trim()}
+  });
+  document.getElementById('consumableName').value='';
+  document.getElementById('consumableMinStock').value='';
+  document.getElementById('consumableItemNote').value='';
+  document.getElementById('consumableItemForm').classList.remove('open');
+  await loadConsumables();c360Toast('Insumo cadastrado','Agora você pode registrar compras e consumo.','success');
+ }catch(e){msg.className='error';msg.textContent=e.message||String(e)}
+}
+async function saveConsumableMovement(){
+ const msg=document.getElementById('consumableMovementMsg');
+ const type=document.getElementById('consumableMovementType').value;
+ const item=consumableItem(document.getElementById('consumableMovementItem').value);
+ const qty=consumablesNum(document.getElementById('consumableMovementQty').value);
+ const total=consumablesNum(document.getElementById('consumableMovementTotal').value);
+ if(!item){msg.className='error';msg.textContent='Selecione o produto.';return}
+ if(!(qty>0)){msg.className='error';msg.textContent='Informe uma quantidade maior que zero.';return}
+ const currentStock=consumableStock(item.id);
+ if(type==='out'&&qty>currentStock+0.000001){msg.className='error';msg.textContent='Estoque insuficiente. Disponível: '+consumableQty(currentStock,item.unit)+'.';return}
+ if(type==='in'&&!(total>0)){msg.className='error';msg.textContent='Informe o valor total pago nesta compra.';return}
+ const unitCost=type==='in'?total/qty:consumablesNum(item.current_avg_cost);
+ msg.className='muted';msg.textContent='Salvando...';
+ try{
+  const u=session()?.user?.id||null;
+  await rest('v2_inventory_movements','','POST',{
+   company_id:companyId,item_id:item.id,location_id:null,movement_type:type,quantity:qty,unit_cost:unitCost,
+   occurred_at:new Date(document.getElementById('consumableMovementDate').value||Date.now()).toISOString(),
+   source_type:type==='in'?'consumable_purchase':'consumable_usage',
+   notes:document.getElementById('consumableMovementNotes').value.trim()||null,created_by:u
+  });
+  if(type==='in'){
+   const oldCost=consumablesNum(item.current_avg_cost);
+   const baseQty=Math.max(0,currentStock);
+   const newAvg=(baseQty*oldCost+qty*unitCost)/(baseQty+qty);
+   await rest('v2_inventory_items','id=eq.'+encodeURIComponent(item.id),'PATCH',{current_avg_cost:Number(newAvg.toFixed(6))});
+  }
+  document.getElementById('consumableMovementForm').classList.remove('open');
+  await loadConsumables();
+  c360Toast(type==='in'?'Entrada registrada':'Consumo registrado',type==='in'?money(total)+' adicionados ao estoque.':consumableQty(qty,item.unit)+' baixados do estoque.','success');
+ }catch(e){msg.className='error';msg.textContent=e.message||String(e)}
+}
+document.addEventListener('input',function(e){
+ if(['consumableMovementQty','consumableMovementTotal'].includes(e.target?.id))renderConsumableMovementCalculated();
+});
+document.addEventListener('change',function(e){
+ if(e.target?.id==='consumableMovementItem')renderConsumableMovementCalculated();
+ if(['consumablesStart','consumablesEnd'].includes(e.target?.id))renderConsumables();
+});
+document.addEventListener('click',async function(e){
+  const financePrivacy=e.target.closest('#toggleFinancePrivacy');
+  if(financePrivacy){
+    e.preventDefault();
+    financeValuesHidden=!financeValuesHidden;
+    localStorage.setItem('c360_finance_values_hidden',financeValuesHidden?'1':'0');
+    renderFinanceView();
+    return;
+  }
+ if(e.target.closest('#newConsumableItemBtn')){e.preventDefault();document.getElementById('consumableItemMsg').textContent='';document.getElementById('consumableItemForm').classList.add('open');document.getElementById('consumableItemForm').scrollIntoView({behavior:'smooth',block:'start'});return}
+ if(e.target.closest('#cancelConsumableItem')){e.preventDefault();document.getElementById('consumableItemForm').classList.remove('open');return}
+ if(e.target.closest('#saveConsumableItem')){e.preventDefault();await saveConsumableItem();return}
+ if(e.target.closest('#newConsumableEntryBtn')){e.preventDefault();openConsumableMovement('in');return}
+ if(e.target.closest('#newConsumableUsageBtn')){e.preventDefault();openConsumableMovement('out');return}
+ if(e.target.closest('#cancelConsumableMovement')){e.preventDefault();document.getElementById('consumableMovementForm').classList.remove('open');return}
+ if(e.target.closest('#saveConsumableMovement')){e.preventDefault();await saveConsumableMovement();return}
+ if(e.target.closest('#refreshConsumables')){e.preventDefault();await loadConsumables();return}
+});
+
+let maintenanceCache=[];
+function maintenanceStatus(p,vehicle){const km=Number(vehicle?.current_odometer_km||0),dueKm=Number(p.next_due_odometer_km||0);const today=new Date();today.setHours(0,0,0,0);const dueDate=p.next_due_at?new Date(p.next_due_at+'T00:00:00'):null;if((dueKm&&km>=dueKm)||(dueDate&&dueDate<today))return ['Vencida','error'];if((dueKm&&dueKm-km<=1000)||(dueDate&&((dueDate-today)/86400000)<=30))return ['Próxima','warn'];return ['Em dia','ok']}
+const MAINTENANCE_RECEIPT_BUCKET='v2-maintenance-receipts';
+const MAINTENANCE_STANDARD_TYPES=['Troca de óleo e filtros','Freios','Pneus','Elétrica','Suspensão','Motor','Câmbio','Revisão preventiva','Manutenção corretiva'];
+
+function maintenanceUuid(){
+ if(window.crypto?.randomUUID)return crypto.randomUUID();
+ return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{
+  const r=Math.random()*16|0,v=c==='x'?r:(r&0x3|0x8);
+  return v.toString(16);
+ });
+}
+async function uploadMaintenanceReceipt(file,maintenanceId){
+ if(!file)return null;
+ if(file.size>10*1024*1024)throw new Error('A nota das peças deve ter no máximo 10 MB.');
+ const s=session();if(!s?.access_token)throw new Error('Sessão expirada.');
+ const ext=file.type==='application/pdf'?'pdf':file.type==='image/png'?'png':file.type==='image/webp'?'webp':'jpg';
+ const path=companyId+'/'+maintenanceId+'/'+Date.now()+'-nota-pecas.'+ext;
+ const r=await fetch(API_URL+'/storage/v1/object/'+MAINTENANCE_RECEIPT_BUCKET+'/'+path,{
+  method:'POST',
+  headers:{apikey:KEY,Authorization:'Bearer '+s.access_token,'Content-Type':file.type||'image/jpeg','x-upsert':'false'},
+  body:file
+ });
+ await parseResponse(r);
+ return path;
+}
+async function openMaintenanceReceipt(path){
+ if(!path)return;
+ try{
+  const r=await authFetch('/storage/v1/object/'+MAINTENANCE_RECEIPT_BUCKET+'/'+path);
+  const b=await r.blob(),u=URL.createObjectURL(b);
+  window.open(u,'_blank','noopener');
+  setTimeout(()=>URL.revokeObjectURL(u),60000);
+ }catch(e){
+  alert('Não foi possível abrir a nota das peças: '+(e.message||String(e)));
+ }
+}
+function maintenanceReceiptHistory(meta={}){
+ const h=Array.isArray(meta.parts_receipt_history)?meta.parts_receipt_history:[];
+ if(h.length)return h;
+ return meta.parts_receipt_path?[{path:meta.parts_receipt_path,uploaded_at:null,supplier:meta.parts_supplier||''}]:[];
+}
+function maintenanceMoney(v){
+ let s=String(v||'').trim().replace(/R\$\s*/gi,'').replace(/\s/g,'').replace(/[^0-9,.-]/g,'');
+ if(!s)return 0;
+ if(s.includes(',')&&s.includes('.')){
+  if(s.lastIndexOf(',')>s.lastIndexOf('.'))s=s.replace(/\./g,'').replace(',','.');
+  else s=s.replace(/,/g,'');
+ }else if(s.includes(','))s=s.replace(/\./g,'').replace(',','.');
+ return Number(s)||0;
+}
+function maintenanceReceiptSupplier(lines=[]){
+ const reject=/CNPJ|CPF|DANFE|NFC-?E|NF-?E|CUPOM|DOCUMENTO\s+AUXILIAR|CONSUMIDOR|CHAVE\s+DE\s+ACESSO|PROTOCOLO|IE\b|IM\b|ENDERE[CÇ]O|CEP|TELEFONE|FONE|DATA|HORA|TOTAL|SUBTOTAL|PAGAMENTO|DINHEIRO|PIX|CART[AÃ]O/i;
+ for(const raw of lines.slice(0,14)){
+  const line=String(raw||'').replace(/\s{2,}/g,' ').trim();
+  const letters=(line.match(/[A-ZÀ-Ú]/gi)||[]).length;
+  if(line.length>=4&&line.length<=90&&letters>=4&&!reject.test(line)&&!/^\d+$/.test(line))return line;
+ }
+ return '';
+}
+function parseMaintenanceReceiptText(raw){
+ const text=String(raw||'').replace(/\r/g,'\n').replace(/[ \t]+/g,' ').trim();
+ const flat=text.replace(/\s+/g,' ');
+ const lines=text.split(/\n+/).map(x=>x.trim()).filter(Boolean);
+ const supplier=maintenanceReceiptSupplier(lines);
+ let total=0;
+ const totalPatterns=[
+  /(?:VALOR\s+TOTAL|TOTAL\s+A\s+PAGAR|TOTAL\s+DA\s+NOTA|TOTAL\s+NOTA|TOTAL)\s*(?:R\$)?\s*[:=\-]?\s*(\d{1,9}(?:[.,]\d{3})*[.,]\d{2})\b/i,
+  /\bR\$\s*(\d{1,9}(?:[.,]\d{3})*[.,]\d{2})\s*(?:TOTAL|VALOR\s+TOTAL)\b/i
+ ];
+ for(const p of totalPatterns){const m=flat.match(p);if(m?.[1]){total=maintenanceMoney(m[1]);if(total>0)break}}
+
+ const itemReject=/TOTAL|SUBTOTAL|DESCONTO|ACR[EÉ]SCIMO|TROCO|PAGAMENTO|DINHEIRO|PIX|CART[AÃ]O|CNPJ|CPF|DANFE|NFC-?E|NF-?E|ICMS|TRIBUT|IMPOST|CHAVE|PROTOCOLO|ENDERE[CÇ]O|CEP|TELEFONE|FONE|VENDEDOR|CLIENTE|CONSUMIDOR/i;
+ const items=[];
+ let pendingDesc='';
+ for(const rawLine of lines){
+  const line=rawLine.replace(/\s{2,}/g,' ').trim();
+  if(!line||itemReject.test(line))continue;
+  const vals=[...line.matchAll(/(?:R\$\s*)?(\d{1,7}(?:[.,]\d{3})*[.,]\d{2,4})\b/g)];
+  const letters=(line.match(/[A-ZÀ-Ú]/gi)||[]).length;
+
+  if(!vals.length){
+   if(letters>=3&&line.length>=4&&line.length<=100&&!/^\d+[\s\-./]*$/.test(line))pendingDesc=line;
+   continue;
+  }
+
+  const last=vals[vals.length-1];
+  const lineTotal=maintenanceMoney(last[1]);
+  if(!(lineTotal>0))continue;
+
+  let desc=line.slice(0,last.index).trim();
+  if(pendingDesc&&((desc.match(/[A-ZÀ-Ú]/gi)||[]).length<3))desc=(pendingDesc+' '+desc).trim();
+  desc=desc.replace(/^\d{3,}\s+/, '').replace(/\b(?:QTD|QTDE|QUANTIDADE)\b.*$/i,'').trim();
+
+  const qtyMatch=line.match(/\b(\d+(?:[.,]\d+)?)\s*(?:UN|UND|UNID|PC|P[CÇ]A|PCA|JG|KIT|CX|KG|LT|MT)\b/i);
+  let quantity=qtyMatch?maintenanceMoney(qtyMatch[1]):1;
+  if(!(quantity>0)||quantity>1000)quantity=1;
+
+  let unitPrice=0;
+  if(vals.length>=2){
+   const candidate=maintenanceMoney(vals[vals.length-2][1]);
+   if(candidate>0&&candidate<=lineTotal*1.5)unitPrice=candidate;
+  }
+  if(!unitPrice)unitPrice=lineTotal/quantity;
+
+  const dletters=(desc.match(/[A-ZÀ-Ú]/gi)||[]).length;
+  if(dletters>=3&&desc.length<=120){
+   items.push({
+    description:desc,
+    quantity:Number(quantity.toFixed(3)),
+    unit_price:Number(unitPrice.toFixed(2)),
+    total:Number(lineTotal.toFixed(2))
+   });
+   pendingDesc='';
+  }
+ }
+ const seen=new Set();
+ const cleanItems=items.filter(x=>{
+  const key=(x.description.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,35))+'|'+x.total.toFixed(2);
+  if(seen.has(key))return false;
+  seen.add(key);return true;
+ }).slice(0,30);
+
+ if(!total&&cleanItems.length)total=cleanItems.reduce((s,x)=>s+Number(x.total||0),0);
+ return {supplier,items:cleanItems,total_amount:Number(total.toFixed(2)),raw_text:text.slice(0,8000)};
+}
+async function maintenanceReceiptImageCanvas(file){
+ const url=URL.createObjectURL(file);
+ try{
+  const img=await new Promise((resolve,reject)=>{
+   const i=new Image();i.onload=()=>resolve(i);i.onerror=()=>reject(new Error('Não consegui abrir a foto da nota.'));i.src=url;
+  });
+  return prepareOcrCanvas(img,2600);
+ }finally{URL.revokeObjectURL(url)}
+}
+function maintenanceReceiptProgress(status,progress=null,message=null){
+ const el=$('#maintenanceReceiptReadMsg');if(!el)return;
+ if(message){el.className='muted';el.textContent=message;return}
+ const pct=typeof progress==='number'?' '+Math.round(progress*100)+'%':'';
+ const labels={
+  'loading tesseract core':'Preparando leitor...',
+  'initializing tesseract':'Inicializando leitura...',
+  'loading language traineddata':'Carregando idioma...',
+  'initializing api':'Preparando OCR...',
+  'recognizing text':'Lendo a nota das peças...'
+ };
+ el.className='muted';
+ el.textContent=(labels[status]||'Lendo a nota das peças...')+pct;
+}
+async function maintenanceReceiptTextFromFile(file){
+ const isPdf=file.type==='application/pdf'||String(file.name||'').toLowerCase().endsWith('.pdf');
+ if(isPdf){
+  try{
+   const direct=await extractPdfText(file);
+   if(direct&&direct.length>50)return direct;
+  }catch(e){console.warn('Texto PDF da nota',e)}
+  if(!window.pdfjsLib)throw new Error('Leitor de PDF ainda carregando.');
+  pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+  const pdf=await pdfjsLib.getDocument({data:await file.arrayBuffer()}).promise;
+  const canvas=await pdfPageToOcrCanvas(pdf,1);
+  await ensureTesseractReady();
+  const result=await Tesseract.recognize(canvas,'por',{logger:m=>maintenanceReceiptProgress(m?.status,m?.progress)});
+  return String(result?.data?.text||'');
+ }
+ const canvas=await maintenanceReceiptImageCanvas(file);
+ await ensureTesseractReady();
+ const result=await Tesseract.recognize(canvas,'por',{logger:m=>maintenanceReceiptProgress(m?.status,m?.progress)});
+ return String(result?.data?.text||'');
+}
+function renderMaintenanceReceiptPreview(parsed){
+ const box=$('#maintenanceReceiptPreview');if(!box)return;
+ window.__maintenanceReceiptPending=parsed||null;
+ if(!parsed){box.classList.add('hidden');box.innerHTML='';return}
+ const items=Array.isArray(parsed.items)?parsed.items:[];
+ const supplier=parsed.supplier||'Não identificado';
+ const total=Number(parsed.total_amount||0);
+ box.classList.remove('hidden');
+ box.innerHTML='<div class="receipt-detected">'+
+  '<div><b>Loja detectada:</b> '+esc(supplier)+'</div>'+
+  '<div><b>Valor detectado:</b> '+(total>0?money(total):'Não identificado')+'</div>'+
+  '<div><b>Peças detectadas:</b> '+items.length+'</div>'+
+  (items.length?'<div class="receipt-items">'+items.slice(0,20).map((x,i)=>'<div>'+(i+1)+'. '+esc(x.description||'Peça')+' • '+Number(x.quantity||1).toLocaleString('pt-BR')+' × '+money(x.unit_price||0)+' = <b>'+money(x.total||0)+'</b></div>').join('')+'</div>':'')+
+  '<div class="toolbar" style="margin-top:9px"><button type="button" class="btn primary" id="applyMaintenanceReceiptRead">APLICAR LEITURA</button><button type="button" class="btn soft" id="discardMaintenanceReceiptRead">IGNORAR LEITURA</button></div>'+
+  '<div class="muted">Confira antes de aplicar. A foto/PDF continua anexada mesmo se você ignorar a leitura.</div>'+
+ '</div>';
+}
+async function readMaintenanceReceipt(file){
+ if(!file)return;
+ const msg=$('#maintenanceReceiptReadMsg');
+ try{
+  window.__maintenanceReceiptOcr=null;
+  window.__maintenanceReceiptPending=null;
+  renderMaintenanceReceiptPreview(null);
+  maintenanceReceiptProgress(null,null,'Lendo a nota e identificando loja, peças e valores...');
+  const text=await maintenanceReceiptTextFromFile(file);
+  const parsed=parseMaintenanceReceiptText(text);
+  const result={...parsed,read_at:new Date().toISOString(),engine:'tesseract-5.1.1'};
+  window.__maintenanceReceiptOcr=result;
+  renderMaintenanceReceiptPreview(result);
+
+  const found=[];
+  if(parsed.supplier)found.push('loja');
+  if(parsed.items?.length)found.push(parsed.items.length+' peça'+(parsed.items.length===1?'':'s'));
+  if(parsed.total_amount)found.push(money(parsed.total_amount));
+  if(msg){
+   msg.className=found.length?'okmsg':'error';
+   msg.textContent=found.length?'Leitura concluída ✓ Confira abaixo antes de aplicar.':'A nota foi lida, mas os campos não ficaram confiáveis. Preencha manualmente ou me envie a foto para eu ajustar.';
+  }
+ }catch(e){
+  renderMaintenanceReceiptPreview(null);
+  if(msg){msg.className='error';msg.textContent='Não consegui ler a nota automaticamente: '+(e.message||String(e))+'. Você ainda pode preencher manualmente.'}
+ }
+}
+function applyMaintenanceReceiptRead(){
+ const parsed=window.__maintenanceReceiptPending;if(!parsed)return;
+ if(parsed.supplier)$('#maintenancePartsSupplier').value=parsed.supplier;
+ if(parsed.items?.length)renderMaintenanceParts(parsed.items);
+ else if(parsed.total_amount>0)renderMaintenanceParts([{description:'Peças da nota',quantity:1,unit_price:parsed.total_amount,total:parsed.total_amount}]);
+ if(parsed.total_amount>0)$('#maintenancePartsCost').value=Number(parsed.total_amount).toFixed(2);
+ calcMaintenanceTotal();
+ const msg=$('#maintenanceReceiptReadMsg');
+ if(msg){msg.className='okmsg';msg.textContent='Leitura aplicada ✓ Agora confira e corrija qualquer item antes de salvar.'}
+ renderMaintenanceReceiptPreview(null);
+}
+
+function maintenancePartsFromDom(){
+ return [...document.querySelectorAll('#maintenancePartsItems .maintenance-part-row')].map(row=>{
+  const description=row.querySelector('.maintenance-part-desc input')?.value.trim()||'';
+  const quantity=Number(row.querySelector('.maintenance-part-qty')?.value||1);
+  const unit_price=Number(row.querySelector('.maintenance-part-unit')?.value||0);
+  const total=Math.max(0,quantity*unit_price);
+  return {description,quantity:quantity>0?quantity:1,unit_price:unit_price>0?unit_price:0,total};
+ }).filter(x=>x.description||x.total>0);
+}
+function renderMaintenanceParts(items=[]){
+ const list=$('#maintenancePartsItems');if(!list)return;
+ const rows=(items||[]).length?items:[{description:'',quantity:1,unit_price:0,total:0}];
+ list.innerHTML=rows.map((x,i)=>{
+  const q=Number(x.quantity||1)>0?Number(x.quantity||1):1;
+  let u=Number(x.unit_price||0);
+  if(!u&&Number(x.total||0)>0)u=Number(x.total||0)/q;
+  return '<div class="maintenance-part-row" data-index="'+i+'">'+
+   '<div class="maintenance-part-desc"><label>Peça / material</label><input value="'+esc(x.description||'')+'" placeholder="Ex.: filtro diesel"/></div>'+
+   '<div><label>Qtd.</label><input class="maintenance-part-qty" type="number" min="0.001" step="0.001" value="'+q+'"/></div>'+
+   '<div><label>Valor unit. (R$)</label><input class="maintenance-part-unit" type="number" min="0" step="0.01" value="'+(u?u.toFixed(2):'')+'"/></div>'+
+   '<div><label>Subtotal</label><div class="maintenance-part-subtotal">'+money(q*u)+'</div></div>'+
+   '<button class="btn danger maintenance-part-remove" type="button" title="Remover peça">×</button>'+
+  '</div>';
+ }).join('');
+ calcMaintenanceParts();
+}
+function calcMaintenanceParts(){
+ const rows=[...document.querySelectorAll('#maintenancePartsItems .maintenance-part-row')];
+ let sum=0,parts=[];
+ rows.forEach(row=>{
+  const desc=row.querySelector('.maintenance-part-desc input')?.value.trim()||'';
+  const q=Math.max(0,Number(row.querySelector('.maintenance-part-qty')?.value||0));
+  const u=Math.max(0,Number(row.querySelector('.maintenance-part-unit')?.value||0));
+  const total=q*u;sum+=total;
+  const sub=row.querySelector('.maintenance-part-subtotal');if(sub)sub.textContent=money(total);
+  if(desc)parts.push(desc);
+ });
+ if($('#maintenanceParts'))$('#maintenanceParts').value=parts.join(', ');
+ if($('#maintenancePartsCost'))$('#maintenancePartsCost').value=sum?sum.toFixed(2):'';
+ calcMaintenanceTotal();
+}
+function addMaintenancePart(item={}){
+ const current=maintenancePartsFromDom();
+ current.push({description:item.description||'',quantity:item.quantity||1,unit_price:item.unit_price||0,total:item.total||0});
+ renderMaintenanceParts(current);
+ const rows=document.querySelectorAll('#maintenancePartsItems .maintenance-part-row');
+ const last=rows[rows.length-1];last?.querySelector('.maintenance-part-desc input')?.focus();
+}
+function updateMaintenanceCustomTypeUi(){
+ const other=$('#maintenanceType')?.value==='Outro';
+ const wrap=$('#maintenanceCustomTypeWrap');
+ if(wrap)wrap.classList.toggle('hidden',!other);
+ if(!other&&$('#maintenanceCustomType'))$('#maintenanceCustomType').value='';
+}
+function updateMaintenanceAssetUi(){
+ const other=$('#maintenanceVehicle')?.value==='__other__';
+ const wrap=$('#maintenanceOtherAssetWrap');if(wrap)wrap.classList.toggle('hidden',!other);
+ const km=$('#maintenanceKm'),nextKm=$('#maintenanceNextKm');
+ [km,nextKm].forEach(el=>{if(el?.parentElement)el.parentElement.style.display=other?'none':''});
+ if(other){if(km)km.value='';if(nextKm)nextKm.value=''}
+}
+document.addEventListener('change',e=>{if(e.target?.id==='maintenanceVehicle')updateMaintenanceAssetUi()});
+function updateMaintenanceReceiptCurrent(meta={}){
+ const el=$('#maintenanceReceiptCurrent');if(!el)return;
+ const h=maintenanceReceiptHistory(meta),latest=h[h.length-1];
+ if(!latest?.path){
+  el.innerHTML='Nenhuma nota arquivada.';
+  return;
+ }
+ const date=latest.uploaded_at?new Date(latest.uploaded_at).toLocaleString('pt-BR'):'';
+ el.innerHTML='<span class="pill ok">📎 '+h.length+' nota'+(h.length===1?'':'s')+' arquivada'+(h.length===1?'':'s')+'</span> <button type="button" class="btn soft maintenanceReceiptView" data-path="'+esc(latest.path)+'" style="padding:5px 8px">Ver última</button>'+(date?' <span class="muted">'+esc(date)+'</span>':'');
+}
+async function loadMaintenances(){
+ const [plans,vehicles]=await Promise.all([
+  rest('v2_maintenance_plans','select=*&company_id=eq.'+companyId+'&active=eq.true&order=last_done_at.desc.nullslast,created_at.desc'),
+  rest('v2_vehicles','select=id,description,plate,make,model,current_odometer_km,status&company_id=eq.'+companyId+'&order=description.asc')
+ ]);
+ maintenanceCache=plans||[];
+ window.__maintenanceVehicles=vehicles||[];
+
+ const list=$('#maintenanceList'),sel=$('#maintenanceVehicle');
+ if(sel)sel.innerHTML='<option value="">Selecione...</option>'+vehicles.map(v=>'<option value="'+v.id+'">🚐 '+esc(v.description||v.model||v.plate)+' • '+esc(v.plate||'sem placa')+'</option>').join('')+'<option value="__other__">⚙️ Outro equipamento / item</option>';
+
+ let counts={ok:0,warn:0,error:0};
+ plans.forEach(p=>counts[maintenanceStatus(p,vehicles.find(v=>v.id===p.vehicle_id))[1]]++);
+ const k=$('#maintenanceKpis');
+ if(k)k.innerHTML='<div class="v2kpi maintenance-kpi"><div class="t">REGISTROS ATIVOS</div><div class="v">'+plans.length+'</div><div class="s">serviços e manutenções</div></div>'+
+  '<div class="v2kpi maintenance-kpi"><div class="t">EM DIA</div><div class="v">'+counts.ok+'</div><div class="s">sem pendências</div></div>'+
+  '<div class="v2kpi maintenance-kpi"><div class="t">PRÓXIMAS</div><div class="v">'+counts.warn+'</div><div class="s">por data ou quilometragem</div></div>'+
+  '<div class="v2kpi maintenance-kpi"><div class="t">VENCIDAS</div><div class="v">'+counts.error+'</div><div class="s">requer atenção</div></div>';
+
+ if(list)list.innerHTML=plans.map(p=>{
+  const v=vehicles.find(x=>x.id===p.vehicle_id),st=maintenanceStatus(p,v),m=p.metadata||{};
+  const isOther=p.asset_type==='other'||!p.vehicle_id;
+  const assetLabel=isOther?(p.asset_name||m.asset_name||'Outro equipamento / item'):(v?.description||v?.model||'Veículo');
+  const assetMeta=isOther?'Equipamento / item':(v?.plate||'sem placa');
+  const serviceMeter=isOther?'':(' • '+Number(p.last_done_odometer_km||0).toLocaleString('pt-BR')+' km');
+  const nextMeter=isOther?'':(' • '+(p.next_due_odometer_km?Number(p.next_due_odometer_km).toLocaleString('pt-BR')+' km':'—'));
+  const total=Number(m.parts_cost||0)+Number(m.labor_cost||0);
+  const receipts=maintenanceReceiptHistory(m),latest=receipts[receipts.length-1];
+  const partsItems=Array.isArray(m.parts_items)&&m.parts_items.length?m.parts_items:(m.parts?[{description:m.parts,quantity:1,total:Number(m.parts_cost||0)}]:[]);
+  const parts=partsItems.length?'<div class="muted">🔩 '+partsItems.slice(0,4).map(x=>esc(x.description||'Peça')+(Number(x.quantity||1)!==1?' × '+Number(x.quantity||1).toLocaleString('pt-BR'):'')).join(' • ')+(partsItems.length>4?' • +'+(partsItems.length-4)+' peça(s)':'')+'</div>':'';
+  const supplier=m.parts_supplier?'<div class="muted">🧾 Peças compradas em: <b>'+esc(m.parts_supplier)+'</b></div>':'';
+  const receipt=latest?.path?'<button class="btn soft maintenanceReceiptView" data-path="'+esc(latest.path)+'" type="button">📎 Nota das peças'+(receipts.length>1?' ('+receipts.length+')':'')+'</button>':'';
+  return '<div class="item"><div class="toolbar" style="justify-content:space-between">'+
+   '<div><strong>'+esc(p.name)+'</strong> <span class="pill '+st[1]+'">'+st[0]+'</span>'+
+   '<div class="muted">'+esc(assetLabel)+' • '+esc(assetMeta)+'</div>'+
+   '<div style="margin-top:6px">Serviço: '+(p.last_done_at?new Date(p.last_done_at+'T00:00:00').toLocaleDateString('pt-BR'):'—')+serviceMeter+' &nbsp; | &nbsp; Próximo: '+(p.next_due_at?new Date(p.next_due_at+'T00:00:00').toLocaleDateString('pt-BR'):'—')+nextMeter+'</div>'+
+   parts+
+   (total?'<div class="muted">Custo: '+money(total)+(m.workshop?' • '+esc(m.workshop):'')+'</div>':'')+
+   supplier+
+   '</div><div class="toolbar">'+receipt+'<button class="btn soft" onclick="openMaintenanceEdit(\''+p.id+'\')">Editar</button></div></div></div>';
+ }).join('')||'<div class="muted">Nenhuma manutenção registrada. Toque em + Nova manutenção.</div>';
+}
+function calcMaintenanceTotal(){
+ const v=Number($('#maintenancePartsCost')?.value||0)+Number($('#maintenanceLaborCost')?.value||0);
+ if($('#maintenanceTotal'))$('#maintenanceTotal').value=money(v);
+}
+function openMaintenanceEdit(id=''){
+ const p=maintenanceCache.find(x=>x.id===id),m=p?.metadata||{};
+ $('#maintenanceEditMsg').className='muted';
+ $('#maintenanceEditMsg').textContent='';
+ $('#maintenanceEditCard').style.display='block';
+ $('#maintenanceEditTitle').textContent=p?'Editar manutenção':'Nova manutenção';
+ $('#editMaintenanceId').value=p?.id||'';
+ const savedOther=!!p&&(p.asset_type==='other'||!p.vehicle_id);
+ $('#maintenanceVehicle').value=savedOther?'__other__':(p?.vehicle_id||'');
+ $('#maintenanceOtherAsset').value=savedOther?(p?.asset_name||m.asset_name||''):'';
+ updateMaintenanceAssetUi();
+
+ const savedName=p?.name||'Troca de óleo e filtros';
+ const standard=MAINTENANCE_STANDARD_TYPES.includes(savedName);
+ $('#maintenanceType').value=standard?savedName:(p?'Outro':'Troca de óleo e filtros');
+ $('#maintenanceCustomType').value=p&&!standard?savedName:'';
+ updateMaintenanceCustomTypeUi();
+
+ $('#maintenanceDate').value=p?.last_done_at||new Date().toISOString().slice(0,10);
+ $('#maintenanceKm').value=p?.last_done_odometer_km||'';
+ $('#maintenanceNextKm').value=p?.next_due_odometer_km||'';
+ $('#maintenanceNextDate').value=p?.next_due_at||'';
+ const items=Array.isArray(m.parts_items)&&m.parts_items.length?m.parts_items:(m.parts?[{description:m.parts,quantity:1,unit_price:Number(m.parts_cost||0),total:Number(m.parts_cost||0)}]:[]);
+ renderMaintenanceParts(items);
+ if(m.parts_cost!==undefined&&m.parts_cost!==null&&Number(m.parts_cost)>=0)$('#maintenancePartsCost').value=Number(m.parts_cost||0).toFixed(2);
+ $('#maintenanceLaborCost').value=m.labor_cost||'';
+ $('#maintenancePartsSupplier').value=m.parts_supplier||'';
+ $('#maintenanceReceiptFile').value='';
+ $('#maintenanceWorkshop').value=m.workshop||'';
+ $('#maintenanceNotes').value=m.notes||'';
+ window.__maintenanceReceiptOcr=m.parts_receipt_ocr||null;
+ window.__maintenanceReceiptPending=null;
+ renderMaintenanceReceiptPreview(null);
+ updateMaintenanceReceiptCurrent(m);
+ const readMsg=$('#maintenanceReceiptReadMsg');if(readMsg){readMsg.className='muted';readMsg.textContent='Ao escolher uma nova nota, o app lê e mostra uma prévia para você conferir antes de preencher.'}
+
+ $('#archiveMaintenanceBtn').style.display=p?'inline-flex':'none';
+ $('#deleteMaintenanceBtn').style.display=p?'inline-flex':'none';
+ calcMaintenanceTotal();
+ $('#maintenanceEditCard').scrollIntoView({behavior:'smooth',block:'start'});
+}
+window.openMaintenanceEdit=openMaintenanceEdit;
+
+async function saveMaintenance(addAnother=false){
+ const currentId=$('#editMaintenanceId').value;
+ const assetSelection=$('#maintenanceVehicle').value;
+ const isOther=assetSelection==='__other__';
+ const vehicle_id=isOther?null:assetSelection;
+ const asset_name=isOther?$('#maintenanceOtherAsset').value.trim():null;
+ const msg=$('#maintenanceEditMsg');
+ if(!assetSelection){msg.textContent='Selecione uma condução ou “Outro equipamento / item”.';return}
+ if(isOther&&!asset_name){msg.textContent='Escreva qual equipamento ou item recebeu a manutenção.';return}
+
+ const selectedType=$('#maintenanceType').value;
+ const customType=$('#maintenanceCustomType').value.trim();
+ const name=selectedType==='Outro'?customType:selectedType;
+ if(selectedType==='Outro'&&!customType){msg.textContent='Escreva qual é o serviço no campo “Qual serviço?”.';return}
+
+ const lastKm=isOther?0:Number($('#maintenanceKm').value||0),nextKm=isOther?0:Number($('#maintenanceNextKm').value||0);
+ const existing=currentId?maintenanceCache.find(x=>x.id===currentId):null;
+ const recordId=currentId||maintenanceUuid();
+ const partsItems=maintenancePartsFromDom();
+ const partsSummary=partsItems.map(x=>x.description).filter(Boolean).join(', ');
+ const partsCost=Number($('#maintenancePartsCost').value||0);
+ let metadata={
+  ...(existing?.metadata||{}),
+  parts:partsSummary,
+  parts_items:partsItems,
+  parts_cost:partsCost,
+  labor_cost:Number($('#maintenanceLaborCost').value||0),
+  parts_supplier:$('#maintenancePartsSupplier').value.trim(),
+  workshop:$('#maintenanceWorkshop').value.trim(),
+  notes:$('#maintenanceNotes').value.trim(),
+  service_type_source:selectedType==='Outro'?'custom':'standard',
+  parts_receipt_ocr:window.__maintenanceReceiptOcr||existing?.metadata?.parts_receipt_ocr||null
+ };
+
+ const receipt=$('#maintenanceReceiptFile').files?.[0]||null;
+ const context={
+  assetSelection,
+  asset_name,
+  date:$('#maintenanceDate').value||null,
+  km:lastKm||null,
+  workshop:$('#maintenanceWorkshop').value.trim()
+ };
+ try{
+  const saveBtn=$('#saveMaintenanceEdit'),anotherBtn=$('#saveMaintenanceAndAnother');
+  if(saveBtn)saveBtn.disabled=true;if(anotherBtn)anotherBtn.disabled=true;
+  if(receipt){
+   msg.className='muted';msg.textContent='Arquivando nota das peças...';
+   const path=await uploadMaintenanceReceipt(receipt,recordId);
+   const history=maintenanceReceiptHistory(metadata);
+   history.push({
+    path,
+    uploaded_at:new Date().toISOString(),
+    supplier:metadata.parts_supplier||null,
+    service_date:$('#maintenanceDate').value||null,
+    parts_cost:metadata.parts_cost||0,
+    items:partsItems,
+    original_name:receipt.name||null,
+    mime_type:receipt.type||null
+   });
+   metadata.parts_receipt_history=history;
+   metadata.parts_receipt_path=path;
+  }
+
+  const body={
+   company_id:companyId,vehicle_id,asset_type:isOther?'other':'vehicle',asset_name:isOther?asset_name:null,name,
+   last_done_at:$('#maintenanceDate').value||null,
+   last_done_odometer_km:lastKm||null,
+   next_due_at:$('#maintenanceNextDate').value||null,
+   next_due_odometer_km:nextKm||null,
+   active:true,metadata
+  };
+
+  msg.className='muted';msg.textContent=currentId?'Salvando alterações...':'Salvando manutenção...';
+  if(currentId)await rest('v2_maintenance_plans','id=eq.'+currentId,'PATCH',body);
+  else await rest('v2_maintenance_plans','','POST',{id:recordId,...body});
+
+  const v=(window.__maintenanceVehicles||[]).find(x=>x.id===vehicle_id);
+  if(v&&lastKm>Number(v.current_odometer_km||0))await rest('v2_vehicles','id=eq.'+vehicle_id,'PATCH',{current_odometer_km:lastKm});
+
+  await loadMaintenances();
+
+  if(addAnother){
+   openMaintenanceEdit('');
+   $('#maintenanceVehicle').value=context.assetSelection;
+   if(context.assetSelection==='__other__')$('#maintenanceOtherAsset').value=context.asset_name||'';
+   updateMaintenanceAssetUi();
+   if(context.date)$('#maintenanceDate').value=context.date;
+   if(context.km)$('#maintenanceKm').value=context.km;
+   if(context.workshop)$('#maintenanceWorkshop').value=context.workshop;
+   $('#maintenanceEditMsg').className='okmsg';
+   $('#maintenanceEditMsg').textContent='Serviço salvo ✓ Agora cadastre outro serviço no mesmo item e na mesma data.';
+  }else{
+   msg.className='okmsg';msg.textContent=receipt?'Manutenção e nota das peças arquivadas ✓':'Manutenção salva ✓';
+   $('#maintenanceEditCard').style.display='none';
+  }
+ }catch(e){
+  msg.className='error';msg.textContent=e.message||String(e);
+ }finally{
+  const saveBtn=$('#saveMaintenanceEdit'),anotherBtn=$('#saveMaintenanceAndAnother');
+  if(saveBtn)saveBtn.disabled=false;if(anotherBtn)anotherBtn.disabled=false;
+ }
+}
+
+
+let fuelCache=[],fuelVehicles=[];
+const FUEL_RECEIPT_BUCKET='v2-fuel-receipts';
+async function uploadFuelReceipt(file,vehicleId){
+ if(!file)return null;
+ if(file.size>10*1024*1024)throw new Error('A foto do abastecimento deve ter no máximo 10 MB.');
+ const s=session();if(!s?.access_token)throw new Error('Sessão expirada.');
+ const ext=file.type==='image/png'?'png':file.type==='image/webp'?'webp':'jpg';
+ const path=companyId+'/'+vehicleId+'/'+Date.now()+'-abastecimento.'+ext;
+ const r=await fetch(API_URL+'/storage/v1/object/'+FUEL_RECEIPT_BUCKET+'/'+path,{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+s.access_token,'Content-Type':file.type||'image/jpeg','x-upsert':'false'},body:file});
+ await parseResponse(r);return path;
+}
+async function openFuelReceipt(path){
+ if(!path)return;
+ try{
+  const r=await authFetch('/storage/v1/object/'+FUEL_RECEIPT_BUCKET+'/'+path);
+  const b=await r.blob(),u=URL.createObjectURL(b);
+  window.open(u,'_blank','noopener');
+  setTimeout(()=>URL.revokeObjectURL(u),60000);
+ }catch(e){alert('Não foi possível abrir o comprovante: '+(e.message||String(e)))}
+}
+function localDateTimeInput(d=new Date()){const z=n=>String(n).padStart(2,'0');return `${d.getFullYear()}-${z(d.getMonth()+1)}-${z(d.getDate())}T${z(d.getHours())}:${z(d.getMinutes())}`}
+function fuelCalcPrice(){const l=Number(document.getElementById('fuelLiters')?.value||0),t=Number(document.getElementById('fuelTotal')?.value||0),e=document.getElementById('fuelPriceLiter');if(e)e.value=l?money(t/l):'R$ 0,00'}
+function fuelReceiptNumber(v){
+ let s=String(v||'').trim().replace(/R\$\s*/gi,'').replace(/\s/g,'').replace(/[^0-9,.-]/g,'');
+ if(!s)return 0;
+ if(s.includes(',')&&s.includes('.')){
+  if(s.lastIndexOf(',')>s.lastIndexOf('.'))s=s.replace(/\./g,'').replace(',','.');
+  else s=s.replace(/,/g,'');
+ }else if(s.includes(','))s=s.replace(/\./g,'').replace(',','.');
+ return Number(s)||0;
+}
+function fuelReceiptFirstNumber(text,patterns){
+ for(const p of patterns){
+  const m=String(text||'').match(p);
+  if(m?.[1]){const n=fuelReceiptNumber(m[1]);if(n>0)return n}
+ }
+ return 0;
+}
+function fuelReceiptDateInput(text){
+ const m=String(text||'').match(/\b(\d{2})[\/.\-](\d{2})[\/.\-](20\d{2})(?:\s+(\d{2}):(\d{2})(?::\d{2})?)?/);
+ if(!m)return '';
+ const hh=m[4]||new Intl.DateTimeFormat('pt-BR',{timeZone:(companyProfile?.timezone||'America/Sao_Paulo'),hour:'2-digit',hourCycle:'h23'}).format(new Date());
+ const mm=m[5]||'00';
+ return m[3]+'-'+m[2]+'-'+m[1]+'T'+hh+':'+mm;
+}
+function parseFuelReceiptText(raw){
+ const text=String(raw||'').replace(/\r/g,'\n').replace(/[ \t]+/g,' ').trim();
+ const flat=text.replace(/\s+/g,' ');
+ let liters=fuelReceiptFirstNumber(flat,[
+  /(?:LITROS?|VOLUME|QTD(?:ADE)?(?:\s*\(L\))?)\s*[:=\-]?\s*(\d{1,5}[.,]\d{1,3})\s*(?:L|LT|LITROS?)?\b/i,
+  /(?:DIESEL(?:\s*S-?10|\s*S-?500)?|GASOLINA|ETANOL|ARLA)[^\n]{0,90}?(\d{1,5}[.,]\d{1,3})\s*(?:L|LT|LITROS?)\b/i,
+  /\b(\d{1,5}[.,]\d{2,3})\s*(?:L|LT|LITROS?)\b/i
+ ]);
+ let total=fuelReceiptFirstNumber(flat,[
+  /(?:VALOR\s+TOTAL|VL\.?\s*TOTAL|TOTAL\s+A\s+PAGAR|TOTAL)\s*(?:R\$)?\s*[:=\-]?\s*(\d{1,7}[.,]\d{2})\b/i,
+  /\bR\$\s*(\d{1,7}[.,]\d{2})\s*(?:TOTAL|VALOR\s+TOTAL)\b/i
+ ]);
+ const unitPrice=fuelReceiptFirstNumber(flat,[
+  /(?:PRE[CÇ]O\s*(?:POR\s*)?LITRO|R\$\s*\/\s*L|VL\.?\s*UNIT(?:[AÁ]RIO)?|V\.\s*UNIT)\s*[:=\-]?\s*(\d{1,3}[.,]\d{2,4})\b/i,
+  /\b(?:DIESEL(?:\s*S-?10|\s*S-?500)?|GASOLINA|ETANOL)[^\n]{0,90}?(?:X|\*)\s*(\d{1,3}[.,]\d{2,4})\b/i
+ ]);
+ if(!liters&&total&&unitPrice>=2&&unitPrice<=20)liters=total/unitPrice;
+ if(!total&&liters&&unitPrice>=2&&unitPrice<=20)total=liters*unitPrice;
+ const km=fuelReceiptFirstNumber(flat,[
+  /(?:HOD[OÔ]METRO|OD[OÔ]METRO|KM)\s*[:=\-]?\s*(\d{2,7})\b/i
+ ]);
+ const plateMatch=flat.toUpperCase().match(/\b([A-Z]{3}[0-9][A-Z0-9][0-9]{2})\b/);
+ const lines=text.split(/\n+/).map(x=>x.trim()).filter(Boolean);
+ const rejected=/CNPJ|CPF|DANFE|NFC-?E|SAT|CUPOM|DOCUMENTO\s+AUXILIAR|CONSUMIDOR|CHAVE\s+DE\s+ACESSO|PROTOCOLO|TRIBUT|ICMS|TOTAL|QTD|LITRO|DIESEL|GASOLINA|ETANOL|ENDERE[CÇ]O|CEP|TELEFONE|FONE/i;
+ let station='';
+ for(const line of lines.slice(0,12)){
+  const clean=line.replace(/^[^A-ZÀ-Ú0-9]+/i,'').replace(/\s{2,}/g,' ').trim();
+  const letters=(clean.match(/[A-ZÀ-Ú]/gi)||[]).length;
+  if(clean.length>=4&&clean.length<=80&&letters>=4&&!rejected.test(clean)){station=clean;break}
+ }
+ return {
+  station_name:station,
+  liters:liters>0?Number(liters.toFixed(3)):0,
+  total_amount:total>0?Number(total.toFixed(2)):0,
+  unit_price:unitPrice>0?unitPrice:0,
+  odometer_km:km>0?Math.round(km):0,
+  vehicle_plate:plateMatch?.[1]||'',
+  fueled_at_local:fuelReceiptDateInput(text),
+  raw_text:text.slice(0,6000)
+ };
+}
+async function fuelReceiptCanvas(file){
+ const url=URL.createObjectURL(file);
+ try{
+  const img=await new Promise((resolve,reject)=>{
+   const i=new Image();i.onload=()=>resolve(i);i.onerror=()=>reject(new Error('Não consegui abrir a foto da nota.'));i.src=url;
+  });
+  return prepareOcrCanvas(img,2400);
+ }finally{URL.revokeObjectURL(url)}
+}
+function fuelReceiptProgress(status,progress=null){
+ const el=document.getElementById('fuelReceiptReadMsg');if(!el)return;
+ const pct=typeof progress==='number'?' '+Math.round(progress*100)+'%':'';
+ const labels={
+  'loading tesseract core':'Preparando leitor...',
+  'initializing tesseract':'Inicializando leitura...',
+  'loading language traineddata':'Carregando idioma...',
+  'initializing api':'Preparando OCR...',
+  'recognizing text':'Lendo a nota do posto...'
+ };
+ el.textContent=(labels[status]||'Lendo a nota do posto...')+pct;
+}
+async function readFuelReceipt(file){
+ if(!file)return;
+ const msg=document.getElementById('fuelReceiptReadMsg');
+ try{
+  if(msg){msg.className='muted';msg.textContent='Preparando foto da nota...'}
+  const canvas=await fuelReceiptCanvas(file);
+  await ensureTesseractReady();
+  const result=await Tesseract.recognize(canvas,'por',{logger:m=>fuelReceiptProgress(m?.status,m?.progress)});
+  const parsed=parseFuelReceiptText(result?.data?.text||'');
+  window.__fuelReceiptOcr={...parsed,read_at:new Date().toISOString(),engine:'tesseract-5.1.1'};
+  if(parsed.station_name&&!document.getElementById('fuelStation').value.trim())document.getElementById('fuelStation').value=parsed.station_name;
+  if(parsed.liters>0)document.getElementById('fuelLiters').value=String(parsed.liters);
+  if(parsed.total_amount>0)document.getElementById('fuelTotal').value=parsed.total_amount.toFixed(2);
+  if(parsed.fueled_at_local)document.getElementById('fuelDate').value=parsed.fueled_at_local;
+  if(parsed.odometer_km>0)document.getElementById('fuelKm').value=parsed.odometer_km;
+  if(parsed.vehicle_plate){
+   const match=fuelVehicles.find(v=>String(v.plate||'').replace(/[^A-Z0-9]/gi,'').toUpperCase()===parsed.vehicle_plate);
+   if(match)document.getElementById('fuelVehicle').value=match.id;
+  }
+  fuelCalcPrice();
+  const found=[];
+  if(parsed.station_name)found.push('posto');
+  if(parsed.liters)found.push(parsed.liters.toLocaleString('pt-BR',{maximumFractionDigits:3})+' L');
+  if(parsed.total_amount)found.push(money(parsed.total_amount));
+  if(parsed.fueled_at_local)found.push('data/hora');
+  if(msg){
+   msg.className=found.length?'okmsg':'error';
+   msg.textContent=found.length?'Nota lida ✓ '+found.join(' • ')+' — confira antes de salvar.':'Li a foto, mas não consegui identificar os campos. Você pode preencher manualmente.';
+  }
+ }catch(e){
+  if(msg){msg.className='error';msg.textContent='Não consegui ler a nota automaticamente: '+(e.message||String(e))+'. Você ainda pode preencher manualmente.'}
+ }
+}
+function fuelDateForInput(iso){
+ if(!iso)return localDateTimeInput();
+ try{
+  const p=new Intl.DateTimeFormat('en-CA',{timeZone:(companyProfile?.timezone||'America/Sao_Paulo'),year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).formatToParts(new Date(iso));
+  const o=Object.fromEntries(p.map(x=>[x.type,x.value]));
+  return o.year+'-'+o.month+'-'+o.day+'T'+o.hour+':'+o.minute;
+ }catch(_){return localDateTimeInput(new Date(iso))}
+}
+function openFuelEdit(id){
+ const x=fuelCache.find(r=>r.id===id);if(!x)return;
+ const ownDevice=!deviceMode||String(x.metadata?.device_access_id||'')===String(deviceAccess?.id||'');
+ if(deviceMode&&!ownDevice){c360Toast('Edição não permitida','Este abastecimento foi lançado por outro aparelho.','error');return}
+ document.getElementById('fuelEditId').value=x.id;
+ document.getElementById('fuelEditTitle').textContent='Editar abastecimento';
+ document.getElementById('saveFuelBtn').textContent='SALVAR ALTERAÇÕES';
+ document.getElementById('fuelVehicle').value=x.vehicle_id||'';
+ document.getElementById('fuelDate').value=fuelDateForInput(x.fueled_at);
+ document.getElementById('fuelKm').value=x.odometer_km||'';
+ document.getElementById('fuelLiters').value=x.liters||'';
+ document.getElementById('fuelTotal').value=x.total_amount||'';
+ document.getElementById('fuelStation').value=x.station_name||'';
+ document.getElementById('fuelDriver').value=x.metadata?.driver||'';
+ document.getElementById('fuelNotes').value=x.metadata?.notes||'';
+ document.getElementById('fuelTankFull').checked=fuelLogIsFull(x);
+ document.getElementById('fuelReceiptFile').value='';
+ window.__fuelReceiptOcr=x.metadata?.receipt_ocr||null;
+ const readMsg=document.getElementById('fuelReceiptReadMsg');
+ if(readMsg){readMsg.className='muted';readMsg.textContent=x.metadata?.receipt_path?'Já existe um comprovante salvo. Se escolher outra foto, ela será lida e substituirá o comprovante deste lançamento.':'Você pode adicionar uma foto da nota para preencher ou conferir os dados.'}
+ fuelCalcPrice();
+ document.getElementById('fuelEditCard').style.display='block';
+ document.getElementById('fuelEditCard').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+async function loadFuel(){
+ let logs=[],vehicles=[];
+ if(deviceMode&&!c360NetOnline()){
+  vehicles=await offlineCacheGet(offlineTeamKey('fuel_vehicles'))||[];
+  logs=await offlineCacheGet(offlineTeamKey('fuel_logs'))||[];
+  const pending=(await offlineQueueList()).filter(x=>x.type==='fuel').map(x=>({
+   id:x.id,
+   company_id:x.payload.company_id,
+   vehicle_id:x.payload.vehicle_id,
+   fueled_at:x.payload.fueled_at,
+   odometer_km:x.payload.odometer_km,
+   liters:x.payload.liters,
+   total_amount:x.payload.total_amount,
+   station_name:x.payload.station_name,
+   offline_event_id:x.payload.offline_event_id,
+   metadata:{...(x.payload.metadata||{}),receipt_path:x.receipt_blob?'local-pending':null,offline_pending:true}
+  }));
+  const known=new Set(logs.map(x=>x.offline_event_id).filter(Boolean));
+  logs=pending.filter(x=>!known.has(x.offline_event_id)).concat(logs);
+ }else{
+  [logs,vehicles]=await Promise.all([
+   rest('v2_fuel_logs','select=*&company_id=eq.'+companyId+'&order=fueled_at.desc&limit=200'),
+   rest('v2_vehicles','select=id,description,plate,model,current_odometer_km,status&company_id=eq.'+companyId+'&order=description.asc')
+  ]);
+  if(deviceMode){
+   await offlineCacheSet(offlineTeamKey('fuel_vehicles'),vehicles||[]);
+   await offlineCacheSet(offlineTeamKey('fuel_logs'),logs||[]);
+  }
+ }
+ fuelCache=logs||[];fuelVehicles=vehicles||[];
+ const primaryFuelVehicleId=deviceMode?(deviceVehicleInfo?.id||deviceTeam?.metadata?.primary_vehicle_id||null):null;
+ const orderedFuelVehicles=[...fuelVehicles].sort((a,b)=>{
+  if(primaryFuelVehicleId&&a.id===primaryFuelVehicleId)return -1;
+  if(primaryFuelVehicleId&&b.id===primaryFuelVehicleId)return 1;
+  return String(a.description||a.model||a.plate||'').localeCompare(String(b.description||b.model||b.plate||''),'pt-BR');
+ });
+ const opts='<option value="">Selecione...</option>'+orderedFuelVehicles.map(v=>'<option value="'+esc(v.id)+'">'+esc(v.description||v.model||v.plate)+' • '+esc(v.plate||'sem placa')+(deviceMode&&v.id===primaryFuelVehicleId?' • CONDUÇÃO DA EQUIPE':'')+'</option>').join('');
+ const fs=document.getElementById('fuelVehicle'),ks=document.getElementById('kmVehicle');
+ if(fs){
+  const oldValue=fs.value;
+  fs.innerHTML=opts;
+  if(deviceMode&&primaryFuelVehicleId&&orderedFuelVehicles.some(v=>v.id===primaryFuelVehicleId))fs.value=primaryFuelVehicleId;
+  else if(oldValue&&orderedFuelVehicles.some(v=>v.id===oldValue))fs.value=oldValue;
+ }
+ if(ks)ks.innerHTML=opts;
+ const fuelHint=document.getElementById('fuelVehicleHint');
+ if(fuelHint&&deviceMode)fuelHint.textContent='A condução da equipe vem selecionada primeiro, mas você pode escolher qualquer outra condução ativa da empresa.';
+ const month=new Date().toISOString().slice(0,7);
+ const ml=fuelCache.filter(x=>String(x.fueled_at||'').slice(0,7)===month);
+ const liters=ml.reduce((a,x)=>a+Number(x.liters||0),0),cost=ml.reduce((a,x)=>a+Number(x.total_amount||0),0);
+ let kmDriven=0;
+ fuelVehicles.forEach(v=>{const a=fuelCache.filter(x=>x.vehicle_id===v.id&&Number(x.odometer_km)>0).sort((x,y)=>Number(x.odometer_km)-Number(y.odometer_km));if(a.length>1)kmDriven+=Math.max(0,Number(a[a.length-1].odometer_km)-Number(a[0].odometer_km))});
+ const k=document.getElementById('fuelKpis');
+ const title=document.getElementById('fuelScreenTitle'),sub=document.getElementById('fuelScreenSubtitle'),histSub=document.getElementById('fuelHistorySubtitle');
+ const kmBtn=document.getElementById('newKmBtn'),kmCard=document.getElementById('kmEditCard');
+ if(deviceMode){
+  if(title)title.textContent='⛽ Abastecimento';
+  if(sub)sub.textContent='Registre o abastecimento na condução que a equipe estiver usando hoje.';
+  if(histSub)histSub.textContent='Lançamentos registrados pela equipe, do mais recente para o mais antigo.';
+  if(k)k.style.display='none';
+  if(kmBtn)kmBtn.style.display='none';
+  if(kmCard)kmCard.style.display='none';
+ }else{
+  if(title)title.textContent='⛽ Combustível & KM';
+  if(sub)sub.textContent='Abastecimentos, quilometragem, consumo e custo da frota.';
+  if(histSub)histSub.textContent='Consumo é calculado entre abastecimentos consecutivos do mesmo veículo.';
+  if(k){k.style.display='grid';k.innerHTML=
+   '<div class="v2kpi"><span>Gasto no mês</span><strong>'+money(cost)+'</strong></div>'+
+   '<div class="v2kpi"><span>Litros no mês</span><strong>'+liters.toLocaleString('pt-BR',{maximumFractionDigits:1})+' L</strong></div>'+
+   '<div class="v2kpi"><span>Preço médio</span><strong>'+(liters?money(cost/liters):'R$ 0,00')+'/L</strong></div>'+
+   '<div class="v2kpi"><span>KM entre abastecimentos</span><strong>'+kmDriven.toLocaleString('pt-BR')+' km</strong></div>';}
+  if(kmBtn)kmBtn.style.display='';
+ }
+ const list=document.getElementById('fuelList');if(!list)return;
+ list.innerHTML=fuelCache.map(x=>{
+  const v=fuelVehicles.find(z=>z.id===x.vehicle_id);
+  const same=fuelCache.filter(z=>z.vehicle_id===x.vehicle_id&&new Date(z.fueled_at)<new Date(x.fueled_at)).sort((a,b)=>new Date(b.fueled_at)-new Date(a.fueled_at))[0];
+  const dist=same&&x.odometer_km&&same.odometer_km?Number(x.odometer_km)-Number(same.odometer_km):0;
+  const cons=dist>0&&Number(x.liters)>0?dist/Number(x.liters):0;
+  const cpk=dist>0?Number(x.total_amount||0)/dist:0;
+  let badges='';
+  if(!deviceMode){
+   badges='<span class="pill">'+(Number(x.liters)>0?money(Number(x.total_amount||0)/Number(x.liters)):'R$ 0,00')+'/L</span>';
+   if(cons)badges+=' <span class="pill ok">'+cons.toLocaleString('pt-BR',{maximumFractionDigits:2})+' km/L</span> <span class="pill">'+money(cpk)+'/km</span>';
+  }
+  if(x.station_name)badges+=(badges?' ':'')+'<span class="pill">⛽ '+esc(x.station_name)+'</span>';
+  if(x.metadata&&x.metadata.driver)badges+=(badges?' ':'')+'<span class="pill">👤 '+esc(x.metadata.driver)+'</span>';
+  if(fuelLogIsFull(x))badges+=(badges?' ':'')+'<span class="pill ok">⛽ TANQUE CHEIO</span>';
+  if(x.metadata&&x.metadata.offline_pending)badges+=' <span class="pill warn">OFFLINE • PENDENTE</span>';
+  else if(x.metadata&&x.metadata.receipt_path)badges+=' <span class="pill ok">📷 Comprovante</span>';
+  const notes=x.metadata&&x.metadata.notes?'<div class="muted" style="margin-top:6px">'+esc(x.metadata.notes)+'</div>':'';
+  const photo=(x.metadata&&x.metadata.receipt_path&&!x.metadata.offline_pending&&!deviceMode)?'<button class="btn soft viewFuelReceipt" data-path="'+esc(x.metadata.receipt_path)+'" type="button">Ver foto</button>':'';
+  const canEdit=!x.metadata?.offline_pending&&(!deviceMode||String(x.metadata?.device_access_id||'')===String(deviceAccess?.id||''));
+  const edit=canEdit?'<button class="btn soft editFuelBtn" data-id="'+esc(x.id)+'" type="button">Editar</button>':'';
+  const del=(deviceMode||x.metadata&&x.metadata.offline_pending)?'':'<button class="btn danger deleteFuelBtn" data-id="'+esc(x.id)+'" type="button">Excluir</button>';
+  return '<div class="item"><div class="toolbar" style="justify-content:space-between;gap:10px"><div><strong>'+esc(v?.description||v?.model||'Veículo')+' • '+esc(v?.plate||'sem placa')+'</strong><div class="muted">'+new Date(x.fueled_at).toLocaleString('pt-BR')+' • '+Number(x.odometer_km||0).toLocaleString('pt-BR')+' km • '+Number(x.liters||0).toLocaleString('pt-BR',{maximumFractionDigits:2})+' L • '+money(x.total_amount||0)+'</div><div style="margin-top:6px">'+badges+'</div>'+notes+'</div><div class="toolbar">'+edit+photo+del+'</div></div></div>';
+ }).join('')||'<div class="muted">Nenhum abastecimento registrado.</div>';
+}
+async function saveFuel(){
+ const m=document.getElementById('fuelMsg'),
+       editId=document.getElementById('fuelEditId')?.value||'',
+       vehicle_id=document.getElementById('fuelVehicle').value,
+       liters=Number(String(document.getElementById('fuelLiters').value||'0').replace(',','.')),
+       total=Number(String(document.getElementById('fuelTotal').value||'0').replace(',','.')),
+       km=Number(document.getElementById('fuelKm').value||0),
+       driver=document.getElementById('fuelDriver').value.trim(),
+       receipt=document.getElementById('fuelReceiptFile').files?.[0]||null,
+       existing=editId?fuelCache.find(x=>x.id===editId):null;
+ if(!vehicle_id){m.textContent='Selecione a condução.';return}
+ if(liters<=0){m.textContent='Informe a quantidade de litros.';return}
+ const btn=document.getElementById('saveFuelBtn');
+ try{
+  if(btn)btn.disabled=true;
+  if(editId&&deviceMode&&!c360NetOnline())throw new Error('Para editar um abastecimento já sincronizado, conecte este celular à internet.');
+  const fueledAt=new Date(document.getElementById('fuelDate').value||Date.now()).toISOString();
+  const offlineId=existing?.offline_event_id||makeOfflineId('fuel');
+  const metadata={
+    ...(existing?.metadata||{}),
+    notes:document.getElementById('fuelNotes').value.trim()||null,
+    driver:driver||null,
+    receipt_path:existing?.metadata?.receipt_path||null,
+    source:existing?.metadata?.source||(deviceMode?'team_device':'admin'),
+    work_team_id:deviceMode?(deviceAccess?.team_id||null):(existing?.metadata?.work_team_id||null),
+    work_team_name:deviceMode?(deviceTeam?.name||null):(existing?.metadata?.work_team_name||null),
+    device_access_id:deviceMode?(deviceAccess?.id||null):(existing?.metadata?.device_access_id||null),
+    device_name:deviceMode?(deviceAccess?.device_name||null):(existing?.metadata?.device_name||null),
+    receipt_ocr:window.__fuelReceiptOcr||existing?.metadata?.receipt_ocr||null,
+    tank_filled_full:!!document.getElementById('fuelTankFull')?.checked
+  };
+  const basePayload={
+   company_id:companyId,vehicle_id,fueled_at:fueledAt,odometer_km:km||null,liters,total_amount:total,
+   station_name:document.getElementById('fuelStation').value.trim()||null,
+   offline_event_id:offlineId,metadata
+  };
+
+  if(deviceMode&&!c360NetOnline()){
+   m.textContent='Salvando abastecimento neste celular...';
+   basePayload.metadata.source='team_device_offline';
+   basePayload.metadata.offline_captured=true;
+   await offlineQueueAdd({
+    id:offlineId,type:'fuel',company_id:companyId,team_id:deviceAccess?.team_id||null,
+    created_at:fueledAt,payload:basePayload,receipt_blob:receipt||null
+   });
+   m.className='okmsg';m.textContent='Abastecimento salvo no celular ✓ Será sincronizado quando a internet voltar.';
+  }else{
+   m.className='muted';m.textContent=receipt?'Enviando nota e salvando abastecimento...':(editId?'Salvando alterações...':'Salvando abastecimento...');
+   if(receipt)basePayload.metadata.receipt_path=await uploadFuelReceipt(receipt,vehicle_id);
+   if(editId){
+    await rest('v2_fuel_logs','id=eq.'+encodeURIComponent(editId),'PATCH',{
+      vehicle_id:basePayload.vehicle_id,fueled_at:basePayload.fueled_at,odometer_km:basePayload.odometer_km,
+      liters:basePayload.liters,total_amount:basePayload.total_amount,station_name:basePayload.station_name,
+      metadata:basePayload.metadata
+    });
+    m.className='okmsg';m.textContent='Abastecimento atualizado ✓';
+   }else{
+    await rest('v2_fuel_logs','', 'POST',basePayload);
+    m.className='okmsg';m.textContent='Abastecimento salvo ✓';
+   }
+  }
+
+  document.getElementById('fuelEditCard').style.display='none';
+  document.getElementById('fuelEditId').value='';
+  document.getElementById('fuelEditTitle').textContent='Novo abastecimento';
+  document.getElementById('saveFuelBtn').textContent='SALVAR ABASTECIMENTO';
+  document.getElementById('fuelReceiptFile').value='';
+  document.getElementById('fuelDriver').value='';
+  document.getElementById('fuelTankFull').checked=false;
+  window.__fuelReceiptOcr=null;
+  await loadFuel();
+ }catch(e){m.className='error';m.textContent=e.message||String(e)}
+ finally{if(btn)btn.disabled=false}
+}
+
+async function saveKm(){
+ const m=document.getElementById('kmMsg'),vehicle_id=document.getElementById('kmVehicle').value,km=Number(document.getElementById('kmValue').value||0);
+ if(!vehicle_id||km<=0){m.textContent='Selecione o veículo e informe o KM.';return}
+ try{
+  await rest('v2_vehicle_odometer_logs','', 'POST',{company_id:companyId,vehicle_id,recorded_at:new Date(document.getElementById('kmDate').value||Date.now()).toISOString(),odometer_km:km,source:'manual',metadata:{notes:document.getElementById('kmNotes').value.trim()}});
+  const v=fuelVehicles.find(x=>x.id===vehicle_id);if(km>Number(v?.current_odometer_km||0))await rest('v2_vehicles','id=eq.'+vehicle_id,'PATCH',{current_odometer_km:km});
+  m.textContent='KM atualizado.';document.getElementById('kmEditCard').style.display='none';await loadFuel();
+ }catch(e){m.textContent=e.message||String(e)}
+}
+
+
+async function deleteFuelLog(id){
+ if(!id||!confirm('Excluir este abastecimento definitivamente?'))return;
+ if(!confirm('CONFIRMAÇÃO FINAL: este abastecimento será apagado e não poderá ser recuperado.'))return;
+ try{await rest('v2_fuel_logs','id=eq.'+id,'DELETE');await loadFuel()}catch(e){alert('Não foi possível excluir: '+e.message)}
+}
+async function deleteMaintenance(id){
+ if(!id||!confirm('Excluir esta manutenção definitivamente?'))return;
+ try{await rest('v2_maintenance_plans','id=eq.'+id,'DELETE');document.getElementById('maintenanceEditCard').style.display='none';await loadMaintenances()}catch(e){alert('Não foi possível excluir: '+e.message)}
+}
+async function deleteTeam(id){
+ if(!id||!confirm('Excluir esta equipe definitivamente?'))return;
+ if(!confirm('CONFIRMAÇÃO FINAL: a equipe será apagada.'))return;
+ try{
+  const t=(window.__teams||[]).find(x=>x.id===id);
+  if(t?.name){
+   const members=(window.__teamEmployees||[]).filter(x=>(x.primary_team||'').trim().toLowerCase()===(t.name||'').trim().toLowerCase());
+   for(const emp of members) await rest('v2_employees','id=eq.'+emp.id,'PATCH',{primary_team:null});
+  }
+  await rest('v2_teams','id=eq.'+id,'DELETE');
+  document.getElementById('teamEditCard').style.display='none';await loadTeams();await loadPoultrySelectors();
+ }catch(e){alert('Não foi possível excluir: '+e.message)}
+}
+async function deleteVehicle(id){
+ if(!id||!confirm('Excluir este veículo definitivamente?'))return;
+
+ try{
+  const v=(window.__fleetVehicles||[]).find(x=>x.id===id)||{};
+  const [docs,fuelLogs]=await Promise.all([
+   rest('v2_vehicle_documents','select=id,file_id,document_type&vehicle_id=eq.'+id),
+   rest('v2_fuel_logs','select=id&vehicle_id=eq.'+id)
+  ]);
+
+  if(fuelLogs?.length){
+   const ok=confirm(
+    'ATENÇÃO: este veículo possui '+fuelLogs.length+' abastecimento(s) no histórico.\n\n'+
+    'Se continuar, esses abastecimentos também serão EXCLUÍDOS definitivamente.\n'+
+    'Cancelar mantém o histórico; nesse caso, use ARQUIVAR VEÍCULO.'
+   );
+   if(!ok)return;
+  }else if(!confirm('CONFIRMAÇÃO FINAL: o veículo e seus documentos serão apagados.')){
+   return;
+  }
+
+  // Desvincula a condução das equipes.
+  const teams=window.__fleetTeams||[];
+  for(const t of teams){
+   if(t.metadata?.primary_vehicle_id===id){
+    await rest('v2_teams','id=eq.'+t.id,'PATCH',{metadata:{...(t.metadata||{}),primary_vehicle_id:null}});
+   }
+  }
+
+  // Arquiva os arquivos físicos e remove os vínculos documentais antes do veículo.
+  for(const d of docs||[]){
+   if(d.file_id){
+    try{await rest('v2_files','id=eq.'+d.file_id,'PATCH',{archived_at:new Date().toISOString()})}catch(e){console.warn('archive vehicle file',e)}
+   }
+  }
+  if(docs?.length)await rest('v2_vehicle_documents','vehicle_id=eq.'+id,'DELETE');
+
+  // Combustível é RESTRICT no banco; só é apagado após confirmação explícita acima.
+  if(fuelLogs?.length)await rest('v2_fuel_logs','vehicle_id=eq.'+id,'DELETE');
+
+  // Manutenções/KM/rastreamento têm cascade; ordens de serviço ficam com veículo nulo.
+  await rest('v2_vehicles','id=eq.'+id,'DELETE');
+
+  document.getElementById('vehicleEditCard').style.display='none';
+  await loadVehicles();
+  await loadTeams();
+  try{await loadSmartAlerts()}catch(_){}
+  alert('Veículo '+(v.description||v.plate||'')+' excluído com sucesso.');
+ }catch(e){
+  alert('Não foi possível excluir o veículo: '+(e.message||String(e)));
+ }
+}
+
+async function deleteEmployee(id){
+ if(!id||!confirm('Excluir este funcionário definitivamente?'))return;
+ try{
+  let ev=[];try{ev=await rest('v2_attendance_events','select=id&employee_id=eq.'+id+'&limit=1')}catch{}
+  if(ev?.length){alert('Este funcionário possui registros de ponto. Para preservar o histórico trabalhista, use ARQUIVAR FUNCIONÁRIO. Funcionários sem ponto podem ser excluídos.');return}
+  if(!confirm('CONFIRMAÇÃO FINAL: o cadastro do funcionário será apagado e não poderá ser recuperado.'))return;
+  for(const table of ['v2_employee_face_enrollments','v2_employee_schedules']){
+   try{await rest(table,'employee_id=eq.'+id,'DELETE')}catch{}
+  }
+  await rest('v2_employees','id=eq.'+id,'DELETE');
+  document.getElementById('employeeEditCard').style.display='none';await loadEmployees();await loadProfessionalProfile();await loadTeams();
+ }catch(e){alert('Não foi possível excluir: '+e.message)}
+}
+async function deletePoultryOperation(operationId,loadingId){
+ if(!operationId||!confirm('Excluir esta apanha inteira? Caminhões vinculados também serão apagados.'))return;
+ if(!confirm('CONFIRMAÇÃO FINAL: esta apanha será excluída definitivamente.'))return;
+ try{
+  // A operação é o registro principal. O banco apaga carregamento, caminhões e aviários
+  // automaticamente por ON DELETE CASCADE, evitando exclusões parciais e apanhas "fantasmas".
+  const deleted=await rest('v2_operations','id=eq.'+encodeURIComponent(operationId)+'&operation_type=eq.poultry_catching','DELETE');
+  if(!deleted?.length)throw new Error('O registro principal não foi removido do banco.');
+  await loadPoultryOps();
+  await loadPoultryDashboard();
+  alert('Apanha excluída com sucesso.');
+ }catch(e){
+  alert('Não foi possível excluir a apanha: '+(e.message||String(e)));
+ }
+}
+
+
+
+let vehicleDocsCache=[],vehicleDocsVehicles=[],vehicleDocFiles={},pendingCrlvFile=null,pendingCrlvData=null;
+const VEHICLE_DOC_BUCKET='vehicle-documents';
+
+function plateFinalDigit(plate){
+ const s=String(plate||'').replace(/[^A-Z0-9]/gi,'').toUpperCase();
+ const m=s.match(/(\d)$/);
+ return m?Number(m[1]):null;
+}
+function lastDayIso(year,month){
+ const d=new Date(Date.UTC(year,month,0));
+ return year+'-'+String(month).padStart(2,'0')+'-'+String(d.getUTCDate()).padStart(2,'0');
+}
+function inferVehicleLicenseCategory(v={}){
+ const explicit=v?.metadata?.licensing_category||v?.metadata?.vehicle_category||'';
+ if(explicit==='truck')return 'truck';
+ if(explicit==='regular')return 'regular';
+ const txt=[v.description,v.make,v.model,v?.metadata?.crlv?.category,v?.metadata?.crlv?.species].filter(Boolean).join(' ').toLowerCase();
+ return /caminh[aã]o|caminhao|truck|cavalo mec[aâ]nico|caminh[aã]o-trator|caminhao-trator/.test(txt)?'truck':'regular';
+}
+function spLicensingDueDate(plate,category='regular',year=new Date().getFullYear()){
+ const final=plateFinalDigit(plate);
+ if(final===null)return null;
+ const regularMonths={1:7,2:7,3:8,4:8,5:9,6:9,7:10,8:10,9:11,0:12};
+ const truckMonths={1:9,2:9,3:10,4:10,5:10,6:11,7:11,8:11,9:12,0:12};
+ const month=(category==='truck'?truckMonths:regularMonths)[final];
+ return month?lastDayIso(year,month):null;
+}
+function crlvNextLicensingCycleYear(licensingYear){
+ const y=Number(licensingYear||0);
+ return y>0?y+1:new Date().getFullYear();
+}
+function crlvNextDueDate(plate,category='regular',licensingYear=null){
+ const cycleYear=crlvNextLicensingCycleYear(licensingYear);
+ return spLicensingDueDate(plate,category,cycleYear);
+}
+function spLicensingLabel(plate,category='regular',year=new Date().getFullYear()){
+ const due=spLicensingDueDate(plate,category,year);
+ if(!due)return 'Placa sem final numérico válido';
+ const f=plateFinalDigit(plate);
+ const d=new Date(due+'T00:00:00');
+ return 'Detran-SP • placa final '+f+' • '+(category==='truck'?'caminhão':'veículo/ônibus/reboque')+' • até '+d.toLocaleDateString('pt-BR');
+}
+function updateCrlvAutoExpiry(){
+ const plate=document.getElementById('crlvPlate')?.value||'';
+ const cat=document.getElementById('crlvLicenseCategory')?.value||'regular';
+ const uf=(document.getElementById('crlvLicenseState')?.value||'SP').toUpperCase();
+ const exercise=Number(document.getElementById('crlvLicensingYear')?.value||0)||null;
+ const cycleYear=crlvNextLicensingCycleYear(exercise);
+ const due=uf==='SP'?spLicensingDueDate(plate,cat,cycleYear):null;
+ const input=document.getElementById('crlvExpires');
+ const rule=document.getElementById('crlvExpiryRule');
+ if(input)input.value=due||'';
+ if(rule)rule.textContent=uf==='SP'?(due?(exercise?'CRLV exercício '+exercise+' • próxima renovação '+cycleYear+' • '+spLicensingLabel(plate,cat,cycleYear):spLicensingLabel(plate,cat,cycleYear)):'Informe uma placa válida para calcular o vencimento pelo Detran-SP.'):'CRLV identificado como UF '+uf+'. O cálculo automático de calendário está configurado para SP.';
+}
+function isVehicleCrlv(type){
+ const s=String(type||'').toLowerCase();
+ return s.includes('crlv')||s.includes('licenciamento');
+}
+function vehicleDocStatus(expires){
+ if(!expires)return{label:'Sem vencimento',cls:''};
+ const a=new Date();a.setHours(0,0,0,0);const d=new Date(expires+'T00:00:00'),n=Math.ceil((d-a)/86400000);
+ if(n<0)return{label:`Vencido há ${Math.abs(n)} dia(s)`,cls:'danger'};
+ if(n<=30)return{label:`Vence em ${n} dia(s)`,cls:'warn'};
+ return{label:'Em dia',cls:'ok'};
+}
+function safeFileName(name){return String(name||'documento.pdf').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9._-]+/g,'-').replace(/-+/g,'-').slice(-100)}
+async function uploadVehicleDocumentFile(file,vehicleId){
+ if(!file)return null;
+ if(file.size>15*1024*1024)throw new Error('Arquivo maior que 15 MB.');
+ const s=session();if(!s?.access_token)throw new Error('Sessão expirada.');
+ const path=`${companyId}/${vehicleId}/${Date.now()}-${safeFileName(file.name)}`;
+ const r=await fetch(`${API_URL}/storage/v1/object/${VEHICLE_DOC_BUCKET}/${path}`,{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+s.access_token,'Content-Type':file.type||'application/octet-stream','x-upsert':'false'},body:file});
+ await parseResponse(r);
+ const u=await getUser();
+ const rows=await rest('v2_files','','POST',{company_id:companyId,storage_bucket:VEHICLE_DOC_BUCKET,storage_path:path,original_name:file.name,mime_type:file.type||null,size_bytes:file.size,category:'vehicle_document',entity_type:'vehicle',entity_id:vehicleId,metadata:{source:'comando360_v650'},uploaded_by:u?.id||null});
+ return rows?.[0]||null;
+}
+async function downloadVehicleDoc(fileId,download=false){
+ const f=vehicleDocFiles[fileId];if(!f)return alert('Arquivo não encontrado.');
+ try{
+  const s=session();const r=await fetch(`${API_URL}/storage/v1/object/authenticated/${encodeURIComponent(f.storage_bucket)}/${f.storage_path.split('/').map(encodeURIComponent).join('/')}`,{headers:{apikey:KEY,Authorization:'Bearer '+s.access_token}});
+  if(!r.ok)throw new Error('Não foi possível abrir o arquivo.');
+  const blob=await r.blob(),url=URL.createObjectURL(blob);
+  if(download){const a=document.createElement('a');a.href=url;a.download=f.original_name||'documento';document.body.appendChild(a);a.click();a.remove()}
+  else window.open(url,'_blank');
+  setTimeout(()=>URL.revokeObjectURL(url),60000);
+ }catch(e){alert(e.message)}
+}
+async function readStoredVehicleCrlv(fileId,vehicleId){
+ const f=vehicleDocFiles[fileId];
+ if(!f)throw new Error('Arquivo do CRLV não encontrado.');
+ const v=vehicleDocsVehicles.find(x=>x.id===vehicleId)||(window.__fleetVehicles||[]).find(x=>x.id===vehicleId);
+ if(!v)throw new Error('Veículo não encontrado.');
+ const s=session();
+ if(!s?.access_token)throw new Error('Sessão expirada.');
+ const r=await fetch(API_URL+'/storage/v1/object/authenticated/'+encodeURIComponent(f.storage_bucket)+'/'+f.storage_path.split('/').map(encodeURIComponent).join('/'),{headers:{apikey:KEY,Authorization:'Bearer '+s.access_token}});
+ if(!r.ok)throw new Error('Não foi possível ler o CRLV salvo.');
+ const blob=await r.blob();
+ const read=await readDigitalCrlv(new File([blob],f.original_name||'crlv.pdf',{type:f.mime_type||blob.type||'application/pdf'}));
+ if(!read.digital)throw new Error((read.reason||'Não consegui reconhecer os dados do CRLV.')+' Tente um arquivo ou foto mais nítida.');
+ const d=read.data||{};
+ const vehiclePlate=String(v.plate||'').replace(/[^A-Z0-9]/gi,'').toUpperCase();
+ const docPlate=String(d.plate||'').replace(/[^A-Z0-9]/gi,'').toUpperCase();
+ if(vehiclePlate&&docPlate&&vehiclePlate!==docPlate)throw new Error('O CRLV salvo é da placa '+docPlate+', mas este veículo é '+vehiclePlate+'.');
+ const uf=(d.uf||v?.metadata?.licensing_state||'SP').toUpperCase();
+ const category=crlvLicensingCategoryFromData(d);
+ const exercise=Number(d.licensingYear||0)||null;
+ const due=uf==='SP'?crlvNextDueDate(docPlate||vehiclePlate,category,exercise):null;
+ await applyParsedCrlvToVehicle(vehicleId,{data:d,uf,category,due});
+ const doc=vehicleDocsCache.find(x=>x.vehicle_id===vehicleId&&x.file_id===fileId&&isVehicleCrlv(x.document_type));
+ if(doc&&due)await rest('v2_vehicle_documents','id=eq.'+doc.id,'PATCH',{expires_at:due});
+ await loadVehicleDocs(vehicleId);
+ await loadVehicles();
+ try{await loadSmartAlerts()}catch(_){}
+ const year=Number(d.licensingYear||0);
+ if(!year)throw new Error('Li o CRLV, mas não consegui identificar o campo EXERCÍCIO.');
+ return {year,plate:d.plate||vehiclePlate,uf,category,due};
+}
+
+let fleetCrlvAutoReadRunning=false;
+const fleetCrlvAutoReadTried=new Set();
+
+async function autoReadPendingFleetCrlvs(){
+ if(fleetCrlvAutoReadRunning||!c360NetOnline()||!companyId)return;
+
+ const docs=(vehicleDocsCache||[]).filter(d=>isVehicleCrlv(d.document_type)&&d.status==='active'&&d.file_id);
+ const queue=[];
+
+ for(const d of docs){
+  const v=(vehicleDocsVehicles||[]).find(x=>x.id===d.vehicle_id)||(window.__fleetVehicles||[]).find(x=>x.id===d.vehicle_id);
+  if(!v)continue;
+  const parsedVersion=Number(v?.metadata?.crlv?.licensing_parse_version||0);
+  const hasRenavam=String(v?.renavam||'').replace(/\D/g,'').length>=9;
+  if(licensingStatusForVehicle(v,d).confirmed&&parsedVersion>=3&&hasRenavam)continue;
+  const key=d.file_id+'|'+d.vehicle_id;
+  if(fleetCrlvAutoReadTried.has(key))continue;
+  queue.push({doc:d,vehicle:v,key});
+ }
+
+ if(!queue.length)return;
+ fleetCrlvAutoReadRunning=true;
+
+ try{
+  for(const item of queue){
+   fleetCrlvAutoReadTried.add(item.key);
+   try{
+    await readStoredVehicleCrlv(item.doc.file_id,item.vehicle.id);
+   }catch(err){
+    console.warn('Leitura automática do CRLV',item.vehicle.description||item.vehicle.plate,err);
+   }
+  }
+ }finally{
+  fleetCrlvAutoReadRunning=false;
+ }
+}
+
+function scheduleAutomaticCrlvRead(){
+ if(!c360NetOnline()||!companyId)return;
+ clearTimeout(window.__fleetCrlvAutoTimer);
+ window.__fleetCrlvAutoTimer=setTimeout(()=>{
+  autoReadPendingFleetCrlvs().catch(e=>console.warn('Leitura automática de CRLV',e));
+ },650);
+}
+
+async function loadVehicleDocs(vehicleId=''){
+ const [docs,vs,files]=await Promise.all([
+  rest('v2_vehicle_documents','select=*&company_id=eq.'+companyId+'&order=expires_at.asc.nullslast,created_at.desc'),
+  rest('v2_vehicles','select=id,description,plate,model,make,model_year,renavam,status,metadata&company_id=eq.'+companyId+'&order=description.asc'),
+  rest('v2_files','select=id,storage_bucket,storage_path,original_name,mime_type,size_bytes&company_id=eq.'+companyId+'&category=eq.vehicle_document&archived_at=is.null&order=created_at.desc')
+ ]);
+ vehicleDocsCache=docs||[];vehicleDocsVehicles=vs||[];vehicleDocFiles=Object.fromEntries((files||[]).map(f=>[f.id,f]));
+ const currentId=vehicleId||document.getElementById('editVehicleId')?.value||'';
+ const s=document.getElementById('vehicleDocVehicle');if(s)s.value=currentId;
+ const shown=currentId?vehicleDocsCache.filter(d=>d.vehicle_id===currentId):[];
+ const btn=document.getElementById('newVehicleDocBtn');if(btn){btn.disabled=!currentId;btn.title=currentId?'Adicionar documento nesta condução':'Salve o veículo antes de adicionar documentos.'}
+ const v=vehicleDocsVehicles.find(q=>q.id===currentId);
+
+ let x=0,p=0,o=0;
+ shown.forEach(d=>{
+  const z=isVehicleCrlv(d.document_type)&&v?licensingStatusForVehicle(v,d):vehicleDocStatus(d.expires_at);
+  if(z.cls==='danger')x++;else if(z.cls==='warn')p++;else o++;
+ });
+ const k=document.getElementById('vehicleDocKpis');
+ if(k)k.innerHTML=currentId?
+  '<span class="pill">'+shown.length+' documento(s)</span> <span class="pill ok">'+o+' em dia</span> <span class="pill warn">'+p+' atenção</span> <span class="pill danger">'+x+' vencido/atrasado</span>':
+  '<span class="muted">Salve o veículo para liberar os documentos desta condução.</span>';
+
+ const l=document.getElementById('vehicleDocsList');if(!l)return;
+ if(!currentId){l.innerHTML='';return}
+
+ l.innerHTML=shown.map(d=>{
+  const isCrlv=isVehicleCrlv(d.document_type);
+  const z=isCrlv?licensingStatusForVehicle(v,d):vehicleDocStatus(d.expires_at);
+  const f=vehicleDocFiles[d.file_id];
+  const currentYear=new Date().getFullYear();
+  const exercise=isCrlv?Number(v?.metadata?.crlv?.licensing_year||0):0;
+  const cycleYear=isCrlv?crlvNextLicensingCycleYear(exercise):currentYear;
+  const due=isCrlv?spLicensingDueDate(v?.plate,inferVehicleLicenseCategory(v),cycleYear):d.expires_at;
+  const dateText=due?'Próxima renovação '+cycleYear+' até '+new Date(due+'T00:00:00').toLocaleDateString('pt-BR'):'Sem vencimento';
+  const detail=isCrlv?(exercise?'EXERCÍCIO '+exercise+' • '+dateText:'Exercício não confirmado • '+dateText):dateText;
+  return '<div class="item vehicle-doc-row"><div class="toolbar" style="justify-content:space-between;align-items:flex-start"><div><strong>'+esc(d.document_type)+'</strong><div class="muted">'+esc(detail)+(v?.renavam?' • RENAVAM '+esc(v.renavam):'')+'</div><div style="margin-top:6px"><span class="pill '+z.cls+'">'+esc(z.label)+'</span>'+(f?' <span class="pill ok">📎 '+esc(f.original_name||'arquivo')+'</span>':' <span class="pill">Sem arquivo</span>')+'</div></div><div class="toolbar">'+(f?'<button class="btn soft vehicleDocView" data-file="'+f.id+'" type="button">👁️ Abrir</button><button class="btn soft vehicleDocDownload" data-file="'+f.id+'" type="button">⬇️ Baixar</button>':'')+'<button class="btn soft editVehicleDocBtn" data-id="'+d.id+'" type="button">Editar</button></div></div></div>';
+ }).join('')||'<div class="muted vehicle-doc-empty">Nenhum documento cadastrado nesta condução.</div>';
+ scheduleAutomaticCrlvRead();
+}
+function openVehicleDoc(id=''){
+ const d=vehicleDocsCache.find(x=>x.id===id),f=d?.file_id?vehicleDocFiles[d.file_id]:null;
+ const vehicleId=d?.vehicle_id||document.getElementById('editVehicleId')?.value||'';
+ if(!vehicleId){alert('Salve o veículo antes de adicionar documentos.');return}
+ document.getElementById('vehicleDocId').value=d?.id||'';
+ document.getElementById('vehicleDocTitle').textContent=d?'Editar documento':'Novo documento';
+ document.getElementById('vehicleDocVehicle').value=vehicleId;
+ document.getElementById('vehicleDocType').value=d?.document_type||'Licenciamento / CRLV';
+ document.getElementById('vehicleDocExpires').value=d?.expires_at||'';
+ document.getElementById('vehicleDocFile').value='';
+ document.getElementById('vehicleDocFileCurrent').textContent=f?'Arquivo atual: '+f.original_name:'Nenhum arquivo salvo.';
+ document.getElementById('deleteVehicleDoc').style.display=d?'inline-flex':'none';
+ document.getElementById('vehicleDocMsg').textContent='';window.__pendingVehicleDocCrlv=null;configureVehicleDocTypeUi();
+ document.getElementById('vehicleDocEditCard').style.display='block';
+ document.getElementById('vehicleDocEditCard').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function currentVehicleForDoc(){
+ const id=document.getElementById('vehicleDocVehicle')?.value||document.getElementById('editVehicleId')?.value||'';
+ return vehicleDocsVehicles.find(v=>v.id===id)||(window.__fleetVehicles||[]).find(v=>v.id===id)||null;
+}
+function configureVehicleDocTypeUi(){
+ const type=document.getElementById('vehicleDocType')?.value||'';
+ const exp=document.getElementById('vehicleDocExpires');
+ const info=document.getElementById('vehicleDocAutoInfo');
+ const isCrlv=isVehicleCrlv(type);
+ if(exp)exp.readOnly=isCrlv;
+ if(info)info.textContent=isCrlv?'CRLV digital, foto ou scan: placa e EXERCÍCIO são reconhecidos automaticamente; em imagem o sistema usa OCR.':'';
+ if(isCrlv){
+  const v=currentVehicleForDoc();
+  if(v&&exp){
+   const exercise=Number(v?.metadata?.crlv?.licensing_year||0)||null;
+   const due=String(v?.metadata?.licensing_state||'SP').toUpperCase()==='SP'?crlvNextDueDate(v.plate,inferVehicleLicenseCategory(v),exercise):null;
+   if(due)exp.value=due;
+  }
+ }
+}
+async function inspectVehicleDocCrlvFile(file){
+ const m=document.getElementById('vehicleDocMsg');
+ const v=currentVehicleForDoc();
+ if(!v)throw new Error('Veículo não encontrado.');
+ const read=await readDigitalCrlv(file);
+ if(!read.digital){
+  window.__pendingVehicleDocCrlv=null;
+  if(m)m.textContent='Não consegui reconhecer os dados do CRLV: '+(read.reason||'imagem sem leitura suficiente')+'. Tente uma foto/scan mais nítido.';
+  return null;
+ }
+ const d=read.data||{};
+ const vehiclePlate=String(v.plate||'').replace(/[^A-Z0-9]/gi,'').toUpperCase();
+ const docPlate=String(d.plate||'').replace(/[^A-Z0-9]/gi,'').toUpperCase();
+ if(vehiclePlate&&docPlate&&vehiclePlate!==docPlate){
+  window.__pendingVehicleDocCrlv=null;
+  throw new Error('Este CRLV é da placa '+docPlate+', mas a ficha aberta é da placa '+vehiclePlate+'.');
+ }
+ const uf=(d.uf||v?.metadata?.licensing_state||'SP').toUpperCase();
+ const cat=crlvLicensingCategoryFromData(d);
+ const exercise=Number(d.licensingYear||0)||null;
+ const due=uf==='SP'?crlvNextDueDate(docPlate||vehiclePlate,cat,exercise):null;
+ window.__pendingVehicleDocCrlv={data:d,uf,category:cat,due};
+ const exp=document.getElementById('vehicleDocExpires');
+ if(exp)exp.value=due||'';
+ if(m)m.textContent=(d.licensingYear?'✓ CRLV digital: '+crlvDigitalSummary(d):'CRLV digital lido, mas o campo EXERCÍCIO não foi identificado.')+(due?' • Prazo SP: '+new Date(due+'T00:00:00').toLocaleDateString('pt-BR'):'');
+ return window.__pendingVehicleDocCrlv;
+}
+async function applyParsedCrlvToVehicle(vehicleId,parsed){
+ if(!parsed)return null;
+ const v=vehicleDocsVehicles.find(x=>x.id===vehicleId)||(window.__fleetVehicles||[]).find(x=>x.id===vehicleId);
+ if(!v)return null;
+ const d=parsed.data||{},oldMeta=v.metadata||{},oldCrlv=oldMeta.crlv||{};
+ const year=Number(d.licensingYear||0)||null;
+ const nextCrlv={
+  ...oldCrlv,
+  owner:d.owner||oldCrlv.owner||null,
+  chassis:d.chassis||oldCrlv.chassis||null,
+  color:d.color||oldCrlv.color||null,
+  fuel:d.fuel||oldCrlv.fuel||null,
+  year_fabrication:Number(d.yearFab)||oldCrlv.year_fabrication||null,
+  licensing_year:year||null,
+  licensing_year_source:year?(d.licensingYearSource||'crlv_document'):'not_confirmed',
+  licensing_parse_version:Number(d.licensingParseVersion||0),
+  licensing_state:parsed.uf||oldCrlv.licensing_state||'SP',
+  licensing_category:parsed.category||oldCrlv.licensing_category||'regular',
+  document_category:d.category||oldCrlv.document_category||null,
+  species_type:d.speciesType||oldCrlv.species_type||null,
+  imported_at:new Date().toISOString()
+ };
+ const body={metadata:{...oldMeta,crlv:nextCrlv,licensing_state:nextCrlv.licensing_state,licensing_category:nextCrlv.licensing_category}};
+ if(String(v.renavam||'').replace(/\D/g,'').length<9&&d.renavam)body.renavam=d.renavam;
+ if(!v.plate&&d.plate)body.plate=d.plate;
+ if(!v.model_year&&(d.yearModel||d.yearFab))body.model_year=Number(d.yearModel||d.yearFab);
+ const rows=await rest('v2_vehicles','id=eq.'+vehicleId,'PATCH',body);
+ const updated=rows?.[0];
+ if(updated){
+  const a=(window.__fleetVehicles||[]).findIndex(x=>x.id===vehicleId);if(a>=0)window.__fleetVehicles[a]=updated;
+  const b=vehicleDocsVehicles.findIndex(x=>x.id===vehicleId);if(b>=0)vehicleDocsVehicles[b]=updated;
+ }
+ return updated||null;
+}
+
+async function saveVehicleDocument(){
+ const m=document.getElementById('vehicleDocMsg');
+ let id=document.getElementById('vehicleDocId').value;
+ const vehicle_id=document.getElementById('vehicleDocVehicle').value;
+ const file=document.getElementById('vehicleDocFile').files?.[0];
+ const docType=document.getElementById('vehicleDocType').value;
+ if(!vehicle_id){m.textContent='Selecione o veículo.';return}
+
+ try{
+  let parsedCrlv=null;
+  if(isVehicleCrlv(docType)&&file){
+   m.textContent='Lendo o CRLV digital...';
+   parsedCrlv=window.__pendingVehicleDocCrlv||await inspectVehicleDocCrlvFile(file);
+  }
+
+  m.textContent=file?'Enviando arquivo...':'Salvando...';
+  let old=vehicleDocsCache.find(x=>x.id===id)||null;
+  if(isVehicleCrlv(docType)&&!id){
+   const existing=vehicleDocsCache.find(x=>x.vehicle_id===vehicle_id&&isVehicleCrlv(x.document_type)&&x.status==='active');
+   if(existing){id=existing.id;old=existing}
+  }
+
+  let file_id=old?.file_id||null;
+  if(file){
+   const fr=await uploadVehicleDocumentFile(file,vehicle_id);
+   file_id=fr?.id||file_id;
+   if(old?.file_id&&old.file_id!==file_id){
+    try{await rest('v2_files','id=eq.'+old.file_id,'PATCH',{archived_at:new Date().toISOString()})}catch(e){console.warn('archive old CRLV file',e)}
+   }
+  }
+
+  if(isVehicleCrlv(docType)&&parsedCrlv){
+   await applyParsedCrlvToVehicle(vehicle_id,parsedCrlv);
+  }
+
+  const expires=isVehicleCrlv(docType)
+    ?(parsedCrlv?.due||document.getElementById('vehicleDocExpires').value||old?.expires_at||null)
+    :(document.getElementById('vehicleDocExpires').value||null);
+
+  const b={company_id:companyId,vehicle_id,document_type:docType,expires_at:expires,status:'active',file_id};
+  if(id)await rest('v2_vehicle_documents','id=eq.'+id,'PATCH',b);
+  else await rest('v2_vehicle_documents','','POST',b);
+
+  window.__pendingVehicleDocCrlv=null;
+  document.getElementById('vehicleDocEditCard').style.display='none';
+  await loadVehicleDocs(vehicle_id);
+  await loadVehicles();
+  if(isVehicleCrlv(docType)){
+   const v=currentVehicleForDoc();
+   const y=Number(v?.metadata?.crlv?.licensing_year||0);
+   m.textContent=y?'CRLV atualizado • exercício '+y+'.':'CRLV salvo, mas o exercício ainda não foi confirmado.';
+  }
+ }catch(e){
+  m.textContent=e.message||String(e);
+ }
+}
+async function deleteVehicleDocument(){
+ const id=document.getElementById('vehicleDocId').value;if(!id||!confirm('Excluir este documento definitivamente?'))return;
+ try{const d=vehicleDocsCache.find(x=>x.id===id);await rest('v2_vehicle_documents','id=eq.'+id,'DELETE');if(d?.file_id)try{await rest('v2_files','id=eq.'+d.file_id,'PATCH',{archived_at:new Date().toISOString()})}catch{}document.getElementById('vehicleDocEditCard').style.display='none';await loadVehicleDocs(d?.vehicle_id||document.getElementById('editVehicleId')?.value||'');await loadVehicles()}catch(e){alert(e.message)}
+}
+function normalizeCrlvPdfToken(value){
+ return String(value||'').toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^A-Z0-9]/g,'');
+}
+function crlvPdfRows(items){
+ const rows=[];
+ for(const item of items){
+  let row=rows.find(r=>Math.abs(r.y-item.y)<=3);
+  if(!row){row={y:item.y,items:[]};rows.push(row)}
+  row.items.push(item);
+ }
+ for(const row of rows)row.items.sort((a,b)=>a.x-b.x);
+ return rows;
+}
+function crlvPositionValue(items,rows,headerTest,valueTest,{maxDy=100,maxDx=170}={}){
+ for(const row of rows){
+  const rowNorm=row.items.map(x=>x.norm).join('');
+  if(!headerTest(rowNorm,row.items))continue;
+
+  const headerItems=row.items.filter(x=>headerTest(x.norm,[x]));
+  const baseItems=headerItems.length?headerItems:row.items;
+  const minX=Math.min(...baseItems.map(x=>x.x));
+  const maxX=Math.max(...baseItems.map(x=>x.x+x.width));
+  const center=(minX+maxX)/2;
+
+  const rawCandidates=[];
+  for(const item of items){
+   if(item.y>=row.y-1||row.y-item.y>maxDy)continue;
+   const norm=item.norm;
+   if(valueTest(norm)){
+    const cx=item.x+(item.width||0)/2;
+    rawCandidates.push({value:norm,cx,y:item.y,dx:Math.abs(cx-center),dy:row.y-item.y});
+   }
+  }
+
+  // Alguns PDFs quebram o RENAVAM em mais de um item; tenta juntar itens da mesma linha.
+  const valueRows=crlvPdfRows(items.filter(x=>x.y<row.y-1&&row.y-x.y<=maxDy));
+  for(const vr of valueRows){
+   for(let i=0;i<vr.items.length;i++){
+    let joined='';
+    let startX=vr.items[i].x,endX=vr.items[i].x+(vr.items[i].width||0);
+    for(let j=i;j<Math.min(vr.items.length,i+3);j++){
+     joined+=vr.items[j].norm;
+     endX=vr.items[j].x+(vr.items[j].width||0);
+     if(valueTest(joined)){
+      const cx=(startX+endX)/2;
+      rawCandidates.push({value:joined,cx,y:vr.y,dx:Math.abs(cx-center),dy:row.y-vr.y});
+     }
+    }
+   }
+  }
+
+  const candidates=rawCandidates
+   .filter(x=>x.dx<=maxDx)
+   .map(x=>({...x,score:x.dx*1.9+x.dy}))
+   .sort((a,b)=>a.score-b.score);
+
+  if(candidates.length)return candidates[0];
+ }
+ return null;
+}
+async function extractCrlvIdentityByPosition(file){
+ if(!window.pdfjsLib)return {};
+ pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+ const pdf=await pdfjsLib.getDocument({data:await file.arrayBuffer()}).promise;
+ const out={};
+
+ for(let pageNo=1;pageNo<=pdf.numPages;pageNo++){
+  const page=await pdf.getPage(pageNo);
+  const content=await page.getTextContent();
+  const items=(content.items||[]).filter(x=>String(x.str||'').trim()).map((x,idx)=>({
+   text:String(x.str||'').trim(),
+   norm:normalizeCrlvPdfToken(x.str),
+   x:Number(x.transform?.[4]||0),
+   y:Number(x.transform?.[5]||0),
+   width:Number(x.width||0),
+   height:Number(x.height||0),
+   idx
+  }));
+  const rows=crlvPdfRows(items);
+
+  if(!out.renavam){
+   const r=crlvPositionValue(
+    items,rows,
+    s=>s.includes('CODIGORENAVAM')||s==='RENAVAM'||s.includes('RENAVAM'),
+    s=>/^\d{9,11}$/.test(s),
+    {maxDy:105,maxDx:185}
+   );
+   if(r)out.renavam=r.value;
+  }
+
+  if(!out.plate){
+   const p=crlvPositionValue(
+    items,rows,
+    s=>s==='PLACA'||s.endsWith('PLACA'),
+    s=>/^[A-Z]{3}[0-9][A-Z0-9][0-9]{2}$/.test(s),
+    {maxDy:105,maxDx:130}
+   );
+   if(p)out.plate=p.value;
+  }
+
+  if(!out.licensingYear){
+   const e=crlvPositionValue(
+    items,rows,
+    s=>s.includes('EXERCICIO'),
+    s=>/^20\d{2}$/.test(s),
+    {maxDy:95,maxDx:150}
+   );
+   if(e)out.licensingYear=e.value;
+  }
+
+  if(out.renavam&&out.plate&&out.licensingYear)break;
+ }
+ if(Object.keys(out).length){
+  out.source='pdf_position';
+  out.licensingParseVersion=3;
+ }
+ return out;
+}
+
+async function extractCrlvExerciseByPosition(file){
+ const x=await extractCrlvIdentityByPosition(file);
+ return x?.licensingYear?{licensingYear:x.licensingYear,source:'pdf_position'}:null;
+}
+
+async function extractPdfText(file){
+ if(!window.pdfjsLib)throw new Error('Leitor de PDF ainda carregando. Aguarde alguns segundos.');
+ pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+ const pdf=await pdfjsLib.getDocument({data:await file.arrayBuffer()}).promise;
+ const pages=[];
+
+ for(let i=1;i<=pdf.numPages;i++){
+  const page=await pdf.getPage(i);
+  const content=await page.getTextContent();
+  const items=(content.items||[]).filter(x=>String(x.str||'').trim()).map((x,idx)=>({
+   text:String(x.str||'').trim(),
+   x:Number(x.transform?.[4]||0),
+   y:Number(x.transform?.[5]||0),
+   idx
+  }));
+
+  // Reconstrói as linhas pela posição visual. CRLV-e costuma guardar
+  // rótulo e valor separados internamente, apesar de aparecerem juntos na tela.
+  const lines=[];
+  for(const item of items){
+   let line=lines.find(l=>Math.abs(l.y-item.y)<=2.8);
+   if(!line){line={y:item.y,items:[]};lines.push(line)}
+   line.items.push(item);
+  }
+  lines.sort((a,b)=>b.y-a.y);
+  const layout=lines.map(l=>l.items.sort((a,b)=>a.x-b.x).map(x=>x.text).join(' ')).join('\n');
+
+  // Mantém também a ordem interna original como segundo caminho de leitura.
+  const raw=items.sort((a,b)=>a.idx-b.idx).map(x=>x.text).join(' ');
+  pages.push(layout+'\n'+raw);
+ }
+ return pages.join('\n\n').replace(/[ \t]+/g,' ').replace(/\n{3,}/g,'\n\n').trim();
+}
+function crlvMatch(text,patterns){
+ for(const p of patterns){const m=text.match(p);if(m?.[1])return m[1].trim()}return '';
+}
+function parseCrlvText(raw){
+ const original=String(raw||'').toUpperCase().replace(/\r/g,'\n');
+ const text=original.normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[ \t]+/g,' ').replace(/\n{3,}/g,'\n\n');
+ const flat=text.replace(/\s+/g,' ').trim();
+ const plate=crlvMatch(flat,[/\bPLACA\s*[:\-]?\s*([A-Z]{3}\s*[0-9][A-Z0-9][0-9]{2})\b/,/\b([A-Z]{3}[0-9][A-Z0-9][0-9]{2})\b/]).replace(/\s/g,'');
+ const renavam=crlvMatch(flat,[/\bRENAVAM\s*[:\-]?\s*(\d{9,11})\b/,/\bC[ÓO]DIGO\s+RENAVAM\s*[:\-]?\s*(\d{9,11})\b/]);
+ const chassis=crlvMatch(flat,[/\bCHASSI\s*[:\-]?\s*([A-HJ-NPR-Z0-9]{17})\b/]);
+ const yearFab=crlvMatch(flat,[/\bANO\s+FABRICA[CÇ][AÃ]O\s*[:\-]?\s*(\d{4})\b/,/\bFABRICA[CÇ][AÃ]O\s*[:\-]?\s*(\d{4})\b/]);
+ const yearModel=crlvMatch(flat,[/\bANO\s+MODELO\s*[:\-]?\s*(\d{4})\b/,/\bMODELO\s*[:\-]?\s*(\d{4})\b/]);
+ let makeModel=crlvMatch(flat,[/\bMARCA\s*\/?\s*MODELO\s*[:\-]?\s*([A-Z0-9 .\/-]{3,60}?)(?=\s+(?:ANO|CAPACIDADE|POT[EÊ]NCIA|CATEGORIA|COR|COMBUST[IÍ]VEL|CHASSI|ESP[EÉ]CIE)\b)/]);
+ const owner=crlvMatch(flat,[/\bNOME\s*[:\-]?\s*([A-ZÀ-Ú ]{5,60}?)(?=\s+(?:CPF|CNPJ|LOCAL|DATA|C[ÓO]DIGO|PLACA)\b)/]);
+ const color=crlvMatch(flat,[/\bCOR\s*[:\-]?\s*([A-ZÀ-Ú ]{3,20}?)(?=\s+(?:COMBUST[IÍ]VEL|CATEGORIA|ESP[EÉ]CIE|CHASSI|PLACA)\b)/]);
+ const fuel=crlvMatch(flat,[/\bCOMBUST[IÍ]VEL\s*[:\-]?\s*([A-ZÀ-Ú\/ ]{3,30}?)(?=\s+(?:COR|CATEGORIA|ESP[EÉ]CIE|CHASSI|PLACA|POT[EÊ]NCIA)\b)/]);
+ let licensingYear=crlvMatch(text,[
+  /\bEXERC[I1]C[I1]O\s*[:\-]?\s*(20\d{2})\b/,
+  /\bANO\s+(?:DO\s+)?EXERC[I1]C[I1]O\s*[:\-]?\s*(20\d{2})\b/,
+  /\b(20\d{2})\s+EXERC[I1]C[I1]O\b/
+ ]);
+ if(!licensingYear)licensingYear=crlvMatch(flat,[
+  /\bEXERC[I1]C[I1]O\b[^0-9]{0,80}(20\d{2})\b/,
+  /\bANO\s+(?:DO\s+)?EXERC[I1]C[I1]O\b[^0-9]{0,80}(20\d{2})\b/,
+  /\b(20\d{2})\b[^A-Z0-9]{0,80}\bEXERC[I1]C[I1]O\b/,
+  /\bCRLV(?:E)?\b[^0-9]{0,120}(20\d{2})\b/
+ ]);
+ if(!licensingYear){
+  // CRLV-e frequentemente traz os cabeçalhos CÓDIGO RENAVAM / PLACA / EXERCÍCIO
+  // em uma linha e os três valores na linha seguinte.
+  const lines=text.split(/\n+/).map(x=>x.trim()).filter(Boolean);
+  for(let i=0;i<lines.length;i++){
+   if(/EXERC[I1]C[I1]O/.test(lines[i])){
+    const windowText=[lines[i],lines[i+1]||'',lines[i+2]||''].join(' ');
+    const years=(windowText.match(/\b20\d{2}\b/g)||[]).map(Number);
+    const plausible=years.filter(y=>y>=2000&&y<=new Date().getFullYear()+1);
+    if(plausible.length){
+     licensingYear=String(Math.max(...plausible));
+     break;
+    }
+   }
+  }
+ }
+ const uf=crlvMatch(flat,[
+  /\bUF\s*[:\-]?\s*([A-Z]{2})\b/,
+  /\bUF\s+DE\s+REGISTRO\s*[:\-]?\s*([A-Z]{2})\b/,
+  /\bLOCAL\s*[:\-]?\s*[A-ZÀ-Ú .-]{3,45}\s+([A-Z]{2})\b/
+ ]);
+ const category=crlvMatch(flat,[
+  /\bCATEGORIA\s*[:\-]?\s*([A-ZÀ-Ú0-9 .\/-]{3,35}?)(?=\s+(?:COR|COMBUST[IÍ]VEL|ESP[EÉ]CIE|TIPO|CAPACIDADE|POT[EÊ]NCIA|CHASSI)\b)/
+ ]);
+ const speciesType=crlvMatch(flat,[
+  /\bESP[EÉ]CIE\s*\/?\s*TIPO\s*[:\-]?\s*([A-ZÀ-Ú0-9 .\/-]{3,50}?)(?=\s+(?:CATEGORIA|COR|COMBUST[IÍ]VEL|CAPACIDADE|POT[EÊ]NCIA|CHASSI|CARROCERIA)\b)/,
+  /\bESP[EÉ]CIE\s*[:\-]?\s*([A-ZÀ-Ú0-9 .\/-]{3,50}?)(?=\s+(?:TIPO|CATEGORIA|COR|COMBUST[IÍ]VEL|CAPACIDADE|CHASSI)\b)/
+ ]);
+ return {plate,renavam,chassis,yearFab,yearModel,makeModel,owner,color,fuel,licensingYear,uf,category,speciesType,rawText:raw};
+}
+function crlvLicensingCategoryFromData(d={}){
+ const text=[d.speciesType,d.category,d.makeModel].filter(Boolean).join(' ').toLowerCase();
+ return /caminh[aã]o|caminhao|caminh[aã]o-trator|caminhao-trator|cavalo mec[aâ]nico/.test(text)?'truck':'regular';
+}
+function crlvDigitalSummary(d={}){
+ const parts=[];
+ if(d.plate)parts.push('Placa '+d.plate);
+ if(d.licensingYear)parts.push('EXERCÍCIO '+d.licensingYear);
+ if(d.uf)parts.push('UF '+d.uf);
+ if(d.speciesType)parts.push(d.speciesType);
+ return parts.join(' • ');
+}
+function crlvOcrMessage(message,progress=null){
+ const pct=progress===null?'':(' '+Math.round(progress*100)+'%');
+ const text=message+pct;
+ const a=document.getElementById('crlvImportMsg');
+ const b=document.getElementById('vehicleDocMsg');
+ if(a&&!document.getElementById('crlvPreviewCard')?.classList.contains('hidden'))a.textContent=text;
+ if(b&&document.getElementById('vehicleDocEditCard')?.style.display!=='none')b.textContent=text;
+}
+function ocrProgressLabel(status){
+ return ({
+  'loading tesseract core':'Preparando leitor OCR...',
+  'initializing tesseract':'Inicializando OCR...',
+  'loading language traineddata':'Carregando idioma do OCR...',
+  'initializing api':'Preparando reconhecimento...',
+  'recognizing text':'Lendo o CRLV por imagem...'
+ })[status]||'Lendo CRLV...';
+}
+async function ensureTesseractReady(){
+ if(window.Tesseract?.recognize)return true;
+ await new Promise((resolve,reject)=>{
+  const existing=[...document.scripts].find(s=>String(s.src||'').includes('tesseract'));
+  if(existing){
+   const started=Date.now();
+   const poll=setInterval(()=>{
+    if(window.Tesseract?.recognize){clearInterval(poll);resolve()}
+    else if(Date.now()-started>15000){clearInterval(poll);reject(new Error('Leitor OCR não carregou. Verifique a internet e tente novamente.'))}
+   },150);
+   return;
+  }
+  const s=document.createElement('script');
+  s.src='https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js';
+  s.onload=()=>resolve();
+  s.onerror=()=>reject(new Error('Não foi possível carregar o leitor OCR.'));
+  document.head.appendChild(s);
+ });
+ return true;
+}
+function prepareOcrCanvas(source,maxSide=2800){
+ const sw=source.width||source.videoWidth||source.naturalWidth||1;
+ const sh=source.height||source.videoHeight||source.naturalHeight||1;
+ const ratio=Math.min(1,maxSide/Math.max(sw,sh));
+ const canvas=document.createElement('canvas');
+ canvas.width=Math.max(1,Math.round(sw*ratio));
+ canvas.height=Math.max(1,Math.round(sh*ratio));
+ const ctx=canvas.getContext('2d',{willReadFrequently:true});
+ ctx.imageSmoothingEnabled=true;
+ ctx.imageSmoothingQuality='high';
+ ctx.filter='grayscale(1) contrast(1.45)';
+ ctx.drawImage(source,0,0,canvas.width,canvas.height);
+ ctx.filter='none';
+ return canvas;
+}
+async function imageFileToOcrCanvas(file){
+ const url=URL.createObjectURL(file);
+ try{
+  const img=await new Promise((resolve,reject)=>{
+   const i=new Image();
+   i.onload=()=>resolve(i);
+   i.onerror=()=>reject(new Error('Não consegui abrir a imagem do CRLV.'));
+   i.src=url;
+  });
+  return prepareOcrCanvas(img);
+ }finally{
+  URL.revokeObjectURL(url);
+ }
+}
+async function pdfPageToOcrCanvas(pdf,pageNumber){
+ const page=await pdf.getPage(pageNumber);
+ const base=page.getViewport({scale:1});
+ let scale=Math.min(3,2800/Math.max(base.width,base.height));
+ scale=Math.max(scale,1.8);
+ const viewport=page.getViewport({scale});
+ const raw=document.createElement('canvas');
+ raw.width=Math.round(viewport.width);
+ raw.height=Math.round(viewport.height);
+ await page.render({canvasContext:raw.getContext('2d'),viewport}).promise;
+ return prepareOcrCanvas(raw);
+}
+async function ocrCanvasText(canvas){
+ await ensureTesseractReady();
+ const result=await Tesseract.recognize(canvas,'por',{
+  logger:m=>{
+   if(m?.status)crlvOcrMessage(ocrProgressLabel(m.status),typeof m.progress==='number'?m.progress:null);
+  }
+ });
+ return String(result?.data?.text||'').replace(/\r/g,'\n').trim();
+}
+async function ocrImageFile(file){
+ crlvOcrMessage('Preparando foto do CRLV...');
+ const canvas=await imageFileToOcrCanvas(file);
+ return await ocrCanvasText(canvas);
+}
+async function ocrScannedPdf(file,maxPages=2){
+ if(!window.pdfjsLib)throw new Error('Leitor de PDF ainda carregando.');
+ pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+ const pdf=await pdfjsLib.getDocument({data:await file.arrayBuffer()}).promise;
+ let all='';
+ const pages=Math.min(pdf.numPages,maxPages);
+ for(let i=1;i<=pages;i++){
+  crlvOcrMessage('Preparando página '+i+' de '+pages+' do CRLV...');
+  const canvas=await pdfPageToOcrCanvas(pdf,i);
+  const text=await ocrCanvasText(canvas);
+  all+='\n'+text;
+  const parsed=parseCrlvText(all);
+  if(parsed.plate&&parsed.licensingYear)break;
+ }
+ return all.replace(/\s+/g,' ').trim();
+}
+function mergeCrlvData(primary={},secondary={}){
+ const out={...secondary,...primary};
+ for(const k of ['plate','renavam','chassis','yearFab','yearModel','makeModel','owner','color','fuel','licensingYear','uf','category','speciesType']){
+  if(!primary?.[k]&&secondary?.[k])out[k]=secondary[k];
+ }
+ return out;
+}
+async function readDigitalCrlv(file){
+ if(!file)throw new Error('Selecione o CRLV.');
+ const isPdf=file.type==='application/pdf'||String(file.name||'').toLowerCase().endsWith('.pdf');
+ const isImage=/^image\//i.test(file.type||'')||/\.(jpe?g|png|webp)$/i.test(String(file.name||''));
+
+ if(isPdf){
+  let digitalText='';
+  let digitalData={};
+  let preciseIdentity={};
+  try{
+   preciseIdentity=await extractCrlvIdentityByPosition(file);
+  }catch(e){console.warn('Leitura posicional do CRLV-e',e)}
+  try{
+   digitalText=await extractPdfText(file);
+   if(digitalText&&digitalText.length>=40)digitalData=parseCrlvText(digitalText);
+  }catch(e){console.warn('Leitura textual do CRLV',e)}
+
+  // Não confirma o ano só por proximidade textual: isso pode confundir ANO/MODELO com EXERCÍCIO.
+  if(preciseIdentity?.plate)digitalData.plate=preciseIdentity.plate;
+  if(preciseIdentity?.renavam)digitalData.renavam=preciseIdentity.renavam;
+  if(preciseIdentity?.licensingYear){
+   digitalData.licensingYear=preciseIdentity.licensingYear;
+   digitalData.licensingYearSource='pdf_position';
+   digitalData.licensingParseVersion=3;
+  }else{
+   digitalData.licensingYear='';
+   digitalData.licensingYearSource='not_confirmed';
+   digitalData.licensingParseVersion=3;
+  }
+
+  if(digitalText&&digitalText.length>=40&&digitalData.plate&&digitalData.licensingYear){
+   return {data:digitalData,text:digitalText,digital:true,ocr:false,reason:null};
+  }
+
+  crlvOcrMessage(digitalText?'PDF lido. Confirmando EXERCÍCIO pela imagem...':'PDF escaneado. Iniciando OCR...');
+  const ocrText=await ocrScannedPdf(file,2);
+  const ocrData=parseCrlvText(ocrText);
+  if(ocrData.licensingYear){
+   ocrData.licensingYearSource='ocr';
+   ocrData.licensingParseVersion=2;
+  }
+  const merged=mergeCrlvData(digitalData,ocrData);
+  if(!preciseIdentity?.licensingYear&&ocrData.licensingYear){
+   merged.licensingYear=ocrData.licensingYear;
+   merged.licensingYearSource='ocr';
+   merged.licensingParseVersion=3;
+  }
+  return {
+   data:merged,
+   text:[digitalText,ocrText].filter(Boolean).join('\n'),
+   digital:!!(merged.plate||merged.renavam),
+   ocr:true,
+   reason:merged.licensingYear?null:'Não consegui confirmar o campo EXERCÍCIO do CRLV.'
+  };
+ }
+
+ if(isImage){
+  crlvOcrMessage('Imagem recebida. Iniciando OCR...');
+  const ocrText=await ocrImageFile(file);
+  const data=parseCrlvText(ocrText);
+  if(data.licensingYear){data.licensingYearSource='ocr';data.licensingParseVersion=3}
+  return {
+   data,
+   text:ocrText,
+   digital:!!(data.plate||data.renavam),
+   ocr:true,
+   reason:data.licensingYear?null:'OCR concluído, mas o campo EXERCÍCIO não foi identificado.'
+  };
+ }
+
+ return {data:{},text:'',digital:false,ocr:false,reason:'Formato não suportado. Use PDF, JPG, PNG ou WEBP.'};
+}
+
+async function beginCrlvImport(file){
+ const msg=document.getElementById('crlvImportMsg');pendingCrlvFile=file;pendingCrlvData={};
+ document.getElementById('crlvPreviewCard').style.display='block';
+ if(document.getElementById('crlvLicenseState'))document.getElementById('crlvLicenseState').value='SP';
+ if(document.getElementById('crlvLicenseCategory'))document.getElementById('crlvLicenseCategory').value='regular';
+ if(document.getElementById('crlvLicensingYear'))document.getElementById('crlvLicensingYear').value='';
+ if(document.getElementById('crlvExpires'))document.getElementById('crlvExpires').value='';
+ try{
+  msg.textContent='Lendo documento...';
+  const read=await readDigitalCrlv(file);
+  const d=read.data||{};
+  pendingCrlvData=d;
+  document.getElementById('crlvPlate').value=d.plate||'';document.getElementById('crlvRenavam').value=d.renavam||'';document.getElementById('crlvMakeModel').value=d.makeModel||'';document.getElementById('crlvYearFab').value=d.yearFab||'';document.getElementById('crlvYearModel').value=d.yearModel||'';document.getElementById('crlvChassis').value=d.chassis||'';document.getElementById('crlvOwner').value=d.owner||'';document.getElementById('crlvColor').value=d.color||'';document.getElementById('crlvFuel').value=d.fuel||'';if(document.getElementById('crlvLicensingYear'))document.getElementById('crlvLicensingYear').value=d.licensingYear||'';if(document.getElementById('crlvLicenseState'))document.getElementById('crlvLicenseState').value=d.uf||'SP';if(document.getElementById('crlvLicenseCategory'))document.getElementById('crlvLicenseCategory').value=crlvLicensingCategoryFromData(d);
+  updateCrlvAutoExpiry();
+  if(d.plate||d.renavam){
+   msg.textContent=(d.licensingYear?'✓ CRLV identificado'+(read.ocr?' por OCR':'')+': '+crlvDigitalSummary(d)+'. ':'CRLV identificado. ')+'Cadastrando a condução automaticamente...';
+   await confirmCrlvImport({automatic:true});
+  }else msg.textContent=(read.reason||'Não consegui identificar placa/RENAVAM automaticamente.')+' Tente uma imagem mais nítida ou confira os campos e use CONFIRMAR E SALVAR.';
+ }catch(e){msg.textContent='Leitura automática não concluída: '+e.message+' Você ainda pode preencher os campos e salvar o arquivo.'}
+}
+async function confirmCrlvImport(options={}){
+ const automatic=options?.automatic===true;
+ const msg=document.getElementById('crlvImportMsg');
+ const plate=document.getElementById('crlvPlate').value.toUpperCase().replace(/[^A-Z0-9]/g,'');
+ const renavam=document.getElementById('crlvRenavam').value.replace(/\D/g,'');
+ const mm=document.getElementById('crlvMakeModel').value.trim();
+ const licenseCategory=document.getElementById('crlvLicenseCategory')?.value||'regular';
+ const licenseState=(document.getElementById('crlvLicenseState')?.value||'SP').toUpperCase();
+ const licensingYear=Number(document.getElementById('crlvLicensingYear')?.value||0)||null;
+ const cycleYear=crlvNextLicensingCycleYear(licensingYear);
+ const expires=licenseState==='SP'?spLicensingDueDate(plate,licenseCategory,cycleYear):null;
+ if(!plate&&!renavam){msg.textContent='Informe pelo menos a placa ou o RENAVAM.';return}
+ if(licenseState==='SP'&&!expires){msg.textContent='Não consegui calcular o próximo prazo. Confira se a placa termina com número.';return}
+
+ try{
+  msg.textContent='Verificando a frota...';
+  await loadVehicleDocs();
+
+  let v=vehicleDocsVehicles.find(x=>
+   (plate&&String(x.plate||'').replace(/[^A-Z0-9]/gi,'').toUpperCase()===plate)||
+   (renavam&&String(x.renavam||'').replace(/\D/g,'')===renavam)
+  );
+
+  const parts=mm.split('/');
+  const make=parts.length>1?parts[0].trim():'';
+  const model=parts.length>1?parts.slice(1).join('/').trim():mm;
+  const meta={
+   ...(v?.metadata||{}),
+   crlv:{
+    owner:document.getElementById('crlvOwner').value.trim()||null,
+    chassis:document.getElementById('crlvChassis').value.trim()||null,
+    color:document.getElementById('crlvColor').value.trim()||null,
+    fuel:document.getElementById('crlvFuel').value.trim()||null,
+    year_fabrication:Number(document.getElementById('crlvYearFab').value)||null,
+    expires_at:expires,
+    next_licensing_cycle_year:cycleYear,
+    licensing_year:licensingYear,
+    licensing_year_source:Number(document.getElementById('crlvLicensingYear')?.value)?(pendingCrlvData?.licensingYearSource||'crlv_document'):'not_confirmed',
+    licensing_parse_version:Number(pendingCrlvData?.licensingParseVersion||0),
+    licensing_state:licenseState,
+    licensing_category:licenseCategory,
+    licensing_rule:licenseState==='SP'?'DETRAN-SP calendário anual por final de placa':'Calendário automático não configurado para '+licenseState,
+    document_category:pendingCrlvData?.category||null,
+    species_type:pendingCrlvData?.speciesType||null,
+    imported_at:new Date().toISOString()
+   }
+  };
+  const body={
+   company_id:companyId,
+   plate:plate||v?.plate||null,
+   renavam:renavam||v?.renavam||null,
+   make:make||v?.make||null,
+   model:model||v?.model||null,
+   model_year:Number(document.getElementById('crlvYearModel').value)||Number(document.getElementById('crlvYearFab').value)||v?.model_year||null,
+   description:v?.description||(model||mm||plate||'Condução'),
+   status:v?.status||'active',
+   metadata:{...meta,licensing_state:licenseState,licensing_category:licenseCategory}
+  };
+
+  const wasExisting=!!v;
+  if(v){
+   if(!automatic&&!confirm('A condução '+(v.description||v.plate)+' já existe. Atualizar com os dados conferidos do CRLV?'))return;
+   const rows=await rest('v2_vehicles','id=eq.'+v.id,'PATCH',body);
+   v=rows?.[0]||{...v,...body};
+  }else{
+   if(!automatic&&!confirm('Cadastrar nova condução '+(plate||renavam)+' com os dados conferidos?'))return;
+   const rows=await rest('v2_vehicles','','POST',body);
+   v=rows?.[0];
+  }
+
+  if(!v?.id)throw new Error('Não foi possível obter o veículo cadastrado.');
+
+  msg.textContent='Salvando o documento...';
+  const fr=pendingCrlvFile?await uploadVehicleDocumentFile(pendingCrlvFile,v.id):null;
+  const existingCrlv=vehicleDocsCache.find(d=>d.vehicle_id===v.id&&isVehicleCrlv(d.document_type)&&d.status==='active');
+  const docBody={
+   company_id:companyId,
+   vehicle_id:v.id,
+   document_type:'Licenciamento / CRLV',
+   expires_at:expires||existingCrlv?.expires_at||null,
+   status:'active',
+   file_id:fr?.id||existingCrlv?.file_id||null
+  };
+  if(existingCrlv)await rest('v2_vehicle_documents','id=eq.'+existingCrlv.id,'PATCH',docBody);
+  else await rest('v2_vehicle_documents','','POST',docBody);
+
+  document.getElementById('crlvPreviewCard').style.display='none';
+  pendingCrlvFile=null;
+  pendingCrlvData=null;
+  try{await loadVehicles()}catch{}
+  if(automatic){
+   console.info('Condução '+(wasExisting?'atualizada':'cadastrada')+' automaticamente pelo CRLV:',v.plate||v.renavam||v.id);
+  }else{
+   try{await openVehicleEdit(v.id)}catch{}
+   alert('CRLV salvo e vinculado à condução com sucesso.');
+  }
+  return v;
+ }catch(e){
+  msg.textContent=e.message||String(e);
+ }
+}
+
+
+
+
+const MOVIT_COMPANY_PRESETS={
+ 'bb06c7a1-1bbd-42b6-b481-680a9ef5b597':{
+  clientKey:'tnasistemas',
+  userId:187,
+  portal:'https://ap3.stc.srv.br/webcliente/tnasistemas'
+ }
+};
+function applyMovitCompanyPreset(){
+ const p=MOVIT_COMPANY_PRESETS[companyId];if(!p)return null;
+ const key=$('#movitClientKey'),uid=$('#movitUserId'),passField=$('#movitLoginPasswordField'),note=$('#movitDetectedPortal');
+ if(key&&!key.value)key.value=p.clientKey;
+ if(uid&&!uid.value)uid.value=String(p.userId);
+ if(passField&&(!passField.value||passField.value==='password'))passField.value='pass';
+ if(note)note.innerHTML='✓ Portal STC identificado: <b>'+esc(p.clientKey)+'</b> • User ID <b>'+esc(p.userId)+'</b>. Agora informe somente seu usuário e sua senha do MOVIT.';
+ return p;
+}
+
+let movitTrackingRows=[],movitTrackingTimer=null,movitLastStatus=null,movitMapHasFit=false,movitGoogleView={lat:-23.0,lon:-47.9,zoom:8},movitGoogleSelectedId=null,movitGoogleDrag=null;
+async function movitInvoke(action,extra={}){
+ const r=await authFetch('/functions/v1/movit-bridge',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:action,company_id:companyId,...extra})},true);
+ return parseResponse(r);
+}
+function movitJsonValue(id,label){const raw=$(id)?.value?.trim();if(!raw)return null;try{return JSON.parse(raw)}catch(_){throw new Error(label+' contém JSON inválido.')}}
+function movitAge(iso){if(!iso)return{text:'Sem horário',stale:true};const ms=Date.now()-new Date(iso).getTime();if(!Number.isFinite(ms))return{text:'Horário inválido',stale:true};const min=Math.max(0,Math.round(ms/60000));if(min<1)return{text:'agora',stale:false};if(min<60)return{text:'há '+min+' min',stale:min>15};return{text:'há '+Math.round(min/60)+' h',stale:true}}
+function movitMapState(v){
+ const age=movitAge(v.recorded_at||v.gps_at||v.updated_at),moving=Number(v.speed_kmh||0)>2;
+ if(age.stale)return{cls:'stale',label:'GPS desatualizado'};
+ if(moving)return{cls:'move',label:'Em movimento'};
+ if(v.ignition===true)return{cls:'on',label:'Ligado'};
+ return{cls:'stopped',label:'Parado'};
+}
+function ensureMovitMap(){
+ const el=$('#movitMap'),frame=$('#movitGoogleFrame'),overlay=$('#movitGoogleOverlay'),info=$('#movitGoogleInfo'),gesture=$('#movitGoogleGesture');
+ if(!el||!frame||!overlay||!info||!gesture)return null;
+ return{el,frame,overlay,info,gesture};
+}
+function googleMercatorPoint(lat,lon,zoom){
+ const safeLat=Math.max(-85.05112878,Math.min(85.05112878,Number(lat)));
+ const scale=256*Math.pow(2,zoom);
+ const x=(Number(lon)+180)/360*scale;
+ const sin=Math.sin(safeLat*Math.PI/180);
+ const y=(0.5-Math.log((1+sin)/(1-sin))/(4*Math.PI))*scale;
+ return{x,y};
+}
+function googleFleetFit(points,width,height){
+ if(!points.length)return{lat:-23.0,lon:-47.9,zoom:8};
+ if(points.length===1)return{lat:points[0].lat,lon:points[0].lon,zoom:16};
+ const lats=points.map(p=>p.lat),lons=points.map(p=>p.lon);
+ const lat=(Math.min(...lats)+Math.max(...lats))/2,lon=(Math.min(...lons)+Math.max(...lons))/2;
+ let best=4;
+ for(let z=4;z<=16;z++){
+  const ps=points.map(p=>googleMercatorPoint(p.lat,p.lon,z));
+  const xs=ps.map(p=>p.x),ys=ps.map(p=>p.y);
+  const spanX=Math.max(...xs)-Math.min(...xs),spanY=Math.max(...ys)-Math.min(...ys);
+  if(spanX<=Math.max(120,width-150)&&spanY<=Math.max(120,height-140))best=z;else break;
+ }
+ return{lat,lon,zoom:best};
+}
+function googleMercatorLatLon(x,y,zoom){
+ const scale=256*Math.pow(2,zoom);
+ const lon=x/scale*360-180;
+ const n=Math.PI-2*Math.PI*y/scale;
+ const lat=180/Math.PI*Math.atan(Math.sinh(n));
+ return{lat:Math.max(-85.05112878,Math.min(85.05112878,lat)),lon:((lon+540)%360)-180};
+}
+function googleMapEmbedUrl(view){
+ return 'https://maps.google.com/maps?ll='+encodeURIComponent(view.lat+','+view.lon)+'&z='+encodeURIComponent(view.zoom)+'&t=k&output=embed';
+}
+function updateMovitGoogleView(next,{render=true}={}){
+ movitGoogleView={
+  lat:Number.isFinite(Number(next?.lat))?Number(next.lat):movitGoogleView.lat,
+  lon:Number.isFinite(Number(next?.lon))?Number(next.lon):movitGoogleView.lon,
+  zoom:Math.max(3,Math.min(20,Math.round(Number(next?.zoom??movitGoogleView.zoom))))
+ };
+ if(render)renderMovitMap(false);
+}
+function zoomMovitGoogleMap(delta){
+ updateMovitGoogleView({...movitGoogleView,zoom:movitGoogleView.zoom+delta});
+}
+function beginMovitGoogleDrag(e){
+ const ui=ensureMovitMap();if(!ui||e.button>0)return;
+ movitGoogleDrag={id:e.pointerId,x:e.clientX,y:e.clientY,dx:0,dy:0,center:googleMercatorPoint(movitGoogleView.lat,movitGoogleView.lon,movitGoogleView.zoom)};
+ ui.gesture.classList.add('dragging');
+ try{ui.gesture.setPointerCapture(e.pointerId)}catch(_){}
+}
+function moveMovitGoogleDrag(e){
+ const ui=ensureMovitMap(),d=movitGoogleDrag;if(!ui||!d||d.id!==e.pointerId)return;
+ d.dx=e.clientX-d.x;d.dy=e.clientY-d.y;
+ ui.frame.style.transform='translate('+d.dx+'px,'+d.dy+'px)';
+ ui.overlay.style.transform='translate('+d.dx+'px,'+d.dy+'px)';
+}
+function endMovitGoogleDrag(e){
+ const ui=ensureMovitMap(),d=movitGoogleDrag;if(!ui||!d||d.id!==e.pointerId)return;
+ ui.gesture.classList.remove('dragging');
+ ui.frame.style.transform='';ui.overlay.style.transform='';
+ const p=googleMercatorLatLon(d.center.x-d.dx,d.center.y-d.dy,movitGoogleView.zoom);
+ movitGoogleDrag=null;
+ updateMovitGoogleView({...movitGoogleView,...p});
+}
+let routeChoiceData=null;
+function openVehicleRouteChooser(lat,lon,name='Condução',plate=''){
+ const a=Number(lat),b=Number(lon);if(!Number.isFinite(a)||!Number.isFinite(b)){c360Toast('Localização indisponível','Esta condução ainda não possui coordenadas válidas.','error');return}
+ routeChoiceData={lat:a,lon:b,name:String(name||'Condução'),plate:String(plate||'')};
+ const sheet=$('#routeChoiceSheet'),back=$('#routeChoiceBackdrop'),title=$('#routeChoiceTitle'),sub=$('#routeChoiceSubtitle'),loc=$('#routeChoiceLocation');
+ if(title)title.textContent='Ir até '+routeChoiceData.name+(routeChoiceData.plate?' • '+routeChoiceData.plate:'');
+ if(sub)sub.textContent='Escolha o aplicativo para traçar a rota até a posição atual da condução.';
+ if(loc)loc.textContent='📍 Destino: '+a.toFixed(5)+', '+b.toFixed(5);
+ if(sheet){sheet.classList.remove('hidden');sheet.setAttribute('aria-hidden','false')}
+ if(back){back.classList.remove('hidden');back.setAttribute('aria-hidden','false')}
+}
+function closeVehicleRouteChooser(){
+ routeChoiceData=null;
+ const sheet=$('#routeChoiceSheet'),back=$('#routeChoiceBackdrop');
+ if(sheet){sheet.classList.add('hidden');sheet.setAttribute('aria-hidden','true')}
+ if(back){back.classList.add('hidden');back.setAttribute('aria-hidden','true')}
+}
+function openRouteApp(app){
+ const d=routeChoiceData;if(!d)return;
+ const dest=encodeURIComponent(d.lat+','+d.lon);
+ const url=app==='waze'
+  ?'https://www.waze.com/ul?ll='+dest+'&navigate=yes'
+  :'https://www.google.com/maps/dir/?api=1&destination='+dest+'&travelmode=driving';
+ window.open(url,'_blank','noopener,noreferrer');
+ closeVehicleRouteChooser();
+}
+function selectMovitGoogleVehicle(vehicleId){
+ movitGoogleSelectedId=vehicleId||null;
+ const ui=ensureMovitMap();if(!ui)return;
+ const v=(movitTrackingRows||[]).find(x=>x.vehicle_id===vehicleId||String(x.movit_vehicle_id||'')===String(vehicleId||''));
+ if(!v){ui.info.classList.add('hidden');ui.info.innerHTML='';return}
+ const lat=Number(v.latitude),lon=Number(v.longitude),state=movitMapState(v),name=v.vehicle_name||'Rastreador',plate=v.license_plate||v.raw_data?.license_plate||'',trackerPlate=v.tracker_plate||v.raw_data?.tracker_plate||'';
+ const plateChanged=trackerPlate&&String(trackerPlate).replace(/[^A-Z0-9]/gi,'').toUpperCase()!==String(plate).replace(/[^A-Z0-9]/gi,'').toUpperCase();
+ const age=movitAge(v.recorded_at||v.gps_at||v.updated_at),km=v.odometer_km!=null?Number(v.odometer_km).toLocaleString('pt-BR')+' km':'—',address=v.address||v.raw_data?.address||'Endereço não informado';
+ const mapUrl=Number.isFinite(lat)&&Number.isFinite(lon)?'https://www.google.com/maps?q='+lat+','+lon:'https://www.google.com/maps';
+ ui.info.innerHTML='<strong>'+esc(name)+'</strong>'+(plate?'<span class="plate">'+esc(plate)+'</span>':'')+'<div class="meta"><b>'+esc(state.label)+'</b> • '+esc(age.text)+'<br>Velocidade: '+Number(v.speed_kmh||0).toFixed(0)+' km/h<br>Ignição: '+(v.ignition===true?'Ligada':v.ignition===false?'Desligada':'—')+'<br>Hodômetro: '+km+(plateChanged?'<br>Placa no MOVIT: '+esc(trackerPlate):'')+'<br>'+esc(address)+'</div><div class="toolbar"><button class="btn primary vehicle-route-button" type="button" data-route-lat="'+lat+'" data-route-lon="'+lon+'" data-route-name="'+esc(name)+'" data-route-plate="'+esc(plate)+'">🚗 IR ATÉ A CONDUÇÃO</button><a class="btn soft" target="_blank" rel="noopener" href="'+mapUrl+'">VER POSIÇÃO</a></div>';
+ ui.info.classList.remove('hidden');
+}
+function renderMovitMap(forceFit=false){
+ const ui=ensureMovitMap();if(!ui)return;
+ const points=(movitTrackingRows||[]).map(v=>({v,lat:Number(v.latitude),lon:Number(v.longitude)})).filter(p=>Number.isFinite(p.lat)&&Number.isFinite(p.lon));
+ if(!points.length){ui.overlay.innerHTML='';ui.info.classList.add('hidden');return}
+ const focusId=window.__movitFocusVehicleId||null;
+ const focus=focusId?points.find(p=>p.v.vehicle_id===focusId):null;
+ if(focus){
+  movitGoogleView={lat:focus.lat,lon:focus.lon,zoom:16};
+  movitGoogleSelectedId=focus.v.vehicle_id||focus.v.movit_vehicle_id||null;
+  window.__movitFocusVehicleId=null;
+  movitMapHasFit=true;
+ }else if(forceFit||!movitMapHasFit){
+  movitGoogleView=googleFleetFit(points,ui.el.clientWidth||900,ui.el.clientHeight||430);
+  movitMapHasFit=true;
+ }
+ const src=googleMapEmbedUrl(movitGoogleView);
+ if(ui.frame.dataset.src!==src){ui.frame.dataset.src=src;ui.frame.src=src}
+ const center=googleMercatorPoint(movitGoogleView.lat,movitGoogleView.lon,movitGoogleView.zoom);
+ const w=ui.el.clientWidth||900,h=ui.el.clientHeight||430;
+ ui.overlay.innerHTML=points.map(p=>{
+  const pt=googleMercatorPoint(p.lat,p.lon,movitGoogleView.zoom),x=w/2+(pt.x-center.x),y=h/2+(pt.y-center.y);
+  if(x<-80||x>w+80||y<-50||y>h+50)return'';
+  const v=p.v,state=movitMapState(v),name=v.vehicle_name||'Rastreador',plate=v.license_plate||v.raw_data?.license_plate||'',id=v.vehicle_id||v.movit_vehicle_id||'';
+  return '<button class="google-fleet-marker" type="button" style="left:'+x.toFixed(1)+'px;top:'+y.toFixed(1)+'px" data-google-vehicle="'+esc(id)+'" title="'+esc(name+(plate?' • '+plate:''))+'"><span class="pin '+state.cls+'"></span><span class="map-label">'+esc(name)+(plate?' • '+esc(plate):'')+'</span></button>';
+ }).join('');
+ if(movitGoogleSelectedId)selectMovitGoogleVehicle(movitGoogleSelectedId);
+}
+document.addEventListener('click',function(e){
+ const routeBtn=e.target.closest('.vehicle-route-button[data-route-lat][data-route-lon]');
+ if(routeBtn){e.preventDefault();e.stopPropagation();openVehicleRouteChooser(routeBtn.dataset.routeLat,routeBtn.dataset.routeLon,routeBtn.dataset.routeName||'Condução',routeBtn.dataset.routePlate||'');return}
+ if(e.target.closest('#routeChoiceClose')||e.target.closest('#routeChoiceBackdrop')){e.preventDefault();closeVehicleRouteChooser();return}
+ if(e.target.closest('#routeGoogleMaps')){e.preventDefault();openRouteApp('google');return}
+ if(e.target.closest('#routeWaze')){e.preventDefault();openRouteApp('waze');return}
+ const marker=e.target.closest('.google-fleet-marker[data-google-vehicle]');
+ if(marker){e.preventDefault();selectMovitGoogleVehicle(marker.dataset.googleVehicle);return}
+ if(e.target.closest('#movitMapZoomIn')){e.preventDefault();zoomMovitGoogleMap(1);return}
+ if(e.target.closest('#movitMapZoomOut')){e.preventDefault();zoomMovitGoogleMap(-1);return}
+});
+document.addEventListener('pointerdown',function(e){if(e.target.closest('#movitGoogleGesture'))beginMovitGoogleDrag(e)});
+document.addEventListener('pointermove',function(e){if(movitGoogleDrag)moveMovitGoogleDrag(e)});
+document.addEventListener('pointerup',function(e){if(movitGoogleDrag)endMovitGoogleDrag(e)});
+document.addEventListener('pointercancel',function(e){if(movitGoogleDrag)endMovitGoogleDrag(e)});
+document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!$('#routeChoiceSheet')?.classList.contains('hidden'))closeVehicleRouteChooser()});
+document.addEventListener('wheel',function(e){
+ if(!e.target.closest('#movitMap'))return;
+ e.preventDefault();
+ zoomMovitGoogleMap(e.deltaY<0?1:-1);
+},{passive:false});
+function renderMovitTracking(){
+ const rows=movitTrackingRows||[];
+ if($('#movitKpiTotal'))$('#movitKpiTotal').textContent=String(rows.length);
+ if($('#movitKpiMoving'))$('#movitKpiMoving').textContent=String(rows.filter(x=>Number(x.speed_kmh||0)>2).length);
+ if($('#movitKpiIgnition'))$('#movitKpiIgnition').textContent=String(rows.filter(x=>x.ignition===true).length);
+ const linked=rows.filter(x=>x.linked!==false&&x.vehicle_id).length;
+ if($('#movitKpiLinked'))$('#movitKpiLinked').textContent=String(linked);
+ if($('#movitKpiLinkedHint'))$('#movitKpiLinkedHint').textContent=(rows.length-linked)+' sem vínculo • placa atual/antiga';
+ const list=$('#movitTrackingList');if(!list)return;
+ if(!rows.length){list.innerHTML='<div class="item"><strong>Nenhuma posição recebida</strong><div class="muted">Se o MOVIT ainda não estiver conectado, abra Integrações e informe sua chave e conta.</div></div>';renderMovitMap(false);return}
+ list.innerHTML=rows.map(function(v){
+  const age=movitAge(v.recorded_at||v.gps_at||v.updated_at),lat=Number(v.latitude),lon=Number(v.longitude),hasPos=Number.isFinite(lat)&&Number.isFinite(lon),moving=Number(v.speed_kmh||0)>2;
+  const dot=age.stale?'stale':moving?'move':v.ignition===true?'on':'',status=age.stale?'GPS desatualizado':moving?'Em movimento':v.ignition===true?'Ligada':'Parada';
+  const name=v.vehicle_name||'Rastreador não vinculado',plate=v.license_plate||v.raw_data?.license_plate||'sem placa',trackerPlate=v.tracker_plate||v.raw_data?.tracker_plate||'',plateChanged=trackerPlate&&String(trackerPlate).replace(/[^A-Z0-9]/gi,'').toUpperCase()!==String(plate).replace(/[^A-Z0-9]/gi,'').toUpperCase(),km=v.odometer_km!=null?Number(v.odometer_km).toLocaleString('pt-BR')+' km':'—',address=v.address||v.raw_data?.address||'Endereço não informado';
+  const map=hasPos?'<button class="btn primary vehicle-route-button" type="button" data-route-lat="'+lat+'" data-route-lon="'+lon+'" data-route-name="'+esc(name)+'" data-route-plate="'+esc(plate)+'">🚗 IR ATÉ</button><a class="btn soft" target="_blank" rel="noopener" href="https://www.google.com/maps?q='+lat+','+lon+'">VER POSIÇÃO</a>':'';
+  return '<div class="tracking-card"><div class="tracking-card-main"><strong>'+esc(name)+'</strong><span class="plate">'+esc(plate)+'</span>'+(plateChanged?'<div class="muted" style="margin-top:5px">MOVIT ainda cadastrado como '+esc(trackerPlate)+'</div>':'')+'<div class="muted" style="margin-top:7px"><span class="tracking-dot '+dot+'"></span>'+esc(status)+' • '+esc(age.text)+'</div></div><div class="tracking-data"><b>Velocidade:</b> '+Number(v.speed_kmh||0).toFixed(0)+' km/h<br><b>Ignição:</b> '+(v.ignition===true?'Ligada':v.ignition===false?'Desligada':'—')+'<br><b>Hodômetro:</b> '+km+'</div><div class="tracking-data"><b>Local:</b> '+esc(address)+'<br>'+(hasPos?esc(lat.toFixed(5)+', '+lon.toFixed(5)):'Sem coordenadas')+'</div><div class="tracking-actions">'+map+(v.vehicle_id?'':'<button class="btn soft" type="button" data-jump="frota">VER FROTA</button>')+'</div></div>';
+ }).join('');
+ setTimeout(()=>renderMovitMap(false),0);
+}
+async function loadMovitTracking(forceSync=true){
+ const status=$('#movitTrackingStatus');
+ try{
+  if(status)status.textContent=forceSync?'Consultando posições no MOVIT...':'Carregando posições...';
+  const st=await movitInvoke('status');movitLastStatus=st;
+  if(!st.configured){movitTrackingRows=[];renderMovitTracking();if(status)status.innerHTML='<span class="pill warn">MOVIT não configurado</span> • abra Integrações para conectar.';stopMovitTrackingPolling();return}
+  const data=await movitInvoke(forceSync?'sync':'current');movitTrackingRows=Array.isArray(data.vehicles)?data.vehicles:[];renderMovitTracking();
+  if(status)status.innerHTML='<span class="pill ok">Online</span> • '+movitTrackingRows.length+' rastreador(es) • atualizado '+new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+  startMovitTrackingPolling();
+ }catch(e){if(status)status.innerHTML='<span class="pill danger">Falha no MOVIT</span> • '+esc(e.message||String(e));renderMovitTracking()}
+}
+function startMovitTrackingPolling(){if(movitTrackingTimer)return;movitTrackingTimer=setInterval(function(){if(document.querySelector('#screenHost [data-screen="rastreamento"]'))loadMovitTracking(true).catch(()=>{})},60000)}
+function stopMovitTrackingPolling(){if(movitTrackingTimer){clearInterval(movitTrackingTimer);movitTrackingTimer=null}}
+async function loadMovitIntegrationUi(){
+ const pill=$('#movitStatusPill'),msg=$('#movitConfigMsg');if(!pill)return;applyMovitCompanyPreset();
+ try{
+  pill.className='pill';pill.textContent='Verificando...';const st=await movitInvoke('status');movitLastStatus=st;
+  pill.className='pill '+(st.configured?'ok':'warn');pill.textContent=st.configured?'Conectado':'Não configurado';
+  if($('#movitBridgeVersion'))$('#movitBridgeVersion').textContent='v'+String(st.bridgeVersion||'—');
+  if(st.clientKey&&!$('#movitClientKey').value)$('#movitClientKey').value=st.clientKey;if(st.userId&&!$('#movitUserId').value)$('#movitUserId').value=st.userId;
+  $('#testMovitConfig').disabled=!st.configured;$('#disconnectMovit').disabled=!st.configured;
+  if(msg)msg.textContent=st.configured?'Integração salva com segurança. Use Testar / Sincronizar para conferir os rastreadores.':(MOVIT_COMPANY_PRESETS[companyId]?'Base STC e User ID identificados. Informe seu usuário e sua senha do MOVIT e clique em CONECTAR MOVIT.':'Informe a base/chave da sua integração STC e os dados da conta MOVIT.');
+ }catch(e){pill.className='pill danger';pill.textContent='Erro';if(msg)msg.textContent=e.message||String(e)}
+}
+async function saveMovitConfigurationUi(){
+ const btn=$('#saveMovitConfig'),msg=$('#movitConfigMsg');
+ try{
+  const clientKey=$('#movitClientKey').value.trim(),username=$('#movitUsername').value.trim(),password=$('#movitPassword').value;if(!clientKey||!username||!password)throw new Error('Informe a base/chave STC, o usuário e a senha do MOVIT.');
+  btn.disabled=true;if(msg)msg.textContent='Testando login e buscando rastreadores...';
+  const data=await movitInvoke('configure',{clientKey:clientKey,userId:Number($('#movitUserId').value||0),username:username,password:password,locale:'pt',loginUserField:$('#movitLoginUserField').value.trim()||'user',loginPasswordField:$('#movitLoginPasswordField').value.trim()||'pass',loginTemplate:movitJsonValue('#movitLoginTemplate','Payload de login'),gridTemplate:movitJsonValue('#movitGridTemplate','Payload da grade')});
+  $('#movitPassword').value='';$('#movitTrackerCount').textContent=String(data.trackerCount??'—');$('#movitLastSync').textContent=new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+  if(msg)msg.textContent=data.message||'MOVIT conectado com sucesso.';c360Toast('MOVIT conectado','Rastreamento da frota ativado.','success');await loadMovitIntegrationUi();
+ }catch(e){if(msg)msg.textContent=e.message||String(e);c360Toast('Falha ao conectar MOVIT',e.message||String(e),'error',5000)}finally{btn.disabled=false}
+}
+async function testMovitIntegrationUi(){
+ const msg=$('#movitConfigMsg');
+ try{
+  if(msg)msg.textContent='Sincronizando posições...';const data=await movitInvoke('sync');movitTrackingRows=Array.isArray(data.vehicles)?data.vehicles:[];
+  $('#movitTrackerCount').textContent=String(data.count??movitTrackingRows.length);$('#movitLinkedCount').textContent=String(data.linked??movitTrackingRows.filter(x=>x.vehicle_id).length);$('#movitLastSync').textContent=new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+  if(msg)msg.textContent='✓ Sincronização concluída. '+String(data.linked??0)+' condução(ões) vinculada(s) pela placa'+(data.unlinked?' • '+data.unlinked+' rastreador(es) sem vínculo.':'.');c360Toast('MOVIT sincronizado',String(data.count??0)+' rastreador(es) recebidos.','success');
+ }catch(e){if(msg)msg.textContent=e.message||String(e);c360Toast('Falha no MOVIT',e.message||String(e),'error',5000)}
+}
+async function disconnectMovitUi(){if(!confirm('Desconectar o MOVIT desta empresa? As conduções continuarão cadastradas, mas o rastreamento deixará de atualizar.'))return;await movitInvoke('clear_config');movitTrackingRows=[];stopMovitTrackingPolling();$('#movitUsername').value='';$('#movitPassword').value='';await loadMovitIntegrationUi();c360Toast('MOVIT desconectado','','success')}
+
+let onvioState=null,onvioFiles={};
+
+async function onvioInvoke(action,extra={}){
+ const r=await authFetch('/functions/v1/comando360-onvio',{
+  method:'POST',
+  headers:{'Content-Type':'application/json'},
+  body:JSON.stringify({action,company_id:companyId,...extra})
+ },true);
+ return parseResponse(r);
+}
+function onvioStatusLabel(s){
+ return ({not_configured:'Não configurado',credentials_ready:'Credenciais salvas',authorizing:'Aguardando autorização',connected:'Conectado',syncing:'Sincronizando',error:'Erro',disconnected:'Desconectado'})[s]||s||'Não configurado';
+}
+function onvioStatusClass(s){return s==='connected'?'ok':s==='error'?'danger':(s==='credentials_ready'||s==='authorizing')?'warn':''}
+function onvioRequestText(callbackUrl){
+ const company=cleanCompanyName(companyProfile?.legal_name||companyProfile?.trade_name||'Empresa cliente');
+ return 'Olá, equipe Onvio BR API.\n\n'+
+  'Solicito as credenciais OAuth (client_id e client_secret) para integração da aplicação Comando 360 com o Onvio, conforme a documentação oficial da Thomson Reuters.\n\n'+
+  'Também precisamos da habilitação/documentação dos endpoints que permitam LISTAR e BAIXAR os documentos disponibilizados ao cliente no Onvio Client Center, para sincronização automática e somente leitura.\n\n'+
+  'Aplicação: Comando 360\n'+
+  'Empresa no Comando 360: '+company+'\n'+
+  'Callback URL: '+callbackUrl+'\n'+
+  'Objetivo: copiar automaticamente para o Comando 360 os documentos que o escritório contábil disponibilizar no Portal do Cliente, preservando o Onvio como origem.\n\n'+
+  'Por favor, enviem o client_id, client_secret e as orientações/escopos necessários para leitura dos documentos do Client Center.\n\nObrigado.';
+}
+async function loadIntegrations(){
+ try{await loadMovitIntegrationUi()}catch(e){console.warn('movit integration',e)}
+ const pill=$('#onvioStatusPill'),msg=$('#onvioConnectionMsg'),docs=$('#onvioDocsList');
+ try{
+  if(pill){pill.className='pill';pill.textContent='Carregando...'}
+  const st=await onvioInvoke('status');
+  onvioState=st;
+  const integration=st.integration||{},cfg=integration.config||{},status=integration.status||'not_configured';
+  if(pill){pill.className='pill '+onvioStatusClass(status);pill.textContent=onvioStatusLabel(status)}
+  $('#onvioCallbackUrl').textContent=st.callback_url||'—';
+  $('#onvioOauthStatus').textContent=st.authorized?'Autorizado':st.credentials_configured?'Credenciais prontas':'Pendente';
+  $('#onvioSelectedClient').textContent=integration.external_account_name||'Não vinculado';
+  $('#onvioLastConnected').textContent=integration.last_connected_at?new Date(integration.last_connected_at).toLocaleString('pt-BR'):'—';
+  if(st.client_id&&!$('#onvioClientId').value)$('#onvioClientId').value=st.client_id;
+  $('#connectOnvioBtn').disabled=!st.credentials_configured;
+  $('#testOnvioBtn').disabled=!st.authorized;
+  $('#disconnectOnvioBtn').disabled=!st.authorized;
+
+  const clients=Array.isArray(cfg.accessible_clients)?cfg.accessible_clients:[];
+  const sel=$('#onvioClientSelect');
+  if(sel){
+   sel.innerHTML='<option value="">Selecione a empresa do Portal...</option>'+clients.map(x=>'<option value="'+esc(x.id||'')+'" data-name="'+esc(x.name||'')+'">'+esc(x.name||'Cliente Onvio')+(x.nationalIdentity?' • '+esc(x.nationalIdentity):'')+'</option>').join('');
+   sel.value=integration.external_account_id||'';
+  }
+
+  let imported=[];
+  try{
+   imported=await rest('v2_integration_documents','select=id,source_name,source_path,source_mime_type,source_size_bytes,status,file_id,employee_id,category,imported_at,created_at&company_id=eq.'+companyId+'&provider=eq.onvio&order=created_at.desc&limit=50');
+  }catch(e){console.warn('onvio docs',e)}
+  $('#onvioImportedCount').textContent=String(imported.filter(x=>x.status==='imported').length);
+  const docState=$('#onvioDocsState');
+  if(docState){
+    const docsReady=cfg.documents_api_enabled===true;
+    docState.className='pill '+(docsReady?'ok':'warn');
+    docState.textContent=docsReady?'Sincronização ativa':st.authorized?'OAuth OK • aguardando API de documentos':'Aguardando conexão';
+  }
+  if(docs){
+   docs.innerHTML=imported.length?imported.map(d=>'<div class="item"><div class="toolbar" style="justify-content:space-between"><div><strong>'+esc(d.source_name)+'</strong><div class="muted">'+esc(d.source_path||'Onvio')+(d.imported_at?' • importado '+new Date(d.imported_at).toLocaleString('pt-BR'):'')+'</div><span class="pill '+(d.status==='imported'?'ok':d.status==='error'?'danger':'warn')+'">'+esc(d.status.toUpperCase())+'</span></div></div></div>').join(''):'<div class="muted">Nenhum documento importado ainda.</div>';
+  }
+
+  const params=new URLSearchParams(location.search);
+  const ret=params.get('onvio');
+  if(ret){
+   const box=$('#onvioReturnMsg');if(box){box.classList.remove('hidden');box.innerHTML=ret==='connected'?'<strong>✓ Onvio autorizado com sucesso.</strong><div class="muted">Agora selecione a empresa do Portal e teste a conexão.</div>':'<strong>Não foi possível concluir a autorização.</strong><div class="muted">'+esc(params.get('onvio_msg')||'Tente novamente.')+'</div>'}
+   params.delete('onvio');params.delete('onvio_msg');history.replaceState({},'',location.pathname+(params.toString()?'?'+params.toString():'')+location.hash);
+  }
+  if(msg){
+   if(status==='connected')msg.textContent='OAuth conectado. Falta apenas a Thomson Reuters liberar/confirmar o acesso de leitura aos documentos do Client Center para ativarmos a cópia automática.';
+   else if(status==='error')msg.textContent=integration.last_error||'Falha na integração.';
+   else msg.textContent='';
+  }
+ }catch(e){
+  if(pill){pill.className='pill danger';pill.textContent='Erro'}
+  if(msg)msg.textContent=e.message||String(e);
+ }
+}
+async function saveOnvioCredentialsUi(){
+ const id=$('#onvioClientId').value.trim(),secret=$('#onvioClientSecret').value.trim(),m=$('#onvioCredentialsMsg'),b=$('#saveOnvioCredentials');
+ if(!id||!secret){m.textContent='Informe client_id e client_secret.';return}
+ try{b.disabled=true;m.textContent='Salvando com segurança...';await onvioInvoke('save_credentials',{client_id:id,client_secret:secret});$('#onvioClientSecret').value='';m.textContent='Credenciais salvas. Agora clique em CONECTAR ONVIO.';await loadIntegrations()}catch(e){m.textContent=e.message||String(e)}finally{b.disabled=false}
+}
+async function connectOnvioUi(){
+ const m=$('#onvioConnectionMsg'),b=$('#connectOnvioBtn');
+ try{b.disabled=true;m.textContent='Preparando autorização...';const r=await onvioInvoke('connect');if(!r.authorize_url)throw new Error('Link de autorização não recebido.');location.href=r.authorize_url}catch(e){m.textContent=e.message||String(e);b.disabled=false}
+}
+async function testOnvioUi(){
+ const m=$('#onvioConnectionMsg'),b=$('#testOnvioBtn');
+ try{b.disabled=true;m.textContent='Testando acesso oficial ao Onvio...';const r=await onvioInvoke('test');m.textContent='Conexão OAuth confirmada. '+(r.clients?.length||0)+' empresa(s) acessível(is) encontradas.';await loadIntegrations()}catch(e){m.textContent=e.message||String(e)}finally{b.disabled=false}
+}
+async function saveOnvioClientUi(){
+ const sel=$('#onvioClientSelect'),id=sel.value,opt=sel.options[sel.selectedIndex],name=opt?.dataset?.name||opt?.textContent||'',m=$('#onvioConnectionMsg');
+ if(!id){m.textContent='Selecione a empresa do Portal.';return}
+ try{await onvioInvoke('select_client',{external_account_id:id,external_account_name:name});m.textContent='Empresa do Onvio vinculada.';await loadIntegrations()}catch(e){m.textContent=e.message||String(e)}
+}
+let smartAlertsCache=[];
+function daysUntil(dateStr){if(!dateStr)return null;const a=new Date();a.setHours(0,0,0,0);const d=new Date(String(dateStr).slice(0,10)+'T00:00:00');return Math.ceil((d-a)/86400000)}
+function alertRank(a){return a.level==='danger'?0:a.level==='warn'?1:2}
+async function loadSmartAlerts(){
+ const alerts=[];
+ try{
+  const [docs,plans,vehicles,employees,employeeDocs,teams]=await Promise.all([
+   rest('v2_vehicle_documents','select=id,vehicle_id,document_type,expires_at,status&company_id=eq.'+companyId),
+   rest('v2_maintenance_plans','select=id,vehicle_id,name,next_due_at,next_due_odometer_km,active&company_id=eq.'+companyId+'&active=eq.true'),
+   rest('v2_vehicles','select=id,description,plate,model,current_odometer_km,status,renavam,metadata&company_id=eq.'+companyId),
+   rest('v2_employees','select=id,full_name,job_title,status,phone&company_id=eq.'+companyId+'&status=eq.active'),
+   rest('v2_employee_documents','select=id,employee_id,document_type,expires_at,status&company_id=eq.'+companyId),
+   rest('v2_teams','select=id,name,supervisor_employee_id,status,metadata&company_id=eq.'+companyId+'&status=eq.active')
+  ]);
+  const vm=Object.fromEntries((vehicles||[]).map(v=>[v.id,v]));
+  for(const d of docs||[]){const v=vm[d.vehicle_id];if(isVehicleCrlv(d.document_type)&&v){const s=licensingStatusForVehicle(v,d);if(s.cls==='danger')alerts.push({level:'danger',title:'Licenciamento atrasado / verificar',text:`${v.description||v.plate||'Veículo'} • ${s.detail}`,tab:'frota'});else if(s.cls==='warn')alerts.push({level:'warn',title:'Licenciamento pendente de confirmação',text:`${v.description||v.plate||'Veículo'} • ${s.detail}`,tab:'frota'});continue}const n=daysUntil(d.expires_at);if(n===null)continue;if(n<0)alerts.push({level:'danger',title:d.document_type+' vencido',text:`${v?.description||v?.plate||'Veículo'} • há ${Math.abs(n)} dia(s)`,tab:'frota'});else if(n<=30)alerts.push({level:'warn',title:d.document_type+' vence em breve',text:`${v?.description||v?.plate||'Veículo'} • ${n} dia(s)`,tab:'frota'})}
+  for(const p of plans||[]){const v=vm[p.vehicle_id],cur=Number(v?.current_odometer_km||0),due=Number(p.next_due_odometer_km||0),n=daysUntil(p.next_due_at);if(due&&cur>=due)alerts.push({level:'danger',title:'Manutenção vencida por KM',text:`${v?.description||v?.plate||'Veículo'} • ${p.name||'Plano'}`,tab:'manutencoes'});else if(due&&due-cur<=1000)alerts.push({level:'warn',title:'Manutenção próxima por KM',text:`${v?.description||v?.plate||'Veículo'} • faltam ${(due-cur).toLocaleString('pt-BR')} km`,tab:'manutencoes'});if(n!==null&&n<0)alerts.push({level:'danger',title:'Manutenção vencida por data',text:`${v?.description||v?.plate||'Veículo'} • ${Math.abs(n)} dia(s)`,tab:'manutencoes'});else if(n!==null&&n<=30)alerts.push({level:'warn',title:'Manutenção próxima por data',text:`${v?.description||v?.plate||'Veículo'} • ${n} dia(s)`,tab:'manutencoes'})}
+  for(const v of vehicles||[]){if(v.status==='maintenance')alerts.push({level:'warn',title:'Veículo em manutenção',text:`${v.description||v.model||v.plate}`,tab:'frota'});if(!v.renavam)alerts.push({level:'warn',title:'RENAVAM não informado',text:`${v.description||v.model||v.plate}`,tab:'frota'})}
+  for(const d of employeeDocs||[]){const n=daysUntil(d.expires_at),e=(employees||[]).find(x=>x.id===d.employee_id);if(n===null)continue;if(n<0)alerts.push({level:'danger',title:(d.document_type||'Documento')+' vencido',text:`${e?.full_name||'Funcionário'} • há ${Math.abs(n)} dia(s)`,tab:'documentosrh'});else if(n<=30)alerts.push({level:'warn',title:(d.document_type||'Documento')+' vence em breve',text:`${e?.full_name||'Funcionário'} • ${n} dia(s)`,tab:'documentosrh'})}
+
+  if(!companyProfile?.tax_id)alerts.push({level:'warn',title:'CNPJ / CPF do empregador não informado',text:'Complete os dados da empresa para relatórios, recibos e espelhos.',tab:'funcionarios'});
+  for(const t of teams||[]){
+   const sup=(employees||[]).find(e=>e.id===t.supervisor_employee_id);
+   if(!t.supervisor_employee_id)alerts.push({level:'warn',title:'Equipe sem encarregado',text:t.name||'Equipe',tab:'equipes'});
+   else if(!(t.metadata?.supervisor_phone||sup?.phone))alerts.push({level:'warn',title:'Telefone do encarregado não cadastrado',text:(t.name||'Equipe')+' • '+(sup?.full_name||'Encarregado'),tab:'equipes'});
+   if(!t.metadata?.primary_vehicle_id)alerts.push({level:'warn',title:'Equipe sem condução vinculada',text:t.name||'Equipe',tab:'equipes'});
+  }
+  for(const v of vehicles||[]){
+   const plate=String(v.plate||'').replace(/[^A-Z0-9]/gi,'').toUpperCase();
+   if(v.metadata?.beta===true)alerts.push({level:'warn',title:'Cadastro de veículo marcado como teste',text:(v.description||v.model||'Veículo')+(v.plate?' • '+v.plate:''),tab:'frota'});
+   if(plate&&plate.length!==7)alerts.push({level:'warn',title:'Placa de veículo parece incompleta',text:(v.description||v.model||'Veículo')+' • '+v.plate,tab:'frota'});
+  }
+ }catch(e){console.warn(e)}
+ smartAlertsCache=alerts.sort((a,b)=>alertRank(a)-alertRank(b));
+ renderSmartAlerts();
+}
+function renderSmartAlerts(){
+ const a=smartAlertsCache||[],d=a.filter(x=>x.level==='danger').length,w=a.filter(x=>x.level==='warn').length;
+ const hc=document.getElementById('headerAlertsCount');if(hc)hc.textContent=String(a.length);
+ const k=document.getElementById('alertsKpis');if(k)k.innerHTML=`<div class="v2kpi"><span>Total</span><strong>${a.length}</strong></div><div class="v2kpi"><span>Urgentes</span><strong>${d}</strong></div><div class="v2kpi"><span>Atenção</span><strong>${w}</strong></div><div class="v2kpi"><span>Situação</span><strong>${d?'Crítica':w?'Atenção':'OK'}</strong></div>`;
+ const render=x=>`<div class="item"><div class="toolbar" style="justify-content:space-between"><div><strong>${esc(x.title)}</strong><div class="muted">${esc(x.text)}</div><span class="pill ${x.level==='danger'?'danger':'warn'}">${x.level==='danger'?'URGENTE':'ATENÇÃO'}</span></div><button class="btn soft alertJump" data-tab="${x.tab}">Abrir</button></div></div>`;
+ const l=document.getElementById('alertsList');if(l)l.innerHTML=a.map(render).join('')||'<div class="muted">Nenhuma pendência importante encontrada.</div>';
+ const dash=document.getElementById('v2Alerts');if(dash)dash.innerHTML=a.slice(0,6).map(x=>`<button class="v2alert dash-alert ${x.level}" data-jump="${x.tab}" type="button"><span><strong>${esc(x.title)}</strong><span class="muted">${esc(x.text)}</span></span><b>›</b></button>`).join('')||'<div class="v2-empty dash-all-good"><strong>✓ Tudo certo</strong><span>Nenhum alerta importante agora.</span></div>';
+}
+
+
+let empDocsCache=[],empDocsEmployees=[],empDocFiles={},financeCache=[];
+const COMPANY_DOC_BUCKET='company-documents';
+
+async function uploadCompanyDocument(file,entityType,entityId){
+ if(!file)return null;
+ if(file.size>15*1024*1024)throw new Error('Arquivo maior que 15 MB.');
+ const s=session(),u=await getUser();const path=`${companyId}/${entityType}/${entityId}/${Date.now()}-${safeFileName(file.name)}`;
+ const r=await fetch(`${API_URL}/storage/v1/object/${COMPANY_DOC_BUCKET}/${path}`,{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+s.access_token,'Content-Type':file.type||'application/octet-stream'},body:file});
+ await parseResponse(r);
+ const rows=await rest('v2_files','','POST',{company_id:companyId,storage_bucket:COMPANY_DOC_BUCKET,storage_path:path,original_name:file.name,mime_type:file.type||null,size_bytes:file.size,category:entityType+'_document',entity_type:entityType,entity_id:entityId,metadata:{source:'controla_beta_600'},uploaded_by:u?.id||null});
+ return rows?.[0]||null;
+}
+async function openStoredFile(fileId,download=false){
+ const f=empDocFiles[fileId]||vehicleDocFiles[fileId];if(!f)return alert('Arquivo não encontrado.');
+ const s=session(),r=await fetch(`${API_URL}/storage/v1/object/authenticated/${encodeURIComponent(f.storage_bucket)}/${f.storage_path.split('/').map(encodeURIComponent).join('/')}`,{headers:{apikey:KEY,Authorization:'Bearer '+s.access_token}});
+ if(!r.ok)return alert('Não foi possível abrir o arquivo.');
+ const blob=await r.blob(),url=URL.createObjectURL(blob);
+ if(download){const a=document.createElement('a');a.href=url;a.download=f.original_name||'documento';document.body.appendChild(a);a.click();a.remove()}else window.open(url,'_blank');
+ setTimeout(()=>URL.revokeObjectURL(url),60000);
+}
+async function loadEmpDocs(){
+ const [docs,emps,files]=await Promise.all([
+  rest('v2_employee_documents','select=*&company_id=eq.'+companyId+'&order=expires_at.asc.nullslast,created_at.desc'),
+  rest('v2_employees','select=id,full_name,employee_number,job_title,status&company_id=eq.'+companyId+'&status=eq.active&order=full_name.asc'),
+  rest('v2_files','select=id,storage_bucket,storage_path,original_name,mime_type,size_bytes&company_id=eq.'+companyId+'&category=eq.employee_document&archived_at=is.null&order=created_at.desc')
+ ]);
+ empDocsCache=docs||[];empDocsEmployees=emps||[];empDocFiles=Object.fromEntries((files||[]).map(f=>[f.id,f]));
+ const s=document.getElementById('empDocEmployee');if(s)s.innerHTML='<option value="">Selecione...</option>'+emps.map(e=>`<option value="${e.id}">${esc(e.full_name)} • ${esc(e.employee_number||'')}</option>`).join('');
+ let expired=0,soon=0;docs.forEach(d=>{const n=daysUntil(d.expires_at);if(n!==null&&n<0)expired++;else if(n!==null&&n<=30)soon++});
+ const k=document.getElementById('empDocKpis');if(k)k.innerHTML=`<div class="v2kpi"><span>Documentos</span><strong>${docs.length}</strong></div><div class="v2kpi"><span>Vencidos</span><strong>${expired}</strong></div><div class="v2kpi"><span>Próximos</span><strong>${soon}</strong></div><div class="v2kpi"><span>Funcionários</span><strong>${emps.length}</strong></div>`;
+ const l=document.getElementById('empDocsList');if(l)l.innerHTML=docs.map(d=>{const e=emps.find(x=>x.id===d.employee_id),n=daysUntil(d.expires_at),f=empDocFiles[d.file_id],cls=n!==null&&n<0?'danger':n!==null&&n<=30?'warn':'ok';return `<div class="item"><div class="toolbar" style="justify-content:space-between"><div><strong>${esc(d.document_type)} • ${esc(e?.full_name||'Funcionário')}</strong><div class="muted">${d.expires_at?'Vence '+new Date(d.expires_at+'T00:00:00').toLocaleDateString('pt-BR'):'Sem vencimento'}</div><span class="pill ${cls}">${n===null?'SEM DATA':n<0?'VENCIDO':n<=30?'PRÓXIMO':'EM DIA'}</span>${f?' <span class="pill ok">📎 Arquivo</span>':''}</div><div class="toolbar">${f?`<button class="btn soft empDocOpen" data-file="${f.id}">Abrir</button><button class="btn soft empDocDown" data-file="${f.id}">Baixar</button>`:''}<button class="btn soft empDocEdit" data-id="${d.id}">Editar</button></div></div></div>`}).join('')||'<div class="muted">Nenhum documento cadastrado.</div>';
+}
+function openEmpDoc(id=''){const d=empDocsCache.find(x=>x.id===id);document.getElementById('empDocId').value=d?.id||'';document.getElementById('empDocTitle').textContent=d?'Editar documento':'Novo documento';document.getElementById('empDocEmployee').value=d?.employee_id||'';document.getElementById('empDocType').value=d?.document_type||'CNH';document.getElementById('empDocExpires').value=d?.expires_at||'';document.getElementById('empDocFile').value='';document.getElementById('deleteEmpDoc').style.display=d?'inline-flex':'none';document.getElementById('empDocEditCard').style.display='block';document.getElementById('empDocMsg').textContent=''}
+async function saveEmpDoc(){const m=document.getElementById('empDocMsg'),id=document.getElementById('empDocId').value,employee_id=document.getElementById('empDocEmployee').value,file=document.getElementById('empDocFile').files?.[0];if(!employee_id){m.textContent='Selecione o funcionário.';return}try{const old=empDocsCache.find(x=>x.id===id);let file_id=old?.file_id||null;if(file){m.textContent='Enviando arquivo...';const f=await uploadCompanyDocument(file,'employee',employee_id);file_id=f?.id||file_id}const body={company_id:companyId,employee_id,file_id,document_type:document.getElementById('empDocType').value,expires_at:document.getElementById('empDocExpires').value||null,status:'active',metadata:{}};if(id)await rest('v2_employee_documents','id=eq.'+id,'PATCH',body);else await rest('v2_employee_documents','','POST',body);document.getElementById('empDocEditCard').style.display='none';await loadEmpDocs();await loadSmartAlerts()}catch(e){m.textContent=e.message}}
+async function deleteEmpDoc(){const id=document.getElementById('empDocId').value;if(!id||!confirm('Excluir este documento?'))return;try{const d=empDocsCache.find(x=>x.id===id);await rest('v2_employee_documents','id=eq.'+id,'DELETE');if(d?.file_id)try{await rest('v2_files','id=eq.'+d.file_id,'PATCH',{archived_at:new Date().toISOString()})}catch{}document.getElementById('empDocEditCard').style.display='none';await loadEmpDocs()}catch(e){alert(e.message)}}
+
+let financeValuesHidden=localStorage.getItem('c360_finance_values_hidden')==='1';
+let financeViewState={income:0,expense:0};
+
+function financeDisplayMoney(value){
+ return financeValuesHidden?'R$ ••••••':money(value);
+}
+function financeDisplayDescription(value){
+ const safe=esc(value||'Sem descrição');
+ return financeValuesHidden?safe.replace(/R\$\s*[0-9][0-9.,]*/gi,'R$ ••••'):safe;
+}
+function updateFinancePrivacyButton(){
+ const b=document.getElementById('toggleFinancePrivacy');if(!b)return;
+ b.textContent=financeValuesHidden?'👁 Mostrar valores':'👁 Ocultar valores';
+ b.setAttribute('aria-pressed',financeValuesHidden?'true':'false');
+ b.setAttribute('aria-label',financeValuesHidden?'Mostrar valores financeiros':'Ocultar valores financeiros');
+}
+function renderFinanceView(){
+ const income=Number(financeViewState.income||0),expense=Number(financeViewState.expense||0);
+ const k=document.getElementById('financeKpis');
+ if(k)k.innerHTML=
+  '<div class="finance-kpi"><span class="finance-kpi-label">ENTRADAS DO MÊS</span><strong class="finance-kpi-value">'+financeDisplayMoney(income)+'</strong></div>'+
+  '<div class="finance-kpi"><span class="finance-kpi-label">SAÍDAS DO MÊS</span><strong class="finance-kpi-value">'+financeDisplayMoney(expense)+'</strong></div>'+
+  '<div class="finance-kpi"><span class="finance-kpi-label">RESULTADO</span><strong class="finance-kpi-value">'+financeDisplayMoney(income-expense)+'</strong></div>'+
+  '<div class="finance-kpi"><span class="finance-kpi-label">LANÇAMENTOS</span><strong class="finance-kpi-value count">'+financeCache.length+'</strong></div>';
+
+ const l=document.getElementById('financeList');
+ if(l)l.innerHTML=financeCache.map(x=>{
+  const cancelled=x.status==='cancelled';
+  return '<div class="item finance-entry-card"><div class="finance-entry-layout">'+
+   '<div class="finance-entry-main">'+
+    '<div class="finance-entry-title">'+(x.entry_type==='income'?'⬆ Entrada':'⬇ Saída')+' • '+financeDisplayDescription(x.description||'Sem descrição')+'</div>'+
+    '<div class="muted finance-entry-meta">'+(x.issue_date?new Date(x.issue_date+'T00:00:00').toLocaleDateString('pt-BR'):'')+(x.counterparty_name?' • '+esc(x.counterparty_name):'')+'</div>'+
+    '<span class="pill '+(x.entry_type==='income'?'ok':'warn')+' finance-entry-amount">'+financeDisplayMoney(x.amount)+'</span>'+
+    (cancelled?' <span class="pill danger">CANCELADO</span>':'')+
+   '</div>'+
+   (!cancelled?'<div class="finance-entry-actions"><button class="btn danger finCancel" data-id="'+esc(x.id)+'">Cancelar</button></div>':'')+
+  '</div></div>';
+ }).join('')||'<div class="muted">Nenhum lançamento.</div>';
+ updateFinancePrivacyButton();
+}
+
+async function loadFinance(){
+ const [entries,rep]=await Promise.all([
+  rest('v2_financial_entries','select=*&company_id=eq.'+companyId+'&order=issue_date.desc,created_at.desc&limit=200'),
+  rest('v2_report_monthly_financial','select=*&company_id=eq.'+companyId+'&order=reference_month.desc&limit=12')
+ ]);
+ financeCache=entries||[];
+ const month=new Date().toISOString().slice(0,7),r=(rep||[]).find(x=>String(x.reference_month||'').slice(0,7)===month);
+ const income=Number(r?.income||financeCache.filter(x=>String(x.issue_date||'').slice(0,7)===month&&x.entry_type==='income'&&x.status!=='cancelled').reduce((a,x)=>a+Number(x.amount||0),0));
+ const expense=Number(r?.expense||financeCache.filter(x=>String(x.issue_date||'').slice(0,7)===month&&x.entry_type==='expense'&&x.status!=='cancelled').reduce((a,x)=>a+Number(x.amount||0),0));
+ financeViewState={income,expense};
+ renderFinanceView();
+}
+
+async function saveFinEntry(){const m=document.getElementById('finMsg'),amount=Number(document.getElementById('finAmount').value||0),desc=document.getElementById('finDescription').value.trim();if(!desc||amount<=0){m.textContent='Informe descrição e valor.';return}try{const u=await getUser(),d=document.getElementById('finIssueDate').value||new Date().toISOString().slice(0,10);await rest('v2_financial_entries','','POST',{company_id:companyId,entry_type:document.getElementById('finType').value,description:desc,amount,issue_date:d,due_date:document.getElementById('finDueDate').value||null,competence_date:d,status:'open',counterparty_name:document.getElementById('finCounterparty').value.trim()||null,source_type:'manual',metadata:{},created_by:u?.id||null});document.getElementById('finEditCard').style.display='none';await loadFinance()}catch(e){m.textContent=e.message}}
+async function cancelFinEntry(id){if(!id||!confirm('Cancelar este lançamento financeiro?'))return;try{await rest('v2_financial_entries','id=eq.'+id,'PATCH',{status:'cancelled'});await loadFinance()}catch(e){alert(e.message)}}
+
+let adminReportCache=null;
+function biRows(entries,valueFn,labelFn){
+ const arr=[...(entries||[])],max=Math.max(1,...arr.map(valueFn));
+ return arr.length?arr.map(x=>{
+  const v=valueFn(x),pct=Math.max(2,Math.round(v/max*100));
+  return '<div class="bi-row"><div class="bi-line"><span>'+esc(labelFn(x))+'</span><span class="bi-value">'+esc(v.toLocaleString('pt-BR'))+' aves</span></div><div class="bi-bar"><div class="bi-fill" style="width:'+pct+'%"></div></div></div>';
+ }).join(''):'<div class="v2-empty">Sem dados no período.</div>';
+}
+function reportMonthLabel(m){
+ const [y,mo]=String(m).split('-').map(Number);
+ return new Date(y,mo-1,1).toLocaleDateString('pt-BR',{month:'long',year:'numeric'});
+}
+function renderFuelReportByVehicle(fuels=[],filter='all'){
+ const host=$('#reportsFuel');if(!host)return;
+ const rows=filter==='all'?fuels:fuels.filter(x=>String(x.vehicle_id||'sem-veiculo')===String(filter));
+ if(!rows.length){host.innerHTML='<div class="v2-empty">Nenhum abastecimento registrado para esta condução no período.</div>';return}
+ host.innerHTML=rows.map(g=>{
+  const avg=g.liters?g.cost/g.liters:0;
+  const kms=g.entries.map(e=>Number(e.odometer_km||0)).filter(x=>x>0);
+  const minKm=kms.length?Math.min(...kms):0,maxKm=kms.length?Math.max(...kms):0,kmRange=(minKm&&maxKm&&maxKm>=minKm)?maxKm-minKm:0;
+  const details=g.entries.map(e=>{
+   const date=e.fueled_at?new Date(e.fueled_at).toLocaleString('pt-BR',{timeZone:(companyProfile?.timezone||'America/Sao_Paulo'),day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'}):'—';
+   const liters=poN(e.liters),cost=poN(e.total_amount),price=liters?cost/liters:0,driver=e.metadata?.driver_name||e.metadata?.driver||'';
+   return '<tr><td>'+esc(date)+'</td><td>'+esc(e.station_name||'—')+(driver?'<div class="muted">'+esc(driver)+'</div>':'')+'</td><td class="num">'+(e.odometer_km?Number(e.odometer_km).toLocaleString('pt-BR'):'—')+'</td><td class="num">'+liters.toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:2})+' L</td><td class="num">'+money(price)+'</td><td class="num"><b>'+money(cost)+'</b></td></tr>';
+  }).join('');
+  return '<div class="fuel-report-vehicle"><div class="fuel-report-head"><div><strong>'+esc(g.name)+'</strong>'+(g.plate?'<span class="plate">'+esc(g.plate)+'</span>':'')+'<div class="muted">'+g.logs+' abastecimento(s) no período</div></div><div><b>'+g.liters.toLocaleString('pt-BR',{maximumFractionDigits:2})+' L</b><div class="muted">'+money(g.cost)+'</div></div></div>'+
+   '<div class="fuel-report-totals"><div class="fuel-report-total"><span>TOTAL LITROS</span><b>'+g.liters.toLocaleString('pt-BR',{maximumFractionDigits:2})+' L</b></div><div class="fuel-report-total"><span>CUSTO TOTAL</span><b>'+money(g.cost)+'</b></div><div class="fuel-report-total"><span>MÉDIA R$/L</span><b>'+money(avg)+'</b></div><div class="fuel-report-total"><span>KM ENTRE REGISTROS</span><b>'+(kmRange?kmRange.toLocaleString('pt-BR')+' km':'—')+'</b></div></div>'+
+   '<div style="overflow:auto"><table class="fuel-report-table"><thead><tr><th>Data</th><th>Posto / motorista</th><th style="text-align:right">KM</th><th style="text-align:right">Litros</th><th style="text-align:right">R$/L</th><th style="text-align:right">Total</th></tr></thead><tbody>'+details+'</tbody></table></div></div>';
+ }).join('');
+}
+async function loadReports(){
+ const month=$('#reportsMonth')?.value||new Date().toISOString().slice(0,7);
+ if($('#reportsMonth')&&!$('#reportsMonth').value)$('#reportsMonth').value=month;
+ const bounds=monthBoundsBR(month),start=month+'-01';
+ const [finView,opsView,poultryView,attView,ops,teams,vehicles,fuel,trucks]=await Promise.all([
+  dashSafe('v2_report_monthly_financial','select=*&company_id=eq.'+companyId+'&reference_month=eq.'+start),
+  dashSafe('v2_report_operations_monthly','select=*&company_id=eq.'+companyId+'&reference_month=eq.'+start),
+  dashSafe('v2_report_poultry_monthly','select=*&company_id=eq.'+companyId+'&reference_month=eq.'+start),
+  dashSafe('v2_report_attendance_monthly','select=*&company_id=eq.'+companyId+'&reference_month=eq.'+start),
+  dashSafe('v2_operations','select=id,team_id,customer_name,title,status,scheduled_start,actual_birds,planned_birds,actual_revenue,actual_cost&company_id=eq.'+companyId+'&operation_type=eq.poultry_catching&scheduled_start=gte.'+encodeURIComponent(bounds.start)+'&scheduled_start=lt.'+encodeURIComponent(bounds.end)),
+  dashSafe('v2_teams','select=id,name,status&company_id=eq.'+companyId),
+  dashSafe('v2_vehicles','select=id,description,plate,model&company_id=eq.'+companyId),
+  dashSafe('v2_fuel_logs','select=id,vehicle_id,fueled_at,odometer_km,liters,total_amount,station_name,metadata&company_id=eq.'+companyId+'&fueled_at=gte.'+encodeURIComponent(bounds.start)+'&fueled_at=lt.'+encodeURIComponent(bounds.end)+'&order=fueled_at.asc'),
+  dashSafe('v2_poultry_truck_loads','select=id,birds,is_cata,created_at&company_id=eq.'+companyId+'&created_at=gte.'+encodeURIComponent(bounds.start)+'&created_at=lt.'+encodeURIComponent(bounds.end))
+ ]);
+ const f=finView?.[0]||{},o=opsView?.[0]||{},p=poultryView?.[0]||{},a=attView?.[0]||{};
+ const birds=ops.reduce((s,x)=>s+poN(x.actual_birds||x.planned_birds),0)||poN(p.birds);
+ const revenue=poN(o.revenue||f.income),cost=poN(o.cost||f.expense),result=poN(o.result||(revenue-cost));
+ const truckCount=poN(p.trucks)||trucks.length;
+ const loadings=poN(p.loadings)||ops.length;
+ const avgTruck=truckCount?Math.round(birds/truckCount):0;
+
+ $('#reportsKpis').innerHTML=[
+  ['FATURAMENTO',money(revenue),'💰'],['CUSTOS',money(cost),'↘'],['RESULTADO',money(result),'▣'],
+  ['AVES',birds.toLocaleString('pt-BR'),'🐔'],['APANHAS',loadings.toLocaleString('pt-BR'),'📋'],['CAMINHÕES',truckCount.toLocaleString('pt-BR'),'🚚'],
+  ['MÉDIA / CAMINHÃO',avgTruck.toLocaleString('pt-BR'),'📦'],['HORAS DE PONTO',fmtMinutes(a.worked_minutes||0),'⏱']
+ ].map(x=>'<div class="v2kpi"><div class="t">'+esc(x[0])+'</div><div class="v">'+esc(x[1])+'</div><div class="v2ico">'+x[2]+'</div></div>').join('');
+
+ const teamMap={};
+ ops.forEach(x=>{const n=teams.find(t=>t.id===x.team_id)?.name||'Sem equipe';if(!teamMap[n])teamMap[n]={name:n,birds:0,ops:0};teamMap[n].birds+=poN(x.actual_birds||x.planned_birds);teamMap[n].ops++});
+ const byTeam=Object.values(teamMap).sort((x,y)=>y.birds-x.birds);
+ $('#reportsByTeam').innerHTML=biRows(byTeam,x=>x.birds,x=>x.name+' • '+x.ops+' apanha(s)');
+
+ const custMap={};
+ ops.forEach(x=>{const n=x.customer_name||'Não informado';if(!custMap[n])custMap[n]={name:n,birds:0,ops:0};custMap[n].birds+=poN(x.actual_birds||x.planned_birds);custMap[n].ops++});
+ const byCustomer=Object.values(custMap).sort((x,y)=>y.birds-x.birds);
+ $('#reportsByCustomer').innerHTML=biRows(byCustomer,x=>x.birds,x=>x.name+' • '+x.ops+' apanha(s)');
+
+ const fuelMap={};
+ fuel.forEach(x=>{
+  const v=vehicles.find(v=>v.id===x.vehicle_id)||{};
+  const key=x.vehicle_id||'sem-veiculo';
+  if(!fuelMap[key])fuelMap[key]={vehicle_id:x.vehicle_id||null,name:v.description||v.model||'Condução',plate:v.plate||'',liters:0,cost:0,logs:0,entries:[]};
+  const g=fuelMap[key];g.liters+=poN(x.liters);g.cost+=poN(x.total_amount);g.logs++;g.entries.push(x);
+ });
+ const fuels=Object.values(fuelMap).sort((x,y)=>String(x.name).localeCompare(String(y.name),'pt-BR'));
+ const fuelSel=$('#reportsFuelVehicle');
+ if(fuelSel){
+  const prev=fuelSel.value||'all';
+  fuelSel.innerHTML='<option value="all">Todas as conduções</option>'+fuels.map(x=>'<option value="'+esc(x.vehicle_id||'sem-veiculo')+'">'+esc(x.name+(x.plate?' • '+x.plate:''))+'</option>').join('');
+  fuelSel.value=[...fuelSel.options].some(o=>o.value===prev)?prev:'all';
+ }
+ renderFuelReportByVehicle(fuels,fuelSel?.value||'all');
+
+ $('#reportsFinance').innerHTML=[
+  ['Entradas',money(f.income||revenue)],['Saídas',money(f.expense||cost)],['Saldo',money(f.balance||result)],['Lançamentos',Number(f.entries||0).toLocaleString('pt-BR')]
+ ].map(x=>'<div class="v2mini"><span class="muted">'+esc(x[0])+'</span><b>'+esc(x[1])+'</b></div>').join('');
+
+ $('#reportsAttendance').innerHTML=[
+  ['Funcionários',Number(a.employees||0).toLocaleString('pt-BR')],['Horas trabalhadas',fmtMinutes(a.worked_minutes||0)],['Atrasos',fmtMinutes(a.late_minutes||0)],['Ausências',fmtMinutes(a.absence_minutes||0)]
+ ].map(x=>'<div class="v2mini"><span class="muted">'+esc(x[0])+'</span><b>'+esc(x[1])+'</b></div>').join('');
+
+ $('#reportsSummary').innerHTML=[
+  '<div class="item"><strong>Volume operacional</strong><div class="muted">'+loadings.toLocaleString('pt-BR')+' apanha(s) • '+truckCount.toLocaleString('pt-BR')+' caminhão(ões) • '+birds.toLocaleString('pt-BR')+' aves • média '+avgTruck.toLocaleString('pt-BR')+' aves/caminhão</div></div>',
+  '<div class="item"><strong>Status das apanhas</strong><div class="muted">'+ops.filter(x=>x.status==='completed').length+' concluída(s) • '+ops.filter(x=>x.status==='in_progress').length+' em andamento • '+ops.filter(x=>['planned','scheduled'].includes(x.status)).length+' programada(s)</div></div>',
+  '<div class="item"><strong>Pontualidade operacional</strong><div class="muted">Variação média de início: '+(o.avg_start_variance_minutes==null?'sem dados':Math.round(poN(o.avg_start_variance_minutes))+' min')+'</div></div>'
+ ].join('');
+
+ adminReportCache={month,label:reportMonthLabel(month),company:cleanCompanyName(companyProfile.trade_name||companyProfile.legal_name),birds,revenue,cost,result,loadings,trucks:truckCount,avgTruck,byTeam,byCustomer,fuels,attendance:a,financial:f,generatedAt:new Date().toISOString()};
+ if($('#reportsGeneratedAt'))$('#reportsGeneratedAt').textContent='Gerado em '+new Date().toLocaleString('pt-BR')+' • '+adminReportCache.company;
+}
+function exportAdminReportsCsv(){
+ const r=adminReportCache;if(!r)return alert('Gere o relatório primeiro.');
+ const lines=[['Relatório Comando 360',r.label],['Empresa',r.company],[],['Indicador','Valor'],['Aves',r.birds],['Apanhas',r.loadings],['Caminhões',r.trucks],['Faturamento',r.revenue],['Custos',r.cost],['Resultado',r.result],[],['Produção por equipe','Aves']];
+ r.byTeam.forEach(x=>lines.push([x.name,x.birds]));
+ lines.push([],['Produção por integrado','Aves']);r.byCustomer.forEach(x=>lines.push([x.name,x.birds]));
+ lines.push([],['ABASTECIMENTOS POR CONDUÇÃO']);r.fuels.forEach(g=>{lines.push([],['Condução',g.name],['Placa',g.plate||''],['Abastecimentos',g.logs],['Litros',g.liters],['Custo total',g.cost],['Média R$/L',g.liters?g.cost/g.liters:0],['Data','Posto','KM','Litros','R$/L','Total']);g.entries.forEach(e=>{const l=poN(e.liters),c=poN(e.total_amount);lines.push([e.fueled_at?new Date(e.fueled_at).toLocaleString('pt-BR',{timeZone:(companyProfile?.timezone||'America/Sao_Paulo')}):'',e.station_name||'',e.odometer_km||'',l,l?c/l:0,c])})});
+ const csv='\ufeff'+lines.map(row=>row.map(v=>'"'+String(v??'').replaceAll('"','""')+'"').join(';')).join('\n');
+ downloadText('Comando_360_Relatorio_'+r.month+'.csv',csv,'text/csv;charset=utf-8');
+}
+function printAdminReports(){
+ const r=adminReportCache;if(!r)return alert('Gere o relatório primeiro.');
+ const team=r.byTeam.map(x=>'<tr><td>'+esc(x.name)+'</td><td>'+x.ops+'</td><td>'+x.birds.toLocaleString('pt-BR')+'</td></tr>').join('');
+ const cust=r.byCustomer.map(x=>'<tr><td>'+esc(x.name)+'</td><td>'+x.ops+'</td><td>'+x.birds.toLocaleString('pt-BR')+'</td></tr>').join('');
+ const fuel=r.fuels.map(g=>{const rows=g.entries.map(e=>{const l=poN(e.liters),c=poN(e.total_amount);return '<tr><td>'+(e.fueled_at?new Date(e.fueled_at).toLocaleString('pt-BR',{timeZone:(companyProfile?.timezone||'America/Sao_Paulo')}):'—')+'</td><td>'+esc(e.station_name||'—')+'</td><td>'+(e.odometer_km?Number(e.odometer_km).toLocaleString('pt-BR'):'—')+'</td><td>'+l.toLocaleString('pt-BR',{maximumFractionDigits:2})+'</td><td>'+money(l?c/l:0)+'</td><td>'+money(c)+'</td></tr>'}).join('');return '<div class="fuel-section"><h3>'+esc(g.name)+(g.plate?' • '+esc(g.plate):'')+'</h3><div class="fuel-summary">Abastecimentos: <b>'+g.logs+'</b> • Litros: <b>'+g.liters.toLocaleString('pt-BR',{maximumFractionDigits:2})+' L</b> • Total: <b>'+money(g.cost)+'</b> • Média: <b>'+money(g.liters?g.cost/g.liters:0)+'/L</b></div><table><tr><th>Data</th><th>Posto</th><th>KM</th><th>Litros</th><th>R$/L</th><th>Total</th></tr>'+rows+'</table></div>'}).join('');
+ const w=window.open('','_blank');if(!w)return alert('Permita pop-ups para gerar o PDF.');
+ w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>Relatório '+esc(r.label)+'</title><style>@page{size:A4;margin:12mm}body{font-family:Arial,sans-serif;color:#111;font-size:11px}h1{margin:0;font-size:22px}h2{font-size:14px;margin:18px 0 6px;border-bottom:1px solid #222;padding-bottom:4px}.fuel-section{break-inside:avoid;margin:10px 0 18px}.fuel-section h3{margin:8px 0 4px;font-size:13px}.fuel-summary{font-size:10px;margin-bottom:5px}.head{border-bottom:2px solid #111;padding-bottom:10px}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin:12px 0}.k{border:1px solid #bbb;padding:8px}.k span{display:block;font-size:9px;color:#555}.k b{font-size:15px}table{width:100%;border-collapse:collapse;margin-top:5px}th,td{border-bottom:1px solid #ddd;padding:6px;text-align:left}th{background:#f4f4f4}.footer{margin-top:18px;border-top:1px solid #aaa;padding-top:6px;color:#555;font-size:9px}</style></head><body>'+
+ '<div class="head"><h1>'+esc(r.company)+' — RELATÓRIO GERENCIAL</h1><div>'+esc(r.label)+' • Emitido '+new Date().toLocaleString('pt-BR')+'</div></div>'+
+ '<div class="grid"><div class="k"><span>AVES</span><b>'+r.birds.toLocaleString('pt-BR')+'</b></div><div class="k"><span>APANHAS</span><b>'+r.loadings+'</b></div><div class="k"><span>CAMINHÕES</span><b>'+r.trucks+'</b></div><div class="k"><span>MÉDIA/CAMINHÃO</span><b>'+r.avgTruck.toLocaleString('pt-BR')+'</b></div><div class="k"><span>FATURAMENTO</span><b>'+money(r.revenue)+'</b></div><div class="k"><span>CUSTOS</span><b>'+money(r.cost)+'</b></div><div class="k"><span>RESULTADO</span><b>'+money(r.result)+'</b></div><div class="k"><span>HORAS PONTO</span><b>'+fmtMinutes(r.attendance.worked_minutes||0)+'</b></div></div>'+
+ '<h2>Produção por equipe</h2><table><tr><th>Equipe</th><th>Apanhas</th><th>Aves</th></tr>'+team+'</table>'+
+ '<h2>Produção por integrado</h2><table><tr><th>Integrado</th><th>Apanhas</th><th>Aves</th></tr>'+cust+'</table>'+
+ '<h2>Abastecimentos por condução</h2>'+fuel+
+ '<h2>Ponto</h2><p>Funcionários com movimento: <b>'+Number(r.attendance.employees||0)+'</b> • Horas trabalhadas: <b>'+fmtMinutes(r.attendance.worked_minutes||0)+'</b> • Atrasos: <b>'+fmtMinutes(r.attendance.late_minutes||0)+'</b> • Ausências: <b>'+fmtMinutes(r.attendance.absence_minutes||0)+'</b></p>'+
+ '<div class="footer">Comando 360 • relatório gerencial baseado nos registros existentes no sistema.</div><script>window.onload=()=>window.print();<\/script></body></html>');
+ w.document.close();
+}
+
+const C360_MODULES={
+ inicio:['Painel Geral','Central de gestão'],
+ operacoes:['Apanhas','Operação de campo'],
+ equipes:['Equipes','Pessoas, conduções e aparelhos'],
+ funcionarios:['RH & Pessoas','Gestão dos colaboradores'],
+ documentosrh:['Documentos RH','Validades e arquivos'],
+ ponto:['RH & Ponto','Presença e jornada'],
+ frota:['Frota','Conduções e CRLV'],
+ rastreamento:['Rastreamento','MOVIT e localização da frota'],
+ manutencoes:['Manutenções','Preventiva e corretiva'],
+ insumos:['Insumos','Consumo de óleo, sabão e materiais'],
+ combustivel:['Combustível & KM','Abastecimentos e hodômetro'],
+ financeiro:['Financeiro','Entradas, saídas e resultado'],
+ relatorios:['Relatórios & BI','Indicadores gerenciais'],
+ configuracoes:['Configurações','Empresa, clientes, contratos e assinatura'],
+ alertas:['Alertas','Pendências e prioridades'],
+ integracoes:['Integrações','Serviços conectados'],
+ ia:['Assistente IA','Inteligência do Comando 360'],
+ equipehome:['Equipe','Acesso de campo'],
+ equipereport:['Relatório de Apanha','Impressão de campo']
+};
+function c360SetModule(tab){
+ const m=C360_MODULES[tab]||[tab,'Comando 360'];
+ const t=document.getElementById('headerModuleTitle'),s=document.getElementById('headerModuleSubtitle');
+ if(t)t.textContent=m[0];if(s)s.textContent=m[1];
+ document.title='Comando 360 • '+m[0]+' • v7.02';
+ document.querySelectorAll('#mobileBottomNav [data-mobiletab]').forEach(b=>{
+  const mt=b.dataset.mobiletab;
+  b.classList.toggle('active',mt===tab||(mt==='more'&&!['inicio','operacoes','ponto','frota'].includes(tab)));
+ });
+}
+function c360Busy(on){
+ const p=document.getElementById('appProgress');
+ if(p)p.classList.toggle('active',!!on);
+ document.body.classList.toggle('app-loading',!!on);
+}
+function c360Toast(title,message='',type='info',duration=3600){
+ const stack=document.getElementById('c360ToastStack');if(!stack)return;
+ const d=document.createElement('div');d.className='c360-toast '+type;
+ const ico=type==='error'?'!':type==='success'?'✓':'i';
+ d.innerHTML='<i>'+ico+'</i><div><strong>'+esc(title)+'</strong>'+(message?'<span>'+esc(message)+'</span>':'')+'</div>';
+ stack.appendChild(d);
+ setTimeout(()=>{d.style.opacity='0';d.style.transform='translateY(-4px)';setTimeout(()=>d.remove(),180)},duration);
+}
+function c360CloseMobileMenu(){
+ document.body.classList.remove('mobile-menu-open');
+ const b=document.getElementById('mobileMenuBtn');if(b)b.setAttribute('aria-expanded','false');
+}
+function c360ToggleMobileMenu(){
+ const open=!document.body.classList.contains('mobile-menu-open');
+ document.body.classList.toggle('mobile-menu-open',open);
+ const b=document.getElementById('mobileMenuBtn');if(b)b.setAttribute('aria-expanded',open?'true':'false');
+}
+async function v2Go(tab){
+ if(tab!=='rastreamento')stopMovitTrackingPolling();
+ if(tab==='documentosfrota')tab='frota';
+ if(deviceMode&&!['equipehome','operacoes','ponto','combustivel','equipereport'].includes(tab))tab='equipehome';
+ c360SetModule(tab);
+ c360CloseMobileMenu();
+ c360Busy(true);
+ const host=document.getElementById('screenHost');
+ const target=v2ScreenStore[tab];
+ if(!host||!target){console.warn('Tela não encontrada:',tab);c360Busy(false);c360Toast('Tela não encontrada','Tente abrir o módulo novamente.','error');return}
+
+ // Remove fisicamente a tela anterior. O DOM principal contém somente a tela atual.
+ while(host.firstChild)host.removeChild(host.firstChild);
+ target.hidden=false;
+ target.classList.add('active');
+ host.appendChild(target);
+
+ document.querySelectorAll('#nav button[data-tab]').forEach(function(x){
+   x.classList.toggle('active',x.dataset.tab===tab);
+ });
+ document.querySelectorAll('.v2navbtn[data-v2tab]').forEach(function(x){
+   x.classList.toggle('active',x.dataset.v2tab===tab);
+ });
+ window.scrollTo(0,0);
+ renderDeviceModeBar(tab);
+
+ try{
+   if(tab==='equipehome'){await loadTeamHome();}
+   else if(tab==='equipereport'){await loadTeamReport();}
+   else if(tab==='inicio'){await loadPoultrySelectors();await loadDashboard();await loadPoultryDashboard();}
+   else if(tab==='equipes') await loadTeams();
+   else if(tab==='funcionarios'){await loadEmployees();await Promise.all([loadProfessionalProfile(),loadRHPoint()]);}
+   else if(tab==='operacoes'){if(deviceMode)await loadDevicePoultryContext();else await loadPoultrySelectors();await loadPoultryOps();}
+   else if(tab==='frota') await loadVehicles();
+   else if(tab==='rastreamento') await loadMovitTracking(true);
+   else if(tab==='manutencoes') await loadMaintenances();
+   else if(tab==='insumos') await loadConsumables();
+   else if(tab==='combustivel'){await loadFuel();}
+   else if(tab==='documentosrh') await loadEmpDocs();
+   else if(tab==='financeiro') await loadFinance();
+   else if(tab==='relatorios') await loadReports();
+   else if(tab==='configuracoes') await loadSettings();
+   else if(tab==='alertas') await loadSmartAlerts();
+   else if(tab==='integracoes') await loadIntegrations();
+   else if(tab==='ponto'){await loadSchedules();if(deviceMode)await loadTeamPoint();else await loadRHPoint();}
+ }catch(e){
+   console.warn('Falha ao carregar tela',tab,e);
+   c360Toast('Não foi possível carregar '+(C360_MODULES[tab]?.[0]||'a tela'),e?.message||'Tente novamente.','error',5000);
+ }finally{
+   c360Busy(false);
+ }
+}
+document.addEventListener('click',function(e){
+ const mobile=e.target.closest('#mobileBottomNav [data-mobiletab]');
+ if(mobile){
+  const tab=mobile.dataset.mobiletab;
+  if(tab==='more')c360ToggleMobileMenu();
+  else v2Go(tab);
+  return;
+ }
+ if(e.target.closest('#mobileMenuBtn')){c360ToggleMobileMenu();return}
+ if(e.target.closest('#mobileMenuBackdrop')){c360CloseMobileMenu();return}
+ const side=e.target.closest('.v2navbtn[data-v2tab]');
+ if(side&&window.innerWidth<=900)c360CloseMobileMenu();
+});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')c360CloseMobileMenu()});
+document.addEventListener('change',function(e){
+ if(e.target?.id==='reportsFuelVehicle'&&adminReportCache)renderFuelReportByVehicle(adminReportCache.fuels,e.target.value||'all');
+ if(e.target?.id==='fuelReceiptFile'&&e.target.files?.[0])readFuelReceipt(e.target.files[0]).catch(err=>console.warn('Leitura da nota',err));
+ if(e.target?.id==='fuelVehicle'){
+  const v=fuelVehicles.find(x=>x.id===e.target.value);
+  const km=document.getElementById('fuelKm');
+  if(km)km.value=v?.current_odometer_km||'';
+  const hint=document.getElementById('fuelVehicleHint');
+  if(hint&&deviceMode){
+   const primaryId=deviceVehicleInfo?.id||deviceTeam?.metadata?.primary_vehicle_id||null;
+   hint.textContent=v?.id===primaryId?'Condução principal da equipe selecionada.':'Outra condução selecionada para este abastecimento.';
+  }
+ }
+});
+document.addEventListener('click',async function(e){
+  if(e.target.closest('#newFuelBtn')){
+   e.preventDefault();
+   document.getElementById('fuelEditId').value='';
+   document.getElementById('fuelEditTitle').textContent='Novo abastecimento';
+   document.getElementById('saveFuelBtn').textContent='SALVAR ABASTECIMENTO';
+   window.__fuelReceiptOcr=null;
+   const readMsg=document.getElementById('fuelReceiptReadMsg');if(readMsg){readMsg.className='muted';readMsg.textContent='Ao tirar a foto, o app lê posto, data, litros e valor quando estiverem legíveis.'}
+   document.getElementById('fuelEditCard').style.display='block';
+   document.getElementById('fuelDate').value=localDateTimeInput();
+   document.getElementById('fuelMsg').textContent='';
+   document.getElementById('fuelLiters').value='';
+   document.getElementById('fuelTotal').value='';
+   document.getElementById('fuelStation').value='';
+   document.getElementById('fuelNotes').value='';
+   document.getElementById('fuelDriver').value='';
+   document.getElementById('fuelTankFull').checked=false;
+   document.getElementById('fuelReceiptFile').value='';
+   if(deviceMode&&fuelVehicles.length){
+    const primaryId=deviceVehicleInfo?.id||deviceTeam?.metadata?.primary_vehicle_id||null;
+    const selected=fuelVehicles.find(v=>v.id===primaryId)||fuelVehicles[0];
+    document.getElementById('fuelVehicle').value=selected.id;
+    document.getElementById('fuelKm').value=selected.current_odometer_km||'';
+    const hint=document.getElementById('fuelVehicleHint');
+    if(hint)hint.textContent=selected.id===primaryId?'Condução principal da equipe selecionada. Você pode trocar abaixo.':'Selecione a condução que está sendo usada hoje.';
+   }
+   return
+  }
+  const fuelEdit=e.target.closest('.editFuelBtn');if(fuelEdit){e.preventDefault();openFuelEdit(fuelEdit.dataset.id);return}
+  if(e.target.closest('#cancelFuelEdit')){e.preventDefault();document.getElementById('fuelEditCard').style.display='none';return}
+  if(e.target.closest('#saveFuelBtn')){e.preventDefault();await saveFuel();return}
+  if(e.target.closest('#newKmBtn')){e.preventDefault();if(deviceMode)return;document.getElementById('kmEditCard').style.display='block';document.getElementById('kmDate').value=localDateTimeInput();document.getElementById('kmMsg').textContent='';return}
+  if(e.target.closest('#cancelKmEdit')){e.preventDefault();document.getElementById('kmEditCard').style.display='none';return}
+  if(e.target.closest('#saveKmBtn')){e.preventDefault();await saveKm();return}
+  if(e.target.closest('#refreshFuelBtn')){e.preventDefault();await loadFuel();return}
+  const fuelPhoto=e.target.closest('.viewFuelReceipt');if(fuelPhoto){e.preventDefault();await openFuelReceipt(fuelPhoto.dataset.path);return}
+  if(e.target.closest('#importCrlvBtn')){e.preventDefault();document.getElementById('crlvImportFile').click();return}
+  if(e.target.closest('#cancelCrlvImport')){e.preventDefault();document.getElementById('crlvPreviewCard').style.display='none';pendingCrlvFile=null;return}
+  if(e.target.closest('#confirmCrlvImport')){e.preventDefault();await confirmCrlvImport();return}
+  if(e.target.closest('#newVehicleDocBtn')){e.preventDefault();openVehicleDoc();return}
+  if(e.target.closest('#cancelVehicleDoc')){e.preventDefault();document.getElementById('vehicleDocEditCard').style.display='none';return}
+  if(e.target.closest('#saveVehicleDoc')){e.preventDefault();await saveVehicleDocument();return}
+  if(e.target.closest('#deleteVehicleDoc')){e.preventDefault();await deleteVehicleDocument();return}
+  if(e.target.closest('#refreshVehicleDocs')){e.preventDefault();await loadVehicleDocs(document.getElementById('editVehicleId')?.value||'');return}
+  if(e.target.closest('#refreshAlerts')){e.preventDefault();await loadSmartAlerts();return}
+  if(e.target.closest('#refreshMovitTracking')){e.preventDefault();await loadMovitTracking(true);return}
+  if(e.target.closest('#centerMovitMap')){e.preventDefault();renderMovitMap(true);return}
+  if(e.target.closest('#saveMovitConfig')){e.preventDefault();await saveMovitConfigurationUi();return}
+  if(e.target.closest('#testMovitConfig')){e.preventDefault();await testMovitIntegrationUi();return}
+  if(e.target.closest('#disconnectMovit')){e.preventDefault();await disconnectMovitUi();return}
+  if(e.target.closest('#refreshIntegrations')){e.preventDefault();await loadIntegrations();return}
+  if(e.target.closest('#saveOnvioCredentials')){e.preventDefault();await saveOnvioCredentialsUi();return}
+  if(e.target.closest('#connectOnvioBtn')){e.preventDefault();await connectOnvioUi();return}
+  if(e.target.closest('#testOnvioBtn')){e.preventDefault();await testOnvioUi();return}
+  if(e.target.closest('#saveOnvioClientBtn')){e.preventDefault();await saveOnvioClientUi();return}
+  if(e.target.closest('#disconnectOnvioBtn')){e.preventDefault();if(!confirm('Desconectar o Onvio desta empresa? Os documentos já copiados serão preservados.'))return;await onvioInvoke('disconnect');await loadIntegrations();return}
+  if(e.target.closest('#copyOnvioCallback')){e.preventDefault();const t=$('#onvioCallbackUrl')?.textContent||'';await navigator.clipboard.writeText(t);e.target.closest('button').textContent='COPIADO ✓';setTimeout(()=>e.target.closest('button').textContent='COPIAR',1200);return}
+  if(e.target.closest('#copyOnvioRequest')){e.preventDefault();const t=onvioRequestText($('#onvioCallbackUrl')?.textContent||'');await navigator.clipboard.writeText(t);e.target.closest('button').textContent='COPIADO ✓';setTimeout(()=>e.target.closest('button').textContent='COPIAR SOLICITAÇÃO',1200);return}
+
+  if(e.target.closest('#newEmpDocBtn')){e.preventDefault();openEmpDoc();return}
+  if(e.target.closest('#cancelEmpDoc')){e.preventDefault();document.getElementById('empDocEditCard').style.display='none';return}
+  if(e.target.closest('#saveEmpDoc')){e.preventDefault();await saveEmpDoc();return}
+  if(e.target.closest('#deleteEmpDoc')){e.preventDefault();await deleteEmpDoc();return}
+  const ee=e.target.closest('.empDocEdit');if(ee){e.preventDefault();openEmpDoc(ee.dataset.id);return}
+  const eo=e.target.closest('.empDocOpen');if(eo){e.preventDefault();await openStoredFile(eo.dataset.file,false);return}
+  const ed=e.target.closest('.empDocDown');if(ed){e.preventDefault();await openStoredFile(ed.dataset.file,true);return}
+  if(e.target.closest('#newFinEntryBtn')){e.preventDefault();document.getElementById('finEditCard').style.display='block';document.getElementById('finIssueDate').value=new Date().toISOString().slice(0,10);document.getElementById('finMsg').textContent='';return}
+  if(e.target.closest('#cancelFinEntry')){e.preventDefault();document.getElementById('finEditCard').style.display='none';return}
+  if(e.target.closest('#saveFinEntry')){e.preventDefault();await saveFinEntry();return}
+  if(e.target.closest('#refreshFinance')){e.preventDefault();await loadFinance();return}
+  const fc=e.target.closest('.finCancel');if(fc){e.preventDefault();await cancelFinEntry(fc.dataset.id);return}
+  if(e.target.closest('#refreshReports')){e.preventDefault();await loadReports();return}
+  if(e.target.closest('#exportReportsCsv')){e.preventDefault();if(!adminReportCache)await loadReports();exportAdminReportsCsv();return}
+  if(e.target.closest('#printReports')){e.preventDefault();if(!adminReportCache)await loadReports();printAdminReports();return}
+  const aj=e.target.closest('.alertJump');if(aj){e.preventDefault();v2Go(aj.dataset.tab);return}
+  const crlvRead=e.target.closest('.vehicleCrlvRead');if(crlvRead){e.preventDefault();const b=crlvRead,old=b.textContent;b.disabled=true;b.textContent='LENDO...';try{const r=await readStoredVehicleCrlv(b.dataset.file,b.dataset.vehicle);alert('CRLV identificado: exercício '+r.year+' • placa '+r.plate+'.')}catch(err){alert(err.message||String(err))}finally{b.disabled=false;b.textContent=old}return}
+  const vdocView=e.target.closest('.vehicleDocView');if(vdocView){e.preventDefault();await downloadVehicleDoc(vdocView.dataset.file,false);return}
+  const vdocDown=e.target.closest('.vehicleDocDownload');if(vdocDown){e.preventDefault();await downloadVehicleDoc(vdocDown.dataset.file,true);return}
+  const edoc=e.target.closest('.editVehicleDocBtn');if(edoc){e.preventDefault();openVehicleDoc(edoc.dataset.id);return}
+  const maintReceipt=e.target.closest('.maintenanceReceiptView');if(maintReceipt){e.preventDefault();await openMaintenanceReceipt(maintReceipt.dataset.path);return}
+  const delFuel=e.target.closest('.deleteFuelBtn');if(delFuel){e.preventDefault();await deleteFuelLog(delFuel.dataset.id);return}
+  const delOp=e.target.closest('.poDeleteOp');if(delOp){e.preventDefault();await deletePoultryOperation(delOp.dataset.op,delOp.dataset.loading);return}
+  if(e.target.closest('#deleteMaintenanceBtn')){e.preventDefault();await deleteMaintenance(document.getElementById('editMaintenanceId')?.value);return}
+  if(e.target.closest('#deleteEmployee')){e.preventDefault();await deleteEmployee(document.getElementById('editEmployeeId')?.value);return}
+  if(e.target.closest('#deleteTeamBtn')){e.preventDefault();await deleteTeam(document.getElementById('editTeamId')?.value);return}
+  if(e.target.closest('#deleteVehicleBtn')){e.preventDefault();await deleteVehicle(document.getElementById('editVehicleId')?.value);return}
+  const newBtn=e.target.closest('#newMaintenanceBtn');
+  if(newBtn){e.preventDefault();openMaintenanceEdit('');return}
+  const cancelBtn=e.target.closest('#cancelMaintenanceEdit');
+  if(cancelBtn){e.preventDefault();const card=document.getElementById('maintenanceEditCard');if(card)card.style.display='none';return}
+  const applyReceipt=e.target.closest('#applyMaintenanceReceiptRead');if(applyReceipt){e.preventDefault();applyMaintenanceReceiptRead();return}
+  const discardReceipt=e.target.closest('#discardMaintenanceReceiptRead');if(discardReceipt){e.preventDefault();renderMaintenanceReceiptPreview(null);const msg=$('#maintenanceReceiptReadMsg');if(msg){msg.className='muted';msg.textContent='Leitura ignorada. A nota continua selecionada e será arquivada ao salvar.'}return}
+  const addPart=e.target.closest('#addMaintenancePart');if(addPart){e.preventDefault();addMaintenancePart();return}
+  const removePart=e.target.closest('.maintenance-part-remove');if(removePart){e.preventDefault();removePart.closest('.maintenance-part-row')?.remove();if(!document.querySelector('#maintenancePartsItems .maintenance-part-row'))renderMaintenanceParts([]);else calcMaintenanceParts();return}
+  const saveBtn=e.target.closest('#saveMaintenanceEdit');
+  if(saveBtn){e.preventDefault();await saveMaintenance(false);return}
+  const saveAnother=e.target.closest('#saveMaintenanceAndAnother');
+  if(saveAnother){e.preventDefault();await saveMaintenance(true);return}
+  const archiveBtn=e.target.closest('#archiveMaintenanceBtn');
+  if(archiveBtn){
+    e.preventDefault();
+    const id=document.getElementById('editMaintenanceId')?.value;
+    if(!id)return;
+    if(!confirm('Desativar este plano de manutenção?'))return;
+    try{
+      await rest('v2_maintenance_plans','id=eq.'+id,'PATCH',{active:false});
+      const card=document.getElementById('maintenanceEditCard');if(card)card.style.display='none';
+      await loadMaintenances();
+    }catch(err){
+      const msg=document.getElementById('maintenanceEditMsg');if(msg)msg.textContent=err.message;
+    }
+  }
+});
+document.addEventListener('input',function(e){
+ if(e.target?.id==='fleetSearch'){renderFleetVehicles();return}
+});
+document.addEventListener('change',async function(e){
+ if(['fleetStatusFilter','fleetLicenseFilter','fleetSort'].includes(e.target?.id)){renderFleetVehicles();return}
+ if(e.target?.id==='crlvLicenseCategory'){updateCrlvAutoExpiry();return}
+ if(e.target?.id==='maintenanceType'){updateMaintenanceCustomTypeUi();return}
+ if(e.target?.id==='maintenanceReceiptFile'){
+  const file=e.target.files?.[0];
+  if(file)await readMaintenanceReceipt(file);
+  return;
+ }
+ if(e.target?.id==='vehicleDocType'){window.__pendingVehicleDocCrlv=null;configureVehicleDocTypeUi();return}
+ if(e.target?.id==='vehicleDocFile'){
+  window.__pendingVehicleDocCrlv=null;
+  const file=e.target.files?.[0];
+  if(file&&isVehicleCrlv(document.getElementById('vehicleDocType')?.value||'')){
+   try{await inspectVehicleDocCrlvFile(file)}catch(err){document.getElementById('vehicleDocMsg').textContent=err.message||String(err);e.target.value=''}
+  }
+  return;
+ }
+
+ if(e.target?.id==='crlvImportFile'){
+  const f=e.target.files?.[0];e.target.value='';
+  if(f)await beginCrlvImport(f);
+ }
+});
+document.addEventListener('input',function(e){
+ if(e.target?.id==='crlvPlate')updateCrlvAutoExpiry();
+
+  if(e.target?.closest?.('#maintenancePartsItems')&&(e.target.classList.contains('maintenance-part-qty')||e.target.classList.contains('maintenance-part-unit')||e.target.closest('.maintenance-part-desc'))){calcMaintenanceParts();return}
+  if(e.target && (e.target.id==='maintenancePartsCost'||e.target.id==='maintenanceLaborCost')) calcMaintenanceTotal();
+  if(e.target && (e.target.id==='fuelLiters'||e.target.id==='fuelTotal')) fuelCalcPrice();
+});
+// Tema automático: acompanha o modo claro/escuro do aparelho em tempo real.
+if(window.__c360ApplySystemTheme)window.__c360ApplySystemTheme();
+(()=>{const d=new Date();$('#v2Today').textContent='Hoje, '+d.toLocaleDateString('pt-BR');$('#v2Weekday').textContent=d.toLocaleDateString('pt-BR',{weekday:'long'})})();
+function updateNetworkBadge(){
+ const el=$('#networkBadge');if(!el)return;
+ const online=c360NetOnline();
+ el.textContent=online?'● Online':'● Sem internet';
+ el.classList.toggle('online',online);
+ el.classList.toggle('offline',!online);
+}
+window.addEventListener('online',()=>{updateNetworkBadge();c360Toast('Conexão restabelecida','O Comando 360 voltou a ficar online.','success',2600);fleetCrlvAutoReadTried.clear();setTimeout(()=>{syncOfflineQueue().catch(e=>console.warn('sync online',e));scheduleAutomaticCrlvRead()},400)});
+window.addEventListener('offline',()=>{updateNetworkBadge();c360Toast('Você está sem internet','Os registros compatíveis continuam sendo guardados para sincronizar depois.','info',4200)});
+updateNetworkBadge();
+setInterval(()=>{if(c360NetOnline()&&session()?.refresh_token)ensureFreshAccessToken(180).catch(e=>console.warn('renovação de sessão',e))},5*60*1000);
+if($('#offlineQueueBadge'))$('#offlineQueueBadge').addEventListener('click',()=>{openOfflineSyncPanel().catch(e=>console.warn(e))});
+if($('#closeOfflineSyncPanel'))$('#closeOfflineSyncPanel').addEventListener('click',()=>$('#offlineSyncPanel').classList.add('hidden'));
+if($('#syncOfflineNow'))$('#syncOfflineNow').addEventListener('click',async()=>{
+ const b=$('#syncOfflineNow');if(b.disabled)return;
+ if(!c360NetOnline()){alert('Sem internet. Os registros continuam guardados neste celular.');return}
+ b.disabled=true;b.textContent='SINCRONIZANDO...';
+ try{await syncOfflineQueue();await renderOfflineSyncPanel()}
+ finally{b.disabled=false;b.textContent='SINCRONIZAR AGORA'}
+});
+setInterval(()=>{
+ if(c360NetOnline()&&companyId)offlineQueueList().then(q=>{if(q.length)syncOfflineQueue().catch(()=>{})}).catch(()=>{});
+},60000);
+let movitHistoryAutoSyncBusy=false;
+setInterval(async()=>{
+ if(movitHistoryAutoSyncBusy||!c360NetOnline()||!companyId||deviceMode||!session()?.access_token)return;
+ movitHistoryAutoSyncBusy=true;
+ try{
+  const st=await movitInvoke('status');
+  if(st?.configured)await movitInvoke('sync');
+ }catch(e){
+  console.warn('MOVIT histórico automático',e);
+ }finally{
+  movitHistoryAutoSyncBusy=false;
+ }
+},10*60*1000);
+if('serviceWorker' in navigator){
+ window.addEventListener('load',()=>{
+  navigator.serviceWorker.register('./sw-v8-00.js',{scope:'./',updateViaCache:'none'}).catch(e=>console.warn('Service Worker',e));
+ });
+}
+
+if($('#closeTeamDeviceCode'))$('#closeTeamDeviceCode').addEventListener('click',()=>{$('#teamDeviceCodeCard').style.display='none'});
+if($('#copyTeamDeviceCode'))$('#copyTeamDeviceCode').addEventListener('click',async()=>{
+ const el=$('#teamDeviceCode'),code=el?.dataset?.code||el?.textContent?.trim();
+ if(!code||code==='--------'||code==='GERANDO...'||code==='ERRO')return;
+ try{
+  if(navigator.clipboard&&navigator.clipboard.writeText)await navigator.clipboard.writeText(code);
+  else{const t=document.createElement('textarea');t.value=code;document.body.appendChild(t);t.select();document.execCommand('copy');t.remove()}
+  const b=$('#copyTeamDeviceCode');const old=b.textContent;b.textContent='COPIADO ✓';setTimeout(()=>b.textContent=old,1400);
+ }catch(e){alert('Código: '+code)}
+});
+if($('#refreshTeamDevices'))$('#refreshTeamDevices').addEventListener('click',loadTeams);
+if($('#refreshTeamReport'))$('#refreshTeamReport').addEventListener('click',loadTeamReport);
+if($('#teamReportDate'))$('#teamReportDate').addEventListener('change',loadTeamReport);
+$('#refreshRH').addEventListener('click',async()=>{await loadEmployees();await loadRHPoint()});
+
+$('#refreshBtn').addEventListener('click',async()=>{const b=$('#refreshBtn');if(b.disabled)return;b.disabled=true;b.textContent='ATUALIZANDO...';try{await loadPoultrySelectors();await Promise.all([loadDashboard(),loadPoultryDashboard()])}finally{b.disabled=false;b.textContent='↻ ATUALIZAR PAINEL'}});
+$('#refreshAlerts').addEventListener('click',async()=>{try{await rpc('v2_refresh_company_alerts',{p_company_id:companyId});await loadAlerts();await loadDashboard()}catch(e){alert(e.message)}});
+function addChat(t,r){const d=document.createElement('div');d.className='msg '+r;d.textContent=t;$('#chatbox').appendChild(d);$('#chatbox').scrollTop=$('#chatbox').scrollHeight}
+$('#sendAI').addEventListener('click',async()=>{const q=$('#question').value.trim();if(!q)return;addChat(q,'user');$('#question').value='';try{const s=session();const body={company_id:companyId,question:q};if(conversationId)body.conversation_id=conversationId;const r=await fetch(API_URL+'/functions/v1/controla-ai',{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+s.access_token,'Content-Type':'application/json'},body:JSON.stringify(body)});const data=await parseResponse(r);if(data?.conversation_id)conversationId=data.conversation_id;addChat(data?.answer||data?.message||'Sem resposta.','ai')}catch(e){addChat(e.message||'Falha ao consultar a IA.','ai')}});
+$('#question').addEventListener('keydown',e=>{if(e.key==='Enter')$('#sendAI').click()});
+window.addEventListener('error',e=>{if(!$('#app').classList.contains('hidden'))return;setMsg('Erro no navegador: '+e.message,'error');debug('Envie um print desta mensagem.')});
+(async()=>{try{
+ const fieldCode=new URLSearchParams(location.search).get('campo');
+ if(fieldCode){
+   clearSession();
+   document.body.classList.remove('app-ready','device-mode');
+   $('#app').classList.add('hidden');$('#login').classList.remove('hidden');
+   $('#adminLoginCard').classList.add('hidden');$('#deviceSetupCard').classList.remove('hidden');
+   const cleanCode=String(fieldCode||'').trim().toUpperCase();
+   if($('#deviceCode'))$('#deviceCode').value=cleanCode;
+   if($('#deviceSetupTitle'))$('#deviceSetupTitle').textContent='Ativando celular de campo';
+   if($('#deviceSetupSubtitle'))$('#deviceSetupSubtitle').textContent='Este link foi preparado para vincular o aparelho diretamente à equipe correta.';
+   const dm=$('#deviceMsg');if(dm){dm.className='muted';dm.textContent='Ativando acesso de campo...'}
+   try{
+     await activateDevice(cleanCode);
+     const u=new URL(location.href);u.searchParams.delete('campo');history.replaceState({},'',u.pathname+(u.searchParams.toString()?'?'+u.searchParams.toString():'')+u.hash);
+     return;
+   }catch(e){
+     if(dm){dm.className='error';dm.textContent=(e.message||String(e))+' • Você pode digitar outro código de ativação abaixo.'}
+     if($('#deviceSetupTitle'))$('#deviceSetupTitle').textContent='Configurar celular da equipe';
+     return;
+   }
+ }
+ const ss=session();
+ if(ss&&ss.access_token){
+   const u=ss.user||await getUser();
+   if(isDeviceUser(u)){
+     try{await enterDeviceApp(u);return}
+     catch(e){
+       if(e&&e.code==='DEVICE_UNPAIRED'){
+         $('#app').classList.add('hidden');$('#login').classList.remove('hidden');
+         $('#deviceMsg').className='muted';$('#deviceMsg').textContent='Sessão do aparelho criada. Digite o código da equipe.';
+         return;
+       }
+       throw e;
+     }
+   }
+   setMsg('Sessão encontrada. Entrando...');await enterApp(u);
+ }
+}catch(e){
+ clearSession();document.body.classList.remove('app-ready','device-mode');
+ $('#app').classList.add('hidden');$('#login').classList.remove('hidden');
+ const dm=$('#deviceMsg');if(dm){dm.className='muted';dm.textContent='Configure este celular ou use o acesso do administrador.'}
+}})();
+
+if(document.getElementById('takeEmployeePhoto'))document.getElementById('takeEmployeePhoto').addEventListener('click',()=>{const i=$('#employeePhotoCamera');i.value='';i.click()});
+if(document.getElementById('chooseEmployeePhoto'))document.getElementById('chooseEmployeePhoto').addEventListener('click',()=>{const i=$('#employeePhotoGallery');i.value='';i.click()});
+function previewEmployeePhotoInput(input){const f=input.files?.[0];if(!f)return;if(!/^image\/(jpeg|png|webp)$/.test(f.type)){alert('Escolha uma imagem JPG, PNG ou WEBP.');return}window.__employeePhotoFile=f;window.__removeEmployeePhoto=false;$('#editEmployeePhotoPreview').src=URL.createObjectURL(f)}
+if(document.getElementById('employeePhotoCamera'))document.getElementById('employeePhotoCamera').addEventListener('change',()=>previewEmployeePhotoInput($('#employeePhotoCamera')));
+if(document.getElementById('employeePhotoGallery'))document.getElementById('employeePhotoGallery').addEventListener('change',()=>previewEmployeePhotoInput($('#employeePhotoGallery')));
+if(document.getElementById('removeEmployeePhoto'))document.getElementById('removeEmployeePhoto').addEventListener('click',()=>{window.__employeePhotoFile=null;window.__removeEmployeePhoto=true;const e=(window.__rhEmployees||[]).find(x=>x.id===$('#editEmployeeId').value);$('#editEmployeePhotoPreview').src=employeePlaceholder(e?.full_name||'')});
+if(document.getElementById('cancelEmployeeEdit'))document.getElementById('cancelEmployeeEdit').addEventListener('click',()=>{$('#employeeEditCard').style.display='none'});
+if(document.getElementById('saveEmployeeEdit'))document.getElementById('saveEmployeeEdit').addEventListener('click',async()=>{
+ const id=$('#editEmployeeId').value,m=$('#employeeEditMsg');if(!id)return;
+ const name=$('#editEmployeeName').value.trim(),num=$('#editEmployeeNumber').value.trim(),cpf=$('#editEmployeeCpf').value.replace(/\D/g,'');
+ if(!name||!num){m.textContent='Nome e matrícula são obrigatórios.';return}
+ const newPhoto=window.__employeePhotoFile||null;
+ try{
+  const dup=await rest('v2_employees','select=id,employee_number,cpf&company_id=eq.'+companyId+'&or=(employee_number.eq.'+encodeURIComponent(num)+(cpf?',cpf.eq.'+encodeURIComponent(cpf):'')+')');
+  if((dup||[]).some(x=>x.id!==id)){m.textContent='Já existe outro funcionário com esta matrícula ou CPF.';return}
+
+  let faceDescriptor=null;
+  if(newPhoto){
+   m.className='muted';m.textContent='Validando a foto de perfil para reconhecimento facial...';
+   try{faceDescriptor=await faceDescriptorFromFile(newPhoto)}
+   catch(e){m.className='error';m.textContent='A foto não serve para reconhecimento facial: '+(e.message||String(e))+' Escolha uma foto de frente, bem iluminada.';return}
+  }
+
+  const addr=$('#editEmployeeAddress').value.trim();
+  let photoPath=(window.__rhEmployees||[]).find(x=>x.id===id)?.photo_path||null;
+  if(window.__removeEmployeePhoto)photoPath=null;
+  if(newPhoto){
+   m.className='muted';m.textContent='Salvando foto de perfil...';
+   photoPath=await uploadEmployeeProfilePhoto(newPhoto,id);
+  }
+
+  await rest('v2_employees','id=eq.'+id,'PATCH',{
+   full_name:name,employee_number:num,cpf:cpf||null,rg:$('#editEmployeeRg').value.trim()||null,
+   birth_date:$('#editEmployeeBirth').value||null,phone:$('#editEmployeePhone').value.trim()||null,
+   address:addr?{formatted:addr}:{},job_title:$('#editEmployeeJob').value.trim()||null,
+   primary_team:$('#editEmployeeTeam').value.trim()||null,admission_date:$('#editEmployeeAdmission').value||null,
+   photo_path:photoPath
+  });
+
+  let biometricOk=false;
+  if(newPhoto&&faceDescriptor){
+   m.className='muted';m.textContent='Foto salva. Cadastrando reconhecimento facial...';
+   await enrollEmployeeFaceFromFile(newPhoto,id,faceDescriptor);
+   biometricOk=true;
+  }
+
+  window.__employeePhotoFile=null;window.__removeEmployeePhoto=false;
+  m.className='okmsg';
+  m.textContent=biometricOk?'Funcionário atualizado ✓ Foto de perfil e biometria facial prontas.':'Funcionário atualizado com sucesso.';
+  await loadEmployees();await loadProfessionalProfile();
+ }catch(e){m.className='error';m.textContent=e.message||String(e)}
+});
+if(document.getElementById('archiveEmployee'))document.getElementById('archiveEmployee').addEventListener('click',async()=>{const id=$('#editEmployeeId').value,m=$('#employeeEditMsg');if(!id)return;if(!confirm('Arquivar este funcionário? O histórico de ponto será preservado.'))return;try{await rest('v2_employees','id=eq.'+id,'PATCH',{status:'archived',archived_at:new Date().toISOString()});m.textContent='Funcionário arquivado. Histórico preservado.';await loadEmployees();await loadProfessionalProfile()}catch(e){m.textContent=e.message}});
+
+if(document.getElementById('refreshTeams'))document.getElementById('refreshTeams').addEventListener('click',loadTeams);
+if(document.getElementById('newTeamBtn'))document.getElementById('newTeamBtn').addEventListener('click',openNewTeam);
+if(document.getElementById('cancelTeamEdit'))document.getElementById('cancelTeamEdit').addEventListener('click',()=>{$('#teamEditCard').style.display='none'});
+if(document.getElementById('teamMembersList'))document.getElementById('teamMembersList').addEventListener('change',e=>{if(e.target.classList.contains('team-member-check'))updateTeamMembersCount()});
+if(document.getElementById('editTeamSupervisor'))document.getElementById('editTeamSupervisor').addEventListener('change',e=>{
+ const emp=(window.__teamEmployees||[]).find(x=>x.id===e.target.value);
+ const phone=$('#editTeamSupervisorPhone');
+ if(phone&&emp?.phone)phone.value=emp.phone;
+});
+if(document.getElementById('newVehicleBtn'))document.getElementById('newVehicleBtn').addEventListener('click',()=>openVehicleEdit(''));
+if(document.getElementById('cancelVehicleEdit'))document.getElementById('cancelVehicleEdit').addEventListener('click',()=>{$('#vehicleEditCard').style.display='none'});
+if(document.getElementById('editVehicleTeam'))document.getElementById('editVehicleTeam').addEventListener('change',updateVehicleContractor);
+function previewVehiclePhotoFile(f){if(!f)return;window.__vehiclePhotoFile=f;window.__removeVehiclePhoto=false;$('#editVehiclePhotoPreview').src=URL.createObjectURL(f)}
+if(document.getElementById('vehiclePhotoCamera'))document.getElementById('vehiclePhotoCamera').addEventListener('change',e=>previewVehiclePhotoFile(e.target.files?.[0]));
+if(document.getElementById('vehiclePhotoGallery'))document.getElementById('vehiclePhotoGallery').addEventListener('change',e=>previewVehiclePhotoFile(e.target.files?.[0]));
+if(document.getElementById('removeVehiclePhoto'))document.getElementById('removeVehiclePhoto').addEventListener('click',()=>{window.__vehiclePhotoFile=null;window.__removeVehiclePhoto=true;$('#editVehiclePhotoPreview').src=vehiclePlaceholder($('#editVehicleDescription').value)});
+if(document.getElementById('saveVehicleEdit'))document.getElementById('saveVehicleEdit').addEventListener('click',async()=>{const m=$('#vehicleEditMsg');let id=$('#editVehicleId').value;const desc=$('#editVehicleDescription').value.trim(),plate=$('#editVehiclePlate').value.trim().toUpperCase().replace(/[^A-Z0-9]/g,'');if(!desc){m.textContent='Informe o apelido/identificação do veículo.';return}if(!plate){m.textContent='Informe a placa do veículo.';return}try{const dup=await rest('v2_vehicles','select=id,plate&company_id=eq.'+companyId+'&plate=eq.'+encodeURIComponent(plate));if((dup||[]).some(x=>x.id!==id)){m.textContent='Já existe outro veículo com esta placa.';return}let v=(window.__fleetVehicles||[]).find(x=>x.id===id);let metadata={...(v?.metadata||{})};const body={description:desc,plate,make:$('#editVehicleMake').value.trim()||null,model:$('#editVehicleModel').value.trim()||null,model_year:$('#editVehicleYear').value?Number($('#editVehicleYear').value):null,renavam:$('#editVehicleRenavam').value.trim()||null,current_odometer_km:$('#editVehicleKm').value?Number($('#editVehicleKm').value):0,fuel_tank_capacity_liters:$('#editVehicleTankCapacity').value?Number($('#editVehicleTankCapacity').value):null,status:$('#editVehicleStatus').value,metadata};if(id){await rest('v2_vehicles','id=eq.'+id,'PATCH',body)}else{const created=await rest('v2_vehicles','','POST',{company_id:companyId,...body});id=created?.[0]?.id||'';if(!id)throw new Error('Não foi possível obter o veículo criado.');$('#editVehicleId').value=id;$('#archiveVehicleBtn').style.display='';$('#deleteVehicleBtn').style.display=''}if(window.__removeVehiclePhoto){delete metadata.vehicle_photo_path;await rest('v2_vehicles','id=eq.'+id,'PATCH',{metadata})}if(window.__vehiclePhotoFile){metadata.vehicle_photo_path=await uploadVehiclePhoto(window.__vehiclePhotoFile,id);await rest('v2_vehicles','id=eq.'+id,'PATCH',{metadata})}const teamId=$('#editVehicleTeam').value;const teams=window.__fleetTeams||[];for(const t of teams){if(t.metadata?.primary_vehicle_id===id&&t.id!==teamId){const md={...(t.metadata||{})};delete md.primary_vehicle_id;await rest('v2_teams','id=eq.'+t.id,'PATCH',{metadata:md})}}if(teamId){const t=teams.find(x=>x.id===teamId);if(t){await rest('v2_teams','id=eq.'+teamId,'PATCH',{metadata:{...(t.metadata||{}),primary_vehicle_id:id}})}}window.__vehiclePhotoFile=null;window.__removeVehiclePhoto=false;m.textContent='Veículo salvo com sucesso.';await loadVehicles();await loadTeams();await loadVehicleDocs(id)}catch(e){m.textContent=e.message||String(e)}});
+if(document.getElementById('archiveVehicleBtn'))document.getElementById('archiveVehicleBtn').addEventListener('click',async()=>{const id=$('#editVehicleId').value,m=$('#vehicleEditMsg');if(!id)return;if(!confirm('Arquivar este veículo? O histórico será preservado.'))return;try{await rest('v2_vehicles','id=eq.'+id,'PATCH',{status:'inactive'});m.textContent='Veículo arquivado.';await loadVehicles();await loadTeams()}catch(e){m.textContent=e.message||String(e)}});
+if(document.getElementById('saveTeamEdit'))document.getElementById('saveTeamEdit').addEventListener('click',async()=>{const id=$('#editTeamId').value,m=$('#teamEditMsg');const t=(window.__teams||[]).find(x=>x.id===id);const oldName=(t?.name||'').trim();const name=$('#editTeamName').value.trim(),contractor=$('#editTeamContractor').value.trim();if(!name){m.textContent='Informe o nome da equipe.';return}if(!contractor){m.textContent='Informe a empresa contratante / onde a equipe presta serviço.';return}try{const metadata={...(t?.metadata||{}),contractor_name:contractor};const supervisorPhone=$('#editTeamSupervisorPhone')?.value.trim()||'';if(supervisorPhone)metadata.supervisor_phone=supervisorPhone;else delete metadata.supervisor_phone;const vehicleId=$('#editTeamVehicle').value;if(vehicleId)metadata.primary_vehicle_id=vehicleId;else delete metadata.primary_vehicle_id;const body={name,code:$('#editTeamCode').value.trim()||null,status:$('#editTeamStatus').value,supervisor_employee_id:$('#editTeamSupervisor').value||null,metadata};let teamId=id;if(id){await rest('v2_teams','id=eq.'+id,'PATCH',body)}else{const created=await rest('v2_teams','','POST',{company_id:companyId,...body});teamId=created?.[0]?.id||''}
+const selected=new Set([...document.querySelectorAll('#teamMembersList .team-member-check:checked')].map(x=>x.value));const emps=window.__teamEmployees||[];for(const e of emps){const current=(e.primary_team||'').trim();const wasMember=oldName&&current.toLowerCase()===oldName.toLowerCase();const shouldMember=selected.has(e.id);if(shouldMember&&current!==name){await rest('v2_employees','id=eq.'+e.id,'PATCH',{primary_team:name})}else if(!shouldMember&&wasMember){await rest('v2_employees','id=eq.'+e.id,'PATCH',{primary_team:null})}}
+m.textContent=id?'Equipe e funcionários atualizados com sucesso.':'Nova equipe criada com os funcionários selecionados.';await loadTeams();await loadEmployees();await loadPoultrySelectors();setTimeout(()=>{$('#teamEditCard').style.display='none'},650)}catch(e){m.textContent=e.message}});
+if(document.getElementById('archiveTeamBtn'))document.getElementById('archiveTeamBtn').addEventListener('click',async()=>{const id=$('#editTeamId').value,m=$('#teamEditMsg');if(!id)return;if(!confirm('Arquivar esta equipe? Os históricos existentes serão preservados.'))return;try{await rest('v2_teams','id=eq.'+id,'PATCH',{status:'inactive'});m.textContent='Equipe arquivada. Histórico preservado.';await loadTeams();await loadPoultrySelectors();setTimeout(()=>{$('#teamEditCard').style.display='none'},500)}catch(e){m.textContent=e.message}});
+
+async function loadProfessionalProfile(){
+ try{
+  const emps=await rest('v2_employees','select=id,employee_number,full_name,job_title,admission_date&company_id=eq.'+companyId+'&status=eq.active&order=full_name.asc');
+  const sel=document.getElementById('profEmployee');
+  if(sel){sel.innerHTML='<option value="">Selecione...</option>'+emps.map(e=>`<option value="${e.id}">${esc(e.full_name)} • ${esc(e.employee_number||'')}</option>`).join('');
+   sel.onchange=()=>{const e=emps.find(x=>x.id===sel.value);document.getElementById('profJobTitle').value=e?.job_title||'';document.getElementById('profAdmissionDate').value=e?.admission_date||''}
+  }
+  if($('#companyLegalName'))$('#companyLegalName').value=companyProfile?.legal_name||EMPLOYER_FALLBACK.legal_name;
+  if($('#companyTradeName'))$('#companyTradeName').value=companyProfile?.trade_name||'';
+  if($('#companyTaxId'))$('#companyTaxId').value=formatCompanyTaxId(companyProfile?.tax_id||EMPLOYER_FALLBACK.tax_id);
+ }catch(e){console.warn('professional profile',e)}
+}
+if(document.getElementById('saveProfessional'))document.getElementById('saveProfessional').addEventListener('click',async()=>{
+ const id=$('#profEmployee').value;if(!id)return $('#profMsg').textContent='Selecione o funcionário.';
+ try{await rest('v2_employees','id=eq.'+id,'PATCH',{job_title:$('#profJobTitle').value.trim()||null,admission_date:$('#profAdmissionDate').value||null});$('#profMsg').textContent='Dados profissionais salvos.';await loadEmployees()}catch(e){$('#profMsg').textContent=e.message}
+});
+// Dados do empregador são fixos e não podem ser alterados nesta tela.
+// Perfil profissional é carregado somente ao abrir RH & Pessoas para manter o dashboard leve.
+
+
+
+let c360GlobalSearchTimer=null;
+function c360OpenGlobalSearch(){
+ if(deviceMode)return;
+ const back=document.getElementById('globalSearchBackdrop'),panel=document.getElementById('globalSearchPanel'),input=document.getElementById('globalSearchInput');
+ if(back)back.classList.remove('hidden');if(panel)panel.classList.remove('hidden');
+ setTimeout(()=>input?.focus(),40);
+}
+function c360CloseGlobalSearch(){
+ document.getElementById('globalSearchBackdrop')?.classList.add('hidden');
+ document.getElementById('globalSearchPanel')?.classList.add('hidden');
+}
+function c360SearchOr(fields,term){
+ const clean=String(term||'').replace(/[(),]/g,' ').trim();
+ const pattern='*'+clean+'*';
+ return 'or='+encodeURIComponent('('+fields.map(f=>f+'.ilike.'+pattern).join(',')+')');
+}
+async function c360RunGlobalSearch(term){
+ const q=String(term||'').trim(),hint=document.getElementById('globalSearchHint'),box=document.getElementById('globalSearchResults');
+ if(!box)return;
+ if(q.length<2){box.innerHTML='';if(hint)hint.textContent='Digite pelo menos 2 caracteres.';return}
+ if(hint)hint.textContent='Buscando em pessoas, frota, granjas, operações e clientes...';
+ const safe=p=>p.catch(()=>[]);
+ const [emps,vehicles,farms,ops,customers]=await Promise.all([
+  safe(rest('v2_employees','select=id,full_name,employee_number,job_title&company_id=eq.'+companyId+'&status=eq.active&'+c360SearchOr(['full_name','employee_number','job_title'],q)+'&limit=7')),
+  safe(rest('v2_vehicles','select=id,description,plate,model,renavam,status&company_id=eq.'+companyId+'&'+c360SearchOr(['description','plate','model','renavam'],q)+'&limit=7')),
+  safe(rest('v2_poultry_farms','select=id,producer_name,farm_name,city,status&company_id=eq.'+companyId+'&status=eq.active&'+c360SearchOr(['producer_name','farm_name','city'],q)+'&limit=7')),
+  safe(rest('v2_operations','select=id,title,customer_name,location_name,status&company_id=eq.'+companyId+'&'+c360SearchOr(['title','customer_name','location_name'],q)+'&limit=7')),
+  safe(rest('v2_customers','select=id,legal_name,trade_name,phone,email,status&company_id=eq.'+companyId+'&status=eq.active&'+c360SearchOr(['legal_name','trade_name','phone','email'],q)+'&limit=7'))
+ ]);
+ const rows=[];
+ (emps||[]).forEach(x=>rows.push({ico:'👤',title:x.full_name,sub:'RH • '+(x.employee_number||'sem matrícula')+(x.job_title?' • '+x.job_title:''),tab:'funcionarios'}));
+ (vehicles||[]).forEach(x=>rows.push({ico:'🚐',title:x.description||x.model||'Veículo',sub:'Frota • '+(x.plate||'sem placa')+(x.model?' • '+x.model:''),tab:'frota'}));
+ (farms||[]).forEach(x=>rows.push({ico:'🏠',title:x.farm_name||x.producer_name||'Granja',sub:'Operação • '+(x.producer_name||'')+(x.city?' • '+x.city:''),tab:'operacoes'}));
+ (ops||[]).forEach(x=>rows.push({ico:'🐔',title:x.title||'Apanha',sub:'Operação • '+(x.customer_name||'')+(x.location_name?' • '+x.location_name:''),tab:'operacoes'}));
+ (customers||[]).forEach(x=>rows.push({ico:'🤝',title:x.trade_name||x.legal_name||'Cliente',sub:'Cliente • '+(x.phone||x.email||'cadastro comercial'),tab:'configuracoes'}));
+ if(hint)hint.textContent=rows.length?rows.length+' resultado(s) encontrado(s).':'Nenhum resultado encontrado.';
+ box.innerHTML=rows.slice(0,25).map(r=>'<button class="global-search-result" type="button" data-jump="'+esc(r.tab)+'"><span>'+r.ico+'</span><span style="flex:1"><b>'+esc(r.title)+'</b><small>'+esc(r.sub)+'</small></span><span>›</span></button>').join('');
+}
+if(document.getElementById('headerSearchBtn'))document.getElementById('headerSearchBtn').addEventListener('click',c360OpenGlobalSearch);
+if(document.getElementById('sidebarSearchBtn'))document.getElementById('sidebarSearchBtn').addEventListener('click',()=>{c360CloseMobileMenu();c360OpenGlobalSearch()});
+if(document.getElementById('globalSearchClose'))document.getElementById('globalSearchClose').addEventListener('click',c360CloseGlobalSearch);
+if(document.getElementById('globalSearchBackdrop'))document.getElementById('globalSearchBackdrop').addEventListener('click',c360CloseGlobalSearch);
+if(document.getElementById('globalSearchInput'))document.getElementById('globalSearchInput').addEventListener('input',e=>{
+ clearTimeout(c360GlobalSearchTimer);
+ c360GlobalSearchTimer=setTimeout(()=>c360RunGlobalSearch(e.target.value).catch(err=>{const h=document.getElementById('globalSearchHint');if(h)h.textContent='Falha na busca: '+(err.message||String(err))}),280);
+});
+document.addEventListener('click',e=>{if(e.target.closest('.global-search-result'))c360CloseGlobalSearch()});
+document.addEventListener('keydown',e=>{
+ if(e.key==='Escape')c360CloseGlobalSearch();
+ if((e.ctrlKey||e.metaKey)&&String(e.key).toLowerCase()==='k'){e.preventDefault();c360OpenGlobalSearch()}
+});
+
+let settingsCompanyRaw={},settingsCustomers=[],settingsContracts=[];
+function settingsPlanLabel(code){
+ const m={client_zero:'Cliente 0 • Piloto interno',essential:'Essencial',professional:'Profissional',complete:'360 Completo'};
+ return m[String(code||'').toLowerCase()]||String(code||'Sem plano');
+}
+function settingsStatusLabel(v){return ({active:'Ativo',trial:'Teste',past_due:'Pagamento pendente',cancelled:'Cancelado',suspended:'Suspenso'})[v]||v||'—'}
+async function loadSettings(){
+ const safe=p=>p.catch(()=>[]);
+ const [companies,customers,contracts,subs,members,roles,audit]=await Promise.all([
+  safe(rest('v2_companies','select=id,legal_name,trade_name,tax_id,timezone,metadata&id=eq.'+companyId+'&limit=1')),
+  safe(rest('v2_customers','select=id,legal_name,trade_name,phone,email,billing_email,status,payment_terms_days,metadata&company_id=eq.'+companyId+'&status=eq.active&order=legal_name.asc')),
+  safe(rest('v2_contracts','select=id,customer_id,title,starts_on,ends_on,billing_model,status,default_price,payment_terms_days&company_id=eq.'+companyId+'&status=neq.cancelled&order=created_at.desc')),
+  safe(rest('v2_subscriptions','select=plan_code,status,trial_ends_at,current_period_start,current_period_end,limits&company_id=eq.'+companyId+'&limit=1')),
+  safe(rest('v2_company_members','select=user_id,role_id,status&company_id=eq.'+companyId+'&status=eq.active')),
+  safe(rest('v2_roles','select=id,code,name&order=name.asc')),
+  safe(rest('v2_audit_logs','select=id,action,entity_type,entity_id,context,created_at&company_id=eq.'+companyId+'&order=created_at.desc&limit=30'))
+ ]);
+ settingsCompanyRaw=companies?.[0]||{};settingsCustomers=customers||[];settingsContracts=contracts||[];
+ const meta=settingsCompanyRaw.metadata||{},emp=meta.employer||{},contact=meta.contact||{};
+ const set=(id,v)=>{const el=document.getElementById(id);if(el)el.value=v??''};
+ set('settingsCompanyLegal',settingsCompanyRaw.legal_name||'');set('settingsCompanyTrade',settingsCompanyRaw.trade_name||'');set('settingsCompanyTimezone',settingsCompanyRaw.timezone||'America/Sao_Paulo');
+ set('settingsEmployerLegal',emp.legal_name||settingsCompanyRaw.legal_name||'');set('settingsEmployerTax',emp.tax_id||settingsCompanyRaw.tax_id||'');set('settingsResponsible',contact.responsible||'');set('settingsPhone',contact.phone||'');set('settingsEmail',contact.email||'');set('settingsAddress',contact.address||'');
+ const custList=document.getElementById('settingsCustomers');if(custList)custList.innerHTML=settingsCustomers.map(x=>'<div class="item"><strong>'+esc(x.trade_name||x.legal_name)+'</strong><div class="muted">'+esc(x.phone||'Sem telefone')+(x.email?' • '+esc(x.email):'')+' • Prazo '+Number(x.payment_terms_days||0)+' dia(s)</div></div>').join('')||'<div class="muted">Nenhum cliente ativo cadastrado.</div>';
+ const custSel=document.getElementById('settingsContractCustomer');if(custSel)custSel.innerHTML='<option value="">Selecione...</option>'+settingsCustomers.map(x=>'<option value="'+esc(x.id)+'">'+esc(x.trade_name||x.legal_name)+'</option>').join('');
+ const cm=new Map(settingsCustomers.map(x=>[x.id,x]));const ctList=document.getElementById('settingsContracts');
+ if(ctList)ctList.innerHTML=settingsContracts.map(x=>{const cust=cm.get(x.customer_id),model=({per_bird:'Por ave',daily_fixed:'Diária fixa',fixed:'Valor fixo',monthly:'Mensal'})[x.billing_model]||x.billing_model;return '<div class="item"><strong>'+esc(x.title)+'</strong><div class="muted">'+esc(cust?.trade_name||cust?.legal_name||'Cliente')+' • '+esc(model)+' • '+(x.default_price!=null?money(x.default_price):'Preço por regra')+' • '+esc(x.starts_on||'')+(x.ends_on?' → '+esc(x.ends_on):'')+'</div></div>'}).join('')||'<div class="muted">Nenhum contrato ativo cadastrado.</div>';
+ const sub=subs?.[0],subBox=document.getElementById('settingsSubscription');if(subBox)subBox.innerHTML=sub?'<strong>'+esc(settingsPlanLabel(sub.plan_code))+'</strong><br>Status: '+esc(settingsStatusLabel(sub.status))+(sub.current_period_end?'<br>Período até '+new Date(sub.current_period_end).toLocaleDateString('pt-BR'):'')+'<br><span class="muted">A cobrança comercial será conectada aqui quando os planos forem publicados.</span>':'Sem assinatura cadastrada.';
+ const roleMap=new Map((roles||[]).map(r=>[r.id,r])),memBox=document.getElementById('settingsMembers');if(memBox)memBox.innerHTML=(members||[]).map((m,i)=>{const r=roleMap.get(m.role_id);return '<div class="item"><strong>Usuário '+(i+1)+'</strong><div class="muted">Perfil: '+esc(r?.name||r?.code||'Acesso personalizado')+'</div></div>'}).join('')||'<div class="muted">Nenhum usuário administrativo ativo.</div>';
+ const auditBox=document.getElementById('settingsAudit');if(auditBox)auditBox.innerHTML=(audit||[]).map(a=>'<div class="item"><strong>'+esc(a.action||'Alteração')+'</strong><div class="muted">'+esc(a.entity_type||'registro')+' • '+new Date(a.created_at).toLocaleString('pt-BR',{timeZone:settingsCompanyRaw.timezone||'America/Sao_Paulo'})+'</div></div>').join('')||'<div class="muted">Ainda não há eventos de auditoria visíveis.</div>';
+ const start=document.getElementById('settingsContractStart');if(start&&!start.value)start.value=localDateBR();
+}
+async function saveSettingsCompany(){
+ const msg=document.getElementById('settingsCompanyMsg'),btn=document.getElementById('settingsSaveCompany');
+ try{
+  const legal=document.getElementById('settingsCompanyLegal').value.trim(),trade=document.getElementById('settingsCompanyTrade').value.trim();if(!legal)throw new Error('Informe a razão social da empresa.');
+  const oldMeta=settingsCompanyRaw.metadata||{},metadata={...oldMeta,employer:{...(oldMeta.employer||{}),legal_name:document.getElementById('settingsEmployerLegal').value.trim()||legal,tax_id:document.getElementById('settingsEmployerTax').value.replace(/\D/g,'')||null},contact:{...(oldMeta.contact||{}),responsible:document.getElementById('settingsResponsible').value.trim()||null,phone:document.getElementById('settingsPhone').value.trim()||null,email:document.getElementById('settingsEmail').value.trim()||null,address:document.getElementById('settingsAddress').value.trim()||null}};
+  btn.disabled=true;if(msg)msg.textContent='Salvando...';
+  const rows=await rest('v2_companies','id=eq.'+companyId,'PATCH',{legal_name:legal,trade_name:trade||legal,timezone:document.getElementById('settingsCompanyTimezone').value||'America/Sao_Paulo',metadata,updated_at:new Date().toISOString()});
+  settingsCompanyRaw=rows?.[0]||{...settingsCompanyRaw,legal_name:legal,trade_name:trade||legal,metadata};companyProfile=withOfficialEmployer(settingsCompanyRaw);
+  const cn=document.getElementById('companyName');if(cn)cn.textContent=cleanCompanyName(settingsCompanyRaw.trade_name||settingsCompanyRaw.legal_name);
+  if(msg){msg.className='okmsg';msg.textContent='Configurações da empresa salvas ✓'}c360Toast('Empresa atualizada','Documentos e relatórios usarão os novos dados.','success');
+ }catch(e){if(msg){msg.className='error';msg.textContent=e.message||String(e)}}finally{if(btn)btn.disabled=false}
+}
+async function addSettingsCustomer(){
+ const msg=document.getElementById('settingsCustomerMsg'),btn=document.getElementById('settingsAddCustomer');
+ try{
+  const name=document.getElementById('settingsCustomerName').value.trim();if(!name)throw new Error('Informe o nome do cliente.');btn.disabled=true;if(msg)msg.textContent='Cadastrando...';
+  await rest('v2_customers','','POST',{company_id:companyId,legal_name:name,trade_name:name,customer_type:'contractor',phone:document.getElementById('settingsCustomerPhone').value.trim()||null,email:document.getElementById('settingsCustomerEmail').value.trim()||null,billing_email:document.getElementById('settingsCustomerEmail').value.trim()||null,address:{},status:'active',payment_terms_days:Number(document.getElementById('settingsCustomerTerms').value||0),metadata:{source:'settings'}});
+  ['settingsCustomerName','settingsCustomerPhone','settingsCustomerEmail'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=''});if(msg){msg.className='okmsg';msg.textContent='Cliente cadastrado ✓'}await loadSettings();
+ }catch(e){if(msg){msg.className='error';msg.textContent=e.message||String(e)}}finally{if(btn)btn.disabled=false}
+}
+async function addSettingsContract(){
+ const msg=document.getElementById('settingsContractMsg'),btn=document.getElementById('settingsAddContract');
+ try{
+  const customerId=document.getElementById('settingsContractCustomer').value,title=document.getElementById('settingsContractTitle').value.trim(),model=document.getElementById('settingsContractModel').value,price=Number(document.getElementById('settingsContractPrice').value||0),starts=document.getElementById('settingsContractStart').value,ends=document.getElementById('settingsContractEnd').value||null;
+  if(!customerId||!title||!starts)throw new Error('Selecione o cliente e informe título e início do contrato.');btn.disabled=true;if(msg)msg.textContent='Cadastrando contrato...';
+  const rows=await rest('v2_contracts','','POST',{company_id:companyId,customer_id:customerId,contract_number:null,title,starts_on:starts,ends_on:ends,billing_model:model,status:'active',default_price:price||null,minimum_price:null,currency_code:'BRL',payment_terms_days:0,file_id:null,terms:{source:'settings'}});
+  const ct=rows?.[0];if(ct?.id&&price>0&&(model==='per_bird'||model==='daily_fixed'))await rest('v2_contract_price_rules','','POST',{company_id:companyId,contract_id:ct.id,service_code:'poultry_catching',description:model==='per_bird'?'Apanha por ave':'Diária de apanha',unit:model==='per_bird'?'bird':'day',unit_price:price,minimum_charge:null,surcharge_rules:{},valid_from:starts,valid_to:ends});
+  ['settingsContractTitle','settingsContractPrice','settingsContractEnd'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=''});if(msg){msg.className='okmsg';msg.textContent='Contrato cadastrado ✓'}await loadSettings();
+ }catch(e){if(msg){msg.className='error';msg.textContent=e.message||String(e)}}finally{if(btn)btn.disabled=false}
+}
+if(document.getElementById('settingsSaveCompany'))document.getElementById('settingsSaveCompany').addEventListener('click',saveSettingsCompany);
+if(document.getElementById('settingsAddCustomer'))document.getElementById('settingsAddCustomer').addEventListener('click',addSettingsCustomer);
+if(document.getElementById('settingsAddContract'))document.getElementById('settingsAddContract').addEventListener('click',addSettingsContract);
+
+function isPointScreenMounted(){return !!document.querySelector('#screenHost [data-screen="ponto"]')}
