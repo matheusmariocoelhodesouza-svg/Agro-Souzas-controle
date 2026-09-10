@@ -1,4 +1,4 @@
-const CACHE='comando360-v7-02-hotfix1';
+const CACHE='comando360-v7-02-hotfix2';
 const CORE=[
   './',
   './index.html',
@@ -31,8 +31,6 @@ async function patchAppHtml(response){
         html=html.replace('</head>','<script src="./c360-field-offline-hotfix.js"></script></head>');
       }
     }
-    // O modo campo passa a usar conectividade real com o servidor, em vez de
-    // depender apenas do navigator.onLine do Android, que pode ficar true sem internet.
     html=html.replaceAll('navigator.onLine','c360NetOnline()');
     const headers=new Headers(response.headers);
     headers.delete('content-length');
@@ -41,6 +39,16 @@ async function patchAppHtml(response){
   }catch(_){
     return response;
   }
+}
+
+function isAppShellNavigation(url){
+  const path=url.pathname.replace(/\/+$/,'/');
+  const scopePath=new URL(self.registration.scope).pathname.replace(/\/+$/,'/');
+  return path===scopePath || path===scopePath+'index.html';
+}
+
+function offlinePage(){
+  return new Response('<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Comando 360</title><body style="font-family:system-ui;padding:24px"><h2>Comando 360</h2><p>Esta tela precisa de internet e ainda não possui uma cópia offline neste aparelho. Volte ao painel principal ou conecte-se à internet.</p><p><a href="./">Voltar ao Comando 360</a></p></body>',{headers:{'Content-Type':'text/html; charset=utf-8'}});
 }
 
 async function prepareCore(){
@@ -90,19 +98,29 @@ self.addEventListener('fetch',event=>{
 
   if(req.mode==='navigate'){
     event.respondWith((async()=>{
+      const shell=isAppShellNavigation(url);
       try{
         const fresh=await fetchWithTimeout(req,2500);
         if(fresh&&fresh.ok){
           const cache=await caches.open(CACHE);
-          await cache.put('./index.html',fresh.clone());
-          await cache.put('./',fresh.clone());
-          return await patchAppHtml(fresh);
+          if(shell){
+            await cache.put('./index.html',fresh.clone());
+            await cache.put('./',fresh.clone());
+            return await patchAppHtml(fresh);
+          }
+          await cache.put(req,fresh.clone());
+          return fresh;
         }
       }catch(_){}
 
-      const cached=(await caches.match('./index.html'))||(await caches.match('./'));
-      if(cached)return await patchAppHtml(cached);
-      return new Response('<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Comando 360</title><body style="font-family:system-ui;padding:24px"><h2>Comando 360</h2><p>O aplicativo está sem internet e ainda não tem uma cópia offline pronta neste aparelho. Conecte uma vez à internet, abra o app e depois ele continuará funcionando offline.</p></body>',{headers:{'Content-Type':'text/html; charset=utf-8'}});
+      if(shell){
+        const cached=(await caches.match('./index.html'))||(await caches.match('./'));
+        if(cached)return await patchAppHtml(cached);
+      }else{
+        const cached=await caches.match(req);
+        if(cached)return cached;
+      }
+      return offlinePage();
     })());
     return;
   }
