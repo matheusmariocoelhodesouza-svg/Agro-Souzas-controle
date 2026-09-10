@@ -25,6 +25,7 @@ function publish(){
   const online=effectiveOnline();
   document.documentElement.dataset.c360Network=online?'online':'offline';
   window.dispatchEvent(new CustomEvent('c360:network',{detail:{online,reachable,native:nativeOnline(),checkedAt:lastProbeAt}}));
+  try{window.updateNetworkBadge?.()}catch(_){}
   return online;
 }
 async function probe(){
@@ -61,5 +62,5 @@ window.addEventListener('online',onBrowserNetworkChange);
 window.addEventListener('offline',onBrowserNetworkChange);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)probe().catch(()=>{})});
 setTimeout(()=>probe().catch(()=>{}),300);
-setInterval(()=>probe().then(ok=>{if(ok&&deviceSession){try{window.syncOfflineQueue?.()}catch(_){}}}).catch(()=>{}),deviceSession?10000:30000);
+setInterval(()=>probe().then(ok=>{if(ok&&deviceSession){try{window.syncOfflineQueue?.()}catch(_){}}}).catch(()=>{}),10000);
 })();
