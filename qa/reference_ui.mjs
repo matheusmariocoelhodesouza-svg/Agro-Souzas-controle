@@ -2,7 +2,7 @@ import { chromium } from 'playwright';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
-const auditVersion = '2026.09.11-r2';
+const auditVersion = '2026.09.11-r3';
 const base = process.env.C360_BASE_URL || 'http://127.0.0.1:8080';
 const out = path.resolve('qa-artifacts');
 await fs.mkdir(out, { recursive: true });
@@ -13,7 +13,7 @@ const screens = [
   'integracoes','ia'
 ];
 const criticalMobile = ['inicio','operacoes','ponto','frota','financeiro'];
-const results = { auditVersion, base, pageErrors: [], consoleErrors: [], overflow: [], missing: [], screenshots: [] };
+const results = { auditVersion, base, pageErrors: [], consoleErrors: [], overflow: [], missing: [], sourceLeaks: [], screenshots: [] };
 
 function safeName(value){ return value.replace(/[^a-z0-9_-]+/gi,'-').toLowerCase(); }
 
@@ -25,6 +25,22 @@ async function auditOverflow(page, label){
     scroll: document.documentElement.scrollWidth,
   }));
   if (Math.max(o.html, o.body) > 2) results.overflow.push({ label, ...o });
+}
+
+async function auditSourceLeak(page,label){
+  const leak = await page.evaluate(() => {
+    const text = document.body?.innerText || '';
+    const patterns = [
+      'function setTextSafe',
+      'async function loadTeamPoint',
+      "'+esc(e.full_name)+'",
+      'const currentEmployees=employees.filter',
+      'window.__pointSelfieFile=null'
+    ];
+    const hit = patterns.find(p => text.includes(p)) || null;
+    return { hit, hasLoadTeamPoint: typeof window.loadTeamPoint === 'function', hasRouter: typeof window.v2Go === 'function' };
+  });
+  if(leak.hit || !leak.hasLoadTeamPoint || !leak.hasRouter) results.sourceLeaks.push({label,...leak});
 }
 
 async function shot(page, name, fullPage=true){
@@ -62,6 +78,22 @@ async function exposeAdminScreen(page, id){
   }, id);
 }
 
+async function ensureServiceWorkerControlled(page,name){
+  const supported = await page.evaluate(() => 'serviceWorker' in navigator);
+  if(!supported) return;
+  await page.evaluate(async()=>{
+    await Promise.race([
+      navigator.serviceWorker.ready,
+      new Promise(resolve=>setTimeout(()=>resolve(null),5000))
+    ]);
+  });
+  await page.reload({ waitUntil:'domcontentloaded', timeout:30000 });
+  await page.waitForTimeout(700);
+  const controlled = await page.evaluate(() => !!navigator.serviceWorker.controller);
+  if(!controlled) results.missing.push(`${name}: PWA sem controle do Service Worker após reload`);
+  await auditSourceLeak(page,`${name}:pwa-controlado`);
+}
+
 async function runViewport(browser, name, viewport, mobile=false){
   const context = await browser.newContext({ viewport, isMobile: mobile, hasTouch: mobile });
   const page = await context.newPage();
@@ -75,6 +107,9 @@ async function runViewport(browser, name, viewport, mobile=false){
 
   await page.goto(`${base}/?qa_browser=1`, { waitUntil:'domcontentloaded', timeout:30000 });
   await page.waitForTimeout(900);
+  await auditSourceLeak(page,`${name}:primeiro-load`);
+  await ensureServiceWorkerControlled(page,name);
+
   const essentials = await page.evaluate(() => ({
     login: !!document.getElementById('login'),
     device: !!document.getElementById('deviceSetupCard'),
@@ -110,6 +145,7 @@ async function runViewport(browser, name, viewport, mobile=false){
       await setTheme(page,dark);
       await page.waitForTimeout(60);
       const label = `${name}:${id}:${dark?'escuro':'claro'}`;
+      await auditSourceLeak(page,label);
       await auditOverflow(page,label);
       await shot(page,`${name}-${id}-${dark?'escuro':'claro'}`);
     }
@@ -144,8 +180,9 @@ console.log(JSON.stringify({
   consoleErrors: results.consoleErrors.length,
   overflow: results.overflow.length,
   missing: results.missing.length,
+  sourceLeaks: results.sourceLeaks.length,
 }, null, 2));
-if (results.pageErrors.length || results.consoleErrors.length || results.overflow.length || results.missing.length){
+if (results.pageErrors.length || results.consoleErrors.length || results.overflow.length || results.missing.length || results.sourceLeaks.length){
   console.error('Reference browser QA failed. See qa-artifacts/report.json');
   process.exit(1);
 }
