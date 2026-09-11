@@ -1,11 +1,12 @@
-const CACHE='comando360-v7-02-hotfix3';
+const CACHE='comando360-v7-02-hotfix4';
 const CORE=[
   './',
   './index.html',
   './comando360.webmanifest',
   './comando360-icon.svg',
   './c360-field-offline-hotfix.js',
-  './c360-quality-hotfix.js'
+  './c360-quality-hotfix.js',
+  './c360-ui-polish.css'
 ];
 
 async function fetchWithTimeout(request,ms=3500){
@@ -24,6 +25,11 @@ async function patchAppHtml(response){
     const type=response.headers.get('content-type')||'';
     if(type&&!type.includes('text/html'))return response;
     let html=await response.text();
+    if(!html.includes('c360-ui-polish.css')){
+      const css='<link rel="stylesheet" href="./c360-ui-polish.css">';
+      if(html.includes('</head>'))html=html.replace('</head>',css+'\n</head>');
+      else html=css+html;
+    }
     if(!html.includes('c360-field-offline-hotfix.js')){
       const marker="<script>\n'use strict';";
       if(html.includes(marker)){
