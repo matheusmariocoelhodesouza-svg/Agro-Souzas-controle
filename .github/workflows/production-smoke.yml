@@ -41,9 +41,12 @@ jobs:
           test -s /tmp/index.html
           test -s /tmp/dda.html
           test -s /tmp/ui.css
-          grep -q "comando360-v7-02-hotfix4" /tmp/sw.js
-          grep -q "c360-quality-hotfix.js" /tmp/sw.js
-          grep -q "c360-ui-polish.css" /tmp/sw.js
+          grep -q 'c360-ui-polish.css' /tmp/index.html
+          grep -q 'c360-field-offline-hotfix.js' /tmp/index.html
+          grep -q 'c360-quality-hotfix.js' /tmp/index.html
+          ! grep -q 'navigator.onLine' /tmp/index.html
+          grep -q "comando360-v7-02-hotfix5" /tmp/sw.js
+          ! grep -q "replaceAll('navigator.onLine'" /tmp/sw.js
           grep -q "2026.09.10-q1" /tmp/quality.js
           grep -q "comando360-dda" /tmp/quality.js
           grep -q "UI POLISH 2026.09.10-u1" /tmp/ui.css
@@ -57,5 +60,5 @@ jobs:
           assert m.get('name') or m.get('short_name')
           css=Path('/tmp/ui.css').read_text(encoding='utf-8')
           assert css.count('{') == css.count('}'), 'Production CSS has unbalanced braces'
-          print('Production PWA + UI theme smoke: OK')
+          print('Production deterministic PWA + UI theme smoke: OK')
           PY
