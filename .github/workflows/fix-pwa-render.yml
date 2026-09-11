@@ -51,19 +51,15 @@ jobs:
 
           sw_path = Path('sw-v7-02.js')
           sw = sw_path.read_text(encoding='utf-8')
-          sw = sw.replace("comando360-v7-02-hotfix4", "comando360-v7-02-hotfix5")
+          sw = sw.replace('comando360-v7-02-hotfix4', 'comando360-v7-02-hotfix5')
           start = sw.find('async function patchAppHtml(response){')
           end = sw.find('\nfunction isAppShellNavigation', start)
           assert start >= 0 and end > start, 'patchAppHtml block not found'
           sw = sw[:start] + "async function patchAppHtml(response){\n  return response;\n}\n" + sw[end:]
-          assert "comando360-v7-02-hotfix5" in sw
+          assert 'comando360-v7-02-hotfix5' in sw
           assert "replaceAll('navigator.onLine'" not in sw
           sw_path.write_text(sw, encoding='utf-8')
           print('service worker: hotfix5, HTML rewriting disabled')
-
-          for wf in (Path('.github/workflows/quality-gate.yml'), Path('.github/workflows/production-smoke.yml')):
-              text = wf.read_text(encoding='utf-8').replace('comando360-v7-02-hotfix4','comando360-v7-02-hotfix5')
-              wf.write_text(text, encoding='utf-8')
           PY
 
       - name: Validate repair
@@ -81,7 +77,7 @@ jobs:
         run: |
           git config user.name 'Comando 360 QA'
           git config user.email 'actions@users.noreply.github.com'
-          git add index.html sw-v7-02.js .github/workflows/quality-gate.yml .github/workflows/production-smoke.yml
+          git add index.html sw-v7-02.js
           if git diff --cached --quiet; then
             echo 'No repair changes needed.'
             exit 0
