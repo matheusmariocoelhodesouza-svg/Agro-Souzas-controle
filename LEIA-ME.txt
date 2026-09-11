@@ -1,7 +1,0 @@
-Correção GPS Agro Souza's Controle
-
-1. Extraia este ZIP.
-2. Pegue o arquivo app.js.
-3. No GitHub, substitua o app.js atual por este.
-4. Faça o commit na branch principal.
-5. Aguarde o Cloudflare publicar automaticamente.

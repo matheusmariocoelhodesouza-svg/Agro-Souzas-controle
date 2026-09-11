@@ -2918,7 +2918,7 @@ body.darkmode #financeiro .finance-privacy-btn{background:#17283d;border-color:#
 'use strict';
 const API_URL='https://aycbrqziusxtxhsdfqjk.supabase.co';
 const KEY='sb_publishable_OGJX3NBA__JxoyjB3IZNvQ_0nNwh_Xc';
-const EMPLOYER_FALLBACK={legal_name:'',tax_id:'53422038000119'};
+const EMPLOYER_FALLBACK={legal_name:'',tax_id:''};
 const withOfficialEmployer=(profile={})=>{
  const employer=profile?.metadata?.employer||{};
  return {...profile,legal_name:employer.legal_name||profile.legal_name||EMPLOYER_FALLBACK.legal_name,tax_id:employer.tax_id||profile.tax_id||EMPLOYER_FALLBACK.tax_id,employer_metadata:employer};
