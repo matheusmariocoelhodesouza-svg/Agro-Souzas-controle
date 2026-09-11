@@ -1,0 +1,52 @@
+name: Comando 360 Production Smoke
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  production-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Check production endpoints
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE="https://app.comando360.com.br"
+          fetch() {
+            local path="$1" out="$2"
+            for i in $(seq 1 15); do
+              if curl --fail --silent --show-error --location --max-time 15 \
+                -H 'Cache-Control: no-cache' "${BASE}${path}?qa_run=${GITHUB_SHA}" -o "$out"; then
+                return 0
+              fi
+              sleep 4
+            done
+            echo "Failed to fetch ${path} from production"
+            return 1
+          }
+
+          fetch "/" /tmp/index.html
+          fetch "/sw-v7-02.js" /tmp/sw.js
+          fetch "/c360-quality-hotfix.js" /tmp/quality.js
+          fetch "/dda.html" /tmp/dda.html
+          fetch "/comando360.webmanifest" /tmp/manifest.json
+
+          test -s /tmp/index.html
+          test -s /tmp/dda.html
+          grep -q "comando360-v7-02-hotfix3" /tmp/sw.js
+          grep -q "c360-quality-hotfix.js" /tmp/sw.js
+          grep -q "2026.09.10-q1" /tmp/quality.js
+          grep -q "comando360-dda" /tmp/quality.js
+          python - <<'PY'
+          import json
+          with open('/tmp/manifest.json', encoding='utf-8') as f:
+              m=json.load(f)
+          assert m.get('name') or m.get('short_name')
+          print('Production PWA smoke: OK')
+          PY
