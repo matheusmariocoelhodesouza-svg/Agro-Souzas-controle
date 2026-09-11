@@ -1,4 +1,4 @@
-const CACHE='comando360-v7-02-hotfix4';
+const CACHE='comando360-v7-02-hotfix5';
 const CORE=[
   './',
   './index.html',
@@ -20,37 +20,7 @@ async function fetchWithTimeout(request,ms=3500){
 }
 
 async function patchAppHtml(response){
-  if(!response)return response;
-  try{
-    const type=response.headers.get('content-type')||'';
-    if(type&&!type.includes('text/html'))return response;
-    let html=await response.text();
-    if(!html.includes('c360-ui-polish.css')){
-      const css='<link rel="stylesheet" href="./c360-ui-polish.css">';
-      if(html.includes('</head>'))html=html.replace('</head>',css+'\n</head>');
-      else html=css+html;
-    }
-    if(!html.includes('c360-field-offline-hotfix.js')){
-      const marker="<script>\n'use strict';";
-      if(html.includes(marker)){
-        html=html.replace(marker,"<script src=\"./c360-field-offline-hotfix.js\"></script>\n"+marker);
-      }else{
-        html=html.replace('</head>','<script src="./c360-field-offline-hotfix.js"></script></head>');
-      }
-    }
-    if(!html.includes('c360-quality-hotfix.js')){
-      const quality='<script src="./c360-quality-hotfix.js"></script>';
-      if(html.includes('</body>'))html=html.replace('</body>',quality+'</body>');
-      else html+=quality;
-    }
-    html=html.replaceAll('navigator.onLine','c360NetOnline()');
-    const headers=new Headers(response.headers);
-    headers.delete('content-length');
-    headers.delete('content-encoding');
-    return new Response(html,{status:response.status,statusText:response.statusText,headers});
-  }catch(_){
-    return response;
-  }
+  return response;
 }
 
 function isAppShellNavigation(url){

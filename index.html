@@ -1994,6 +1994,7 @@ body.darkmode #financeiro .finance-privacy-btn{background:#17283d;border-color:#
   }catch(e){}
 })();
 </script>
+<link rel="stylesheet" href="./c360-ui-polish.css">
 </head>
 <body>
 <script>
@@ -2914,6 +2915,7 @@ body.darkmode #financeiro .finance-privacy-btn{background:#17283d;border-color:#
 </div>
 <div class="section" data-screen="ia" hidden="" id="ia"><div class="card chat"><h3>Assistente IA</h3><div class="muted">A IA avisará se a chave da OpenAI ainda não estiver configurada.</div><div class="chatbox" id="chatbox"></div><div class="toolbar" style="margin-top:10px"><input id="question" placeholder="Ex.: quais equipes estão atrasadas hoje?" style="flex:1;margin:0"/><button type="button" class="btn primary" id="sendAI">Enviar</button></div></div></div>
 </section></main>
+<script src="./c360-field-offline-hotfix.js"></script>
 <script>
 'use strict';
 const API_URL='https://aycbrqziusxtxhsdfqjk.supabase.co';
@@ -3105,7 +3107,7 @@ async function enterDeviceApp(authUser){
  let access=null,cachedIdentity=null,vehicleInfo=null,supervisorInfo=null;
  try{cachedIdentity=await offlineCacheGet('device_identity:'+user.id)}catch(_){}
 
- if(navigator.onLine){
+ if(c360NetOnline()){
   try{access=await loadDeviceAccess(user.id)}
   catch(e){console.warn('Falha ao consultar vínculo do aparelho',e);access=cachedIdentity?.access||null}
  }else{
@@ -3113,13 +3115,13 @@ async function enterDeviceApp(authUser){
  }
 
  if(!access){
-  const er=new Error(navigator.onLine?'Este celular ainda não foi ativado. Digite o código da equipe.':'Este celular ainda não possui dados offline. Conecte à internet pelo menos uma vez após a ativação.');
+  const er=new Error(c360NetOnline()?'Este celular ainda não foi ativado. Digite o código da equipe.':'Este celular ainda não possui dados offline. Conecte à internet pelo menos uma vez após a ativação.');
   er.code='DEVICE_UNPAIRED';throw er;
  }
 
  deviceMode=true;deviceAccess=access;companyId=access.company_id;currentRoleCode='device';isAdminGeneral=false;
 
- if(navigator.onLine){
+ if(c360NetOnline()){
   try{
    const identity=await c360CollectDeviceIdentity();
    await rpc('v2_update_device_identity',{p_device_name:identity.name,p_device_info:identity.info});
@@ -3173,7 +3175,7 @@ async function enterDeviceApp(authUser){
  applyDeviceUi();initScreenRouter();await v2Go('equipehome');
  await updateOfflineQueueBadge();
 
- if(navigator.onLine){
+ if(c360NetOnline()){
   warmDeviceOfflineData().catch(e=>console.warn('pré-carga offline',e));
   syncOfflineQueue().catch(e=>console.warn('sync offline',e));
  }
@@ -3287,7 +3289,7 @@ function durationToMinutes(v){
 function eventLocalMinutes(iso){const p=new Intl.DateTimeFormat('en-GB',{timeZone:'America/Sao_Paulo',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(new Date(iso));return timeToMinutes(p)}
 async function loadSchedules(){
   if(!companyId){scheduleCache={};return}
-  if(deviceMode&&!navigator.onLine){
+  if(deviceMode&&!c360NetOnline()){
     scheduleCache=await offlineCacheGet(offlineTeamKey('point_schedules'))||{};
     return;
   }
@@ -3410,7 +3412,7 @@ async function previewNextPoint(){
   const label=$('#nextPointLabel');
   if(!matricula){label.textContent='Digite a matrícula';return}
   try{
-    if(deviceMode&&!navigator.onLine){
+    if(deviceMode&&!c360NetOnline()){
       const emp=await offlineFindEmployeeByNumber(matricula);
       if(!emp){label.textContent='Matrícula não disponível offline';return}
       const next=await offlineNextPoint(emp.id);
@@ -3560,7 +3562,7 @@ async function cachePointContext(employees,events){
  await offlineCacheSet(offlineTeamKey('point_events',day),events||[]);
 }
 async function warmPointOfflineCache(){
- if(!deviceMode||!navigator.onLine||!companyId)return;
+ if(!deviceMode||!c360NetOnline()||!companyId)return;
  try{
   const [employees,events,faces]=await Promise.all([
    devicePointEmployees(),
@@ -3573,7 +3575,7 @@ async function warmPointOfflineCache(){
  }catch(e){console.warn('warm point offline cache',e)}
 }
 async function warmPoultryOfflineCache(){
- if(!deviceMode||!navigator.onLine||!companyId)return;
+ if(!deviceMode||!c360NetOnline()||!companyId)return;
  const teamId=deviceAccess?.team_id;
  if(!teamId)return;
  const teams=await rest('v2_teams','select=id,name,status,metadata,supervisor_employee_id&company_id=eq.'+companyId+'&id=eq.'+encodeURIComponent(teamId))||[];
@@ -3593,7 +3595,7 @@ async function warmPoultryOfflineCache(){
  await offlineCacheSet(offlineTeamKey('poultry_ops'),{ops,loadings,trucks});
 }
 async function warmFuelOfflineCache(){
- if(!deviceMode||!navigator.onLine||!companyId)return;
+ if(!deviceMode||!c360NetOnline()||!companyId)return;
  const [logs,vehicles]=await Promise.all([
   rest('v2_fuel_logs','select=*&company_id=eq.'+companyId+'&order=fueled_at.desc&limit=200'),
   rest('v2_vehicles','select=id,description,plate,model,current_odometer_km,fuel_tank_capacity_liters,status&company_id=eq.'+companyId+'&order=description.asc')
@@ -3602,7 +3604,7 @@ async function warmFuelOfflineCache(){
  await offlineCacheSet(offlineTeamKey('fuel_vehicles'),vehicles||[]);
 }
 async function warmDeviceOfflineData(){
- if(!deviceMode||!navigator.onLine)return;
+ if(!deviceMode||!c360NetOnline())return;
  await Promise.allSettled([
   warmPointOfflineCache(),
   loadSchedules(),
@@ -3815,7 +3817,7 @@ async function syncPoultryCompleteOfflineItem(item){
  return true;
 }
 async function syncOfflineQueue(){
- if(offlineSyncRunning||!navigator.onLine||!companyId||!session()?.access_token)return;
+ if(offlineSyncRunning||!c360NetOnline()||!companyId||!session()?.access_token)return;
  offlineSyncRunning=true;
  const badge=$('#offlineQueueBadge');
  try{
@@ -3840,7 +3842,7 @@ async function syncOfflineQueue(){
   await offlineCacheSet('last_sync:'+String(companyId||'none'),new Date().toISOString());
   await updateOfflineQueueBadge();
   if($('#offlineSyncPanel')&&!$('#offlineSyncPanel').classList.contains('hidden'))await renderOfflineSyncPanel();
-  if(deviceMode&&navigator.onLine){
+  if(deviceMode&&c360NetOnline()){
    await warmPointOfflineCache();
    const active=document.querySelector('[data-screen="ponto"].active');
    if(active)await loadTeamPoint();
@@ -4626,7 +4628,7 @@ function renderFleetVehicles(){
 }
 async function loadVehicles(){
  try{
-  if(navigator.onLine){try{await movitInvoke('sync')}catch(e){console.warn('MOVIT na Frota',e)}}
+  if(c360NetOnline()){try{await movitInvoke('sync')}catch(e){console.warn('MOVIT na Frota',e)}}
   const [r,t,docs,files,tracking,fuelLogs,distanceSummary]=await Promise.all([
    rest('v2_vehicles','select=id,description,plate,make,model,model_year,renavam,current_odometer_km,fuel_tank_capacity_liters,status,metadata&company_id=eq.'+companyId+'&order=description.asc'),
    rest('v2_teams','select=id,name,status,metadata,supervisor_employee_id&company_id=eq.'+companyId+'&order=name.asc'),
@@ -4844,7 +4846,7 @@ async function loadTeamPoint(){
    const teamId=deviceAccess?.team_id||deviceTeam?.id||null;
    const teamName=deviceTeam?.name||'Equipe do aparelho';
 
-   if(deviceMode&&!navigator.onLine){
+   if(deviceMode&&!c360NetOnline()){
     employees=await offlineCacheGet(offlineTeamKey('point_employees'))||[];
     events=await offlineCacheGet(offlineTeamKey('point_events',day))||[];
     const pending=(await offlineQueueList()).filter(x=>x.type==='attendance'&&saoPauloDateKey(x.payload?.occurred_at)===day).map(x=>({
@@ -4868,7 +4870,7 @@ async function loadTeamPoint(){
     await cachePointContext(employees,events);
    }
 
-   if(!employees.length&&deviceMode&&!navigator.onLine){
+   if(!employees.length&&deviceMode&&!c360NetOnline()){
     const p=$('#presenceList');
     if(p)p.innerHTML='<div class="error">Ainda não há funcionários salvos para uso offline. Conecte este celular à internet uma vez.</div>';
    }
@@ -5118,25 +5120,25 @@ async function preRecognizePointSelfie(file){
  if(btn)btn.disabled=true;
  label.textContent='Analisando rosto...';
  msg.className='muted';
- msg.textContent=navigator.onLine?'Identificando funcionário...':'Identificando funcionário offline...';
+ msg.textContent=c360NetOnline()?'Identificando funcionário...':'Identificando funcionário offline...';
  try{
   const descriptor=await faceDescriptorFromFile(file);
   let employee=null,distance=null;
   if(deviceMode){
-   const employees=navigator.onLine?await devicePointEmployees():await offlinePointEmployees();
+   const employees=c360NetOnline()?await devicePointEmployees():await offlinePointEmployees();
    let m=null;
-   if(navigator.onLine){
+   if(c360NetOnline()){
     const match=await rpc('v2_device_match_employee_face',{p_company_id:companyId,p_descriptor:descriptor,p_threshold:.50});
     m=(match||[])[0]||null;
    }else{
     m=await offlineMatchEmployeeFace(descriptor,.50);
    }
-   if(!m)throw new Error(navigator.onLine?'Rosto não reconhecido ou biometria ainda não cadastrada.':'Rosto não reconhecido no cache deste celular. Conecte à internet uma vez para atualizar as biometrias.');
+   if(!m)throw new Error(c360NetOnline()?'Rosto não reconhecido ou biometria ainda não cadastrada.':'Rosto não reconhecido no cache deste celular. Conecte à internet uma vez para atualizar as biometrias.');
    employee=(employees||[]).find(e=>e.id===m.employee_id)||null;
    if(!employee)throw new Error('Funcionário reconhecido, mas não está disponível neste aparelho.');
    distance=Number(m.distance||0);
   }else{
-   if(!navigator.onLine)throw new Error('No acesso administrativo, o reconhecimento facial exige internet.');
+   if(!c360NetOnline())throw new Error('No acesso administrativo, o reconhecimento facial exige internet.');
    const match=await rpc('v2_match_employee_face',{p_company_id:companyId,p_descriptor:descriptor,p_threshold:.50});
    const m=(match||[])[0];
    if(!m)throw new Error('Rosto não reconhecido ou biometria ainda não cadastrada.');
@@ -5145,12 +5147,12 @@ async function preRecognizePointSelfie(file){
    if(!employee)throw new Error('Funcionário reconhecido, mas não está ativo.');
    distance=Number(m.distance||0);
   }
-  const nextEvent=(deviceMode&&!navigator.onLine)?await offlineNextPoint(employee.id):await getNextPoint(employee.id);
+  const nextEvent=(deviceMode&&!c360NetOnline())?await offlineNextPoint(employee.id):await getNextPoint(employee.id);
   if(nextEvent==='finished')throw new Error('Jornada já encerrada hoje para '+employee.full_name+'.');
-  window.__pointFaceMatch={file,employee,distance,descriptor,offline:!navigator.onLine};
+  window.__pointFaceMatch={file,employee,distance,descriptor,offline:!c360NetOnline()};
   label.textContent=employee.full_name+' • '+(pointLabels[nextEvent]||nextEvent);
-  msg.className=navigator.onLine?'okmsg':'warn';
-  msg.textContent='✓ '+employee.full_name+' reconhecido'+(navigator.onLine?'.':'. Modo offline — o ponto ficará salvo neste celular.');
+  msg.className=c360NetOnline()?'okmsg':'warn';
+  msg.textContent='✓ '+employee.full_name+' reconhecido'+(c360NetOnline()?'.':'. Modo offline — o ponto ficará salvo neste celular.');
   if(btn)btn.disabled=false;
  }catch(e){
   window.__pointFaceMatch=null;
@@ -5181,7 +5183,7 @@ $('#registerPoint').addEventListener('click',async()=>{
  if(!withSelfie&&!matricula){msg.className='error';msg.textContent='Digite a matrícula.';return}
  if(withSelfie&&!selfie){msg.className='error';msg.textContent='Capture a selfie antes de bater o ponto.';return}
 
- if(deviceMode&&!navigator.onLine){
+ if(deviceMode&&!c360NetOnline()){
   btn.disabled=true;
   try{
    if(withSelfie){
@@ -5416,7 +5418,7 @@ function populateSavedFarmOptions(){
 }
 async function loadDevicePoultryContext(){
  try{
-  if(deviceMode&&!navigator.onLine){
+  if(deviceMode&&!c360NetOnline()){
    const cached=await offlineCacheGet(offlineTeamKey('poultry_context'))||{};
    poultryTeams=cached.teams||[];
    poultryFarms=cached.farms||[];
@@ -5576,7 +5578,7 @@ async function autoSavePoultryFarm(){
  const integrated=$('#poIntegratedName')?.value.trim()||'',city=$('#poCity')?.value.trim()||'';
  if(!integrated||!city)return;
  const msg=$('#aviaryMsg');
- if(!navigator.onLine){if(msg)msg.textContent='✓ Granja guardada no preenchimento e será sincronizada com a apanha.';return}
+ if(!c360NetOnline()){if(msg)msg.textContent='✓ Granja guardada no preenchimento e será sincronizada com a apanha.';return}
  try{
   if(msg)msg.textContent='Salvando granja automaticamente...';
   await ensureAviaryProfile();
@@ -5591,7 +5593,7 @@ function scheduleAutoSavePoultryFarm(){
  poultryFarmAutoSaveTimer=setTimeout(autoSavePoultryFarm,650);
 }
 async function findExistingOpenPoultryOperation(teamId,farmId){
- if(!teamId||!farmId||!navigator.onLine)return null;
+ if(!teamId||!farmId||!c360NetOnline())return null;
  try{
   const ls=await rest('v2_poultry_loadings',
    'select=id,operation_id,farm_id,team_id,status,reported_trucks,reported_birds&company_id=eq.'+encodeURIComponent(companyId)+
@@ -5615,7 +5617,7 @@ async function savePoultryOperation(){
  const t=poultryTeams.find(x=>x.id===$('#poTeam').value)||(deviceMode?deviceTeam:null);
  if(!t||!$('#poStart').value)return $('#poMsg').textContent='Selecione a equipe e informe o início.';
 
- if(deviceMode&&!navigator.onLine){
+ if(deviceMode&&!c360NetOnline()){
   const integrated=$('#poIntegratedName').value.trim(),city=$('#poCity').value.trim(),farmName=$('#poFarmName').value.trim();
   if(!integrated||!city)return $('#poMsg').textContent='Preencha nome do integrado e cidade.';
   try{
@@ -5731,7 +5733,7 @@ async function savePoultryOperation(){
 async function loadPoultryOps(renderUi=true){
  try{
   let ops=[],loadings=[],trucks=[];
-  if(deviceMode&&!navigator.onLine){
+  if(deviceMode&&!c360NetOnline()){
    const cached=await offlineCacheGet(offlineTeamKey('poultry_ops'))||{};
    ops=cached.ops||[];loadings=cached.loadings||[];trucks=cached.trucks||[];
   }else{
@@ -5870,7 +5872,7 @@ function resetPoTruckAutoSheet(){
 }
 async function autoSavePoultrySheetFile(file){
  if(!file)return null;
- if(deviceMode&&!navigator.onLine)return null;
+ if(deviceMode&&!c360NetOnline())return null;
  const token=makeOfflineId('sheet-auto');
  poTruckAutoSheetUpload=uploadPoultrySheet(file,token).then(path=>{
   poTruckAutoSheetPath=path;
@@ -6002,7 +6004,7 @@ function fillTruckPairFrom(source){
  }
 }
 async function loadTruckDriverPairs(){
- if(deviceMode&&!navigator.onLine){
+ if(deviceMode&&!c360NetOnline()){
   poultryDriverPairs=await offlineCacheGet(offlineTeamKey('driver_pairs'))||[];
   refreshTruckDriverSuggestions();
   return poultryDriverPairs;
@@ -6047,7 +6049,7 @@ async function autoSaveTruckDriverPair(){
  const driver=$('#poTruckDriver')?.value.trim()||'',plate=$('#poTruckPlate')?.value.trim().toUpperCase()||'';
  if(!driver||!plate)return;
  try{
-  if(navigator.onLine)await saveTruckDriverPair(driver,plate,null,false);
+  if(c360NetOnline())await saveTruckDriverPair(driver,plate,null,false);
   else await rememberTruckDriverPairOffline(driver,plate,false);
  }catch(e){console.warn('Salvamento automático motorista/placa',e)}
 }
@@ -6114,7 +6116,7 @@ async function saveTruckLoad(closeAfter=false){
   is_cata:isCata,barn_breakdown:barnBreakdown,notes:$('#poTruckNotes').value.trim()||null,sheet
  };
 
- if(deviceMode&&!navigator.onLine){
+ if(deviceMode&&!c360NetOnline()){
   try{
    $('#poTruckMsg').textContent='Salvando caminhão e ficha neste celular...';
    const id=makeOfflineId('truck');
@@ -6179,7 +6181,7 @@ async function reopenPoultryOperationAndAddTruck(btn){
 }
 
 async function completePoultryOperation(operationId,loadingId){
- if(deviceMode&&!navigator.onLine){
+ if(deviceMode&&!c360NetOnline()){
   try{
    const trucks=poultryTruckLoads.filter(t=>t.loading_id===loadingId);
    if(!trucks.length)return alert('Registre pelo menos um caminhão antes de concluir a apanha.');
@@ -6243,7 +6245,7 @@ if($('#poTruckSheetFile'))$('#poTruckSheetFile').addEventListener('change',async
  resetPoTruckAutoSheet();
  if(!file){wrap.classList.add('hidden');img.removeAttribute('src');name.textContent='';return}
  img.src=URL.createObjectURL(file);wrap.classList.remove('hidden');
- if(deviceMode&&!navigator.onLine){
+ if(deviceMode&&!c360NetOnline()){
   name.textContent=file.name+' • salva neste celular e será enviada automaticamente quando voltar a internet';
   return;
  }
@@ -6289,7 +6291,7 @@ document.addEventListener('click',async e=>{
  const ra=e.target.closest('.poReopenAddTruck');
  if(ra){
    e.preventDefault();
-   if(deviceMode&&!navigator.onLine)return alert('Para reabrir uma apanha concluída, conecte o celular à internet.');
+   if(deviceMode&&!c360NetOnline())return alert('Para reabrir uma apanha concluída, conecte o celular à internet.');
    await reopenPoultryOperationAndAddTruck(ra);
    return;
  }
@@ -6317,7 +6319,7 @@ async function getDeviceSupervisorReportInfo(){
  const cached=uid?await offlineCacheGet('device_identity:'+uid):null;
  let name=cached?.supervisorInfo?.full_name||'';
  let phone=deviceTeam?.metadata?.supervisor_phone||cached?.supervisorInfo?.phone||'';
- if(navigator.onLine&&deviceTeam?.supervisor_employee_id){
+ if(c360NetOnline()&&deviceTeam?.supervisor_employee_id){
   try{
    const rows=await rest('v2_employees','select=id,full_name,phone&id=eq.'+encodeURIComponent(deviceTeam.supervisor_employee_id)+'&limit=1');
    if(rows?.[0]){name=rows[0].full_name||name;phone=deviceTeam?.metadata?.supervisor_phone||rows[0].phone||phone}
@@ -7304,7 +7306,7 @@ function openFuelEdit(id){
 
 async function loadFuel(){
  let logs=[],vehicles=[];
- if(deviceMode&&!navigator.onLine){
+ if(deviceMode&&!c360NetOnline()){
   vehicles=await offlineCacheGet(offlineTeamKey('fuel_vehicles'))||[];
   logs=await offlineCacheGet(offlineTeamKey('fuel_logs'))||[];
   const pending=(await offlineQueueList()).filter(x=>x.type==='fuel').map(x=>({
@@ -7415,7 +7417,7 @@ async function saveFuel(){
  const btn=document.getElementById('saveFuelBtn');
  try{
   if(btn)btn.disabled=true;
-  if(editId&&deviceMode&&!navigator.onLine)throw new Error('Para editar um abastecimento já sincronizado, conecte este celular à internet.');
+  if(editId&&deviceMode&&!c360NetOnline())throw new Error('Para editar um abastecimento já sincronizado, conecte este celular à internet.');
   const fueledAt=new Date(document.getElementById('fuelDate').value||Date.now()).toISOString();
   const offlineId=existing?.offline_event_id||makeOfflineId('fuel');
   const metadata={
@@ -7437,7 +7439,7 @@ async function saveFuel(){
    offline_event_id:offlineId,metadata
   };
 
-  if(deviceMode&&!navigator.onLine){
+  if(deviceMode&&!c360NetOnline()){
    m.textContent='Salvando abastecimento neste celular...';
    basePayload.metadata.source='team_device_offline';
    basePayload.metadata.offline_captured=true;
@@ -7715,7 +7717,7 @@ let fleetCrlvAutoReadRunning=false;
 const fleetCrlvAutoReadTried=new Set();
 
 async function autoReadPendingFleetCrlvs(){
- if(fleetCrlvAutoReadRunning||!navigator.onLine||!companyId)return;
+ if(fleetCrlvAutoReadRunning||!c360NetOnline()||!companyId)return;
 
  const docs=(vehicleDocsCache||[]).filter(d=>isVehicleCrlv(d.document_type)&&d.status==='active'&&d.file_id);
  const queue=[];
@@ -7749,7 +7751,7 @@ async function autoReadPendingFleetCrlvs(){
 }
 
 function scheduleAutomaticCrlvRead(){
- if(!navigator.onLine||!companyId)return;
+ if(!c360NetOnline()||!companyId)return;
  clearTimeout(window.__fleetCrlvAutoTimer);
  window.__fleetCrlvAutoTimer=setTimeout(()=>{
   autoReadPendingFleetCrlvs().catch(e=>console.warn('Leitura automática de CRLV',e));
@@ -9391,7 +9393,7 @@ if(window.__c360ApplySystemTheme)window.__c360ApplySystemTheme();
 (()=>{const d=new Date();$('#v2Today').textContent='Hoje, '+d.toLocaleDateString('pt-BR');$('#v2Weekday').textContent=d.toLocaleDateString('pt-BR',{weekday:'long'})})();
 function updateNetworkBadge(){
  const el=$('#networkBadge');if(!el)return;
- const online=navigator.onLine;
+ const online=c360NetOnline();
  el.textContent=online?'● Online':'● Sem internet';
  el.classList.toggle('online',online);
  el.classList.toggle('offline',!online);
@@ -9399,22 +9401,22 @@ function updateNetworkBadge(){
 window.addEventListener('online',()=>{updateNetworkBadge();c360Toast('Conexão restabelecida','O Comando 360 voltou a ficar online.','success',2600);fleetCrlvAutoReadTried.clear();setTimeout(()=>{syncOfflineQueue().catch(e=>console.warn('sync online',e));scheduleAutomaticCrlvRead()},400)});
 window.addEventListener('offline',()=>{updateNetworkBadge();c360Toast('Você está sem internet','Os registros compatíveis continuam sendo guardados para sincronizar depois.','info',4200)});
 updateNetworkBadge();
-setInterval(()=>{if(navigator.onLine&&session()?.refresh_token)ensureFreshAccessToken(180).catch(e=>console.warn('renovação de sessão',e))},5*60*1000);
+setInterval(()=>{if(c360NetOnline()&&session()?.refresh_token)ensureFreshAccessToken(180).catch(e=>console.warn('renovação de sessão',e))},5*60*1000);
 if($('#offlineQueueBadge'))$('#offlineQueueBadge').addEventListener('click',()=>{openOfflineSyncPanel().catch(e=>console.warn(e))});
 if($('#closeOfflineSyncPanel'))$('#closeOfflineSyncPanel').addEventListener('click',()=>$('#offlineSyncPanel').classList.add('hidden'));
 if($('#syncOfflineNow'))$('#syncOfflineNow').addEventListener('click',async()=>{
  const b=$('#syncOfflineNow');if(b.disabled)return;
- if(!navigator.onLine){alert('Sem internet. Os registros continuam guardados neste celular.');return}
+ if(!c360NetOnline()){alert('Sem internet. Os registros continuam guardados neste celular.');return}
  b.disabled=true;b.textContent='SINCRONIZANDO...';
  try{await syncOfflineQueue();await renderOfflineSyncPanel()}
  finally{b.disabled=false;b.textContent='SINCRONIZAR AGORA'}
 });
 setInterval(()=>{
- if(navigator.onLine&&companyId)offlineQueueList().then(q=>{if(q.length)syncOfflineQueue().catch(()=>{})}).catch(()=>{});
+ if(c360NetOnline()&&companyId)offlineQueueList().then(q=>{if(q.length)syncOfflineQueue().catch(()=>{})}).catch(()=>{});
 },60000);
 let movitHistoryAutoSyncBusy=false;
 setInterval(async()=>{
- if(movitHistoryAutoSyncBusy||!navigator.onLine||!companyId||deviceMode||!session()?.access_token)return;
+ if(movitHistoryAutoSyncBusy||!c360NetOnline()||!companyId||deviceMode||!session()?.access_token)return;
  movitHistoryAutoSyncBusy=true;
  try{
   const st=await movitInvoke('status');
@@ -9713,4 +9715,5 @@ if(document.getElementById('settingsAddContract'))document.getElementById('setti
 
 function isPointScreenMounted(){return !!document.querySelector('#screenHost [data-screen="ponto"]')}
 </script>
+<script src="./c360-quality-hotfix.js"></script>
 </body></html>
