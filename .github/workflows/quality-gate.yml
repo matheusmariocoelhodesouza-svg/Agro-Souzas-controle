@@ -29,14 +29,17 @@ jobs:
           test -s dda.html
           test -s comando360.webmanifest
           test -s c360-quality-hotfix.js
+          test -s c360-ui-polish.css
           test -s sw-v7-02.js
 
       - name: Validate PWA quality wiring
         run: |
           grep -q "c360-quality-hotfix.js" sw-v7-02.js
-          grep -q "comando360-v7-02-hotfix3" sw-v7-02.js
+          grep -q "c360-ui-polish.css" sw-v7-02.js
+          grep -q "comando360-v7-02-hotfix4" sw-v7-02.js
           grep -q "status:'pending'" c360-quality-hotfix.js
           grep -q "comando360-dda" c360-quality-hotfix.js
+          grep -q "UI POLISH 2026.09.10-u1" c360-ui-polish.css
 
       - name: Basic HTML parse
         run: |
@@ -51,6 +54,11 @@ jobs:
               assert '<html' in text.lower(), f'{name}: missing html root'
               assert '</html>' in text.lower(), f'{name}: missing closing html'
               print(f'{name}: OK ({len(text):,} bytes)')
+          css=Path('c360-ui-polish.css').read_text(encoding='utf-8')
+          assert css.count('{') == css.count('}'), 'c360-ui-polish.css: unbalanced braces'
+          assert 'body.darkmode' in css, 'c360-ui-polish.css: dark theme rules missing'
+          assert '#inicio' in css, 'c360-ui-polish.css: dashboard polish missing'
+          print(f'c360-ui-polish.css: OK ({len(css):,} bytes)')
           PY
 
       - name: Reject obvious secret-key leaks
