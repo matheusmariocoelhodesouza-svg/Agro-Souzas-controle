@@ -7,7 +7,7 @@ quality debt that should be reviewed but may be intentional.
 """
 from __future__ import annotations
 
-from collections import Counter, defaultdict
+from collections import defaultdict
 from html.parser import HTMLParser
 from pathlib import Path
 from urllib.parse import urlsplit
@@ -29,6 +29,7 @@ class AuditParser(HTMLParser):
     def __init__(self) -> None:
         super().__init__(convert_charrefs=True)
         self.ids: list[tuple[str, int]] = []
+        self.id_attrs: dict[str, tuple[dict[str, str | None], int]] = {}
         self.refs: list[tuple[str, str, int]] = []
         self.fragment_refs: list[tuple[str, int]] = []
         self.label_fors: list[tuple[str, int]] = []
@@ -43,6 +44,7 @@ class AuditParser(HTMLParser):
         line, _ = self.getpos()
         if "id" in attrs and attrs["id"]:
             self.ids.append((attrs["id"], line))
+            self.id_attrs[attrs["id"]] = (attrs, line)
         if tag == "label" and attrs.get("for"):
             self.label_fors.append((attrs["for"], line))
         if tag == "button" and not attrs.get("type"):
@@ -107,10 +109,38 @@ def discover_js_symbols(texts: list[str]) -> set[str]:
     return symbols
 
 
+def check_tenant_neutrality(index_text: str, parser: AuditParser, errors: list[str]) -> None:
+    """Prevent a future tenant from inheriting another company's identity."""
+    for field_id in ("companyLegalName", "companyTaxId"):
+        item = parser.id_attrs.get(field_id)
+        if not item:
+            continue
+        attrs, line = item
+        if (attrs.get("value") or "").strip():
+            errors.append(
+                f"index.html:{line}: #{field_id} possui valor estático; identidade da empresa deve vir do tenant ativo"
+            )
+
+    fallback = re.search(
+        r"\bEMPLOYER_FALLBACK\s*=\s*\{(?P<body>.*?)\}",
+        index_text,
+        flags=re.S,
+    )
+    if fallback:
+        body = fallback.group("body")
+        for key in ("legal_name", "tax_id"):
+            m = re.search(rf"\b{key}\s*:\s*(['\"])(.*?)\1", body, flags=re.S)
+            if m and m.group(2).strip():
+                errors.append(
+                    f"index.html: EMPLOYER_FALLBACK.{key} não pode conter identidade de uma empresa específica"
+                )
+
+
 def main() -> int:
     errors: list[str] = []
     warnings: list[str] = []
     parsers: dict[str, AuditParser] = {}
+    html_texts: dict[str, str] = {}
     js_texts: list[str] = []
 
     for path in HTML_FILES:
@@ -118,6 +148,7 @@ def main() -> int:
             errors.append(f"{path.name}: arquivo obrigatório ausente")
             continue
         text = path.read_text(encoding="utf-8")
+        html_texts[path.name] = text
         parser = AuditParser()
         parser.feed(text)
         parser.close()
@@ -164,11 +195,17 @@ def main() -> int:
             errors.append(f"{name}: seção essencial #{section_id} ausente")
 
         if parser.buttons_without_type:
-            warnings.append(f"{name}: {len(parser.buttons_without_type)} botão(ões) sem type explícito (primeiras linhas: {parser.buttons_without_type[:8]})")
+            errors.append(
+                f"{name}: {len(parser.buttons_without_type)} botão(ões) sem type explícito "
+                f"(primeiras linhas: {parser.buttons_without_type[:8]})"
+            )
         if parser.images_without_alt:
             warnings.append(f"{name}: {len(parser.images_without_alt)} imagem(ns) sem atributo alt (primeiras linhas: {parser.images_without_alt[:8]})")
         if parser.forms_without_submit_control:
             warnings.append(f"{name}: {len(parser.forms_without_submit_control)} form(s) sem controle submit explícito (linhas: {parser.forms_without_submit_control[:8]})")
+
+    if "index.html" in parsers:
+        check_tenant_neutrality(html_texts["index.html"], parsers["index.html"], errors)
 
     manifest = ROOT / "comando360.webmanifest"
     if manifest.exists():
