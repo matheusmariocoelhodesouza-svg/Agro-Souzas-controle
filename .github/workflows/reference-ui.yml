@@ -1,0 +1,52 @@
+name: Comando 360 Reference Browser QA
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'dda.html'
+      - '*.css'
+      - '*.js'
+      - 'comando360.webmanifest'
+      - 'qa/reference_ui.mjs'
+      - '.github/workflows/reference-ui.yml'
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  browser-reference-qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install browser test runtime
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Start local production shell
+        run: |
+          python3 -m http.server 8080 --bind 127.0.0.1 > /tmp/c360-http.log 2>&1 &
+          for i in $(seq 1 20); do
+            curl -fsS http://127.0.0.1:8080/ >/dev/null && exit 0
+            sleep 1
+          done
+          cat /tmp/c360-http.log
+          exit 1
+      - name: Run customer and owner UI audit
+        run: node qa/reference_ui.mjs
+      - name: Upload QA screenshots and report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: comando360-reference-ui
+          path: qa-artifacts/
+          if-no-files-found: error
+          retention-days: 14
