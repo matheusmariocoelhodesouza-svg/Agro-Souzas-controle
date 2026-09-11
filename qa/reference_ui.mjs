@@ -2,6 +2,7 @@ import { chromium } from 'playwright';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
+const auditVersion = '2026.09.11-r2';
 const base = process.env.C360_BASE_URL || 'http://127.0.0.1:8080';
 const out = path.resolve('qa-artifacts');
 await fs.mkdir(out, { recursive: true });
@@ -12,7 +13,7 @@ const screens = [
   'integracoes','ia'
 ];
 const criticalMobile = ['inicio','operacoes','ponto','frota','financeiro'];
-const results = { base, pageErrors: [], consoleErrors: [], overflow: [], missing: [], screenshots: [] };
+const results = { auditVersion, base, pageErrors: [], consoleErrors: [], overflow: [], missing: [], screenshots: [] };
 
 function safeName(value){ return value.replace(/[^a-z0-9_-]+/gi,'-').toLowerCase(); }
 
@@ -137,6 +138,7 @@ try {
 
 await fs.writeFile(path.join(out,'report.json'), JSON.stringify(results,null,2));
 console.log(JSON.stringify({
+  auditVersion: results.auditVersion,
   screenshots: results.screenshots.length,
   pageErrors: results.pageErrors.length,
   consoleErrors: results.consoleErrors.length,
