@@ -38,9 +38,12 @@ jobs:
 
       - name: Validate PWA quality wiring
         run: |
-          grep -q "c360-quality-hotfix.js" sw-v7-02.js
-          grep -q "c360-ui-polish.css" sw-v7-02.js
-          grep -q "comando360-v7-02-hotfix4" sw-v7-02.js
+          grep -q 'c360-ui-polish.css' index.html
+          grep -q 'c360-field-offline-hotfix.js' index.html
+          grep -q 'c360-quality-hotfix.js' index.html
+          ! grep -q 'navigator.onLine' index.html
+          grep -q "comando360-v7-02-hotfix5" sw-v7-02.js
+          ! grep -q "replaceAll('navigator.onLine'" sw-v7-02.js
           grep -q "status:'pending'" c360-quality-hotfix.js
           grep -q "comando360-dda" c360-quality-hotfix.js
           grep -q "UI POLISH 2026.09.10-u1" c360-ui-polish.css
