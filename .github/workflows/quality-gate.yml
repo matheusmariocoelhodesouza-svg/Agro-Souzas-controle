@@ -19,9 +19,9 @@ jobs:
 
       - name: Check JavaScript syntax
         run: |
-          node --check c360-quality-hotfix.js
-          node --check c360-field-offline-hotfix.js
-          node --check sw-v7-02.js
+          for f in ./*.js; do
+            [ -f "$f" ] && node --check "$f"
+          done
 
       - name: Check required production files
         run: |
@@ -31,6 +31,10 @@ jobs:
           test -s c360-quality-hotfix.js
           test -s c360-ui-polish.css
           test -s sw-v7-02.js
+          test -s qa/reference_audit.py
+
+      - name: Reference structural audit
+        run: python qa/reference_audit.py
 
       - name: Validate PWA quality wiring
         run: |
