@@ -2019,19 +2019,19 @@ body.darkmode #financeiro .finance-privacy-btn{background:#17283d;border-color:#
 <div class="v2logo"><img class="v2brandicon" src="./comando360-icon.svg" alt="Comando 360"/><div><strong>COMANDO <span>360</span></strong><small>VISIBILIDADE • CONTROLE • PROGRESSO</small></div></div>
 <button class="v2navbtn c360-sidebar-search" id="sidebarSearchBtn" type="button">⌕   Busca geral</button>
 <div class="v2group">OPERAÇÃO</div>
-<button class="v2navbtn active" data-v2tab="inicio">▦   Painel</button>
-<button class="v2navbtn" data-v2tab="operacoes">▣   Operações</button>
-<button class="v2navbtn" data-v2tab="equipes">👥   Equipes</button>
+<button type="button" class="v2navbtn active" data-v2tab="inicio">▦   Painel</button>
+<button type="button" class="v2navbtn" data-v2tab="operacoes">▣   Operações</button>
+<button type="button" class="v2navbtn" data-v2tab="equipes">👥   Equipes</button>
 <div class="v2group">GESTÃO</div>
-<button class="v2navbtn" data-v2tab="funcionarios">♙   RH</button>
-<button class="v2navbtn" data-v2tab="frota">▰   Frota</button>
-<button class="v2navbtn" data-v2tab="insumos">🧴   Insumos</button>
-<button class="v2navbtn" data-v2tab="financeiro">💰   Financeiro</button>
-<button class="v2navbtn" data-v2tab="relatorios">📊   Relatórios</button>
+<button type="button" class="v2navbtn" data-v2tab="funcionarios">♙   RH</button>
+<button type="button" class="v2navbtn" data-v2tab="frota">▰   Frota</button>
+<button type="button" class="v2navbtn" data-v2tab="insumos">🧴   Insumos</button>
+<button type="button" class="v2navbtn" data-v2tab="financeiro">💰   Financeiro</button>
+<button type="button" class="v2navbtn" data-v2tab="relatorios">📊   Relatórios</button>
 <div class="v2group">SISTEMA</div>
-<button class="v2navbtn" data-v2tab="alertas">🔔   Alertas</button>
-<button class="v2navbtn" data-v2tab="ia">✦   Assistente IA</button>
-<button class="v2navbtn" data-v2tab="configuracoes">⚙   Configurações</button>
+<button type="button" class="v2navbtn" data-v2tab="alertas">🔔   Alertas</button>
+<button type="button" class="v2navbtn" data-v2tab="ia">✦   Assistente IA</button>
+<button type="button" class="v2navbtn" data-v2tab="configuracoes">⚙   Configurações</button>
 </aside>
 <div class="mobile-menu-backdrop" id="mobileMenuBackdrop" aria-hidden="true"></div>
 <div class="app-progress" id="appProgress" aria-hidden="true"><i></i></div>
@@ -2070,7 +2070,7 @@ body.darkmode #financeiro .finance-privacy-btn{background:#17283d;border-color:#
   <div class="brand"><img class="header-brand-icon" src="./comando360-icon.svg" alt="Comando 360"/><div><b>Comando <span class="brand360">360</span></b><div><small id="companyName">Empresa</small></div></div></div>
  </div>
  <div class="header-module" id="headerModule"><span id="headerModuleTitle">Painel Geral</span><small id="headerModuleSubtitle">Central de gestão</small></div>
- <div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="header-icon-btn" id="headerSearchBtn" type="button" title="Busca geral" aria-label="Busca geral">⌕</button><button class="header-icon-btn" type="button" data-jump="alertas" title="Alertas" aria-label="Abrir alertas">🔔<span id="headerAlertsCount">0</span></button><button class="header-icon-btn" type="button" data-jump="ia" title="Assistente IA" aria-label="Abrir Assistente IA">✦</button><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v7.02</span><button class="btn soft" id="themeToggle" type="button" aria-label="Alternar tema">☾</button><button class="btn soft hidden" id="logout">Sair</button></div>
+ <div class="v2topmeta"><div class="v2date"><b id="v2Today">Hoje</b><span id="v2Weekday"></span></div><span class="pill online" id="networkBadge" title="Estado da conexão">● Online</span><button class="header-icon-btn" id="headerSearchBtn" type="button" title="Busca geral" aria-label="Busca geral">⌕</button><button class="header-icon-btn" type="button" data-jump="alertas" title="Alertas" aria-label="Abrir alertas">🔔<span id="headerAlertsCount">0</span></button><button class="header-icon-btn" type="button" data-jump="ia" title="Assistente IA" aria-label="Abrir Assistente IA">✦</button><button class="pill warn hidden" id="offlineQueueBadge" type="button" title="Registros aguardando sincronização" style="border:0;cursor:pointer">⟳ 0 pendentes</button><span class="pill" id="buildBadge" title="Versão publicada">v7.02</span><button class="btn soft" id="themeToggle" type="button" aria-label="Alternar tema">☾</button><button type="button" class="btn soft hidden" id="logout">Sair</button></div>
 </header>
 <main class="wrap">
 <section class="login team-entry" id="login">
@@ -2078,7 +2078,7 @@ body.darkmode #financeiro .finance-privacy-btn{background:#17283d;border-color:#
  <div class="team-entry-title"><img class="login-brand-icon" src="./comando360-icon.svg" alt="Comando 360"/><h2 id="deviceSetupTitle">Configurar celular da equipe</h2><div class="muted" id="deviceSetupSubtitle">Digite uma única vez o código gerado pelo administrador. O aparelho ficará vinculado à equipe e abrirá direto, sem login e senha.</div></div>
  <label>Código de ativação</label>
  <input class="team-code-input" id="deviceCode" inputmode="text" maxlength="12" placeholder="AB12CD34"/>
- <button class="btn primary" id="deviceActivateBtn" style="width:100%;padding:14px">ATIVAR CELULAR</button>
+ <button type="button" class="btn primary" id="deviceActivateBtn" style="width:100%;padding:14px">ATIVAR CELULAR</button>
  <div class="muted" id="deviceMsg" style="margin-top:10px;text-align:center"></div>
  <button class="btn soft" id="showAdminLogin" type="button" style="width:100%;margin-top:14px">Acesso do administrador</button>
 </div>
@@ -2086,13 +2086,13 @@ body.darkmode #financeiro .finance-privacy-btn{background:#17283d;border-color:#
  <div class="admin-brand"><img src="./comando360-icon.svg" alt="Comando 360"/><div><h2>Comando <span>360</span></h2><div class="muted">Acesso administrativo completo</div></div></div>
  <label>E-mail</label><input autocomplete="username" id="email" type="email"/>
  <label>Senha</label><input autocomplete="current-password" id="password" type="password"/>
- <button class="btn primary" id="loginBtn">Entrar</button>
+ <button type="button" class="btn primary" id="loginBtn">Entrar</button>
  <button class="btn soft" id="backDeviceSetup" type="button" style="margin-left:6px">Voltar</button>
  <div class="muted" id="loginMsg" style="margin-top:10px">Comando 360 • v7.02</div><div class="debug" id="debug"></div>
 </div>
 </section>
 <section class="hidden" id="app">
-<div class="nav" id="nav"><button class="active" data-tab="inicio">Início</button><button data-tab="equipes">Equipes</button><button data-tab="funcionarios">RH &amp; Pessoas</button><button data-tab="documentosrh">Docs RH</button><button data-tab="ponto">Ponto</button><button data-tab="operacoes">Operações / Apanha</button><button data-tab="frota">Frota</button><button data-tab="manutencoes">Manutenções</button><button data-tab="combustivel">Combustível & KM</button><button data-tab="insumos">Insumos</button><button data-tab="financeiro">Financeiro</button><button data-tab="relatorios">Relatórios</button><button data-tab="alertas">Alertas</button><button data-tab="integracoes">Integrações</button><button data-tab="ia">Assistente IA</button></div>
+<div class="nav" id="nav"><button type="button" class="active" data-tab="inicio">Início</button><button type="button" data-tab="equipes">Equipes</button><button type="button" data-tab="funcionarios">RH &amp; Pessoas</button><button type="button" data-tab="documentosrh">Docs RH</button><button type="button" data-tab="ponto">Ponto</button><button type="button" data-tab="operacoes">Operações / Apanha</button><button type="button" data-tab="frota">Frota</button><button type="button" data-tab="manutencoes">Manutenções</button><button type="button" data-tab="combustivel">Combustível & KM</button><button type="button" data-tab="insumos">Insumos</button><button type="button" data-tab="financeiro">Financeiro</button><button type="button" data-tab="relatorios">Relatórios</button><button type="button" data-tab="alertas">Alertas</button><button type="button" data-tab="integracoes">Integrações</button><button type="button" data-tab="ia">Assistente IA</button></div>
 <div class="team-mode-bar hidden" id="deviceModeBar"><div><strong id="deviceModeTeam">Equipe</strong><div class="muted">Acesso restrito a este aparelho</div></div><button class="btn soft" type="button" data-teamtab="equipehome">⌂ Início</button></div>
 <div class="offline-sync-panel hidden" id="offlineSyncPanel">
  <div class="offline-sync-box">
@@ -2219,13 +2219,13 @@ body.darkmode #financeiro .finance-privacy-btn{background:#17283d;border-color:#
 <div class="section" data-screen="funcionarios" hidden="" id="funcionarios">
 <div class="v2hero"><div><div class="dashboard-eyebrow">GESTÃO DE PESSOAS</div><h1>RH</h1><p>Funcionários, ponto, documentos, jornada, biometria e férias em uma única área.</p></div></div>
 <div class="module-subnav"><button class="active" type="button" data-jump="funcionarios">👥 Pessoas</button><button type="button" data-jump="ponto">⏱ Ponto</button><button type="button" data-jump="documentosrh">📁 Documentos</button></div>
-<div class="card rh-employer-card"><div class="toolbar"><div><strong>🏢 Dados do empregador</strong><div class="muted">Preenchidos automaticamente e usados nos documentos, recibos e comprovantes do ponto.</div></div></div><div class="row"><div><label>Razão social</label><input id="companyLegalName" value="Nágila Severino de Araújo Apanha de Aves Vivas" readonly aria-readonly="true"/></div><div><label>CNPJ</label><input id="companyTaxId" value="53.422.038/0001-19" readonly aria-readonly="true"/></div></div><input id="companyTradeName" type="hidden" value=""/><div class="muted" id="companyProfileMsg">Dados do empregador definidos pelo administrador.</div></div><div class="card" id="employeeEditCard" style="display:none"><div class="toolbar"><div><h3 style="margin:0">Editar funcionário</h3><div class="muted" id="employeeEditSubtitle">Atualize o cadastro sem perder o histórico.</div></div><button class="btn soft" id="cancelEmployeeEdit" type="button">Cancelar</button></div><input id="editEmployeeId" type="hidden"/><div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin:12px 0 16px"><img id="editEmployeePhotoPreview" alt="Foto do funcionário" style="width:112px;height:112px;object-fit:cover;border-radius:18px;border:1px solid #cbd5e1;background:#f8fafc"/><div><div style="font-weight:800;margin-bottom:8px">Foto de perfil</div><div class="toolbar"><button class="btn primary" id="takeEmployeePhoto" type="button">📷 TIRAR FOTO</button><button class="btn soft" id="chooseEmployeePhoto" type="button">🖼️ GALERIA</button><button class="btn soft" id="removeEmployeePhoto" type="button">REMOVER</button></div><input accept="image/jpeg,image/png,image/webp" capture="user" class="hidden" id="employeePhotoCamera" type="file"/><input accept="image/jpeg,image/png,image/webp" class="hidden" id="employeePhotoGallery" type="file"/><div class="muted" style="margin-top:7px"><b>Foto oficial do colaborador.</b> Ao salvar uma nova foto, o app também usa esta mesma imagem como referência do reconhecimento facial do Ponto 2.0.</div></div></div><div class="row"><div><label>Nome completo</label><input id="editEmployeeName"/></div><div><label>Matrícula</label><input id="editEmployeeNumber" inputmode="numeric"/></div><div><label>CPF</label><input id="editEmployeeCpf" inputmode="numeric"/></div></div><div class="row"><div><label>RG</label><input id="editEmployeeRg"/></div><div><label>Data de nascimento</label><input id="editEmployeeBirth" type="date"/></div><div><label>Telefone</label><input id="editEmployeePhone"/></div></div><div class="row"><div><label>Cargo / função</label><input id="editEmployeeJob"/></div><div><label>Equipe</label><input id="editEmployeeTeam" placeholder="Ex.: Equipe 1"/></div><div><label>Data de admissão</label><input id="editEmployeeAdmission" type="date"/></div></div><div><label>Endereço</label><input id="editEmployeeAddress" placeholder="Rua, número, bairro, cidade..."/></div><div class="row" style="margin-top:12px"><button class="btn primary" id="saveEmployeeEdit" type="button">SALVAR ALTERAÇÕES</button><button class="btn soft" id="archiveEmployee" type="button">ARQUIVAR FUNCIONÁRIO</button><button class="btn danger" id="deleteEmployee" type="button">EXCLUIR DEFINITIVAMENTE</button></div><div class="muted" id="employeeEditMsg" style="margin-top:8px"></div></div>
+<div class="card rh-employer-card"><div class="toolbar"><div><strong>🏢 Dados do empregador</strong><div class="muted">Preenchidos automaticamente e usados nos documentos, recibos e comprovantes do ponto.</div></div></div><div class="row"><div><label>Razão social</label><input id="companyLegalName" value="" readonly aria-readonly="true"/></div><div><label>CNPJ</label><input id="companyTaxId" value="" readonly aria-readonly="true"/></div></div><input id="companyTradeName" type="hidden" value=""/><div class="muted" id="companyProfileMsg">Dados carregados automaticamente da empresa ativa no Comando 360.</div></div><div class="card" id="employeeEditCard" style="display:none"><div class="toolbar"><div><h3 style="margin:0">Editar funcionário</h3><div class="muted" id="employeeEditSubtitle">Atualize o cadastro sem perder o histórico.</div></div><button class="btn soft" id="cancelEmployeeEdit" type="button">Cancelar</button></div><input id="editEmployeeId" type="hidden"/><div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin:12px 0 16px"><img id="editEmployeePhotoPreview" alt="Foto do funcionário" style="width:112px;height:112px;object-fit:cover;border-radius:18px;border:1px solid #cbd5e1;background:#f8fafc"/><div><div style="font-weight:800;margin-bottom:8px">Foto de perfil</div><div class="toolbar"><button class="btn primary" id="takeEmployeePhoto" type="button">📷 TIRAR FOTO</button><button class="btn soft" id="chooseEmployeePhoto" type="button">🖼️ GALERIA</button><button class="btn soft" id="removeEmployeePhoto" type="button">REMOVER</button></div><input accept="image/jpeg,image/png,image/webp" capture="user" class="hidden" id="employeePhotoCamera" type="file"/><input accept="image/jpeg,image/png,image/webp" class="hidden" id="employeePhotoGallery" type="file"/><div class="muted" style="margin-top:7px"><b>Foto oficial do colaborador.</b> Ao salvar uma nova foto, o app também usa esta mesma imagem como referência do reconhecimento facial do Ponto 2.0.</div></div></div><div class="row"><div><label>Nome completo</label><input id="editEmployeeName"/></div><div><label>Matrícula</label><input id="editEmployeeNumber" inputmode="numeric"/></div><div><label>CPF</label><input id="editEmployeeCpf" inputmode="numeric"/></div></div><div class="row"><div><label>RG</label><input id="editEmployeeRg"/></div><div><label>Data de nascimento</label><input id="editEmployeeBirth" type="date"/></div><div><label>Telefone</label><input id="editEmployeePhone"/></div></div><div class="row"><div><label>Cargo / função</label><input id="editEmployeeJob"/></div><div><label>Equipe</label><input id="editEmployeeTeam" placeholder="Ex.: Equipe 1"/></div><div><label>Data de admissão</label><input id="editEmployeeAdmission" type="date"/></div></div><div><label>Endereço</label><input id="editEmployeeAddress" placeholder="Rua, número, bairro, cidade..."/></div><div class="row" style="margin-top:12px"><button class="btn primary" id="saveEmployeeEdit" type="button">SALVAR ALTERAÇÕES</button><button class="btn soft" id="archiveEmployee" type="button">ARQUIVAR FUNCIONÁRIO</button><button class="btn danger" id="deleteEmployee" type="button">EXCLUIR DEFINITIVAMENTE</button></div><div class="muted" id="employeeEditMsg" style="margin-top:8px"></div></div>
 <div class="rh-kpi-grid">
 <div class="card rh-kpi-card"><div class="kpi" id="rhActive">0</div><div class="label">Funcionários ativos</div></div>
 <div class="card rh-kpi-card"><div class="kpi" id="rhWorking">0</div><div class="label">Com ponto hoje</div></div>
 <div class="card rh-kpi-card"><div class="kpi" id="rhVacation">0</div><div class="label">Alertas de férias</div></div>
 </div>
-<div class="card rh-list-card"><div class="toolbar" style="justify-content:space-between"><div><h3 style="margin:0">Funcionários</h3><div class="muted">Cadastro principal, equipe, cargo, admissão e biometria.</div></div><button class="btn soft" id="refreshRH">Atualizar</button></div><div class="list" id="employeesList"></div></div>
+<div class="card rh-list-card"><div class="toolbar" style="justify-content:space-between"><div><h3 style="margin:0">Funcionários</h3><div class="muted">Cadastro principal, equipe, cargo, admissão e biometria.</div></div><button type="button" class="btn soft" id="refreshRH">Atualizar</button></div><div class="list" id="employeesList"></div></div>
 
 <details class="card rh-tool-card">
 <summary><span>🕒 Jornada / Escala</span><small>Horários previstos, carga diária e tolerância</small></summary>
@@ -2241,14 +2241,14 @@ body.darkmode #financeiro .finance-privacy-btn{background:#17283d;border-color:#
 <div><label>Carga diária (horas:minutos)</label><input id="scheduleDuration" step="60" style="width:100%;padding:12px;margin-top:6px;border:1px solid #cbd5e1;border-radius:10px" type="time" value="08:00"/><div class="muted" style="margin-top:4px">Ex.: 08:00, 07:20 ou 06:00</div></div>
 <div><label>Tolerância atraso (min)</label><input id="scheduleTolerance" min="0" style="width:100%;padding:12px;margin-top:6px;border:1px solid #cbd5e1;border-radius:10px" type="number" value="10"/></div>
 </div>
-<div class="toolbar" style="margin-top:12px"><button class="btn primary" id="saveSchedule">SALVAR JORNADA</button></div>
+<div class="toolbar" style="margin-top:12px"><button type="button" class="btn primary" id="saveSchedule">SALVAR JORNADA</button></div>
 <div class="muted" id="scheduleMsg" style="margin-top:8px"></div>
 </div>
 </details>
 
 <details class="card rh-tool-card">
 <summary><span>🙂 Biometria facial</span><small>Foto de referência do reconhecimento facial</small></summary>
-<div class="rh-tool-body"><h3>Biometria facial</h3><div class="muted">A foto de perfil é a referência facial padrão. Use esta área para ativar uma foto de perfil antiga ou recadastrar manualmente quando necessário.</div><label>Funcionário</label><select id="faceEmployee" style="width:100%;padding:12px;margin:6px 0 10px;border:1px solid #cbd5e1;border-radius:10px"></select><div class="toolbar" style="margin:8px 0 12px"><button class="btn primary" id="useProfileFace" type="button">USAR FOTO DE PERFIL</button></div><label>Ou tire uma nova foto somente para recadastro facial</label><input accept="image/*" capture="user" id="faceReference" style="width:100%;padding:10px;margin:6px 0 10px" type="file"/><button class="btn soft" id="saveFaceReference">RECADASTRAR COM ESTA FOTO</button><div class="muted" id="faceEnrollMsg" style="margin-top:10px"></div><div class="list" id="faceEnrollmentList" style="margin-top:12px"></div></div>
+<div class="rh-tool-body"><h3>Biometria facial</h3><div class="muted">A foto de perfil é a referência facial padrão. Use esta área para ativar uma foto de perfil antiga ou recadastrar manualmente quando necessário.</div><label>Funcionário</label><select id="faceEmployee" style="width:100%;padding:12px;margin:6px 0 10px;border:1px solid #cbd5e1;border-radius:10px"></select><div class="toolbar" style="margin:8px 0 12px"><button class="btn primary" id="useProfileFace" type="button">USAR FOTO DE PERFIL</button></div><label>Ou tire uma nova foto somente para recadastro facial</label><input accept="image/*" capture="user" id="faceReference" style="width:100%;padding:10px;margin:6px 0 10px" type="file"/><button type="button" class="btn soft" id="saveFaceReference">RECADASTRAR COM ESTA FOTO</button><div class="muted" id="faceEnrollMsg" style="margin-top:10px"></div><div class="list" id="faceEnrollmentList" style="margin-top:12px"></div></div>
 </details>
 
 <details class="card rh-tool-card">
@@ -2267,8 +2267,8 @@ body.darkmode #financeiro .finance-privacy-btn{background:#17283d;border-color:#
 <h3>Ponto 2.0</h3>
 <div class="muted">Escolha como o funcionário será identificado: matrícula ou reconhecimento facial.</div>
 <div class="toolbar" style="margin:12px 0">
-<button class="btn primary" id="methodMatricula">MATRÍCULA</button>
-<button class="btn soft" id="methodFace">SELFIE</button>
+<button type="button" class="btn primary" id="methodMatricula">MATRÍCULA</button>
+<button type="button" class="btn soft" id="methodFace">SELFIE</button>
 </div>
 <div id="matriculaMode">
 <label>Matrícula</label>
@@ -2296,8 +2296,8 @@ body.darkmode #financeiro .finance-privacy-btn{background:#17283d;border-color:#
 <div id="nextPointLabel" style="font-size:18px;font-weight:900">Digite a matrícula</div>
 </div>
 <div class="toolbar">
-<button class="btn primary" id="registerPoint" style="font-size:18px;padding:14px 20px">BATER PONTO</button>
-<button class="btn soft" id="refreshPoint">Atualizar presença</button>
+<button type="button" class="btn primary" id="registerPoint" style="font-size:18px;padding:14px 20px">BATER PONTO</button>
+<button type="button" class="btn soft" id="refreshPoint">Atualizar presença</button>
 </div>
 <div class="muted" id="pointMsg" style="margin-top:10px"></div>
 <div class="hidden" id="pointReceipt" style="margin-top:12px"></div>
@@ -2338,13 +2338,13 @@ body.darkmode #financeiro .finance-privacy-btn{background:#17283d;border-color:#
 <div class="card"><h3>Presença de hoje</h3><div class="list" id="presenceList"></div></div>
 <div class="card"><h3>Últimas batidas</h3><div class="list" id="pointList"></div></div>
 <div class="card">
-<div class="toolbar"><h3 style="margin:0">Espelho de ponto</h3><button class="btn soft" id="refreshMirror">Atualizar</button></div>
+<div class="toolbar"><h3 style="margin:0">Espelho de ponto</h3><button type="button" class="btn soft" id="refreshMirror">Atualizar</button></div>
 <div class="muted" style="margin:6px 0 10px">Resumo diário por funcionário: jornada, intervalo e saldo de horas.</div>
 <div class="list" id="timeMirrorList"></div>
 </div></div>
 
 <div class="section" data-screen="operacoes" hidden="" id="operacoes">
-<div class="v2hero"><div><h1>Apanhas</h1><p>Cadastro da granja e carregamento caminhão por caminhão.</p></div><button class="btn v2new" id="newPoultryOp">+ Nova Apanha</button></div>
+<div class="v2hero"><div><h1>Apanhas</h1><p>Cadastro da granja e carregamento caminhão por caminhão.</p></div><button type="button" class="btn v2new" id="newPoultryOp">+ Nova Apanha</button></div>
 
 <div class="card hidden field-poultry-form" id="poultryForm">
  <div class="field-form-head">
@@ -2476,7 +2476,7 @@ body.darkmode #financeiro .finance-privacy-btn{background:#17283d;border-color:#
  <div id="poTruckMsg" class="muted field-form-msg"></div>
 </div>
 <div class="v2-kpis" id="poultryKpis"></div>
-<div class="v2panel"><div class="v2panelhead"><div><h3>Apanhas cadastradas</h3><div class="muted">Registre cada caminhão conforme for sendo carregado.</div></div><button class="btn soft" id="refreshPoultry">Atualizar</button></div><div class="list" id="poultryList"></div></div>
+<div class="v2panel"><div class="v2panelhead"><div><h3>Apanhas cadastradas</h3><div class="muted">Registre cada caminhão conforme for sendo carregado.</div></div><button type="button" class="btn soft" id="refreshPoultry">Atualizar</button></div><div class="list" id="poultryList"></div></div>
 </div>
 <div class="section" data-screen="frota" hidden="" id="frota">
 <div class="fleet-page">
@@ -2912,13 +2912,13 @@ body.darkmode #financeiro .finance-privacy-btn{background:#17283d;border-color:#
   <div class="card settings-card settings-wide"><div class="settings-head"><div><h3>🕘 Auditoria</h3><div class="muted">Últimas alterações registradas no sistema.</div></div></div><div id="settingsAudit" class="list"><div class="muted">Carregando histórico...</div></div></div>
  </div>
 </div>
-<div class="section" data-screen="ia" hidden="" id="ia"><div class="card chat"><h3>Assistente IA</h3><div class="muted">A IA avisará se a chave da OpenAI ainda não estiver configurada.</div><div class="chatbox" id="chatbox"></div><div class="toolbar" style="margin-top:10px"><input id="question" placeholder="Ex.: quais equipes estão atrasadas hoje?" style="flex:1;margin:0"/><button class="btn primary" id="sendAI">Enviar</button></div></div></div>
+<div class="section" data-screen="ia" hidden="" id="ia"><div class="card chat"><h3>Assistente IA</h3><div class="muted">A IA avisará se a chave da OpenAI ainda não estiver configurada.</div><div class="chatbox" id="chatbox"></div><div class="toolbar" style="margin-top:10px"><input id="question" placeholder="Ex.: quais equipes estão atrasadas hoje?" style="flex:1;margin:0"/><button type="button" class="btn primary" id="sendAI">Enviar</button></div></div></div>
 </section></main>
 <script>
 'use strict';
 const API_URL='https://aycbrqziusxtxhsdfqjk.supabase.co';
 const KEY='sb_publishable_OGJX3NBA__JxoyjB3IZNvQ_0nNwh_Xc';
-const EMPLOYER_FALLBACK={legal_name:'Nágila Severino de Araújo Apanha de Aves Vivas',tax_id:'53422038000119'};
+const EMPLOYER_FALLBACK={legal_name:'',tax_id:'53422038000119'};
 const withOfficialEmployer=(profile={})=>{
  const employer=profile?.metadata?.employer||{};
  return {...profile,legal_name:employer.legal_name||profile.legal_name||EMPLOYER_FALLBACK.legal_name,tax_id:employer.tax_id||profile.tax_id||EMPLOYER_FALLBACK.tax_id,employer_metadata:employer};
@@ -5831,9 +5831,9 @@ async function loadPoultryOps(renderUi=true){
       (!deviceMode&&o.status==='completed'?'<div class="site-memory po-revenue-card" style="margin-top:10px;background:#ecfdf5;border:1px solid #bbf7d0"><b>💰 Valor ganho: '+money(poN(o.actual_revenue))+'</b><div class="muted" style="margin-top:3px">'+revenueRule+' • lançado automaticamente no Financeiro</div></div>':'')+
       '<div class="po-trucks-section" style="margin-top:14px;padding-top:12px;border-top:1px solid #e5e7eb"><div class="toolbar" style="justify-content:space-between;align-items:flex-end"><div><strong>🚚 Carregamento caminhão por caminhão</strong><div class="muted">Cada caminhão fica registrado separadamente nesta apanha.</div></div><div class="muted">'+opTrucks.length+' registrado(s)</div></div><div class="truck-list">'+truckHtml+'</div></div>'+
       '<div class="po-actions" style="margin-top:12px">'+
-       (loading&&o.status!=='completed'?'<button class="btn primary poAddTruck" style="font-size:15px;padding:12px 18px" data-op="'+esc(o.id)+'" data-loading="'+esc(loading.id)+'" data-farm="'+esc(loading.farm_id||'')+'" data-name="'+esc(farm?.producer_name||o.title)+'" data-seq="'+(opTrucks.length+1)+'">+ ADICIONAR CAMINHÃO '+(opTrucks.length+1)+'</button>':'')+
+       (loading&&o.status!=='completed'?'<button type="button" class="btn primary poAddTruck" style="font-size:15px;padding:12px 18px" data-op="'+esc(o.id)+'" data-loading="'+esc(loading.id)+'" data-farm="'+esc(loading.farm_id||'')+'" data-name="'+esc(farm?.producer_name||o.title)+'" data-seq="'+(opTrucks.length+1)+'">+ ADICIONAR CAMINHÃO '+(opTrucks.length+1)+'</button>':'')+
        (o.status==='completed'?'<span class="pill ok">APANHA CONCLUÍDA • '+opTrucks.length+' CAMINHÃO(ÕES)'+(o.metadata?.offline_complete_pending?' • AGUARDANDO SYNC':'')+'</span>':'')+
-       (o.status!=='completed'?'<button class="btn soft poCompleteOp" data-op="'+esc(o.id)+'" data-loading="'+esc(loading?.id||'')+'">✓ Concluir Apanha</button>':'')+
+       (o.status!=='completed'?'<button type="button" class="btn soft poCompleteOp" data-op="'+esc(o.id)+'" data-loading="'+esc(loading?.id||'')+'">✓ Concluir Apanha</button>':'')+
        (isAdminGeneral&&o.status==='completed'?'<span class="pill ok">💰 Financeiro automático</span>':'')+
        (isAdminGeneral&&!pending?'<button class="btn danger poDeleteOp" data-op="'+esc(o.id)+'" data-loading="'+esc(loading?.id||'')+'" type="button">Excluir Apanha</button>':'')+
       '</div></div>';
@@ -6975,7 +6975,7 @@ async function loadMaintenances(){
    parts+
    (total?'<div class="muted">Custo: '+money(total)+(m.workshop?' • '+esc(m.workshop):'')+'</div>':'')+
    supplier+
-   '</div><div class="toolbar">'+receipt+'<button class="btn soft" onclick="openMaintenanceEdit(\''+p.id+'\')">Editar</button></div></div></div>';
+   '</div><div class="toolbar">'+receipt+'<button type="button" class="btn soft" onclick="openMaintenanceEdit(\''+p.id+'\')">Editar</button></div></div></div>';
  }).join('')||'<div class="muted">Nenhuma manutenção registrada. Toque em + Nova manutenção.</div>';
 }
 function calcMaintenanceTotal(){
@@ -8880,7 +8880,7 @@ function renderSmartAlerts(){
  const a=smartAlertsCache||[],d=a.filter(x=>x.level==='danger').length,w=a.filter(x=>x.level==='warn').length;
  const hc=document.getElementById('headerAlertsCount');if(hc)hc.textContent=String(a.length);
  const k=document.getElementById('alertsKpis');if(k)k.innerHTML=`<div class="v2kpi"><span>Total</span><strong>${a.length}</strong></div><div class="v2kpi"><span>Urgentes</span><strong>${d}</strong></div><div class="v2kpi"><span>Atenção</span><strong>${w}</strong></div><div class="v2kpi"><span>Situação</span><strong>${d?'Crítica':w?'Atenção':'OK'}</strong></div>`;
- const render=x=>`<div class="item"><div class="toolbar" style="justify-content:space-between"><div><strong>${esc(x.title)}</strong><div class="muted">${esc(x.text)}</div><span class="pill ${x.level==='danger'?'danger':'warn'}">${x.level==='danger'?'URGENTE':'ATENÇÃO'}</span></div><button class="btn soft alertJump" data-tab="${x.tab}">Abrir</button></div></div>`;
+ const render=x=>`<div class="item"><div class="toolbar" style="justify-content:space-between"><div><strong>${esc(x.title)}</strong><div class="muted">${esc(x.text)}</div><span class="pill ${x.level==='danger'?'danger':'warn'}">${x.level==='danger'?'URGENTE':'ATENÇÃO'}</span></div><button type="button" class="btn soft alertJump" data-tab="${x.tab}">Abrir</button></div></div>`;
  const l=document.getElementById('alertsList');if(l)l.innerHTML=a.map(render).join('')||'<div class="muted">Nenhuma pendência importante encontrada.</div>';
  const dash=document.getElementById('v2Alerts');if(dash)dash.innerHTML=a.slice(0,6).map(x=>`<button class="v2alert dash-alert ${x.level}" data-jump="${x.tab}" type="button"><span><strong>${esc(x.title)}</strong><span class="muted">${esc(x.text)}</span></span><b>›</b></button>`).join('')||'<div class="v2-empty dash-all-good"><strong>✓ Tudo certo</strong><span>Nenhum alerta importante agora.</span></div>';
 }
@@ -8916,7 +8916,7 @@ async function loadEmpDocs(){
  const s=document.getElementById('empDocEmployee');if(s)s.innerHTML='<option value="">Selecione...</option>'+emps.map(e=>`<option value="${e.id}">${esc(e.full_name)} • ${esc(e.employee_number||'')}</option>`).join('');
  let expired=0,soon=0;docs.forEach(d=>{const n=daysUntil(d.expires_at);if(n!==null&&n<0)expired++;else if(n!==null&&n<=30)soon++});
  const k=document.getElementById('empDocKpis');if(k)k.innerHTML=`<div class="v2kpi"><span>Documentos</span><strong>${docs.length}</strong></div><div class="v2kpi"><span>Vencidos</span><strong>${expired}</strong></div><div class="v2kpi"><span>Próximos</span><strong>${soon}</strong></div><div class="v2kpi"><span>Funcionários</span><strong>${emps.length}</strong></div>`;
- const l=document.getElementById('empDocsList');if(l)l.innerHTML=docs.map(d=>{const e=emps.find(x=>x.id===d.employee_id),n=daysUntil(d.expires_at),f=empDocFiles[d.file_id],cls=n!==null&&n<0?'danger':n!==null&&n<=30?'warn':'ok';return `<div class="item"><div class="toolbar" style="justify-content:space-between"><div><strong>${esc(d.document_type)} • ${esc(e?.full_name||'Funcionário')}</strong><div class="muted">${d.expires_at?'Vence '+new Date(d.expires_at+'T00:00:00').toLocaleDateString('pt-BR'):'Sem vencimento'}</div><span class="pill ${cls}">${n===null?'SEM DATA':n<0?'VENCIDO':n<=30?'PRÓXIMO':'EM DIA'}</span>${f?' <span class="pill ok">📎 Arquivo</span>':''}</div><div class="toolbar">${f?`<button class="btn soft empDocOpen" data-file="${f.id}">Abrir</button><button class="btn soft empDocDown" data-file="${f.id}">Baixar</button>`:''}<button class="btn soft empDocEdit" data-id="${d.id}">Editar</button></div></div></div>`}).join('')||'<div class="muted">Nenhum documento cadastrado.</div>';
+ const l=document.getElementById('empDocsList');if(l)l.innerHTML=docs.map(d=>{const e=emps.find(x=>x.id===d.employee_id),n=daysUntil(d.expires_at),f=empDocFiles[d.file_id],cls=n!==null&&n<0?'danger':n!==null&&n<=30?'warn':'ok';return `<div class="item"><div class="toolbar" style="justify-content:space-between"><div><strong>${esc(d.document_type)} • ${esc(e?.full_name||'Funcionário')}</strong><div class="muted">${d.expires_at?'Vence '+new Date(d.expires_at+'T00:00:00').toLocaleDateString('pt-BR'):'Sem vencimento'}</div><span class="pill ${cls}">${n===null?'SEM DATA':n<0?'VENCIDO':n<=30?'PRÓXIMO':'EM DIA'}</span>${f?' <span class="pill ok">📎 Arquivo</span>':''}</div><div class="toolbar">${f?`<button type="button" class="btn soft empDocOpen" data-file="${f.id}">Abrir</button><button type="button" class="btn soft empDocDown" data-file="${f.id}">Baixar</button>`:''}<button type="button" class="btn soft empDocEdit" data-id="${d.id}">Editar</button></div></div></div>`}).join('')||'<div class="muted">Nenhum documento cadastrado.</div>';
 }
 function openEmpDoc(id=''){const d=empDocsCache.find(x=>x.id===id);document.getElementById('empDocId').value=d?.id||'';document.getElementById('empDocTitle').textContent=d?'Editar documento':'Novo documento';document.getElementById('empDocEmployee').value=d?.employee_id||'';document.getElementById('empDocType').value=d?.document_type||'CNH';document.getElementById('empDocExpires').value=d?.expires_at||'';document.getElementById('empDocFile').value='';document.getElementById('deleteEmpDoc').style.display=d?'inline-flex':'none';document.getElementById('empDocEditCard').style.display='block';document.getElementById('empDocMsg').textContent=''}
 async function saveEmpDoc(){const m=document.getElementById('empDocMsg'),id=document.getElementById('empDocId').value,employee_id=document.getElementById('empDocEmployee').value,file=document.getElementById('empDocFile').files?.[0];if(!employee_id){m.textContent='Selecione o funcionário.';return}try{const old=empDocsCache.find(x=>x.id===id);let file_id=old?.file_id||null;if(file){m.textContent='Enviando arquivo...';const f=await uploadCompanyDocument(file,'employee',employee_id);file_id=f?.id||file_id}const body={company_id:companyId,employee_id,file_id,document_type:document.getElementById('empDocType').value,expires_at:document.getElementById('empDocExpires').value||null,status:'active',metadata:{}};if(id)await rest('v2_employee_documents','id=eq.'+id,'PATCH',body);else await rest('v2_employee_documents','','POST',body);document.getElementById('empDocEditCard').style.display='none';await loadEmpDocs();await loadSmartAlerts()}catch(e){m.textContent=e.message}}
@@ -8957,7 +8957,7 @@ function renderFinanceView(){
     '<span class="pill '+(x.entry_type==='income'?'ok':'warn')+' finance-entry-amount">'+financeDisplayMoney(x.amount)+'</span>'+
     (cancelled?' <span class="pill danger">CANCELADO</span>':'')+
    '</div>'+
-   (!cancelled?'<div class="finance-entry-actions"><button class="btn danger finCancel" data-id="'+esc(x.id)+'">Cancelar</button></div>':'')+
+   (!cancelled?'<div class="finance-entry-actions"><button type="button" class="btn danger finCancel" data-id="'+esc(x.id)+'">Cancelar</button></div>':'')+
   '</div></div>';
  }).join('')||'<div class="muted">Nenhum lançamento.</div>';
  updateFinancePrivacyButton();
@@ -9589,7 +9589,7 @@ if(document.getElementById('saveProfessional'))document.getElementById('saveProf
  const id=$('#profEmployee').value;if(!id)return $('#profMsg').textContent='Selecione o funcionário.';
  try{await rest('v2_employees','id=eq.'+id,'PATCH',{job_title:$('#profJobTitle').value.trim()||null,admission_date:$('#profAdmissionDate').value||null});$('#profMsg').textContent='Dados profissionais salvos.';await loadEmployees()}catch(e){$('#profMsg').textContent=e.message}
 });
-// Dados do empregador são fixos e não podem ser alterados nesta tela.
+// Dados do empregador vêm exclusivamente do cadastro da empresa ativa.
 // Perfil profissional é carregado somente ao abrir RH & Pessoas para manter o dashboard leve.
 
 
