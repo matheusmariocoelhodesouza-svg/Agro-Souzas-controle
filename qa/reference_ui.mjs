@@ -2,7 +2,7 @@ import { chromium } from 'playwright';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
-const auditVersion = '2026.09.11-r3';
+const auditVersion = '2026.09.11-r4';
 const base = process.env.C360_BASE_URL || 'http://127.0.0.1:8080';
 const out = path.resolve('qa-artifacts');
 await fs.mkdir(out, { recursive: true });
