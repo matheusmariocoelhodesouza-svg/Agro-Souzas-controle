@@ -25,6 +25,15 @@
    );
   }catch(_){return false}
  }
+ function stripStalePairingParamIfPaired(){
+  try{
+   if(!isDeviceSession())return;
+   const u=new URL(location.href);
+   if(!u.searchParams.has('campo'))return;
+   u.searchParams.delete('campo');
+   history.replaceState({},'',u.pathname+(u.searchParams.toString()?'?'+u.searchParams.toString():'')+u.hash);
+  }catch(_){}
+ }
  function effectiveOnline(){
   if(!deviceSession)return nativeOnline();
   if(!nativeOnline())return false;
@@ -61,6 +70,9 @@
   try{return await probing}finally{probing=null}
  }
 
+ // Se este aparelho já está pareado, um link antigo ?campo=... nunca deve
+ // apagar a sessão local nem tentar reutilizar um código de ativação já consumido.
+ stripStalePairingParamIfPaired();
  deviceSession=isDeviceSession();
  reachable=deviceSession?false:nativeOnline();
  lastProbeAt=deviceSession?0:Date.now();
