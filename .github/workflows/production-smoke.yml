@@ -34,19 +34,28 @@ jobs:
           fetch "/" /tmp/index.html
           fetch "/sw-v7-02.js" /tmp/sw.js
           fetch "/c360-quality-hotfix.js" /tmp/quality.js
+          fetch "/c360-ui-polish.css" /tmp/ui.css
           fetch "/dda.html" /tmp/dda.html
           fetch "/comando360.webmanifest" /tmp/manifest.json
 
           test -s /tmp/index.html
           test -s /tmp/dda.html
-          grep -q "comando360-v7-02-hotfix3" /tmp/sw.js
+          test -s /tmp/ui.css
+          grep -q "comando360-v7-02-hotfix4" /tmp/sw.js
           grep -q "c360-quality-hotfix.js" /tmp/sw.js
+          grep -q "c360-ui-polish.css" /tmp/sw.js
           grep -q "2026.09.10-q1" /tmp/quality.js
           grep -q "comando360-dda" /tmp/quality.js
+          grep -q "UI POLISH 2026.09.10-u1" /tmp/ui.css
+          grep -q "body.darkmode" /tmp/ui.css
+          grep -q "#inicio" /tmp/ui.css
           python - <<'PY'
           import json
+          from pathlib import Path
           with open('/tmp/manifest.json', encoding='utf-8') as f:
               m=json.load(f)
           assert m.get('name') or m.get('short_name')
-          print('Production PWA smoke: OK')
+          css=Path('/tmp/ui.css').read_text(encoding='utf-8')
+          assert css.count('{') == css.count('}'), 'Production CSS has unbalanced braces'
+          print('Production PWA + UI theme smoke: OK')
           PY
