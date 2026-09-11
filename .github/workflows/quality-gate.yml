@@ -1,0 +1,61 @@
+name: Comando 360 Quality Gate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  static-quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check JavaScript syntax
+        run: |
+          node --check c360-quality-hotfix.js
+          node --check c360-field-offline-hotfix.js
+          node --check sw-v7-02.js
+
+      - name: Check required production files
+        run: |
+          test -s index.html
+          test -s dda.html
+          test -s comando360.webmanifest
+          test -s c360-quality-hotfix.js
+          test -s sw-v7-02.js
+
+      - name: Validate PWA quality wiring
+        run: |
+          grep -q "c360-quality-hotfix.js" sw-v7-02.js
+          grep -q "comando360-v7-02-hotfix3" sw-v7-02.js
+          grep -q "status:'pending'" c360-quality-hotfix.js
+          grep -q "comando360-dda" c360-quality-hotfix.js
+
+      - name: Basic HTML parse
+        run: |
+          python - <<'PY'
+          from html.parser import HTMLParser
+          from pathlib import Path
+          class P(HTMLParser):
+              pass
+          for name in ('index.html','dda.html'):
+              text=Path(name).read_text(encoding='utf-8')
+              P().feed(text)
+              assert '<html' in text.lower(), f'{name}: missing html root'
+              assert '</html>' in text.lower(), f'{name}: missing closing html'
+              print(f'{name}: OK ({len(text):,} bytes)')
+          PY
+
+      - name: Reject obvious secret-key leaks
+        run: |
+          if grep -R -nE "SUPABASE_SERVICE_ROLE_KEY\s*=|service_role[^[:alnum:]_].*eyJ|client_secret\s*[:=]\s*['\"][^'\"]{12,}" --include='*.js' --include='*.html' --exclude-dir=.git .; then
+            echo 'Potential privileged secret found in browser code.'
+            exit 1
+          fi
