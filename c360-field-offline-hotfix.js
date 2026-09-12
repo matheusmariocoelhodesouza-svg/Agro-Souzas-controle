@@ -1,5 +1,100 @@
 (function(){
  'use strict';
+ const REPAIR_VERSION='2026.09.12-r1';
+ const RECOVERY_KEY='c360_source_leak_recovery_'+REPAIR_VERSION;
+ const SW_URL='./sw-v7-02.js';
+ let registrationPromise=null;
+ let recovering=false;
+
+ function registerServiceWorkerEarly(){
+  if(!('serviceWorker' in navigator))return Promise.resolve(null);
+  if(registrationPromise)return registrationPromise;
+  registrationPromise=navigator.serviceWorker.register(SW_URL,{scope:'./',updateViaCache:'none'})
+   .then(reg=>{
+    try{reg.update().catch(()=>{})}catch(_){}
+    return reg;
+   })
+   .catch(err=>{console.warn('Comando 360: falha ao preparar atualização offline',err);return null});
+  return registrationPromise;
+ }
+
+ function excludedTextNode(node){
+  const p=node&&node.parentElement;
+  return !p||!!p.closest('script,style,noscript,textarea,pre,code,option');
+ }
+
+ function looksLikeLeakedSource(value){
+  const text=String(value||'').trim();
+  if(text.length<180)return false;
+  const markers=['document.','querySelector','getElementById','addEventListener','function ','const ','let ','=>','setTimeout','window.','try{','catch('];
+  let hits=0;
+  for(const marker of markers)if(text.includes(marker)&&++hits>=3)return true;
+  return false;
+ }
+
+ function leakedTextNodes(){
+  if(!document.body||!document.createTreeWalker)return [];
+  const out=[];
+  const walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);
+  let node;
+  while((node=walker.nextNode())){
+   if(excludedTextNode(node))continue;
+   if(looksLikeLeakedSource(node.nodeValue))out.push(node);
+  }
+  return out;
+ }
+
+ function removeVisibleLeak(nodes){
+  for(const node of nodes){
+   try{node.nodeValue=''}catch(_){}
+  }
+ }
+
+ async function recoverLeakedSource(){
+  if(recovering)return;
+  const leaked=leakedTextNodes();
+  if(!leaked.length){
+   try{sessionStorage.removeItem(RECOVERY_KEY)}catch(_){}
+   return;
+  }
+  recovering=true;
+  document.documentElement.dataset.c360SourceLeak='detected';
+  removeVisibleLeak(leaked);
+
+  let alreadyTried=false;
+  try{alreadyTried=sessionStorage.getItem(RECOVERY_KEY)==='1'}catch(_){}
+  if(alreadyTried)return;
+  try{sessionStorage.setItem(RECOVERY_KEY,'1')}catch(_){}
+
+  const reload=()=>{
+   if(document.documentElement.dataset.c360SourceLeak==='reloading')return;
+   document.documentElement.dataset.c360SourceLeak='reloading';
+   location.reload();
+  };
+
+  if(!('serviceWorker' in navigator))return;
+  if(navigator.serviceWorker.controller){reload();return}
+  try{navigator.serviceWorker.addEventListener('controllerchange',reload,{once:true})}catch(_){}
+  const reg=await registerServiceWorkerEarly();
+  if(!reg)return;
+  try{
+   await navigator.serviceWorker.ready;
+   if(navigator.serviceWorker.controller)reload();
+  }catch(_){}
+ }
+
+ registerServiceWorkerEarly();
+ if(document.readyState==='loading'){
+  document.addEventListener('DOMContentLoaded',()=>setTimeout(recoverLeakedSource,0),{once:true});
+ }else{
+  setTimeout(recoverLeakedSource,0);
+ }
+ window.c360RecoverLeakedSource=recoverLeakedSource;
+ window.C360_FIELD_BOOT_REPAIR_VERSION=REPAIR_VERSION;
+})();
+
+(function(){
+ 'use strict';
  const SESSION_KEY='controla_beta_session';
  const API='https://aycbrqziusxtxhsdfqjk.supabase.co';
  let deviceSession=false;
