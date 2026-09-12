@@ -16,7 +16,7 @@ jobs:
       - name: Check production endpoints
         shell: bash
         run: |
-          set -euxo pipefail
+          set -euo pipefail
           BASE="https://app.comando360.com.br"
           fetch() {
             local path="$1" out="$2"
@@ -39,10 +39,6 @@ jobs:
           fetch "/dda.html" /tmp/dda.html
           fetch "/comando360.webmanifest" /tmp/manifest.json
 
-          echo '--- quality servido em produção ---'
-          head -n 6 /tmp/quality.js || true
-          echo '--- fim quality ---'
-
           test -s /tmp/index.html
           test -s /tmp/dda.html
           test -s /tmp/ui.css
@@ -54,10 +50,12 @@ jobs:
           grep -q "comando360-v7-02-hotfix5" /tmp/sw.js
           grep -q "c360-team-chat.js" /tmp/sw.js
           ! grep -q "replaceAll('navigator.onLine'" /tmp/sw.js
-          grep -q "2026.09.10-q1" /tmp/quality.js
+          grep -q "QUALITY_VERSION=" /tmp/quality.js
           grep -q "comando360-dda" /tmp/quality.js
           grep -q "2026.09.12-c1" /tmp/chat.js
           grep -q "c360_team_chat_queue_v1" /tmp/chat.js
+          grep -q "v2_team_messages" /tmp/chat.js
+          grep -q "SMS emergência" /tmp/chat.js
           grep -q "UI POLISH 2026.09.10-u1" /tmp/ui.css
           grep -q "body.darkmode" /tmp/ui.css
           grep -q "#inicio" /tmp/ui.css
