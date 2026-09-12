@@ -31,6 +31,19 @@
   ],
   "shortcuts": [
     {
+      "name": "Importar granjas do WhatsApp",
+      "short_name": "Importar granjas",
+      "description": "Importar produtores, cidades e localizações a partir de uma conversa exportada do WhatsApp",
+      "url": "./importar-granjas.html",
+      "icons": [
+        {
+          "src": "./comando360-icon.svg",
+          "sizes": "any",
+          "type": "image/svg+xml"
+        }
+      ]
+    },
+    {
       "name": "Boletos DDA",
       "short_name": "DDA",
       "description": "Abrir captura automática de boletos e contas a pagar",
