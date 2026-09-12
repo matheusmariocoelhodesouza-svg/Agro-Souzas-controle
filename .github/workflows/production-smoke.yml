@@ -37,6 +37,7 @@ jobs:
           fetch "/c360-quality-hotfix.js" /tmp/quality.js
           fetch "/c360-team-chat.js" /tmp/chat.js
           fetch "/c360-farm-cache-hotfix.js" /tmp/farms.js
+          fetch "/c360-consumable-edit.js" /tmp/consumables.js
           fetch "/c360-ui-polish.css" /tmp/ui.css
           fetch "/dda.html" /tmp/dda.html
           fetch "/comando360.webmanifest" /tmp/manifest.json
@@ -47,16 +48,18 @@ jobs:
           test -s /tmp/ui.css
           test -s /tmp/chat.js
           test -s /tmp/farms.js
+          test -s /tmp/consumables.js
           grep -q 'c360-ui-polish.css' /tmp/index.html
           grep -q 'c360-field-offline-hotfix.js' /tmp/index.html
           grep -q 'c360-quality-hotfix.js' /tmp/index.html
           ! grep -q 'navigator.onLine' /tmp/index.html
           ! grep -q '<script>window.onload' /tmp/index.html
-          grep -q "comando360-v7-02-hotfix8" /tmp/sw.js
+          grep -q "comando360-v7-02-hotfix9" /tmp/sw.js
           grep -q "repairLegacyAppHtml" /tmp/sw.js
           grep -q "X-Comando360-Repair" /tmp/sw.js
           grep -q "c360-team-chat.js" /tmp/sw.js
           grep -q "c360-farm-cache-hotfix.js" /tmp/sw.js
+          grep -q "c360-consumable-edit.js" /tmp/sw.js
           ! grep -q "replaceAll('navigator.onLine'" /tmp/sw.js
           grep -q "getRegistrations" /tmp/repair.html
           grep -q "caches.delete" /tmp/repair.html
@@ -69,6 +72,9 @@ jobs:
           grep -q "2026.09.12-f1" /tmp/farms.js
           grep -q "v2_poultry_farms" /tmp/farms.js
           grep -q "poultry_context" /tmp/farms.js
+          grep -q "2026.09.12-e1" /tmp/consumables.js
+          grep -q "SALVAR ALTERAÇÕES" /tmp/consumables.js
+          grep -q "v2_inventory_items" /tmp/consumables.js
           grep -q "UI POLISH 2026.09.10-u1" /tmp/ui.css
           grep -q "body.darkmode" /tmp/ui.css
           grep -q "#inicio" /tmp/ui.css
@@ -80,5 +86,5 @@ jobs:
           assert m.get('name') or m.get('short_name')
           css=Path('/tmp/ui.css').read_text(encoding='utf-8')
           assert css.count('{') == css.count('}'), 'Production CSS has unbalanced braces'
-          print('Production PWA + entry repair + chat + full farm cache smoke: OK')
+          print('Production PWA + entry repair + chat + farms + consumable editor smoke: OK')
           PY
