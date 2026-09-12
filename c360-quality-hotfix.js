@@ -1,7 +1,7 @@
 (()=>{
 'use strict';
 
-const QUALITY_VERSION='2026.09.10-q1';
+const QUALITY_VERSION='2026.09.12-q2';
 const FIN_PAGE_SIZE=100;
 const runtimeState={financePage:0,financeHasNext:false,financeMonth:'',financeStatus:'',installed:false};
 
@@ -36,7 +36,7 @@ window.c360QualityDiagnostics=()=>{try{return JSON.parse(localStorage.getItem('c
 function installStyles(){
   if(q('#c360QualityStyles'))return;
   const s=document.createElement('style');s.id='c360QualityStyles';s.textContent=`
-  .c360-fin-tools{display:flex;gap:8px;align-items:end;flex-wrap:wrap;margin:12px 0 2px}.c360-fin-tools .c360-field{min-width:145px}.c360-fin-tools label{display:block;font-size:10px;font-weight:850;letter-spacing:.35px;color:#64748b;margin-bottom:5px}.c360-fin-tools input,.c360-fin-tools select{height:40px;border:1px solid #d7e0ea;border-radius:10px;padding:0 10px;background:var(--card,#fff);color:inherit}.c360-page-info{font-size:11px;color:#64748b;min-width:105px;text-align:center;padding:10px 4px}.c360-dda-card{overflow:hidden}.c360-dda-grid{display:grid;grid-template-columns:minmax(0,1.4fr) repeat(3,minmax(110px,.55fr));gap:10px;align-items:stretch}.c360-dda-main,.c360-dda-kpi{border:1px solid #e2e8f0;border-radius:13px;padding:13px;background:rgba(248,250,252,.7)}.c360-dda-main h3{margin:0 0 4px}.c360-dda-main p{margin:0;color:#64748b;font-size:12px;line-height:1.45}.c360-dda-kpi span{font-size:9px;font-weight:900;color:#64748b;letter-spacing:.45px}.c360-dda-kpi b{display:block;margin-top:6px;font-size:17px}.c360-dda-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:11px}.c360-dda-state{display:inline-flex;border-radius:999px;padding:4px 8px;font-size:10px;font-weight:850;background:#eef2f7;color:#53657c;margin-top:7px}.c360-dda-state.ok{background:#e8f7ef;color:#147348}.c360-dda-state.warn{background:#fff3d8;color:#976100}.c360-dda-overlay{position:fixed;inset:0;background:rgba(5,12,24,.72);z-index:99999;padding:14px;display:none}.c360-dda-overlay.open{display:block}.c360-dda-framewrap{position:relative;width:min(1500px,100%);height:100%;margin:auto;border-radius:16px;overflow:hidden;background:#fff;box-shadow:0 20px 70px rgba(0,0,0,.35)}.c360-dda-frame{width:100%;height:100%;border:0;background:#fff}.c360-dda-close{position:absolute;right:12px;top:12px;z-index:4;border:0;border-radius:999px;width:42px;height:42px;font-size:22px;background:#fff;color:#17233a;box-shadow:0 3px 16px rgba(0,0,0,.22);cursor:pointer}.c360-quality-badge{font-size:9px;color:#94a3b8;margin-left:6px;white-space:nowrap}
+  .c360-fin-tools{display:flex;gap:8px;align-items:end;flex-wrap:wrap;margin:12px 0 2px}.c360-fin-tools .c360-field{min-width:145px}.c360-fin-tools label{display:block;font-size:10px;font-weight:850;letter-spacing:.35px;color:#64748b;margin-bottom:5px}.c360-fin-tools input,.c360-fin-tools select{height:40px;border:1px solid #d7e0ea;border-radius:10px;padding:0 10px;background:var(--card,#fff);color:inherit}.c360-page-info{font-size:11px;color:#64748b;min-width:105px;text-align:center;padding:10px 4px}.c360-dda-card{overflow:hidden}.c360-dda-grid{display:grid;grid-template-columns:minmax(0,1.4fr) repeat(3,minmax(110px,.55fr));gap:10px;align-items:stretch}.c360-dda-main,.c360-dda-kpi{border:1px solid #e2e8f0;border-radius:13px;padding:13px;background:rgba(248,250,252,.7)}.c360-dda-main h3{margin:0 0 4px}.c360-dda-main p{margin:0;color:#64748b;font-size:12px;line-height:1.45}.c360-dda-kpi span{font-size:9px;font-weight:900;color:#64748b;letter-spacing:.45px}.c360-dda-kpi b{display:block;margin-top:6px;font-size:17px}.c360-dda-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:11px}.c360-dda-state{display:inline-flex;border-radius:999px;padding:4px 8px;font-size:10px;font-weight:850;background:#eef2f7;color:#53657c;margin-top:7px}.c360-dda-state.ok{background:#e8f7ef;color:#147348}.c360-dda-state.warn{background:#fff3d8;color:#976100}.c360-dda-overlay{position:fixed;inset:0;background:rgba(5,12,24,.72);z-index:99999;padding:14px;display:none}.c360-dda-overlay.open{display:block}.c360-dda-framewrap{position:relative;width:min(1500px,100%);height:100%;margin:auto;border-radius:16px;overflow:hidden;background:#fff;box-shadow:0 20px 70px rgba(0,0,0,.35)}.c360-dda-frame{width:100%;height:100%;border:0;background:#fff}.c360-dda-close{position:absolute;right:12px;top:12px;z-index:4;border:0;border-radius:999px;width:42px;height:42px;font-size:22px;background:#fff;color:#17233a;box-shadow:0 3px 16px rgba(0,0,0,.22);cursor:pointer}.c360-quality-badge{font-size:9px;color:#94a3b8;margin-left:6px;white-space:nowrap}#c360FarmImportBtn{text-decoration:none;display:inline-flex;align-items:center;justify-content:center}
   @media(max-width:850px){.c360-dda-grid{grid-template-columns:1fr 1fr}.c360-dda-main{grid-column:1/-1}.c360-dda-overlay{padding:0}.c360-dda-framewrap{border-radius:0}.c360-fin-tools .c360-field{min-width:calc(50% - 4px);flex:1}.c360-page-info{order:10;width:100%}}
   @media(prefers-color-scheme:dark){.c360-dda-main,.c360-dda-kpi{border-color:#2b3a50;background:rgba(19,31,48,.72)}.c360-fin-tools input,.c360-fin-tools select{border-color:#33445c;background:#111c2c}.c360-dda-main p,.c360-dda-kpi span,.c360-page-info,.c360-fin-tools label{color:#94a7bf}}
   html[data-theme="dark"] .c360-dda-main,html[data-theme="dark"] .c360-dda-kpi{border-color:#2b3a50;background:rgba(19,31,48,.72)}
@@ -146,6 +146,14 @@ async function refreshDdaSummary(){
   }catch(e){captureRuntimeError('dda-status',e?.message||e);stateEl.textContent='Não foi possível consultar o DDA';stateEl.className='c360-dda-state warn'}
 }
 
+function ensureFarmImportButton(){
+  const section=q('#operacoes');if(!section||q('#c360FarmImportBtn'))return;
+  try{if(typeof deviceMode!=='undefined'&&deviceMode)return}catch(_){ }
+  const hero=section.querySelector('.v2hero'),newBtn=q('#newPoultryOp',section);if(!hero)return;
+  const a=document.createElement('a');a.id='c360FarmImportBtn';a.className='btn soft';a.href='./importar-granjas.html';a.textContent='💬 Importar granjas';a.title='Importar granjas de uma conversa exportada do WhatsApp';
+  if(newBtn)hero.insertBefore(a,newBtn);else hero.appendChild(a);
+}
+
 async function waitForApp(){
   for(let i=0;i<60;i++){
     const finance=q('#financeList');let ready=false;try{ready=!!finance&&typeof loadFinance==='function'&&typeof rest==='function'&&typeof companyId!=='undefined'&&!!companyId}catch(_){ }
@@ -157,7 +165,7 @@ async function waitForApp(){
 async function install(){
   if(runtimeState.installed)return;installStyles();
   const ready=await waitForApp();if(!ready){captureRuntimeError('quality-install','Aplicativo não ficou pronto para a camada de qualidade');return}
-  runtimeState.installed=true;ensureFinanceTools();ensureDdaCard();ensureDdaOverlay();installManualFinanceFix();
+  runtimeState.installed=true;ensureFinanceTools();ensureDdaCard();ensureDdaOverlay();ensureFarmImportButton();installManualFinanceFix();
   try{loadFinance=smartLoadFinance}catch(e){captureRuntimeError('finance-override',e?.message||e)}
   await smartLoadFinance();
 }
