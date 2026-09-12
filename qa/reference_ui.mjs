@@ -2,7 +2,7 @@ import { chromium } from 'playwright';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
-const auditVersion = '2026.09.12-r5';
+const auditVersion = '2026.09.12-r6';
 const base = process.env.C360_BASE_URL || 'http://127.0.0.1:8080';
 const out = path.resolve('qa-artifacts');
 await fs.mkdir(out, { recursive: true });
@@ -15,17 +15,9 @@ const adminScreens = [
 const criticalMobile = ['inicio','operacoes','ponto','frota','financeiro'];
 const fieldScreens = ['equipehome','operacoes','ponto','combustivel','equipereport'];
 const results = {
-  auditVersion,
-  base,
-  pageErrors: [],
-  consoleErrors: [],
-  overflow: [],
-  missing: [],
-  sourceLeaks: [],
-  flowErrors: [],
-  dialogs: [],
-  mockedWrites: [],
-  screenshots: []
+  auditVersion, base,
+  pageErrors: [], consoleErrors: [], overflow: [], missing: [], sourceLeaks: [],
+  flowErrors: [], dialogs: [], mockedWrites: [], screenshots: []
 };
 
 function safeName(value){ return value.replace(/[^a-z0-9_-]+/gi,'-').toLowerCase(); }
@@ -43,12 +35,8 @@ async function installQaApiMock(page){
     let body = '[]';
     if (url.pathname.includes('/auth/v1/user')) {
       body = JSON.stringify({
-        id:'00000000-0000-0000-0000-00000000c360',
-        aud:'authenticated',
-        role:'authenticated',
-        is_anonymous:false,
-        app_metadata:{provider:'email',providers:['email']},
-        user_metadata:{name:'QA Comando 360'}
+        id:'00000000-0000-0000-0000-00000000c360', aud:'authenticated', role:'authenticated',
+        is_anonymous:false, app_metadata:{provider:'email',providers:['email']}, user_metadata:{name:'QA Comando 360'}
       });
     } else if (url.pathname.includes('/auth/v1/token')) {
       body = JSON.stringify({
@@ -60,10 +48,8 @@ async function installQaApiMock(page){
     }
 
     await route.fulfill({
-      status:200,
-      contentType:'application/json; charset=utf-8',
-      headers:{'access-control-allow-origin':'*','content-range':'0-0/0'},
-      body
+      status:200, contentType:'application/json; charset=utf-8',
+      headers:{'access-control-allow-origin':'*','content-range':'0-0/0'}, body
     });
   });
 }
@@ -96,13 +82,9 @@ async function auditSourceLeak(page,label){
   const leak = await page.evaluate(() => {
     const text = document.body?.innerText || '';
     const patterns = [
-      'function setTextSafe',
-      'async function loadTeamPoint',
-      "'+esc(e.full_name)+'",
-      'const currentEmployees=employees.filter',
-      'window.__pointSelfieFile=null',
-      'Object.fromEntries(employees.map',
-      'events=events.filter(ev=>'
+      'function setTextSafe','async function loadTeamPoint',"'+esc(e.full_name)+'",
+      'const currentEmployees=employees.filter','window.__pointSelfieFile=null',
+      'Object.fromEntries(employees.map','events=events.filter(ev=>'
     ];
     const hit = patterns.find(p => text.includes(p)) || null;
     return { hit, hasLoadTeamPoint: typeof window.loadTeamPoint === 'function', hasRouter: typeof window.v2Go === 'function' };
@@ -133,13 +115,12 @@ async function exposeScreen(page, id){
     for (const el of all){
       el.classList.remove('active');
       el.hidden = true;
-      el.style.display = 'none';
+      el.style.removeProperty('display');
     }
     const target = document.getElementById(screenId);
     if (!target) return false;
     target.hidden = false;
     target.classList.add('active');
-    target.style.display = '';
     window.scrollTo(0,0);
     return true;
   }, id);
@@ -149,10 +130,7 @@ async function ensureServiceWorkerControlled(page,name){
   const supported = await page.evaluate(() => 'serviceWorker' in navigator);
   if(!supported) return;
   await page.evaluate(async()=>{
-    await Promise.race([
-      navigator.serviceWorker.ready,
-      new Promise(resolve=>setTimeout(()=>resolve(null),5000))
-    ]);
+    await Promise.race([navigator.serviceWorker.ready,new Promise(resolve=>setTimeout(()=>resolve(null),5000))]);
   });
   await page.reload({ waitUntil:'domcontentloaded', timeout:30000 });
   await page.waitForTimeout(700);
@@ -187,6 +165,18 @@ async function prepareSimulatedMode(page, mode){
     if(app)app.classList.remove('hidden');
     document.body.classList.add('app-ready');
     document.body.classList.toggle('device-mode',requestedMode==='field');
+
+    // O ensaio visual anterior não pode contaminar o roteador funcional.
+    document.querySelectorAll('#app [data-screen]').forEach(el=>{
+      el.classList.remove('active');
+      el.hidden=true;
+      el.style.removeProperty('display');
+    });
+    const host=document.getElementById('screenHost');
+    if(host) while(host.firstChild) host.removeChild(host.firstChild);
+    try{ if(typeof initScreenRouter==='function')initScreenRouter(); else bindingError += '\ninitScreenRouter ausente'; }
+    catch(e){ bindingError += '\ninitScreenRouter: '+String(e); }
+
     if(requestedMode==='field'){
       const n=document.getElementById('teamHomeName'); if(n)n.textContent='Equipe QA';
       const v=document.getElementById('teamHomeVehicle'); if(v)v.textContent='Celular de campo • QA';
@@ -207,14 +197,13 @@ async function routeThroughApp(page, tab, label){
       if(typeof v2Go!=='function')throw new Error('v2Go ausente');
       await v2Go(screenId);
       const active=[...document.querySelectorAll('[data-screen]')].filter(el=>!el.hidden && getComputedStyle(el).display!=='none').map(el=>el.id);
-      const target=document.getElementById(screenId);
-      return {active,targetExists:!!target,targetVisible:!!target && !target.hidden && getComputedStyle(target).display!=='none'};
+      const requested=document.getElementById(screenId);
+      const visible=el=>!!el && !el.hidden && getComputedStyle(el).display!=='none';
+      return {active,targetExists:!!requested,targetVisible:visible(requested)};
     },tab);
     if(!state.targetExists) flowError(label,`tela #${tab} não existe`);
     if(!state.targetVisible) flowError(label,`tela #${tab} não ficou visível; ativas: ${state.active.join(', ')||'nenhuma'}`);
-  }catch(e){
-    flowError(label,e?.stack||e);
-  }
+  }catch(e){ flowError(label,e?.stack||e); }
   await page.waitForTimeout(120);
   await auditSourceLeak(page,label);
   await auditOverflow(page,label);
@@ -232,14 +221,8 @@ async function testPoultryForm(page, mode, label){
   const formState=await page.evaluate((requestedMode)=>{
     const form=document.getElementById('poultryForm');
     const planning=document.getElementById('poAdminPlanning');
-    const teamBlock=document.getElementById('poTeamBlock');
     const visible=el=>!!el && !el.classList.contains('hidden') && getComputedStyle(el).display!=='none';
-    return {
-      form:visible(form),
-      planning:visible(planning),
-      teamBlock:visible(teamBlock),
-      requestedMode
-    };
+    return {form:visible(form),planning:visible(planning),requestedMode};
   },mode);
   if(!formState.form) flowError(label,'formulário Nova Apanha não ficou visível');
   if(mode==='field' && formState.planning) flowError(label,'planejamento administrativo apareceu no celular de campo');
@@ -253,11 +236,9 @@ async function testPoultryForm(page, mode, label){
       const energy=await page.locator('#poEnergyType').inputValue();
       if(!/380/.test(energy)) flowError(label,`seleção 220/380 V não atualizou corretamente: "${energy}"`);
     }catch(e){ flowError(label,`falha ao selecionar tensão: ${e}`); }
-  }else{
-    flowError(label,'seletor 220/380 V incompleto');
-  }
+  }else flowError(label,'seletor 220/380 V incompleto');
 
-  await auditOverflow(page,`${label}:form-ap solicitacao`);
+  await auditOverflow(page,`${label}:form-apanha`);
   await shot(page,`${label}-nova-apanha`,true);
   const close=page.locator('#closePoultryForm');
   if(await close.count()){
@@ -267,13 +248,12 @@ async function testPoultryForm(page, mode, label){
 
 async function runAdminFlow(page, name){
   await prepareSimulatedMode(page,'admin');
-  for(const id of adminScreens){
-    await routeThroughApp(page,id,`${name}:admin:${id}`);
-  }
+  for(const id of adminScreens) await routeThroughApp(page,id,`${name}:admin:${id}`);
   await testPoultryForm(page,'admin',`${name}:admin`);
-
-  // Segurança visual: um administrador não deve ficar preso no menu restrito do campo.
-  const state=await page.evaluate(()=>({deviceClass:document.body.classList.contains('device-mode'),appVisible:!document.getElementById('app')?.classList.contains('hidden')}));
+  const state=await page.evaluate(()=>({
+    deviceClass:document.body.classList.contains('device-mode'),
+    appVisible:!document.getElementById('app')?.classList.contains('hidden')
+  }));
   if(state.deviceClass) flowError(`${name}:admin`,'classe device-mode permaneceu ativa no modo administrador');
   if(!state.appVisible) flowError(`${name}:admin`,'app ficou oculto durante o fluxo administrativo');
 }
@@ -287,11 +267,8 @@ async function runFieldFlow(page, name){
   }
   if(tiles.length!==4) flowError(`${name}:campo:inicio`,`esperados 4 atalhos; encontrados ${tiles.length}`);
 
-  for(const id of fieldScreens.slice(1)){
-    await routeThroughApp(page,id,`${name}:campo:${id}`);
-  }
+  for(const id of fieldScreens.slice(1)) await routeThroughApp(page,id,`${name}:campo:${id}`);
 
-  // O campo não pode abrir módulo administrativo mesmo que o roteador seja chamado diretamente.
   try{
     const restricted=await page.evaluate(async()=>{
       await v2Go('financeiro');
@@ -321,30 +298,19 @@ async function runViewport(browser, name, viewport, mobile=false){
   await ensureServiceWorkerControlled(page,name);
 
   const essentials = await page.evaluate(() => ({
-    login: !!document.getElementById('login'),
-    device: !!document.getElementById('deviceSetupCard'),
-    admin: !!document.getElementById('adminLoginCard'),
-    app: !!document.getElementById('app'),
-    title: document.title,
+    login: !!document.getElementById('login'), device: !!document.getElementById('deviceSetupCard'),
+    admin: !!document.getElementById('adminLoginCard'), app: !!document.getElementById('app')
   }));
-  for (const [key,value] of Object.entries(essentials)) if (key !== 'title' && !value) results.missing.push(`${name}: ${key}`);
+  for (const [key,value] of Object.entries(essentials)) if (!value) results.missing.push(`${name}: ${key}`);
 
-  await setTheme(page,false);
-  await auditOverflow(page,`${name}:entrada:claro`);
-  await shot(page,`${name}-entrada-claro`);
-  await setTheme(page,true);
-  await auditOverflow(page,`${name}:entrada:escuro`);
-  await shot(page,`${name}-entrada-escuro`);
+  await setTheme(page,false); await auditOverflow(page,`${name}:entrada:claro`); await shot(page,`${name}-entrada-claro`);
+  await setTheme(page,true); await auditOverflow(page,`${name}:entrada:escuro`); await shot(page,`${name}-entrada-escuro`);
 
   const adminLink = page.locator('#showAdminLogin');
   if (await adminLink.count()){
     await adminLink.click();
-    await setTheme(page,false);
-    await auditOverflow(page,`${name}:login-admin:claro`);
-    await shot(page,`${name}-login-admin-claro`);
-    await setTheme(page,true);
-    await auditOverflow(page,`${name}:login-admin:escuro`);
-    await shot(page,`${name}-login-admin-escuro`);
+    await setTheme(page,false); await auditOverflow(page,`${name}:login-admin:claro`); await shot(page,`${name}-login-admin-claro`);
+    await setTheme(page,true); await auditOverflow(page,`${name}:login-admin:escuro`); await shot(page,`${name}-login-admin-escuro`);
   }
 
   const list = mobile ? criticalMobile : adminScreens;
@@ -352,20 +318,14 @@ async function runViewport(browser, name, viewport, mobile=false){
     const exists = await exposeScreen(page,id);
     if (!exists){ results.missing.push(`${name}: tela #${id}`); continue; }
     for (const dark of [false,true]){
-      await setTheme(page,dark);
-      await page.waitForTimeout(60);
+      await setTheme(page,dark); await page.waitForTimeout(60);
       const label = `${name}:${id}:${dark?'escuro':'claro'}`;
-      await auditSourceLeak(page,label);
-      await auditOverflow(page,label);
-      await shot(page,`${name}-${id}-${dark?'escuro':'claro'}`);
+      await auditSourceLeak(page,label); await auditOverflow(page,label); await shot(page,`${name}-${id}-${dark?'escuro':'claro'}`);
     }
   }
 
-  // Fluxos funcionais usam respostas simuladas do backend para nunca gravar dados reais.
   await setTheme(page,false);
-  if(mobile) await runFieldFlow(page,name);
-  else await runAdminFlow(page,name);
-
+  if(mobile) await runFieldFlow(page,name); else await runAdminFlow(page,name);
   await context.close();
 }
 
@@ -379,29 +339,18 @@ try {
   await dda.goto(`${base}/dda.html?qa_browser=1`, { waitUntil:'domcontentloaded', timeout:30000 });
   await dda.waitForTimeout(600);
   for (const dark of [false,true]){
-    await setTheme(dda,dark);
-    await auditOverflow(dda,`dda:${dark?'escuro':'claro'}`);
-    await shot(dda,`dda-${dark?'escuro':'claro'}`);
+    await setTheme(dda,dark); await auditOverflow(dda,`dda:${dark?'escuro':'claro'}`); await shot(dda,`dda-${dark?'escuro':'claro'}`);
   }
   await dda.close();
-} finally {
-  await browser.close();
-}
+} finally { await browser.close(); }
 
 await fs.writeFile(path.join(out,'report.json'), JSON.stringify(results,null,2));
 console.log(JSON.stringify({
-  auditVersion: results.auditVersion,
-  screenshots: results.screenshots.length,
-  pageErrors: results.pageErrors.length,
-  consoleErrors: results.consoleErrors.length,
-  overflow: results.overflow.length,
-  missing: results.missing.length,
-  sourceLeaks: results.sourceLeaks.length,
-  flowErrors: results.flowErrors.length,
-  dialogs: results.dialogs.length,
-  mockedWrites: results.mockedWrites.length,
+  auditVersion:results.auditVersion,screenshots:results.screenshots.length,pageErrors:results.pageErrors.length,
+  consoleErrors:results.consoleErrors.length,overflow:results.overflow.length,missing:results.missing.length,
+  sourceLeaks:results.sourceLeaks.length,flowErrors:results.flowErrors.length,dialogs:results.dialogs.length,
+  mockedWrites:results.mockedWrites.length
 }, null, 2));
 if (results.pageErrors.length || results.consoleErrors.length || results.overflow.length || results.missing.length || results.sourceLeaks.length || results.flowErrors.length){
-  console.error('Reference browser QA failed. See qa-artifacts/report.json');
-  process.exit(1);
+  console.error('Reference browser QA failed. See qa-artifacts/report.json'); process.exit(1);
 }
