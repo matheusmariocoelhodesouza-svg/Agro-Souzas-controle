@@ -39,6 +39,10 @@ jobs:
           fetch "/dda.html" /tmp/dda.html
           fetch "/comando360.webmanifest" /tmp/manifest.json
 
+          echo '--- quality servido em produção ---'
+          head -n 6 /tmp/quality.js || true
+          echo '--- fim quality ---'
+
           test -s /tmp/index.html
           test -s /tmp/dda.html
           test -s /tmp/ui.css
