@@ -44,7 +44,7 @@ jobs:
           grep -q 'c360-field-offline-hotfix.js' index.html
           grep -q 'c360-quality-hotfix.js' index.html
           ! grep -q 'navigator.onLine' index.html
-          grep -q "comando360-v7-02-hotfix6" sw-v7-02.js
+          grep -q "comando360-v7-02-hotfix7" sw-v7-02.js
           grep -q "c360-team-chat.js" sw-v7-02.js
           grep -q "c360-farm-cache-hotfix.js" sw-v7-02.js
           ! grep -q "replaceAll('navigator.onLine'" sw-v7-02.js
