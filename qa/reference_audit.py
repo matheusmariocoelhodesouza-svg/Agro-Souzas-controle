@@ -24,6 +24,13 @@ BUILTIN_HANDLERS = {
     "alert", "confirm", "prompt", "print", "open", "close",
     "setTimeout", "setInterval", "clearTimeout", "clearInterval",
 }
+SOURCE_MARKERS = (
+    "document.", "querySelector", "getElementById", "addEventListener",
+    "function ", "const ", "let ", "=>", "setTimeout", "window.",
+    "try{", "catch(", "innerHTML", "employees.map", "events.filter",
+    "Object.fromEntries", "currentEmployees",
+)
+SOURCE_EXCLUDED_TAGS = {"script", "style", "noscript", "textarea", "pre", "code", "option"}
 
 class AuditParser(HTMLParser):
     def __init__(self) -> None:
@@ -37,11 +44,14 @@ class AuditParser(HTMLParser):
         self.buttons_without_type: list[int] = []
         self.images_without_alt: list[int] = []
         self.forms_without_submit_control: list[int] = []
+        self.visible_source_nodes: list[tuple[int, str]] = []
         self._form_stack: list[dict] = []
+        self._tag_stack: list[str] = []
 
     def handle_starttag(self, tag, attrs):
         attrs = dict(attrs)
         line, _ = self.getpos()
+        self._tag_stack.append(tag)
         if "id" in attrs and attrs["id"]:
             self.ids.append((attrs["id"], line))
             self.id_attrs[attrs["id"]] = (attrs, line)
@@ -72,11 +82,33 @@ class AuditParser(HTMLParser):
             if name.startswith("on") and value:
                 self.inline_handlers.append((name, value, line))
 
+    def handle_startendtag(self, tag, attrs):
+        # Reuse validations without leaving a void element on the stack.
+        self.handle_starttag(tag, attrs)
+        if self._tag_stack and self._tag_stack[-1] == tag:
+            self._tag_stack.pop()
+
     def handle_endtag(self, tag):
         if tag == "form" and self._form_stack:
             f = self._form_stack.pop()
             if not f["submit"]:
                 self.forms_without_submit_control.append(f["line"])
+        for i in range(len(self._tag_stack) - 1, -1, -1):
+            if self._tag_stack[i] == tag:
+                del self._tag_stack[i:]
+                break
+
+    def handle_data(self, data):
+        text = (data or "").strip()
+        if len(text) < 35:
+            return
+        if any(tag in SOURCE_EXCLUDED_TAGS for tag in self._tag_stack):
+            return
+        hits = sum(1 for marker in SOURCE_MARKERS if marker in text)
+        if hits >= 2:
+            line, _ = self.getpos()
+            compact = re.sub(r"\s+", " ", text)[:220]
+            self.visible_source_nodes.append((line, compact))
 
 
 def local_path(value: str) -> Path | None:
@@ -170,6 +202,9 @@ def main() -> int:
             if len(lines) > 1:
                 errors.append(f"{name}: id duplicado #{value} nas linhas {lines}")
         ids = set(id_lines)
+
+        for line, excerpt in parser.visible_source_nodes:
+            errors.append(f"{name}:{line}: possível código JavaScript renderizado como texto: {excerpt}")
 
         for target, line in parser.label_fors:
             if target not in ids:
