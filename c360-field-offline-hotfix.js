@@ -93,3 +93,13 @@
   }),8000);
  }
 })();
+
+(function(){
+ try{
+  if(document.querySelector('script[data-c360-team-chat]'))return;
+  const s=document.createElement('script');
+  s.src='./c360-team-chat.js?v=20260912c1';
+  s.dataset.c360TeamChat='1';
+  document.head.appendChild(s);
+ }catch(_){ }
+})();
