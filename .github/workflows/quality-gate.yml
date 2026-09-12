@@ -23,6 +23,31 @@ jobs:
             [ -f "$f" ] && node --check "$f"
           done
 
+      - name: Check inline JavaScript syntax
+        run: |
+          node <<'NODE'
+          const fs=require('fs');
+          const vm=require('vm');
+          let failed=false;
+          for(const name of ['index.html','dda.html','reparar.html']){
+            const text=fs.readFileSync(name,'utf8');
+            const re=/<script\b([^>]*)>([\s\S]*?)<\/script>/gi;
+            let m,index=0;
+            while((m=re.exec(text))){
+              const attrs=m[1]||'';
+              if(/\bsrc\s*=/.test(attrs))continue;
+              const type=(attrs.match(/\btype\s*=\s*["']([^"']+)["']/i)||[])[1]||'';
+              if(type&&!/(?:java|ecma)script|module/i.test(type))continue;
+              index++;
+              const startLine=text.slice(0,m.index).split('\n').length;
+              try{new vm.Script(m[2],{filename:`${name}:inline-${index}@${startLine}`})}
+              catch(e){failed=true;console.error(`INLINE JS FAIL ${name} bloco ${index} linha ~${startLine}`);console.error(e.stack||e)}
+            }
+          }
+          if(failed)process.exit(1);
+          console.log('Inline JavaScript: OK');
+          NODE
+
       - name: Check required production files
         run: |
           test -s index.html
@@ -55,7 +80,8 @@ jobs:
           grep -q "c360-farm-cache-hotfix.js" sw-v7-02.js
           grep -q "c360-consumable-edit.js" sw-v7-02.js
           ! grep -q "replaceAll('navigator.onLine'" sw-v7-02.js
-          grep -q "2026.09.12-r2" c360-field-offline-hotfix.js
+          grep -q "2026.09.12-r3" c360-field-offline-hotfix.js
+          grep -q "c360NetOnline" c360-field-offline-hotfix.js
           grep -q "registerServiceWorkerEarly" c360-field-offline-hotfix.js
           grep -q "looksLikeLeakedSource" c360-field-offline-hotfix.js
           grep -q "getRegistrations" reparar.html
