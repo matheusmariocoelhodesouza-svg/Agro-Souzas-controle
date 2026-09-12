@@ -27,6 +27,7 @@ jobs:
         run: |
           test -s index.html
           test -s dda.html
+          test -s reparar.html
           test -s comando360.webmanifest
           test -s c360-quality-hotfix.js
           test -s c360-team-chat.js
@@ -44,10 +45,15 @@ jobs:
           grep -q 'c360-field-offline-hotfix.js' index.html
           grep -q 'c360-quality-hotfix.js' index.html
           ! grep -q 'navigator.onLine' index.html
-          grep -q "comando360-v7-02-hotfix7" sw-v7-02.js
+          ! grep -q '<script>window.onload' index.html
+          grep -q "comando360-v7-02-hotfix8" sw-v7-02.js
+          grep -q "repairLegacyAppHtml" sw-v7-02.js
+          grep -q "X-Comando360-Repair" sw-v7-02.js
           grep -q "c360-team-chat.js" sw-v7-02.js
           grep -q "c360-farm-cache-hotfix.js" sw-v7-02.js
           ! grep -q "replaceAll('navigator.onLine'" sw-v7-02.js
+          grep -q "getRegistrations" reparar.html
+          grep -q "caches.delete" reparar.html
           grep -q "status:'pending'" c360-quality-hotfix.js
           grep -q "comando360-dda" c360-quality-hotfix.js
           grep -q "2026.09.12-c1" c360-team-chat.js
@@ -64,7 +70,7 @@ jobs:
           from pathlib import Path
           class P(HTMLParser):
               pass
-          for name in ('index.html','dda.html'):
+          for name in ('index.html','dda.html','reparar.html'):
               text=Path(name).read_text(encoding='utf-8')
               P().feed(text)
               assert '<html' in text.lower(), f'{name}: missing html root'
