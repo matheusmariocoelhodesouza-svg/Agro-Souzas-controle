@@ -33,6 +33,7 @@ jobs:
 
           fetch "/" /tmp/index.html
           fetch "/sw-v7-02.js" /tmp/sw.js
+          fetch "/reparar.html" /tmp/repair.html
           fetch "/c360-quality-hotfix.js" /tmp/quality.js
           fetch "/c360-team-chat.js" /tmp/chat.js
           fetch "/c360-farm-cache-hotfix.js" /tmp/farms.js
@@ -42,6 +43,7 @@ jobs:
 
           test -s /tmp/index.html
           test -s /tmp/dda.html
+          test -s /tmp/repair.html
           test -s /tmp/ui.css
           test -s /tmp/chat.js
           test -s /tmp/farms.js
@@ -49,10 +51,15 @@ jobs:
           grep -q 'c360-field-offline-hotfix.js' /tmp/index.html
           grep -q 'c360-quality-hotfix.js' /tmp/index.html
           ! grep -q 'navigator.onLine' /tmp/index.html
-          grep -q "comando360-v7-02-hotfix6" /tmp/sw.js
+          ! grep -q '<script>window.onload' /tmp/index.html
+          grep -q "comando360-v7-02-hotfix8" /tmp/sw.js
+          grep -q "repairLegacyAppHtml" /tmp/sw.js
+          grep -q "X-Comando360-Repair" /tmp/sw.js
           grep -q "c360-team-chat.js" /tmp/sw.js
           grep -q "c360-farm-cache-hotfix.js" /tmp/sw.js
           ! grep -q "replaceAll('navigator.onLine'" /tmp/sw.js
+          grep -q "getRegistrations" /tmp/repair.html
+          grep -q "caches.delete" /tmp/repair.html
           grep -q "QUALITY_VERSION=" /tmp/quality.js
           grep -q "comando360-dda" /tmp/quality.js
           grep -q "2026.09.12-c1" /tmp/chat.js
@@ -73,5 +80,5 @@ jobs:
           assert m.get('name') or m.get('short_name')
           css=Path('/tmp/ui.css').read_text(encoding='utf-8')
           assert css.count('{') == css.count('}'), 'Production CSS has unbalanced braces'
-          print('Production deterministic PWA + UI theme + chat + full farm cache smoke: OK')
+          print('Production PWA + entry repair + chat + full farm cache smoke: OK')
           PY
