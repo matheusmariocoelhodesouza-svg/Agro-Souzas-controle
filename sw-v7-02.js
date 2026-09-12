@@ -1,4 +1,4 @@
-const CACHE='comando360-v7-02-hotfix9';
+const CACHE='comando360-v7-02-hotfix10';
 const CORE=[
   './',
   './index.html',
@@ -47,7 +47,7 @@ async function patchAppHtml(response){
     const headers=new Headers(response.headers);
     headers.delete('content-length');
     headers.set('Cache-Control','no-cache, no-store, must-revalidate');
-    headers.set('X-Comando360-Repair','hotfix9');
+    headers.set('X-Comando360-Repair','hotfix10');
     return new Response(text,{status:response.status,statusText:response.statusText,headers});
   }catch(_){
     return response;
