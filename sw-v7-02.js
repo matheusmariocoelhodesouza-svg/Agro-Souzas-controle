@@ -6,6 +6,7 @@ const CORE=[
   './comando360-icon.svg',
   './c360-field-offline-hotfix.js',
   './c360-quality-hotfix.js',
+  './c360-team-chat.js',
   './c360-ui-polish.css'
 ];
 
