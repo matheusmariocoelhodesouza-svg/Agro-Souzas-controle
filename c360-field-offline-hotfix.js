@@ -6,6 +6,11 @@
  let registrationPromise=null;
  let recovering=false;
 
+ // Fonte única para o estado de rede. O restante do app chama c360NetOnline().
+ if(typeof window.c360NetOnline!=='function'){
+  window.c360NetOnline=function(){return navigator.onLine!==false};
+ }
+
  function registerServiceWorkerEarly(){
   if(!('serviceWorker' in navigator))return Promise.resolve(null);
   if(registrationPromise)return registrationPromise;
@@ -80,12 +85,12 @@
     box.style.cssText='position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:2147483647;max-width:92vw;background:#0f172a;color:#fff;padding:12px 16px;border-radius:12px;font:700 13px system-ui;box-shadow:0 10px 30px rgba(15,23,42,.28);text-align:center';
     document.body.appendChild(box);
    }
-   box.textContent=navigator.onLine?'Atualizando o Comando 360…':'Conecte este celular à internet para concluir a atualização.';
+   box.textContent=c360NetOnline()?'Atualizando o Comando 360…':'Conecte este celular à internet para concluir a atualização.';
   }catch(_){}
  }
 
  function goToHardRepair(){
-  if(!navigator.onLine)return false;
+  if(!c360NetOnline())return false;
   try{
    const url=new URL('./reparar.html',location.href);
    url.searchParams.set('auto','1');
@@ -116,7 +121,7 @@
    if(goToHardRepair())return;
   }
 
-  if(!navigator.onLine){
+  if(!c360NetOnline()){
    window.addEventListener('online',()=>goToHardRepair(),{once:true});
    return;
   }
