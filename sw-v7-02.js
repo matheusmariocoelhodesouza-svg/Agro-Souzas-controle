@@ -1,4 +1,4 @@
-const CACHE='comando360-v7-02-hotfix10';
+const CACHE='comando360-v7-02-hotfix11';
 const CORE=[
   './',
   './index.html',
@@ -22,38 +22,6 @@ async function fetchWithTimeout(request,ms=3500){
   }
 }
 
-function repairLegacyAppHtml(text){
-  let fixed=String(text||'');
-  const legacy=[
-    '<script>window.onload=()=>window.print();<\\/script>',
-    '<script>window.onload=()=>window.print();</script>',
-    '<script>window.onload=function(){setTimeout(function(){window.print()},250)}<\\/script>',
-    '<script>window.onload=function(){setTimeout(function(){window.print()},250)}</script>'
-  ];
-  for(const snippet of legacy)fixed=fixed.split(snippet).join('');
-  return fixed;
-}
-
-async function patchAppHtml(response){
-  try{
-    let text=repairLegacyAppHtml(await response.clone().text());
-    const scripts=['c360-farm-cache-hotfix.js','c360-consumable-edit.js'];
-    for(const file of scripts){
-      if(!text.includes(file)){
-        const tag='<script src="./'+file+'"></script>';
-        text=text.includes('</body>')?text.replace('</body>',tag+'\n</body>'):text+'\n'+tag;
-      }
-    }
-    const headers=new Headers(response.headers);
-    headers.delete('content-length');
-    headers.set('Cache-Control','no-cache, no-store, must-revalidate');
-    headers.set('X-Comando360-Repair','hotfix10');
-    return new Response(text,{status:response.status,statusText:response.statusText,headers});
-  }catch(_){
-    return response;
-  }
-}
-
 function isAppShellNavigation(url){
   const path=url.pathname.replace(/\/+$/,'/');
   const scopePath=new URL(self.registration.scope).pathname.replace(/\/+$/,'/');
@@ -71,8 +39,7 @@ async function prepareCore(){
     try{
       const response=await fetchWithTimeout(url,5000);
       if(response&&response.ok){
-        const stored=(url==='./'||url==='./index.html')?await patchAppHtml(response):response;
-        await cache.put(url,stored.clone());
+        await cache.put(url,response.clone());
         if(url==='./'||url==='./index.html')hasShell=true;
       }
     }catch(_){}
@@ -118,21 +85,21 @@ self.addEventListener('fetch',event=>{
         if(fresh&&fresh.ok){
           const cache=await caches.open(CACHE);
           if(shell){
-            const repaired=await patchAppHtml(fresh);
-            await cache.put('./index.html',repaired.clone());
-            await cache.put('./',repaired.clone());
-            return repaired;
+            await cache.put('./index.html',fresh.clone());
+            await cache.put('./',fresh.clone());
+          }else{
+            await cache.put(req,fresh.clone());
           }
-          await cache.put(req,fresh.clone());
           return fresh;
         }
       }catch(_){}
 
+      const cache=await caches.open(CACHE);
       if(shell){
-        const cached=(await caches.match('./index.html'))||(await caches.match('./'));
-        if(cached)return await patchAppHtml(cached);
+        const cached=(await cache.match('./index.html'))||(await cache.match('./'));
+        if(cached)return cached;
       }else{
-        const cached=await caches.match(req);
+        const cached=await cache.match(req);
         if(cached)return cached;
       }
       return offlinePage();
@@ -145,10 +112,10 @@ self.addEventListener('fetch',event=>{
   if(!sameOrigin&&!approvedCdn)return;
 
   event.respondWith((async()=>{
-    const cached=await caches.match(req);
+    const cache=await caches.open(CACHE);
+    const cached=await cache.match(req);
     const network=fetch(req,{cache:sameOrigin?'no-cache':'default'}).then(async fresh=>{
       if(fresh&&(fresh.ok||fresh.type==='opaque')){
-        const cache=await caches.open(CACHE);
         await cache.put(req,fresh.clone());
       }
       return fresh;
