@@ -1,6 +1,6 @@
 (function(){
  'use strict';
- const REPAIR_VERSION='2026.09.12-r2';
+ const REPAIR_VERSION='2026.09.12-r3';
  const RECOVERY_KEY='c360_source_leak_recovery_'+REPAIR_VERSION;
  const SW_URL='./sw-v7-02.js';
  let registrationPromise=null;
@@ -36,11 +36,11 @@
   if(!document.body)return false;
   const text=String(document.body.innerText||document.body.textContent||'');
   const activation=!!document.getElementById('deviceSetupCard')||text.includes('Configurar celular da equipe');
-  const knownLeak=text.includes('Ainda não há funcionários salvos para uso offline');
-  const markers=['employees.map','events.filter','Object.fromEntries','currentEmployees','innerHTML','document.getElementById','const ','=>'];
+  if(!activation)return false;
+  const markers=['employees.map','events.filter','Object.fromEntries','currentEmployees','innerHTML','document.getElementById','addEventListener','function ','const ','=>'];
   let hits=0;
-  for(const marker of markers)if(text.includes(marker))hits++;
-  return activation&&((knownLeak&&hits>=1)||hits>=4);
+  for(const marker of markers)if(text.includes(marker)&&++hits>=4)return true;
+  return false;
  }
 
  function leakedTextNodes(){
