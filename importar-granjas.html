@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0d1b32">
+<title>Comando 360 • Importar granjas do WhatsApp</title>
+<link rel="icon" type="image/svg+xml" href="./comando360-icon.svg">
+<script src="./config.js"></script>
+<style>
+:root{--bg:#f4f7fb;--card:#fff;--ink:#14233b;--muted:#667a96;--line:#dfe7f1;--blue:#1976d2;--navy:#0d1b32;--green:#15803d;--amber:#b45309;--red:#b91c1c;--soft:#f7f9fc}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}.top{background:var(--navy);color:#fff;padding:14px 18px;position:sticky;top:0;z-index:20;box-shadow:0 6px 24px #0d1b3228}.topin{max-width:1480px;margin:auto;display:flex;align-items:center;gap:12px}.mark{width:42px;height:42px;border-radius:12px;background:var(--blue);display:grid;place-items:center;font-weight:950;font-size:20px}.brand strong{display:block}.brand small{color:#a8bdd9}.top .back{margin-left:auto;color:#fff;text-decoration:none;border:1px solid #ffffff2d;border-radius:10px;padding:9px 12px;font-weight:800;font-size:12px}.wrap{max-width:1480px;margin:0 auto;padding:22px}.hero{display:flex;justify-content:space-between;align-items:flex-start;gap:18px;margin-bottom:15px}.hero h1{font-size:28px;margin:0;letter-spacing:-.5px}.hero p{margin:5px 0 0;color:var(--muted);max-width:850px}.company{min-width:260px}.company label,.field label{font-size:10px;letter-spacing:.55px;color:var(--muted);font-weight:900;display:block;margin-bottom:5px}.company select,.field input{width:100%;height:42px;border:1px solid var(--line);border-radius:11px;background:var(--card);color:var(--ink);padding:0 11px;font:inherit}.grid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(300px,.75fr);gap:14px}.card{background:var(--card);border:1px solid var(--line);border-radius:17px;padding:16px;box-shadow:0 4px 16px #17324d0d}.card h2,.card h3{margin:0 0 4px}.muted{color:var(--muted);font-size:12px}.drop{margin-top:15px;border:2px dashed #b8c9dc;border-radius:16px;padding:30px 18px;text-align:center;background:#f9fbfe;transition:.15s}.drop.drag{border-color:var(--blue);background:#eef6ff}.drop .ico{font-size:34px}.drop strong{display:block;font-size:16px;margin:8px 0 4px}.drop input{display:none}.btn{border:0;border-radius:11px;padding:11px 14px;font-weight:850;cursor:pointer;font:inherit;font-size:12px}.btn.primary{background:var(--blue);color:#fff}.btn.soft{background:#eaf0f7;color:#29415f}.btn.danger{background:#fee2e2;color:#991b1b}.btn:disabled{opacity:.48;cursor:not-allowed}.toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.steps{display:grid;gap:9px;margin-top:12px}.step{display:flex;gap:10px;align-items:flex-start;padding:10px;border:1px solid #e9eef5;border-radius:12px;background:var(--soft)}.step b{width:25px;height:25px;border-radius:50%;display:grid;place-items:center;background:#e7f1ff;color:#0b5eb6;flex:0 0 auto}.privacy{margin-top:12px;background:#edf9f2;border:1px solid #cfead8;color:#285d3d;border-radius:12px;padding:11px;font-size:12px}.status{margin-top:10px;min-height:20px;font-size:12px}.status.err{color:var(--red)}.status.ok{color:var(--green)}.summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:14px 0}.kpi{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px}.kpi b{display:block;font-size:24px}.kpi span{font-size:10px;color:var(--muted);font-weight:850}.review{display:none}.review.open{display:block}.reviewhead{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px}.filters{display:flex;gap:8px;flex-wrap:wrap}.filter{border:1px solid var(--line);background:#fff;border-radius:999px;padding:7px 10px;font-size:11px;font-weight:850;cursor:pointer}.filter.active{background:#e9f3ff;border-color:#9fc7f1;color:#145da8}.tablewrap{overflow:auto;border:1px solid var(--line);border-radius:14px;background:#fff}.table{min-width:1050px}.thead,.row{display:grid;grid-template-columns:46px minmax(240px,1.25fr) 190px minmax(210px,.9fr) 250px 112px;gap:8px;align-items:center}.thead{position:sticky;top:0;background:#edf3f9;padding:9px 10px;font-size:10px;color:#5d718c;font-weight:900;z-index:2}.row{padding:9px 10px;border-top:1px solid #edf1f6}.row:first-of-type{border-top:0}.row input[type=text],.row input[type=url]{width:100%;height:38px;border:1px solid #d9e2ec;border-radius:9px;padding:0 9px;color:var(--ink);font:inherit;font-size:12px}.row.needs{background:#fffbeb}.row.existing{background:#f5f7fa}.row .check{width:19px;height:19px}.mapcell{display:flex;gap:5px}.mapcell input{min-width:0}.maplink{width:38px;height:38px;border:1px solid #d6e0eb;border-radius:9px;background:#fff;display:grid;place-items:center;text-decoration:none}.badge{display:inline-flex;border-radius:999px;padding:5px 7px;font-size:9px;font-weight:900}.badge.good{background:#dcfce7;color:#166534}.badge.mid{background:#fef3c7;color:#92400e}.badge.low{background:#fee2e2;color:#991b1b}.badge.exists{background:#e2e8f0;color:#475569;margin-top:4px}.rowdetails{grid-column:2/-1;font-size:10px;color:#7a8ca4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.foot{position:sticky;bottom:0;background:#f7faffea;backdrop-filter:blur(8px);border:1px solid var(--line);border-radius:14px;padding:11px;margin-top:10px;display:flex;justify-content:space-between;align-items:center;gap:10px}.empty{padding:24px;text-align:center;color:var(--muted)}.hidden{display:none!important}
+@media(max-width:850px){.wrap{padding:14px}.hero{display:block}.company{margin-top:12px;min-width:0}.grid{grid-template-columns:1fr}.summary{grid-template-columns:1fr 1fr}.reviewhead{align-items:flex-start;flex-direction:column}.foot{align-items:stretch;flex-direction:column}.foot .toolbar{width:100%}.foot .btn{flex:1}.hero h1{font-size:23px}.top .brand small{display:none}}
+@media(prefers-color-scheme:dark){:root{--bg:#091321;--card:#101d2e;--ink:#ecf3fb;--muted:#94a8bf;--line:#2a3b50;--soft:#0c1726}.top{background:#07111e}.company select,.field input,.row input[type=text],.row input[type=url],.tablewrap,.filter,.maplink{background:#101d2e;color:#ecf3fb;border-color:#30445c}.drop{background:#0c1726;border-color:#3c536e}.thead{background:#16263a;color:#a5b7ca}.row{border-color:#26384c}.row.needs{background:#2a2313}.row.existing{background:#131e2c}.btn.soft{background:#213247;color:#e4edf7}.foot{background:#0d1929e8}.privacy{background:#10291c;border-color:#245538;color:#a9dfbd}.step{border-color:#26384c}.kpi{background:#101d2e}}
+</style>
+</head>
+<body>
+<header class="top"><div class="topin"><div class="mark">360</div><div class="brand"><strong>Comando 360</strong><small>Importação inteligente de granjas</small></div><a class="back" href="./">← Voltar ao app</a></div></header>
+<main class="wrap">
+ <div class="hero"><div><h1>Importar granjas do WhatsApp</h1><p>Envie o arquivo exportado de uma conversa. O Comando 360 identifica possíveis produtores/granjas, cidades e links do Google Maps. <strong>Nada é cadastrado antes da sua conferência.</strong></p></div><div class="company"><label>EMPRESA / CLIENTE</label><select id="companySelect"><option>Carregando...</option></select></div></div>
+ <div class="grid">
+  <section class="card"><h2>📥 Arquivo da conversa</h2><div class="muted">Formatos aceitos: .ZIP ou .TXT do WhatsApp, até 15 MB.</div>
+   <div class="drop" id="dropZone"><div class="ico">💬</div><strong id="fileTitle">Arraste o arquivo aqui</strong><div class="muted" id="fileSub">ou escolha o export do WhatsApp no celular/computador</div><div style="margin-top:13px" class="toolbar" id="fileButtons"><button class="btn soft" type="button" id="pickFile">Escolher arquivo</button><button class="btn primary" type="button" id="analyzeBtn" disabled>Analisar conversa</button></div><input id="fileInput" type="file" accept=".zip,.txt,text/plain,application/zip"></div>
+   <div class="status" id="status"></div>
+   <div class="privacy">🔒 <strong>Privacidade:</strong> o arquivo é processado temporariamente para gerar a prévia. O texto bruto da conversa não é gravado no cadastro; somente as granjas que você confirmar serão salvas.</div>
+  </section>
+  <aside class="card"><h3>Como fazer no WhatsApp</h3><div class="steps"><div class="step"><b>1</b><div><strong>Abra a conversa</strong><div class="muted">Pode ser a conversa do escritório, programação ou outra que contenha as fichas.</div></div></div><div class="step"><b>2</b><div><strong>Exportar conversa</strong><div class="muted">No Android: ⋮ → Mais → Exportar conversa → de preferência “Sem mídia”.</div></div></div><div class="step"><b>3</b><div><strong>Envie o ZIP/TXT aqui</strong><div class="muted">Revise nomes, cidades e localizações antes de confirmar.</div></div></div></div></aside>
+ </div>
+ <section class="review" id="review">
+  <div class="summary"><div class="kpi"><span>ENCONTRADAS</span><b id="kFound">0</b></div><div class="kpi"><span>COM LOCALIZAÇÃO</span><b id="kMaps">0</b></div><div class="kpi"><span>JÁ CADASTRADAS</span><b id="kExisting">0</b></div><div class="kpi"><span>PRECISAM REVISÃO</span><b id="kReview">0</b></div></div>
+  <div class="card"><div class="reviewhead"><div><h2>✅ Conferência antes de cadastrar</h2><div class="muted">Edite qualquer campo. Desmarque o que não for granja. Linhas amarelas merecem atenção.</div></div><div class="toolbar"><button class="btn soft" id="addRow" type="button">+ Adicionar manualmente</button><button class="btn soft" id="selectAll" type="button">Marcar todas</button><button class="btn soft" id="selectNone" type="button">Desmarcar</button></div></div>
+   <div class="filters"><button class="filter active" data-filter="all">Todas</button><button class="filter" data-filter="review">Revisar</button><button class="filter" data-filter="maps">Com localização</button><button class="filter" data-filter="existing">Já cadastradas</button></div>
+   <div class="tablewrap" style="margin-top:10px"><div class="table"><div class="thead"><div>USAR</div><div>PRODUTOR / GRANJA</div><div>CIDADE</div><div>NOME DA GRANJA</div><div>LOCALIZAÇÃO GOOGLE MAPS</div><div>CONFIANÇA</div></div><div id="rows"></div></div></div>
+   <div class="foot"><div><strong id="selectedText">0 selecionadas</strong><div class="muted">O cadastro será feito somente para a empresa escolhida acima.</div></div><div class="toolbar"><button class="btn soft" id="reAnalyze" type="button">Analisar outro arquivo</button><button class="btn primary" id="commitBtn" type="button">Cadastrar selecionadas</button></div></div>
+  </div>
+ </section>
+</main>
+<script>
+(()=>{'use strict';
+const API=window.SUPABASE_URL,KEY=window.SUPABASE_PUBLISHABLE_KEY;
+const $=s=>document.querySelector(s), esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+let chosenFile=null,candidates=[],currentFilter='all',accessToken='';
+const getSession=()=>{try{return JSON.parse(localStorage.getItem('controla_beta_session')||'null')}catch{return null}};
+const saveSession=s=>localStorage.setItem('controla_beta_session',JSON.stringify(s));
+function setStatus(text,type=''){const el=$('#status');el.textContent=text||'';el.className='status '+type}
+async function parseResponse(r){const t=await r.text();let d={};try{d=t?JSON.parse(t):{}}catch{d={message:t}};if(!r.ok)throw new Error(d.message||d.error||('Erro '+r.status));return d}
+async function ensureToken(){
+ let s=getSession();if(!s?.access_token)throw new Error('Entre no Comando 360 antes de importar as granjas.');
+ let r=await fetch(API+'/auth/v1/user',{headers:{apikey:KEY,Authorization:'Bearer '+s.access_token}});
+ if(r.ok){accessToken=s.access_token;return await r.json()}
+ if(!s.refresh_token)throw new Error('Sua sessão expirou. Entre novamente no Comando 360.');
+ r=await fetch(API+'/auth/v1/token?grant_type=refresh_token',{method:'POST',headers:{apikey:KEY,'Content-Type':'application/json'},body:JSON.stringify({refresh_token:s.refresh_token})});
+ s=await parseResponse(r);saveSession(s);accessToken=s.access_token;return s.user;
+}
+async function rest(table,query=''){
+ const r=await fetch(API+'/rest/v1/'+table+(query?'?'+query:''),{headers:{apikey:KEY,Authorization:'Bearer '+accessToken}});return await parseResponse(r)
+}
+async function loadCompanies(user){
+ const members=await rest('v2_company_members','select=company_id,status&user_id=eq.'+encodeURIComponent(user.id)+'&status=eq.active');
+ if(!members.length)throw new Error('Seu usuário não está vinculado a nenhuma empresa ativa.');
+ const ids=[...new Set(members.map(x=>x.company_id))];
+ const companies=await rest('v2_companies','select=id,legal_name,trade_name,status&id=in.('+ids.join(',')+')&status=eq.active');
+ const real=companies.filter(x=>!String(x.legal_name||'').toUpperCase().includes('DADOS FICTÍCIOS'));
+ const list=real.length?real:companies;$('#companySelect').innerHTML=list.map(c=>'<option value="'+esc(c.id)+'">'+esc(c.trade_name||c.legal_name||'Empresa')+'</option>').join('');
+}
+function setFile(file){
+ if(!file)return;const ok=/\.(zip|txt)$/i.test(file.name);if(!ok){setStatus('Envie um arquivo .zip ou .txt.','err');return}
+ if(file.size>15*1024*1024){setStatus('O arquivo ultrapassa 15 MB. Exporte a conversa sem mídia.','err');return}
+ chosenFile=file;$('#fileTitle').textContent=file.name;$('#fileSub').textContent=(file.size/1024/1024).toFixed(2)+' MB • pronto para analisar';$('#analyzeBtn').disabled=false;setStatus('');
+}
+function confidenceBadge(c){const pct=Math.round(Number(c.confidence||0)*100),cls=pct>=80?'good':pct>=60?'mid':'low';return '<span class="badge '+cls+'">'+pct+'%</span>'+(c.existing?'<div><span class="badge exists">JÁ EXISTE</span></div>':'')}
+function rowMatches(c){if(currentFilter==='review')return Number(c.confidence||0)<.8;if(currentFilter==='maps')return !!c.maps_url;if(currentFilter==='existing')return !!c.existing;return true}
+function render(){
+ const rows=$('#rows');const visible=candidates.map((c,i)=>({c,i})).filter(x=>rowMatches(x.c));
+ if(!visible.length){rows.innerHTML='<div class="empty">Nenhum registro neste filtro.</div>';updateSelected();return}
+ rows.innerHTML=visible.map(({c,i})=>{const needs=Number(c.confidence||0)<.8?' needs':'',existing=c.existing?' existing':'';return '<div class="row'+needs+existing+'" data-index="'+i+'"><div><input class="check" type="checkbox" '+(c.selected!==false?'checked':'')+'></div><div><input data-k="name" type="text" value="'+esc(c.name)+'"></div><div><input data-k="city" type="text" value="'+esc(c.city)+'"></div><div><input data-k="farm_name" type="text" value="'+esc(c.farm_name||c.name)+'"></div><div class="mapcell"><input data-k="maps_url" type="url" placeholder="https://maps..." value="'+esc(c.maps_url||'')+'">'+(c.maps_url?'<a class="maplink" target="_blank" rel="noopener" href="'+esc(c.maps_url)+'" title="Abrir localização">📍</a>':'<span class="maplink" title="Sem localização">—</span>')+'</div><div>'+confidenceBadge(c)+'</div><div class="rowdetails" title="'+esc(c.context||'')+'">'+esc(c.context||'Adicionado manualmente')+'</div></div>'}).join('');
+ rows.querySelectorAll('.row').forEach(row=>{const i=Number(row.dataset.index);row.querySelector('.check').addEventListener('change',e=>{candidates[i].selected=e.target.checked;updateSelected()});row.querySelectorAll('input[data-k]').forEach(inp=>inp.addEventListener('input',e=>{candidates[i][e.target.dataset.k]=e.target.value;if(e.target.dataset.k==='maps_url')candidates[i].maps_url=e.target.value;updateSelected()}))});updateSelected();
+}
+function updateSelected(){const selected=candidates.filter(x=>x.selected!==false).length;$('#selectedText').textContent=selected+' '+(selected===1?'selecionada':'selecionadas');$('#commitBtn').disabled=!selected}
+function showSummary(s){$('#kFound').textContent=s.found||0;$('#kMaps').textContent=s.with_location||0;$('#kExisting').textContent=s.existing||0;$('#kReview').textContent=s.needs_review||0}
+async function analyze(){
+ if(!chosenFile)return;const company=$('#companySelect').value;if(!company){setStatus('Selecione a empresa.','err');return}
+ const btn=$('#analyzeBtn');btn.disabled=true;btn.textContent='Analisando...';setStatus('Lendo a conversa e procurando granjas, cidades e localizações...');
+ try{await ensureToken();const form=new FormData();form.append('action','preview');form.append('company_id',company);form.append('file',chosenFile);
+   const r=await fetch(API+'/functions/v1/comando360-farm-import',{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+accessToken},body:form});const d=await parseResponse(r);
+   candidates=(d.candidates||[]).map(x=>({...x,selected:true}));showSummary(d.summary||{});$('#review').classList.add('open');currentFilter='all';document.querySelectorAll('.filter').forEach(x=>x.classList.toggle('active',x.dataset.filter==='all'));render();setStatus(candidates.length?'Prévia pronta. Confira os registros abaixo.':'Nenhuma granja foi identificada automaticamente. Você pode adicionar manualmente.','ok');$('#review').scrollIntoView({behavior:'smooth',block:'start'});
+ }catch(e){setStatus(e.message||String(e),'err')}finally{btn.disabled=!chosenFile;btn.textContent='Analisar conversa'}
+}
+async function commit(){
+ const company=$('#companySelect').value,items=candidates.filter(x=>x.selected!==false);if(!items.length)return;
+ const invalid=items.filter(x=>!String(x.name||'').trim()||!String(x.city||'').trim());if(invalid.length){setStatus('Há '+invalid.length+' registro(s) selecionado(s) sem nome ou cidade. Corrija ou desmarque antes de cadastrar.','err');window.scrollTo({top:0,behavior:'smooth'});return}
+ const btn=$('#commitBtn');btn.disabled=true;btn.textContent='Cadastrando...';
+ try{await ensureToken();const r=await fetch(API+'/functions/v1/comando360-farm-import',{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+accessToken,'Content-Type':'application/json'},body:JSON.stringify({action:'commit',company_id:company,items})});const d=await parseResponse(r);
+   setStatus('Cadastro concluído: '+d.inserted+' nova(s), '+d.updated+' atualizada(s) e '+d.skipped+' já estavam iguais.','ok');
+   alert('Importação concluída\n\nNovas: '+d.inserted+'\nAtualizadas: '+d.updated+'\nSem alteração: '+d.skipped);location.href='./';
+ }catch(e){setStatus(e.message||String(e),'err');window.scrollTo({top:0,behavior:'smooth'})}finally{btn.disabled=false;btn.textContent='Cadastrar selecionadas'}
+}
+$('#pickFile').addEventListener('click',()=>$('#fileInput').click());$('#fileInput').addEventListener('change',e=>setFile(e.target.files?.[0]));$('#analyzeBtn').addEventListener('click',analyze);$('#commitBtn').addEventListener('click',commit);
+const dz=$('#dropZone');['dragenter','dragover'].forEach(ev=>dz.addEventListener(ev,e=>{e.preventDefault();dz.classList.add('drag')}));['dragleave','drop'].forEach(ev=>dz.addEventListener(ev,e=>{e.preventDefault();dz.classList.remove('drag')}));dz.addEventListener('drop',e=>setFile(e.dataTransfer.files?.[0]));
+$('#selectAll').addEventListener('click',()=>{candidates.forEach(x=>x.selected=true);render()});$('#selectNone').addEventListener('click',()=>{candidates.forEach(x=>x.selected=false);render()});
+$('#addRow').addEventListener('click',()=>{candidates.unshift({name:'',city:'',farm_name:'',maps_url:'',confidence:1,existing:false,selected:true,context:'Adicionado manualmente'});showSummary({found:candidates.length,with_location:candidates.filter(x=>x.maps_url).length,existing:candidates.filter(x=>x.existing).length,needs_review:candidates.filter(x=>Number(x.confidence||0)<.8).length});render()});
+$('#reAnalyze').addEventListener('click',()=>{candidates=[];$('#review').classList.remove('open');chosenFile=null;$('#fileInput').value='';$('#fileTitle').textContent='Arraste o arquivo aqui';$('#fileSub').textContent='ou escolha o export do WhatsApp no celular/computador';$('#analyzeBtn').disabled=true;setStatus('');window.scrollTo({top:0,behavior:'smooth'})});
+document.querySelectorAll('.filter').forEach(b=>b.addEventListener('click',()=>{currentFilter=b.dataset.filter;document.querySelectorAll('.filter').forEach(x=>x.classList.toggle('active',x===b));render()}));
+(async()=>{try{if(!API||!KEY)throw new Error('Configuração do Comando 360 não carregada.');const user=await ensureToken();await loadCompanies(user);setStatus('Pronto para importar.','ok')}catch(e){setStatus(e.message||String(e),'err');$('#analyzeBtn').disabled=true;$('#companySelect').innerHTML='<option>Entre no app primeiro</option>'}})();
+})();
+</script>
+</body>
+</html>
