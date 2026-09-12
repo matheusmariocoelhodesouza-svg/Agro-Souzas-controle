@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   production-smoke:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 8
     steps:
       - name: Check production endpoints
@@ -35,6 +35,7 @@ jobs:
           fetch "/sw-v7-02.js" /tmp/sw.js
           fetch "/c360-quality-hotfix.js" /tmp/quality.js
           fetch "/c360-team-chat.js" /tmp/chat.js
+          fetch "/c360-farm-cache-hotfix.js" /tmp/farms.js
           fetch "/c360-ui-polish.css" /tmp/ui.css
           fetch "/dda.html" /tmp/dda.html
           fetch "/comando360.webmanifest" /tmp/manifest.json
@@ -43,12 +44,14 @@ jobs:
           test -s /tmp/dda.html
           test -s /tmp/ui.css
           test -s /tmp/chat.js
+          test -s /tmp/farms.js
           grep -q 'c360-ui-polish.css' /tmp/index.html
           grep -q 'c360-field-offline-hotfix.js' /tmp/index.html
           grep -q 'c360-quality-hotfix.js' /tmp/index.html
           ! grep -q 'navigator.onLine' /tmp/index.html
-          grep -q "comando360-v7-02-hotfix5" /tmp/sw.js
+          grep -q "comando360-v7-02-hotfix6" /tmp/sw.js
           grep -q "c360-team-chat.js" /tmp/sw.js
+          grep -q "c360-farm-cache-hotfix.js" /tmp/sw.js
           ! grep -q "replaceAll('navigator.onLine'" /tmp/sw.js
           grep -q "QUALITY_VERSION=" /tmp/quality.js
           grep -q "comando360-dda" /tmp/quality.js
@@ -56,6 +59,9 @@ jobs:
           grep -q "c360_team_chat_queue_v1" /tmp/chat.js
           grep -q "v2_team_messages" /tmp/chat.js
           grep -q "SMS emergência" /tmp/chat.js
+          grep -q "2026.09.12-f1" /tmp/farms.js
+          grep -q "v2_poultry_farms" /tmp/farms.js
+          grep -q "poultry_context" /tmp/farms.js
           grep -q "UI POLISH 2026.09.10-u1" /tmp/ui.css
           grep -q "body.darkmode" /tmp/ui.css
           grep -q "#inicio" /tmp/ui.css
@@ -67,5 +73,5 @@ jobs:
           assert m.get('name') or m.get('short_name')
           css=Path('/tmp/ui.css').read_text(encoding='utf-8')
           assert css.count('{') == css.count('}'), 'Production CSS has unbalanced braces'
-          print('Production deterministic PWA + UI theme + team chat smoke: OK')
+          print('Production deterministic PWA + UI theme + chat + full farm cache smoke: OK')
           PY
