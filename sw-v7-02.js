@@ -1,4 +1,4 @@
-const CACHE='comando360-v7-02-hotfix5';
+const CACHE='comando360-v7-02-hotfix6';
 const CORE=[
   './',
   './index.html',
@@ -7,6 +7,7 @@ const CORE=[
   './c360-field-offline-hotfix.js',
   './c360-quality-hotfix.js',
   './c360-team-chat.js',
+  './c360-farm-cache-hotfix.js',
   './c360-ui-polish.css'
 ];
 
@@ -21,7 +22,18 @@ async function fetchWithTimeout(request,ms=3500){
 }
 
 async function patchAppHtml(response){
-  return response;
+  try{
+    const text=await response.clone().text();
+    if(text.includes('c360-farm-cache-hotfix.js'))return response;
+    const tag='<script src="./c360-farm-cache-hotfix.js"></script>';
+    const patched=text.includes('</body>')?text.replace('</body>',tag+'\n</body>'):text+'\n'+tag;
+    const headers=new Headers(response.headers);
+    headers.delete('content-length');
+    headers.set('Cache-Control','no-cache, no-store, must-revalidate');
+    return new Response(patched,{status:response.status,statusText:response.statusText,headers});
+  }catch(_){
+    return response;
+  }
 }
 
 function isAppShellNavigation(url){
