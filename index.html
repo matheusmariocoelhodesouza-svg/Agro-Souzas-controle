@@ -4832,8 +4832,9 @@ function printMonthlyMirror(){
   ${content}
   <div class="legal"><b>Rastreabilidade:</b> novas marcações recebem NSR sequencial e hash SHA-256 no banco de dados. Os campos essenciais da marcação original são protegidos contra alteração e exclusão. Registros antigos, anteriores à implantação desta camada, podem aparecer sem NSR/hash e não devem ser retroativamente apresentados como se tivessem sido gerados com essa proteção.</div>
   <div class="footer">Este relatório é uma versão operacional em evolução. A conformidade integral como REP-P ainda depende da implementação e validação dos demais requisitos técnicos aplicáveis, incluindo AFD/AEJ, comprovantes eletrônicos e assinatura eletrônica quando exigida.</div>
-  <script>window.onload=()=>window.print();<\/script></body></html>`);
+  </body></html>`);
   w.document.close();
+ try{setTimeout(()=>{w.focus();w.print()},250)}catch(e){}
 }
 
 function setTextSafe(id,value){const el=document.getElementById(id);if(el)el.textContent=value}
@@ -6431,8 +6432,9 @@ function printCatchReport(index,format='80'){
  aviarySections+
  '<div class="totals"><div class="total-label">TOTAL DO INTEGRADO</div><div class="total-big">'+r.totalBirds.toLocaleString('pt-BR')+' AVES</div><div class="totals-small"><div>Aviários<br><b>'+Object.keys(groups).length+'</b></div><div>Caminhões<br><b>'+r.trucks.length+'</b></div><div>Caixas<br><b>'+totalBoxes.toLocaleString('pt-BR')+'</b></div><div>Caixas vazias<br><b>'+totalEmpty.toLocaleString('pt-BR')+'</b></div><div>Catas<br><b>'+r.catas+'</b></div><div>Mortes carregamento<br><b>'+totalDeaths.toLocaleString('pt-BR')+'</b></div></div></div>'+
  '<div class="label">OBSERVAÇÕES</div><div class="obs">'+esc(notes)+'</div><div class="sign">'+esc(sup.name)+'<br>Encarregado da equipe</div><div class="sign">Responsável pela granja / integrado<br>Nome e assinatura</div>'+
- '<div class="footer">Emitido pelo Comando 360<br>'+new Date().toLocaleString('pt-BR')+'<br><br>*** FIM DO RELATÓRIO ***</div><script>window.onload=function(){setTimeout(function(){window.print()},250)}<\/script></body></html>');
+ '<div class="footer">Emitido pelo Comando 360<br>'+new Date().toLocaleString('pt-BR')+'<br><br>*** FIM DO RELATÓRIO ***</div></body></html>');
  w.document.close();
+ try{setTimeout(()=>{w.focus();w.print()},250)}catch(e){}
 }
 document.addEventListener('click',function(e){
  const b=e.target.closest('.catchReportPrint');
@@ -9104,8 +9106,9 @@ function printAdminReports(){
  '<h2>Produção por integrado</h2><table><tr><th>Integrado</th><th>Apanhas</th><th>Aves</th></tr>'+cust+'</table>'+
  '<h2>Abastecimentos por condução</h2>'+fuel+
  '<h2>Ponto</h2><p>Funcionários com movimento: <b>'+Number(r.attendance.employees||0)+'</b> • Horas trabalhadas: <b>'+fmtMinutes(r.attendance.worked_minutes||0)+'</b> • Atrasos: <b>'+fmtMinutes(r.attendance.late_minutes||0)+'</b> • Ausências: <b>'+fmtMinutes(r.attendance.absence_minutes||0)+'</b></p>'+
- '<div class="footer">Comando 360 • relatório gerencial baseado nos registros existentes no sistema.</div><script>window.onload=()=>window.print();<\/script></body></html>');
+ '<div class="footer">Comando 360 • relatório gerencial baseado nos registros existentes no sistema.</div></body></html>');
  w.document.close();
+ try{setTimeout(()=>{w.focus();w.print()},250)}catch(e){}
 }
 
 const C360_MODULES={
