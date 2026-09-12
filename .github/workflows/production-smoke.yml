@@ -63,7 +63,8 @@ jobs:
           grep -q "c360-farm-cache-hotfix.js" /tmp/sw.js
           grep -q "c360-consumable-edit.js" /tmp/sw.js
           ! grep -q "replaceAll('navigator.onLine'" /tmp/sw.js
-          grep -q "2026.09.12-r2" /tmp/field.js
+          grep -q "2026.09.12-r3" /tmp/field.js
+          grep -q "c360NetOnline" /tmp/field.js
           grep -q "registerServiceWorkerEarly" /tmp/field.js
           grep -q "looksLikeLeakedSource" /tmp/field.js
           grep -q "getRegistrations" /tmp/repair.html
