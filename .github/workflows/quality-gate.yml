@@ -55,7 +55,7 @@ jobs:
           grep -q "c360-farm-cache-hotfix.js" sw-v7-02.js
           grep -q "c360-consumable-edit.js" sw-v7-02.js
           ! grep -q "replaceAll('navigator.onLine'" sw-v7-02.js
-          grep -q "2026.09.12-r1" c360-field-offline-hotfix.js
+          grep -q "2026.09.12-r2" c360-field-offline-hotfix.js
           grep -q "registerServiceWorkerEarly" c360-field-offline-hotfix.js
           grep -q "looksLikeLeakedSource" c360-field-offline-hotfix.js
           grep -q "getRegistrations" reparar.html
