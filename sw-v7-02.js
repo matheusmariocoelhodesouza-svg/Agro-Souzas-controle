@@ -1,4 +1,4 @@
-const CACHE='comando360-v7-02-hotfix7';
+const CACHE='comando360-v7-02-hotfix8';
 const CORE=[
   './',
   './index.html',
@@ -21,16 +21,30 @@ async function fetchWithTimeout(request,ms=3500){
   }
 }
 
+function repairLegacyAppHtml(text){
+  let fixed=String(text||'');
+  const legacy=[
+    '<script>window.onload=()=>window.print();<\\/script>',
+    '<script>window.onload=()=>window.print();</script>',
+    '<script>window.onload=function(){setTimeout(function(){window.print()},250)}<\\/script>',
+    '<script>window.onload=function(){setTimeout(function(){window.print()},250)}</script>'
+  ];
+  for(const snippet of legacy)fixed=fixed.split(snippet).join('');
+  return fixed;
+}
+
 async function patchAppHtml(response){
   try{
-    const text=await response.clone().text();
-    if(text.includes('c360-farm-cache-hotfix.js'))return response;
-    const tag='<script src="./c360-farm-cache-hotfix.js"></script>';
-    const patched=text.includes('</body>')?text.replace('</body>',tag+'\n</body>'):text+'\n'+tag;
+    let text=repairLegacyAppHtml(await response.clone().text());
+    if(!text.includes('c360-farm-cache-hotfix.js')){
+      const tag='<script src="./c360-farm-cache-hotfix.js"></script>';
+      text=text.includes('</body>')?text.replace('</body>',tag+'\n</body>'):text+'\n'+tag;
+    }
     const headers=new Headers(response.headers);
     headers.delete('content-length');
     headers.set('Cache-Control','no-cache, no-store, must-revalidate');
-    return new Response(patched,{status:response.status,statusText:response.statusText,headers});
+    headers.set('X-Comando360-Repair','hotfix8');
+    return new Response(text,{status:response.status,statusText:response.statusText,headers});
   }catch(_){
     return response;
   }
@@ -53,7 +67,8 @@ async function prepareCore(){
     try{
       const response=await fetchWithTimeout(url,5000);
       if(response&&response.ok){
-        await cache.put(url,response.clone());
+        const stored=(url==='./'||url==='./index.html')?await patchAppHtml(response):response;
+        await cache.put(url,stored.clone());
         if(url==='./'||url==='./index.html')hasShell=true;
       }
     }catch(_){}
@@ -95,13 +110,14 @@ self.addEventListener('fetch',event=>{
     event.respondWith((async()=>{
       const shell=isAppShellNavigation(url);
       try{
-        const fresh=await fetchWithTimeout(req,2500);
+        const fresh=await fetchWithTimeout(req,4000);
         if(fresh&&fresh.ok){
           const cache=await caches.open(CACHE);
           if(shell){
-            await cache.put('./index.html',fresh.clone());
-            await cache.put('./',fresh.clone());
-            return await patchAppHtml(fresh);
+            const repaired=await patchAppHtml(fresh);
+            await cache.put('./index.html',repaired.clone());
+            await cache.put('./',repaired.clone());
+            return repaired;
           }
           await cache.put(req,fresh.clone());
           return fresh;
