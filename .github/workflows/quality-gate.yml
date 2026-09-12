@@ -73,9 +73,11 @@ jobs:
           grep -q 'c360-quality-hotfix.js' index.html
           ! grep -q 'navigator.onLine' index.html
           ! grep -q '<script>window.onload' index.html
-          grep -q "comando360-v7-02-hotfix10" sw-v7-02.js
-          grep -q "repairLegacyAppHtml" sw-v7-02.js
-          grep -q "X-Comando360-Repair" sw-v7-02.js
+          grep -q "comando360-v7-02-hotfix11" sw-v7-02.js
+          grep -q "isAppShellNavigation" sw-v7-02.js
+          ! grep -q "patchAppHtml" sw-v7-02.js
+          ! grep -q "repairLegacyAppHtml" sw-v7-02.js
+          ! grep -q "X-Comando360-Repair" sw-v7-02.js
           grep -q "c360-team-chat.js" sw-v7-02.js
           grep -q "c360-farm-cache-hotfix.js" sw-v7-02.js
           grep -q "c360-consumable-edit.js" sw-v7-02.js
