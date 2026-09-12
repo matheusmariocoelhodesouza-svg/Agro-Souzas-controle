@@ -29,6 +29,7 @@ jobs:
           test -s dda.html
           test -s reparar.html
           test -s comando360.webmanifest
+          test -s c360-field-offline-hotfix.js
           test -s c360-quality-hotfix.js
           test -s c360-team-chat.js
           test -s c360-farm-cache-hotfix.js
@@ -47,13 +48,16 @@ jobs:
           grep -q 'c360-quality-hotfix.js' index.html
           ! grep -q 'navigator.onLine' index.html
           ! grep -q '<script>window.onload' index.html
-          grep -q "comando360-v7-02-hotfix9" sw-v7-02.js
+          grep -q "comando360-v7-02-hotfix10" sw-v7-02.js
           grep -q "repairLegacyAppHtml" sw-v7-02.js
           grep -q "X-Comando360-Repair" sw-v7-02.js
           grep -q "c360-team-chat.js" sw-v7-02.js
           grep -q "c360-farm-cache-hotfix.js" sw-v7-02.js
           grep -q "c360-consumable-edit.js" sw-v7-02.js
           ! grep -q "replaceAll('navigator.onLine'" sw-v7-02.js
+          grep -q "2026.09.12-r1" c360-field-offline-hotfix.js
+          grep -q "registerServiceWorkerEarly" c360-field-offline-hotfix.js
+          grep -q "looksLikeLeakedSource" c360-field-offline-hotfix.js
           grep -q "getRegistrations" reparar.html
           grep -q "caches.delete" reparar.html
           grep -q "status:'pending'" c360-quality-hotfix.js
