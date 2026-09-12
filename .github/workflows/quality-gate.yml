@@ -32,6 +32,7 @@ jobs:
           test -s c360-quality-hotfix.js
           test -s c360-team-chat.js
           test -s c360-farm-cache-hotfix.js
+          test -s c360-consumable-edit.js
           test -s c360-ui-polish.css
           test -s sw-v7-02.js
           test -s qa/reference_audit.py
@@ -46,11 +47,12 @@ jobs:
           grep -q 'c360-quality-hotfix.js' index.html
           ! grep -q 'navigator.onLine' index.html
           ! grep -q '<script>window.onload' index.html
-          grep -q "comando360-v7-02-hotfix8" sw-v7-02.js
+          grep -q "comando360-v7-02-hotfix9" sw-v7-02.js
           grep -q "repairLegacyAppHtml" sw-v7-02.js
           grep -q "X-Comando360-Repair" sw-v7-02.js
           grep -q "c360-team-chat.js" sw-v7-02.js
           grep -q "c360-farm-cache-hotfix.js" sw-v7-02.js
+          grep -q "c360-consumable-edit.js" sw-v7-02.js
           ! grep -q "replaceAll('navigator.onLine'" sw-v7-02.js
           grep -q "getRegistrations" reparar.html
           grep -q "caches.delete" reparar.html
@@ -61,6 +63,9 @@ jobs:
           grep -q "2026.09.12-f1" c360-farm-cache-hotfix.js
           grep -q "v2_poultry_farms" c360-farm-cache-hotfix.js
           grep -q "poultry_context" c360-farm-cache-hotfix.js
+          grep -q "2026.09.12-e1" c360-consumable-edit.js
+          grep -q "SALVAR ALTERAÇÕES" c360-consumable-edit.js
+          grep -q "v2_inventory_items" c360-consumable-edit.js
           grep -q "UI POLISH 2026.09.10-u1" c360-ui-polish.css
 
       - name: Basic HTML parse
