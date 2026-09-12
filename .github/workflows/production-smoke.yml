@@ -56,9 +56,11 @@ jobs:
           grep -q 'c360-quality-hotfix.js' /tmp/index.html
           ! grep -q 'navigator.onLine' /tmp/index.html
           ! grep -q '<script>window.onload' /tmp/index.html
-          grep -q "comando360-v7-02-hotfix10" /tmp/sw.js
-          grep -q "repairLegacyAppHtml" /tmp/sw.js
-          grep -q "X-Comando360-Repair" /tmp/sw.js
+          grep -q "comando360-v7-02-hotfix11" /tmp/sw.js
+          grep -q "isAppShellNavigation" /tmp/sw.js
+          ! grep -q "patchAppHtml" /tmp/sw.js
+          ! grep -q "repairLegacyAppHtml" /tmp/sw.js
+          ! grep -q "X-Comando360-Repair" /tmp/sw.js
           grep -q "c360-team-chat.js" /tmp/sw.js
           grep -q "c360-farm-cache-hotfix.js" /tmp/sw.js
           grep -q "c360-consumable-edit.js" /tmp/sw.js
@@ -92,5 +94,5 @@ jobs:
           assert m.get('name') or m.get('short_name')
           css=Path('/tmp/ui.css').read_text(encoding='utf-8')
           assert css.count('{') == css.count('}'), 'Production CSS has unbalanced braces'
-          print('Production PWA + activation self-repair + chat + farms + consumable editor smoke: OK')
+          print('Production PWA + activation + chat + farms + consumable editor smoke: OK')
           PY
