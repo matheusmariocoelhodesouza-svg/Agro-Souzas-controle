@@ -12,10 +12,10 @@ permissions:
 
 jobs:
   static-quality:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Check JavaScript syntax
         run: |
@@ -29,6 +29,8 @@ jobs:
           test -s dda.html
           test -s comando360.webmanifest
           test -s c360-quality-hotfix.js
+          test -s c360-team-chat.js
+          test -s c360-farm-cache-hotfix.js
           test -s c360-ui-polish.css
           test -s sw-v7-02.js
           test -s qa/reference_audit.py
@@ -42,10 +44,17 @@ jobs:
           grep -q 'c360-field-offline-hotfix.js' index.html
           grep -q 'c360-quality-hotfix.js' index.html
           ! grep -q 'navigator.onLine' index.html
-          grep -q "comando360-v7-02-hotfix5" sw-v7-02.js
+          grep -q "comando360-v7-02-hotfix6" sw-v7-02.js
+          grep -q "c360-team-chat.js" sw-v7-02.js
+          grep -q "c360-farm-cache-hotfix.js" sw-v7-02.js
           ! grep -q "replaceAll('navigator.onLine'" sw-v7-02.js
           grep -q "status:'pending'" c360-quality-hotfix.js
           grep -q "comando360-dda" c360-quality-hotfix.js
+          grep -q "2026.09.12-c1" c360-team-chat.js
+          grep -q "c360_team_chat_queue_v1" c360-team-chat.js
+          grep -q "2026.09.12-f1" c360-farm-cache-hotfix.js
+          grep -q "v2_poultry_farms" c360-farm-cache-hotfix.js
+          grep -q "poultry_context" c360-farm-cache-hotfix.js
           grep -q "UI POLISH 2026.09.10-u1" c360-ui-polish.css
 
       - name: Basic HTML parse
