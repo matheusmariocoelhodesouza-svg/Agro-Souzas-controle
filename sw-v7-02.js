@@ -1,4 +1,4 @@
-const CACHE='comando360-v7-02-hotfix8';
+const CACHE='comando360-v7-02-hotfix9';
 const CORE=[
   './',
   './index.html',
@@ -8,6 +8,7 @@ const CORE=[
   './c360-quality-hotfix.js',
   './c360-team-chat.js',
   './c360-farm-cache-hotfix.js',
+  './c360-consumable-edit.js',
   './c360-ui-polish.css'
 ];
 
@@ -36,14 +37,17 @@ function repairLegacyAppHtml(text){
 async function patchAppHtml(response){
   try{
     let text=repairLegacyAppHtml(await response.clone().text());
-    if(!text.includes('c360-farm-cache-hotfix.js')){
-      const tag='<script src="./c360-farm-cache-hotfix.js"></script>';
-      text=text.includes('</body>')?text.replace('</body>',tag+'\n</body>'):text+'\n'+tag;
+    const scripts=['c360-farm-cache-hotfix.js','c360-consumable-edit.js'];
+    for(const file of scripts){
+      if(!text.includes(file)){
+        const tag='<script src="./'+file+'"></script>';
+        text=text.includes('</body>')?text.replace('</body>',tag+'\n</body>'):text+'\n'+tag;
+      }
     }
     const headers=new Headers(response.headers);
     headers.delete('content-length');
     headers.set('Cache-Control','no-cache, no-store, must-revalidate');
-    headers.set('X-Comando360-Repair','hotfix8');
+    headers.set('X-Comando360-Repair','hotfix9');
     return new Response(text,{status:response.status,statusText:response.statusText,headers});
   }catch(_){
     return response;
