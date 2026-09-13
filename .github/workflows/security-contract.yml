@@ -1,0 +1,64 @@
+name: Comando 360 Security Contract
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  security-contract:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Required security artifacts
+        run: |
+          test -s supabase/migrations/20260913120000_harden_multitenant_security_v1.sql
+          test -s supabase/functions/comando360-device-activate/index.ts
+          test -s qa/security_postdeploy.sql
+
+      - name: Validate multi-tenant hardening contract
+        run: |
+          MIG=supabase/migrations/20260913120000_harden_multitenant_security_v1.sql
+          grep -qi "revoke all privileges on table public.employees from anon, authenticated" "$MIG"
+          grep -qi "revoke all privileges on table public.v2_integration_credentials from anon, authenticated" "$MIG"
+          grep -qi "revoke truncate, references, trigger on all tables in schema public from anon, authenticated" "$MIG"
+          grep -qi "v2_has_permission(company_id,'settings.manage')" "$MIG"
+          grep -qi "v2_is_company_member(((storage.foldername(name))\[1\])::uuid)" "$MIG"
+          ! grep -Ei "profiles.+role.+admin" "$MIG"
+
+          grep -q "SECURITY_AUDIT_OK" qa/security_postdeploy.sql
+          grep -q "tabela(s) multiempresa sem RLS" qa/security_postdeploy.sql
+          grep -q "recurso legado exposto" qa/security_postdeploy.sql
+          grep -q "bypass legado em storage" qa/security_postdeploy.sql
+
+      - name: Validate safe device activation ordering
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('supabase/functions/comando360-device-activate/index.ts')
+          s=p.read_text(encoding='utf-8')
+          required=[
+              'v2_device_pairing_codes',
+              'code_hash',
+              'used_at',
+              'expires_at',
+              'sha256Hex',
+              'v2_pair_device_service',
+              'admin.auth.admin.createUser',
+              'admin.auth.admin.deleteUser',
+              'https://app.comando360.com.br',
+          ]
+          for marker in required:
+              assert marker in s, f'missing activation security marker: {marker}'
+          assert s.index('v2_device_pairing_codes') < s.index('admin.auth.admin.createUser'), 'pairing code must be validated before user creation'
+          assert 'SUPABASE_SERVICE_ROLE_KEY' in s and 'Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")' in s
+          assert 'service_role' not in s.lower().replace('supabase_service_role_key',''), 'do not embed a service-role credential'
+          print('Device activation security ordering: OK')
+          PY
