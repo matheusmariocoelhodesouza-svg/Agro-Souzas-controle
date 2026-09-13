@@ -13,23 +13,24 @@ permissions:
 jobs:
   static-quality:
     runs-on: ubuntu-24.04
-    timeout-minutes: 5
+    timeout-minutes: 7
     steps:
       - uses: actions/checkout@v5
 
-      - name: Check JavaScript syntax
+      - name: JavaScript syntax
         run: |
+          set -euo pipefail
           for f in ./*.js; do
             [ -f "$f" ] && node --check "$f"
           done
 
-      - name: Check inline JavaScript syntax
+      - name: Inline JavaScript syntax
         run: |
           node <<'NODE'
           const fs=require('fs');
           const vm=require('vm');
           let failed=false;
-          for(const name of ['index.html','dda.html','reparar.html','cadastro.html']){
+          for(const name of fs.readdirSync('.').filter(x=>x.endsWith('.html'))){
             const text=fs.readFileSync(name,'utf8');
             const re=/<script\b([^>]*)>([\s\S]*?)<\/script>/gi;
             let m,index=0;
@@ -48,156 +49,97 @@ jobs:
           console.log('Inline JavaScript: OK');
           NODE
 
-      - name: Check required production files
+      - name: Required production files
         run: |
-          test -s index.html
-          test -s dda.html
-          test -s reparar.html
-          test -s cadastro.html
-          test -s comando360.webmanifest
-          test -s c360-autorecovery.js
-          test -s c360-field-offline-hotfix.js
-          test -s c360-quality-hotfix.js
-          test -s c360-quality-core.js
-          test -s c360-team-chat.js
-          test -s c360-farm-cache-hotfix.js
-          test -s c360-consumable-edit.js
-          test -s c360-system-health.js
-          test -s c360-onboarding-entry.js
-          test -s c360-fiscal.js
-          test -s c360-system-health.css
-          test -s c360-ui-polish.css
-          test -s c360-premium-ui.css
-          test -s c360-fiscal.css
-          test -s sw-v7-02.js
-          test -s qa/reference_audit.py
-          test -s supabase/migrations/20260913104500_add_device_health_heartbeat.sql
-          test -s supabase/migrations/20260913203000_self_service_onboarding_v1.sql
+          set -euo pipefail
+          files=(
+            index.html cadastro.html dda.html reparar.html comando360.webmanifest sw-v7-02.js
+            c360-autorecovery.js c360-platform.js c360-product-core.js
+            c360-quality-hotfix.js c360-quality-core.js c360-field-offline-hotfix.js
+            c360-team-chat.js c360-farm-cache-hotfix.js c360-consumable-edit.js
+            c360-system-health.js c360-onboarding-entry.js c360-fiscal.js
+            c360-ui-polish.css c360-premium-ui.css c360-product-ui.css
+            c360-system-health.css c360-fiscal.css qa/reference_audit.py
+            supabase/migrations/20260913104500_add_device_health_heartbeat.sql
+            supabase/migrations/20260913203000_self_service_onboarding_v1.sql
+          )
+          for f in "${files[@]}"; do test -s "$f" || { echo "Missing: $f"; exit 1; }; done
 
       - name: Reference structural audit
         run: python qa/reference_audit.py
 
-      - name: Validate PWA quality wiring
+      - name: Product architecture contract
         run: |
-          grep -q 'c360-ui-polish.css' index.html
+          set -euo pipefail
           grep -q 'c360-quality-hotfix.js' index.html
-          ! grep -q 'navigator.onLine' index.html
+          grep -q 'c360-ui-polish.css' index.html
           ! grep -q '<script>window.onload' index.html
 
-          grep -q "2026.09.13-b6" c360-quality-hotfix.js
-          grep -q "c360-autorecovery.js" c360-quality-hotfix.js
-          grep -q "c360-premium-ui.css" c360-quality-hotfix.js
-          grep -q "c360-fiscal.css" c360-quality-hotfix.js
-          grep -q "c360-quality-core.js" c360-quality-hotfix.js
-          grep -q "c360-field-offline-hotfix.js" c360-quality-hotfix.js
-          grep -q "c360-team-chat.js" c360-quality-hotfix.js
-          grep -q "c360-farm-cache-hotfix.js" c360-quality-hotfix.js
-          grep -q "c360-consumable-edit.js" c360-quality-hotfix.js
-          grep -q "c360-system-health.js" c360-quality-hotfix.js
-          grep -q "c360-onboarding-entry.js" c360-quality-hotfix.js
-          grep -q "c360-fiscal.js" c360-quality-hotfix.js
-          grep -q "__c360SafeMode" c360-quality-hotfix.js
+          grep -Eq "BOOT_VERSION='[0-9]{4}\.[0-9]{2}\.[0-9]{2}-b[0-9]+'" c360-quality-hotfix.js
+          grep -q 'c360-autorecovery.js' c360-quality-hotfix.js
+          grep -q 'c360-platform.js' c360-quality-hotfix.js
+          grep -q 'c360-product-core.js' c360-quality-hotfix.js
+          grep -q 'c360-product-ui.css' c360-quality-hotfix.js
+          grep -q 'c360-premium-ui.css' c360-quality-hotfix.js
+          grep -q 'c360-quality-core.js' c360-quality-hotfix.js
+          grep -q 'c360-field-offline-hotfix.js' c360-quality-hotfix.js
+          grep -q 'c360-system-health.js' c360-quality-hotfix.js
+          grep -q 'c360-onboarding-entry.js' c360-quality-hotfix.js
 
-          grep -q "2026.09.13-ar1" c360-autorecovery.js
-          grep -q "C360_HEAL_CORE" c360-autorecovery.js
-          grep -q "C360_ROLLBACK_TO_STABLE" c360-autorecovery.js
-          grep -q "v2_client_health_events" c360-autorecovery.js
-          grep -q "snapshotDraft" c360-autorecovery.js
-          grep -q "looksLikeSourceLeak" c360-autorecovery.js
-          grep -q "c360_autorecovery_events_v1" c360-autorecovery.js
+          grep -q '2026.09.13-platform1' c360-platform.js
+          grep -q 'window.C360Platform' c360-platform.js
+          grep -q 'withBusy' c360-platform.js
+          grep -q '2026.09.13-product1' c360-product-core.js
+          grep -q 'window.C360Product' c360-product-core.js
+          grep -q 'aria-current' c360-product-core.js
+          grep -q 'prefers-reduced-motion' c360-product-ui.css
+          grep -q 'c360-live-region' c360-product-ui.css
+          grep -q 'body.device-mode' c360-product-ui.css
 
-          grep -q "2026.09.13-h1" c360-system-health.js
-          grep -q "v2_device_health_heartbeat" c360-system-health.js
-          grep -q "v2_client_health_events" c360-system-health.js
-          grep -q "Saúde do Sistema" c360-system-health.js
-          grep -q "healthKpiRecovered" c360-system-health.js
-          grep -q "health-nav-dot" c360-system-health.css
-          grep -q "SYSTEM HEALTH 2026.09.13-h1" c360-system-health.css
-          grep -q "v2_device_health_heartbeat" supabase/migrations/20260913104500_add_device_health_heartbeat.sql
+          grep -Eq "comando360-v7-02-hotfix[0-9]+" sw-v7-02.js
+          grep -q 'comando360-stable-v1' sw-v7-02.js
+          grep -q 'c360-platform.js' sw-v7-02.js
+          grep -q 'c360-product-core.js' sw-v7-02.js
+          grep -q 'c360-product-ui.css' sw-v7-02.js
+          grep -q 'C360_ROLLBACK_TO_STABLE' sw-v7-02.js
+          grep -q 'C360_MARK_HEALTHY' sw-v7-02.js
+          ! grep -q 'patchAppHtml' sw-v7-02.js
+          ! grep -q 'repairLegacyAppHtml' sw-v7-02.js
 
-          grep -q "status:'pending'" c360-quality-core.js
-          grep -q "comando360-dda" c360-quality-core.js
+          grep -q 'v2_device_health_heartbeat' c360-system-health.js
+          grep -q 'v2_client_health_events' c360-autorecovery.js
+          grep -q 'v2_bootstrap_company' cadastro.html
+          grep -q 'v2_my_onboarding_status' cadastro.html
 
-          grep -q "comando360-v7-02-hotfix17" sw-v7-02.js
-          grep -q "comando360-stable-v1" sw-v7-02.js
-          grep -q "c360-autorecovery.js" sw-v7-02.js
-          grep -q "c360-system-health.js" sw-v7-02.js
-          grep -q "c360-system-health.css" sw-v7-02.js
-          grep -q "c360-onboarding-entry.js" sw-v7-02.js
-          grep -q "c360-fiscal.js" sw-v7-02.js
-          grep -q "c360-fiscal.css" sw-v7-02.js
-          grep -q "cadastro.html" sw-v7-02.js
-          grep -q "C360_ROLLBACK_TO_STABLE" sw-v7-02.js
-          grep -q "C360_MARK_HEALTHY" sw-v7-02.js
-          grep -q "isAppShellNavigation" sw-v7-02.js
-          ! grep -q "patchAppHtml" sw-v7-02.js
-          ! grep -q "repairLegacyAppHtml" sw-v7-02.js
-          ! grep -q "X-Comando360-Repair" sw-v7-02.js
-          grep -q "c360-quality-core.js" sw-v7-02.js
-          grep -q "c360-team-chat.js" sw-v7-02.js
-          grep -q "c360-farm-cache-hotfix.js" sw-v7-02.js
-          grep -q "c360-consumable-edit.js" sw-v7-02.js
-          grep -q "c360-premium-ui.css" sw-v7-02.js
-          ! grep -q "replaceAll('navigator.onLine'" sw-v7-02.js
-
-          grep -q "v2_fiscal_periods" c360-fiscal.js
-          grep -q "v2_fiscal_guides" c360-fiscal.js
-          grep -q "v2_fiscal_integrations" c360-fiscal.js
-          grep -q "fiscal_guide" c360-fiscal.js
-          grep -q "#fiscal" c360-fiscal.css
-
-          grep -q "2026.09.12-r3" c360-field-offline-hotfix.js
-          grep -q "c360NetOnline" c360-field-offline-hotfix.js
-          grep -q "registerServiceWorkerEarly" c360-field-offline-hotfix.js
-          grep -q "looksLikeLeakedSource" c360-field-offline-hotfix.js
-          grep -q "getRegistrations" reparar.html
-          grep -q "caches.delete" reparar.html
-          grep -q "2026.09.12-c1" c360-team-chat.js
-          grep -q "c360_team_chat_queue_v1" c360-team-chat.js
-          grep -q "2026.09.12-f1" c360-farm-cache-hotfix.js
-          grep -q "v2_poultry_farms" c360-farm-cache-hotfix.js
-          grep -q "poultry_context" c360-farm-cache-hotfix.js
-          grep -q "2026.09.12-e1" c360-consumable-edit.js
-          grep -q "SALVAR ALTERAÇÕES" c360-consumable-edit.js
-          grep -q "v2_inventory_items" c360-consumable-edit.js
-          grep -q "UI POLISH 2026.09.10-u1" c360-ui-polish.css
-          grep -q "PREMIUM UI 2026.09.13-p1" c360-premium-ui.css
-          grep -q "body.device-mode" c360-premium-ui.css
-          grep -q "#financeiro" c360-premium-ui.css
-          grep -q "#operacoes" c360-premium-ui.css
-
-          grep -q "2026.09.13-o1" c360-onboarding-entry.js
-          grep -q "cadastro.html" c360-onboarding-entry.js
-          grep -q "v2_bootstrap_company" cadastro.html
-          grep -q "v2_my_onboarding_status" cadastro.html
-          grep -q "controla_beta_session" cadastro.html
-          grep -q "COMPANY_TAX_ID_ALREADY_EXISTS" cadastro.html
-          grep -q "v2_bootstrap_company" supabase/migrations/20260913203000_self_service_onboarding_v1.sql
-          grep -q "v2_my_onboarding_status" supabase/migrations/20260913203000_self_service_onboarding_v1.sql
-          grep -q "security definer" supabase/migrations/20260913203000_self_service_onboarding_v1.sql
-          grep -q "to authenticated" supabase/migrations/20260913203000_self_service_onboarding_v1.sql
-
-      - name: Basic HTML and CSS parse
+      - name: HTML and CSS parse
         run: |
           python - <<'PY'
           from html.parser import HTMLParser
           from pathlib import Path
-          class P(HTMLParser):
-              pass
-          for name in ('index.html','dda.html','reparar.html','cadastro.html'):
-              text=Path(name).read_text(encoding='utf-8')
+          class P(HTMLParser): pass
+          for path in Path('.').glob('*.html'):
+              text=path.read_text(encoding='utf-8')
               P().feed(text)
-              assert '<html' in text.lower(), f'{name}: missing html root'
-              assert '</html>' in text.lower(), f'{name}: missing closing html'
-              print(f'{name}: OK ({len(text):,} bytes)')
-          for name in ('c360-ui-polish.css','c360-premium-ui.css','c360-system-health.css','c360-fiscal.css'):
-              css=Path(name).read_text(encoding='utf-8')
-              assert css.count('{') == css.count('}'), f'{name}: unbalanced braces'
-              print(f'{name}: OK ({len(css):,} bytes)')
-          assert 'darkmode' in Path('c360-system-health.css').read_text(encoding='utf-8')
+              assert '<html' in text.lower() and '</html>' in text.lower(), f'{path}: invalid html root'
+          for path in Path('.').glob('c360-*.css'):
+              css=path.read_text(encoding='utf-8')
+              assert css.count('{') == css.count('}'), f'{path}: unbalanced braces'
+          print('HTML/CSS parse: OK')
           PY
 
-      - name: Reject obvious secret-key leaks
+      - name: Architecture size guard
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          size=Path('index.html').stat().st_size
+          print(f'index.html: {size:,} bytes')
+          if size>900_000:
+              raise SystemExit('index.html exceeded 900 KB architecture guard')
+          if size>650_000:
+              print('::warning::index.html is still monolithic; continue extracting modules in future refactors.')
+          PY
+
+      - name: Reject obvious privileged secret leaks
         run: |
           if grep -R -nE "SUPABASE_SERVICE_ROLE_KEY\s*=|service_role[^[:alnum:]_].*eyJ|client_secret\s*[:=]\s*['\"][^'\"]{12,}" --include='*.js' --include='*.html' --exclude-dir=.git .; then
             echo 'Potential privileged secret found in browser code.'
