@@ -1,4 +1,4 @@
-const CACHE='comando360-v7-02-hotfix21';
+const CACHE='comando360-v7-02-hotfix22';
 const STABLE_CACHE='comando360-stable-v1';
 const META_CACHE='comando360-meta-v1';
 const META_KEY='./__c360_recovery_meta__';
@@ -22,11 +22,13 @@ const CORE=[
   './c360-fiscal.js',
   './c360-fiscal-issuance.js',
   './c360-enterprise.js',
+  './c360-commercial.js',
   './c360-system-health.css',
   './c360-ui-polish.css',
   './c360-premium-ui.css',
   './c360-product-ui.css',
   './c360-enterprise-ui.css',
+  './c360-commercial.css',
   './c360-fiscal.css'
 ];
 
