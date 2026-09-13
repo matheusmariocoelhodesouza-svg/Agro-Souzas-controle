@@ -7,7 +7,7 @@ const PROVIDER_LABELS={esocial:'eSocial',fgts_digital:'FGTS Digital',dctfweb:'DC
 let state={month:'',period:null,guides:[],integrations:[],files:{},employees:[],loading:false};
 
 const q=id=>document.getElementById(id);
-const htmlEscape=v=>typeof esc==='function'?esc(String(v??'')):String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const htmlEscape=v=>typeof esc==='function'?esc(String(v??'')):String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[c]));
 const fmtMoney=v=>typeof money==='function'?money(Number(v||0)):Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
 const fmtDate=v=>v?new Date(String(v).slice(0,10)+'T12:00:00').toLocaleDateString('pt-BR'):'—';
 const currentMonth=()=>new Intl.DateTimeFormat('en-CA',{timeZone:'America/Sao_Paulo',year:'numeric',month:'2-digit'}).format(new Date()).slice(0,7);
@@ -126,7 +126,9 @@ function renderKpis(){
  const p=state.period||{},guides=state.guides||[];
  const total=guides.filter(g=>guideDisplayStatus(g)!=='cancelled').reduce((s,g)=>s+num(g.amount),0);
  const paid=guides.filter(g=>g.status==='paid').reduce((s,g)=>s+num(g.amount),0);
- const pending=Math.max(0,total-paid),fgts=guides.filter(g=>['fgts','fgts_rescisorio'].includes(g.guide_type)&&guideDisplayStatus(g)!=='cancelled').reduce((s,g)=>s+num(g.amount),num(p.fgts_amount));
+ const pending=Math.max(0,total-paid);
+ const fgtsGuides=guides.filter(g=>['fgts','fgts_rescisorio'].includes(g.guide_type)&&guideDisplayStatus(g)!=='cancelled');
+ const fgts=fgtsGuides.length?fgtsGuides.reduce((s,g)=>s+num(g.amount),0):num(p.fgts_amount);
  const overdue=guides.filter(g=>guideDisplayStatus(g)==='overdue').length;
  q('fiscalKpis').innerHTML=[
   ['FUNCIONÁRIOS',String(p.employee_count||state.employees.length),'ativos na competência','👥'],
