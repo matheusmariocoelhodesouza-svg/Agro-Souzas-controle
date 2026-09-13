@@ -1,4 +1,4 @@
-const CACHE='comando360-v7-02-hotfix17';
+const CACHE='comando360-v7-02-hotfix18';
 const STABLE_CACHE='comando360-stable-v1';
 const META_CACHE='comando360-meta-v1';
 const META_KEY='./__c360_recovery_meta__';
@@ -9,6 +9,8 @@ const CORE=[
   './comando360.webmanifest',
   './comando360-icon.svg',
   './c360-autorecovery.js',
+  './c360-platform.js',
+  './c360-product-core.js',
   './c360-field-offline-hotfix.js',
   './c360-quality-hotfix.js',
   './c360-quality-core.js',
@@ -21,6 +23,7 @@ const CORE=[
   './c360-system-health.css',
   './c360-ui-polish.css',
   './c360-premium-ui.css',
+  './c360-product-ui.css',
   './c360-fiscal.css'
 ];
 
