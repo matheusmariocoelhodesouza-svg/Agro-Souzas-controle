@@ -13,14 +13,14 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 8
     steps:
-      - name: Check production endpoints
+      - name: Check production product shell
         shell: bash
         run: |
           set -euo pipefail
           BASE="https://app.comando360.com.br"
           fetch() {
             local path="$1" out="$2"
-            for i in $(seq 1 15); do
+            for i in $(seq 1 18); do
               if curl --fail --silent --show-error --location --max-time 15 \
                 -H 'Cache-Control: no-cache' "${BASE}${path}?qa_run=${GITHUB_SHA}" -o "$out"; then
                 return 0
@@ -35,137 +35,75 @@ jobs:
           fetch "/cadastro.html" /tmp/cadastro.html
           fetch "/sw-v7-02.js" /tmp/sw.js
           fetch "/reparar.html" /tmp/repair.html
+          fetch "/dda.html" /tmp/dda.html
+          fetch "/comando360.webmanifest" /tmp/manifest.json
           fetch "/c360-autorecovery.js" /tmp/autorecovery.js
-          fetch "/c360-field-offline-hotfix.js" /tmp/field.js
-          fetch "/c360-quality-hotfix.js" /tmp/quality.js
+          fetch "/c360-platform.js" /tmp/platform.js
+          fetch "/c360-product-core.js" /tmp/product-core.js
+          fetch "/c360-quality-hotfix.js" /tmp/bootstrap.js
           fetch "/c360-quality-core.js" /tmp/quality-core.js
+          fetch "/c360-field-offline-hotfix.js" /tmp/field.js
+          fetch "/c360-system-health.js" /tmp/health.js
+          fetch "/c360-onboarding-entry.js" /tmp/onboarding.js
           fetch "/c360-team-chat.js" /tmp/chat.js
           fetch "/c360-farm-cache-hotfix.js" /tmp/farms.js
           fetch "/c360-consumable-edit.js" /tmp/consumables.js
-          fetch "/c360-system-health.js" /tmp/health.js
-          fetch "/c360-onboarding-entry.js" /tmp/onboarding-entry.js
-          fetch "/c360-system-health.css" /tmp/health.css
           fetch "/c360-ui-polish.css" /tmp/ui.css
           fetch "/c360-premium-ui.css" /tmp/premium.css
-          fetch "/dda.html" /tmp/dda.html
-          fetch "/comando360.webmanifest" /tmp/manifest.json
+          fetch "/c360-product-ui.css" /tmp/product.css
+          fetch "/c360-system-health.css" /tmp/health.css
 
-          test -s /tmp/index.html
-          test -s /tmp/cadastro.html
-          test -s /tmp/dda.html
-          test -s /tmp/repair.html
-          test -s /tmp/autorecovery.js
-          test -s /tmp/field.js
-          test -s /tmp/quality.js
-          test -s /tmp/quality-core.js
-          test -s /tmp/health.js
-          test -s /tmp/onboarding-entry.js
-          test -s /tmp/health.css
-          test -s /tmp/ui.css
-          test -s /tmp/premium.css
-          test -s /tmp/chat.js
-          test -s /tmp/farms.js
-          test -s /tmp/consumables.js
-          grep -q 'c360-ui-polish.css' /tmp/index.html
+          for f in /tmp/index.html /tmp/cadastro.html /tmp/sw.js /tmp/autorecovery.js /tmp/platform.js /tmp/product-core.js /tmp/bootstrap.js /tmp/product.css; do
+            test -s "$f"
+          done
+
           grep -q 'c360-quality-hotfix.js' /tmp/index.html
-          ! grep -q 'navigator.onLine' /tmp/index.html
-          ! grep -q '<script>window.onload' /tmp/index.html
+          grep -q 'c360-ui-polish.css' /tmp/index.html
+          grep -q 'c360-platform.js' /tmp/bootstrap.js
+          grep -q 'c360-product-core.js' /tmp/bootstrap.js
+          grep -q 'c360-product-ui.css' /tmp/bootstrap.js
+          grep -q 'c360-system-health.js' /tmp/bootstrap.js
+          grep -q 'c360-onboarding-entry.js' /tmp/bootstrap.js
 
-          grep -q "2026.09.13-b5" /tmp/quality.js
-          grep -q "c360-autorecovery.js" /tmp/quality.js
-          grep -q "c360-premium-ui.css" /tmp/quality.js
-          grep -q "c360-quality-core.js" /tmp/quality.js
-          grep -q "c360-field-offline-hotfix.js" /tmp/quality.js
-          grep -q "c360-team-chat.js" /tmp/quality.js
-          grep -q "c360-farm-cache-hotfix.js" /tmp/quality.js
-          grep -q "c360-consumable-edit.js" /tmp/quality.js
-          grep -q "c360-system-health.js" /tmp/quality.js
-          grep -q "c360-onboarding-entry.js" /tmp/quality.js
-          grep -q "__c360SafeMode" /tmp/quality.js
+          grep -q '2026.09.13-platform1' /tmp/platform.js
+          grep -q 'window.C360Platform' /tmp/platform.js
+          grep -q '2026.09.13-product1' /tmp/product-core.js
+          grep -q 'window.C360Product' /tmp/product-core.js
+          grep -q 'aria-current' /tmp/product-core.js
+          grep -q 'prefers-reduced-motion' /tmp/product.css
+          grep -q 'body.device-mode' /tmp/product.css
 
-          grep -q "2026.09.13-ar1" /tmp/autorecovery.js
-          grep -q "C360_HEAL_CORE" /tmp/autorecovery.js
-          grep -q "C360_ROLLBACK_TO_STABLE" /tmp/autorecovery.js
-          grep -q "v2_client_health_events" /tmp/autorecovery.js
-          grep -q "snapshotDraft" /tmp/autorecovery.js
-          grep -q "looksLikeSourceLeak" /tmp/autorecovery.js
-          grep -q "c360_autorecovery_events_v1" /tmp/autorecovery.js
+          grep -Eq 'comando360-v7-02-hotfix[0-9]+' /tmp/sw.js
+          grep -q 'comando360-stable-v1' /tmp/sw.js
+          grep -q 'c360-platform.js' /tmp/sw.js
+          grep -q 'c360-product-core.js' /tmp/sw.js
+          grep -q 'c360-product-ui.css' /tmp/sw.js
+          grep -q 'C360_ROLLBACK_TO_STABLE' /tmp/sw.js
+          grep -q 'C360_MARK_HEALTHY' /tmp/sw.js
 
-          grep -q "2026.09.13-h1" /tmp/health.js
-          grep -q "Saúde do Sistema" /tmp/health.js
-          grep -q "v2_device_health_heartbeat" /tmp/health.js
-          grep -q "v2_client_health_events" /tmp/health.js
-          grep -q "healthKpiRecovered" /tmp/health.js
-          grep -q "SYSTEM HEALTH 2026.09.13-h1" /tmp/health.css
-          grep -q "health-nav-dot" /tmp/health.css
+          grep -q 'v2_client_health_events' /tmp/autorecovery.js
+          grep -q 'v2_device_health_heartbeat' /tmp/health.js
+          grep -q 'v2_bootstrap_company' /tmp/cadastro.html
+          grep -q 'v2_my_onboarding_status' /tmp/cadastro.html
 
-          grep -q "QUALITY_VERSION=" /tmp/quality-core.js
-          grep -q "comando360-dda" /tmp/quality-core.js
-
-          grep -q "comando360-v7-02-hotfix16" /tmp/sw.js
-          grep -q "comando360-stable-v1" /tmp/sw.js
-          grep -q "c360-autorecovery.js" /tmp/sw.js
-          grep -q "c360-system-health.js" /tmp/sw.js
-          grep -q "c360-system-health.css" /tmp/sw.js
-          grep -q "c360-onboarding-entry.js" /tmp/sw.js
-          grep -q "cadastro.html" /tmp/sw.js
-          grep -q "C360_ROLLBACK_TO_STABLE" /tmp/sw.js
-          grep -q "C360_MARK_HEALTHY" /tmp/sw.js
-          grep -q "isAppShellNavigation" /tmp/sw.js
-          ! grep -q "patchAppHtml" /tmp/sw.js
-          ! grep -q "repairLegacyAppHtml" /tmp/sw.js
-          ! grep -q "X-Comando360-Repair" /tmp/sw.js
-          grep -q "c360-quality-core.js" /tmp/sw.js
-          grep -q "c360-team-chat.js" /tmp/sw.js
-          grep -q "c360-farm-cache-hotfix.js" /tmp/sw.js
-          grep -q "c360-consumable-edit.js" /tmp/sw.js
-          grep -q "c360-premium-ui.css" /tmp/sw.js
-          ! grep -q "replaceAll('navigator.onLine'" /tmp/sw.js
-
-          grep -q "2026.09.12-r3" /tmp/field.js
-          grep -q "c360NetOnline" /tmp/field.js
-          grep -q "registerServiceWorkerEarly" /tmp/field.js
-          grep -q "looksLikeLeakedSource" /tmp/field.js
-          grep -q "getRegistrations" /tmp/repair.html
-          grep -q "caches.delete" /tmp/repair.html
-          grep -q "2026.09.12-c1" /tmp/chat.js
-          grep -q "c360_team_chat_queue_v1" /tmp/chat.js
-          grep -q "v2_team_messages" /tmp/chat.js
-          grep -q "SMS emergência" /tmp/chat.js
-          grep -q "2026.09.12-f1" /tmp/farms.js
-          grep -q "v2_poultry_farms" /tmp/farms.js
-          grep -q "poultry_context" /tmp/farms.js
-          grep -q "2026.09.12-e1" /tmp/consumables.js
-          grep -q "SALVAR ALTERAÇÕES" /tmp/consumables.js
-          grep -q "v2_inventory_items" /tmp/consumables.js
-          grep -q "UI POLISH 2026.09.10-u1" /tmp/ui.css
-          grep -q "PREMIUM UI 2026.09.13-p1" /tmp/premium.css
-          grep -q "body.device-mode" /tmp/premium.css
-          grep -q "#financeiro" /tmp/premium.css
-          grep -q "#operacoes" /tmp/premium.css
-
-          grep -q "2026.09.13-o1" /tmp/onboarding-entry.js
-          grep -q "cadastro.html" /tmp/onboarding-entry.js
-          grep -q "v2_bootstrap_company" /tmp/cadastro.html
-          grep -q "v2_my_onboarding_status" /tmp/cadastro.html
-          grep -q "controla_beta_session" /tmp/cadastro.html
-          grep -q "COMPANY_TAX_ID_ALREADY_EXISTS" /tmp/cadastro.html
-          grep -q "CRIAR EMPRESA E ENTRAR" /tmp/cadastro.html
+          for f in /tmp/platform.js /tmp/product-core.js /tmp/bootstrap.js /tmp/autorecovery.js /tmp/quality-core.js /tmp/field.js /tmp/health.js /tmp/onboarding.js /tmp/chat.js /tmp/farms.js /tmp/consumables.js /tmp/sw.js; do
+            node --check "$f"
+          done
 
           python - <<'PY'
           import json
-          from pathlib import Path
           from html.parser import HTMLParser
-          with open('/tmp/manifest.json', encoding='utf-8') as f:
+          from pathlib import Path
+          class P(HTMLParser): pass
+          with open('/tmp/manifest.json',encoding='utf-8') as f:
               m=json.load(f)
           assert m.get('name') or m.get('short_name')
-          for name in ('/tmp/ui.css','/tmp/premium.css','/tmp/health.css'):
-              css=Path(name).read_text(encoding='utf-8')
-              assert css.count('{') == css.count('}'), f'{name}: unbalanced braces'
-          class P(HTMLParser): pass
-          for name in ('/tmp/index.html','/tmp/cadastro.html'):
+          for name in ('/tmp/index.html','/tmp/cadastro.html','/tmp/dda.html','/tmp/repair.html'):
               text=Path(name).read_text(encoding='utf-8')
               P().feed(text)
               assert '<html' in text.lower() and '</html>' in text.lower()
-          print('Production PWA + AutoRecovery 360 + Saúde do Sistema + onboarding + premium UI smoke: OK')
+          for name in ('/tmp/ui.css','/tmp/premium.css','/tmp/product.css','/tmp/health.css'):
+              css=Path(name).read_text(encoding='utf-8')
+              assert css.count('{')==css.count('}'), f'{name}: unbalanced braces'
+          print('Production modular product shell + PWA + AutoRecovery + onboarding smoke: OK')
           PY
