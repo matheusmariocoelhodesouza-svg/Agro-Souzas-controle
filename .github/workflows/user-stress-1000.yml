@@ -1,0 +1,47 @@
+name: Comando 360 User Stress 1000
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'qa/user_stress_1000.mjs'
+      - '.github/workflows/user-stress-1000.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  user-stress-1000:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install browser test runtime
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Start local production shell
+        run: |
+          python3 -m http.server 8080 --bind 127.0.0.1 > /tmp/c360-http.log 2>&1 &
+          for i in $(seq 1 20); do
+            curl -fsS http://127.0.0.1:8080/ >/dev/null && exit 0
+            sleep 1
+          done
+          cat /tmp/c360-http.log
+          exit 1
+      - name: Simulate 1000 user sessions
+        env:
+          C360_STRESS_SESSIONS: '1000'
+        run: node qa/user_stress_1000.mjs
+      - name: Upload stress report and screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: comando360-user-stress-1000
+          path: qa-stress-artifacts/
+          if-no-files-found: warn
+          retention-days: 14
