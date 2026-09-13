@@ -8,14 +8,22 @@ const doc=document;
 let lastScreen='';
 let observer=null;
 
+function setAttrIfChanged(el,name,value){
+ if(!el)return;
+ const next=String(value);
+ if(el.getAttribute(name)!==next)el.setAttribute(name,next);
+}
+function removeAttrIfPresent(el,name){
+ if(el?.hasAttribute(name))el.removeAttribute(name);
+}
 function liveRegion(){
  let el=doc.getElementById('c360LiveRegion');
  if(el)return el;
  el=doc.createElement('div');
  el.id='c360LiveRegion';
  el.className='c360-live-region';
- el.setAttribute('aria-live','polite');
- el.setAttribute('aria-atomic','true');
+ setAttrIfChanged(el,'aria-live','polite');
+ setAttrIfChanged(el,'aria-atomic','true');
  doc.body.appendChild(el);
  return el;
 }
@@ -43,12 +51,12 @@ function updateScreenContext(){
 
  doc.querySelectorAll('.v2navbtn').forEach(btn=>{
   const activeBtn=btn.classList.contains('active') || (id&&btn.getAttribute('data-tab')===id);
-  if(activeBtn)btn.setAttribute('aria-current','page');
-  else btn.removeAttribute('aria-current');
+  if(activeBtn)setAttrIfChanged(btn,'aria-current','page');
+  else removeAttrIfPresent(btn,'aria-current');
  });
  doc.querySelectorAll('.section,[data-screen]').forEach(section=>{
   const visible=section===active || (section.classList.contains('active')&&!section.hidden);
-  section.setAttribute('aria-hidden',visible?'false':'true');
+  setAttrIfChanged(section,'aria-hidden',visible?'false':'true');
   if(!section.hasAttribute('role'))section.setAttribute('role','region');
  });
  if(active){
@@ -74,24 +82,27 @@ function accessibleName(el){
 function enhanceA11y(root=doc){
  root.querySelectorAll?.('button,a,[role="button"]').forEach(el=>{
   const name=accessibleName(el);
-  if(name&&!el.getAttribute('aria-label')&&!(el.textContent||'').trim())el.setAttribute('aria-label',name);
+  if(name&&!el.getAttribute('aria-label')&&!(el.textContent||'').trim())setAttrIfChanged(el,'aria-label',name);
  });
- root.querySelectorAll?.('img:not([alt])').forEach(img=>img.setAttribute('alt',''));
+ root.querySelectorAll?.('img:not([alt])').forEach(img=>setAttrIfChanged(img,'alt',''));
  root.querySelectorAll?.('.error,.okmsg,#networkBadge').forEach(el=>{
   if(!el.hasAttribute('role'))el.setAttribute('role','status');
   if(!el.hasAttribute('aria-live'))el.setAttribute('aria-live','polite');
  });
  root.querySelectorAll?.('input,select,textarea').forEach(el=>{
-  if(el.disabled)el.setAttribute('aria-disabled','true');
-  else el.removeAttribute('aria-disabled');
-  if(el.required)el.setAttribute('aria-required','true');
+  if(el.disabled)setAttrIfChanged(el,'aria-disabled','true');
+  else removeAttrIfPresent(el,'aria-disabled');
+  if(el.required)setAttrIfChanged(el,'aria-required','true');
+  else removeAttrIfPresent(el,'aria-required');
  });
 }
 function syncTheme(){
  const dark=doc.body?.classList.contains('darkmode');
- doc.documentElement.style.colorScheme=dark?'dark':'light';
+ const scheme=dark?'dark':'light';
+ if(doc.documentElement.style.colorScheme!==scheme)doc.documentElement.style.colorScheme=scheme;
  const meta=doc.querySelector('meta[name="theme-color"]');
- if(meta)meta.setAttribute('content',dark?'#081321':'#0f172a');
+ const color=dark?'#081321':'#0f172a';
+ if(meta?.getAttribute('content')!==color)meta?.setAttribute('content',color);
 }
 function syncNetwork(){
  const online=navigator.onLine!==false;
@@ -112,9 +123,7 @@ function setupKeyboard(){
    const input=doc.querySelector('.c360-sidebar-search input,.c360-sidebar-search');
    if(input){event.preventDefault();input.focus?.();input.select?.()}
   }
-  if(event.key==='Escape'&&typing){
-   doc.activeElement?.blur?.();
-  }
+  if(event.key==='Escape'&&typing)doc.activeElement?.blur?.();
  });
 }
 function setupMutationObserver(){
@@ -124,7 +133,7 @@ function setupMutationObserver(){
   syncTheme();
  },100);
  observer=new MutationObserver(run);
- observer.observe(doc.documentElement,{subtree:true,childList:true,attributes:true,attributeFilter:['class','hidden','disabled','aria-hidden']});
+ observer.observe(doc.documentElement,{subtree:true,childList:true,attributes:true,attributeFilter:['class','hidden','disabled','required']});
 }
 function bootstrapHealthBanner(event){
  const detail=event.detail||{};
@@ -134,7 +143,7 @@ function bootstrapHealthBanner(event){
  box=doc.createElement('div');
  box.id='c360BootstrapNotice';
  box.className='c360-product-notice';
- box.setAttribute('role','alert');
+ setAttrIfChanged(box,'role','alert');
  box.innerHTML='<strong>Alguns recursos não carregaram.</strong><span>O Comando 360 está tentando se recuperar automaticamente.</span>';
  doc.body.appendChild(box);
  setTimeout(()=>box.remove(),9000);
