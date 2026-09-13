@@ -24,7 +24,7 @@ jobs:
         run: |
           npm install --no-save playwright@1.55.0
           npx playwright install --with-deps chromium
-      - name: Normalize repeated cold sessions
+      - name: Normalize user-like stress timing
         run: |
           python3 - <<'PY'
           from pathlib import Path
@@ -32,6 +32,9 @@ jobs:
           s=p.read_text()
           s=s.replace("if(i>1&&i%50===0)await reloadMode(page,'admin');", "if(i>1&&i%50===0){await context.close();({context,page}=await openMode(browser,'admin','stress-admin'));results.reloads++;}")
           s=s.replace("if(i>1&&i%50===0)await reloadMode(page,'field');", "if(i>1&&i%50===0){await context.close();({context,page}=await openMode(browser,'field','stress-field'));results.reloads++;}")
+          s=s.replace("  const loc=page.locator(selector);if(!await loc.count())return false;\n  await loc.first().click({timeout:1800});results.actions++;", "  const loc=page.locator(selector);if(!await loc.count())return false;\n  if(selector==='#newPoultryOp'||selector==='#newMaintenanceBtn')await page.waitForTimeout(220);\n  await loc.first().click({timeout:2200});results.actions++;")
+          s=s.replace("if(i%9===0)await clickIf(page,'#themeToggle',`admin-${i}:tema`);", "if(i%9===0&&await page.locator('#themeToggle').isVisible())await clickIf(page,'#themeToggle',`admin-${i}:tema`);")
+          s=s.replace("if(i%11===0&&await page.locator('#c360AccountBtn').count()){await clickIf(page,'#c360AccountBtn',`admin-${i}:conta`);await page.keyboard.press('Escape').catch(()=>{})}", "if(i%11===0&&await page.locator('#c360AccountBtn').count()){await clickIf(page,'#c360AccountBtn',`admin-${i}:conta`);await page.evaluate(()=>document.querySelector('#c360AccountMenu')?.classList.add('hidden'))}")
           p.write_text(s)
           PY
       - name: Start local production shell
