@@ -1,7 +1,7 @@
 (()=>{
 'use strict';
-const VERSION='2026.09.12-e1';
-const state={items:[],loadedAt:0,decorating:false,timer:null};
+const VERSION='2026.09.13-e2';
+const state={items:[],loadedAt:0,decorating:false,timer:null,retryTimer:null};
 
 function q(sel,root=document){return root.querySelector(sel)}
 function norm(v){return String(v??'').trim().toLocaleLowerCase('pt-BR')}
@@ -14,6 +14,7 @@ function ensureStyles(){
  #insumos .c360-consumable-edit-btn{border:1px solid #cbd5e1;background:#fff;color:#17324f;border-radius:9px;padding:7px 10px;font:inherit;font-size:11px;font-weight:850;cursor:pointer;white-space:nowrap}
  #insumos .c360-consumable-edit-btn:hover{background:#eef5ff;border-color:#9ebfe7}
  #insumos .c360-consumable-edit-cost-note{font-size:10px;color:#64748b;margin-top:5px;line-height:1.35}
+ #insumos .c360-consumable-fallback-actions{justify-content:flex-end;margin:0 0 8px}
  .darkmode #insumos .c360-consumable-edit-btn{background:#122033;color:#e7eef9;border-color:#314158}
  `;document.head.appendChild(s);
 }
@@ -52,28 +53,59 @@ async function fetchItems(force=false){
  state.loadedAt=Date.now();return state.items;
 }
 
-async function decorateTable(force=false){
+function editButton(item){
+ const b=document.createElement('button');b.type='button';b.className='c360-consumable-edit-btn';b.dataset.itemId=String(item.id||'');b.textContent='✏️ Editar';b.setAttribute('aria-label','Editar '+String(item.name||'insumo'));return b;
+}
+function matchItem(items,node,used){
+ const text=norm(node?.textContent||'');
+ let item=items.find(x=>!used.has(String(x.id))&&norm(x.name)===norm(node?.cells?.[0]?.textContent||''));
+ if(!item)item=items.find(x=>!used.has(String(x.id))&&norm(x.name)&&text.includes(norm(x.name)));
+ return item||null;
+}
+
+async function decorateStock(force=false){
  if(state.decorating)return;
- const host=q('#consumablesStockList'),table=host?.querySelector('table');if(!table)return;
+ const host=q('#consumablesStockList');if(!host)return;
  state.decorating=true;
  try{
   const items=await fetchItems(force);if(!items.length)return;
-  const rows=[...table.rows];if(rows.length<2)return;
-  const head=rows[0];if(!head.querySelector('.c360-consumable-actions-head')){
-   const th=document.createElement('th');th.className='c360-consumable-actions-head';th.textContent='Ações';head.appendChild(th);
+  const used=new Set();
+  const table=host.querySelector('table');
+  if(table){
+   const rows=[...table.rows];
+   if(rows.length){
+    const head=rows[0];if(!head.querySelector('.c360-consumable-actions-head')){const th=document.createElement('th');th.className='c360-consumable-actions-head';th.textContent='Ações';head.appendChild(th)}
+    for(const row of rows.slice(1)){
+     const existing=row.querySelector('.c360-consumable-edit-btn');if(existing){used.add(String(existing.dataset.itemId||''));continue}
+     const item=matchItem(items,row,used);if(!item)continue;
+     const td=document.createElement('td');td.className='c360-consumable-actions-cell';td.appendChild(editButton(item));row.appendChild(td);used.add(String(item.id));
+    }
+   }
   }
-  const buckets=new Map();for(const item of items){const k=norm(item.name);if(!buckets.has(k))buckets.set(k,[]);buckets.get(k).push(item)}
-  for(const row of rows.slice(1)){
-   if(row.querySelector('.c360-consumable-edit-btn'))continue;
-   const name=norm(row.cells?.[0]?.textContent),bucket=buckets.get(name)||[],item=bucket.shift();
-   if(!item)continue;
-   const td=document.createElement('td');td.innerHTML='<button type="button" class="c360-consumable-edit-btn" data-item-id="'+esc(item.id)+'">✏️ Editar</button>';row.appendChild(td);
+
+  const cards=[...host.querySelectorAll('.item,.card')].filter(x=>!x.closest('table'));
+  for(const card of cards){
+   const existing=card.querySelector('.c360-consumable-edit-btn');if(existing){used.add(String(existing.dataset.itemId||''));continue}
+   const item=matchItem(items,card,used);if(!item)continue;
+   let actions=[...card.querySelectorAll('.toolbar')].pop();
+   if(!actions){actions=document.createElement('div');actions.className='toolbar c360-consumable-card-actions';card.appendChild(actions)}
+   actions.appendChild(editButton(item));used.add(String(item.id));
   }
- }catch(e){console.warn('c360 consumable edit decorate',e)}finally{state.decorating=false}
+
+  // Compatibilidade com layouts simples/legados: se há um único insumo visível e nenhum ponto de ação,
+  // ainda oferecemos edição sem depender da marcação interna do componente.
+  if(!host.querySelector('.c360-consumable-edit-btn')&&items.length===1){
+   const bar=document.createElement('div');bar.className='toolbar c360-consumable-fallback-actions';bar.appendChild(editButton(items[0]));host.prepend(bar);
+  }
+ }catch(e){console.warn('c360 consumable edit decorate',e)}finally{
+  state.decorating=false;
+  clearTimeout(state.retryTimer);
+  if(!q('#consumablesStockList .c360-consumable-edit-btn')&&q('#consumablesStockList'))state.retryTimer=setTimeout(()=>decorateStock(false),350);
+ }
 }
 
 function scheduleDecorate(force=false){
- clearTimeout(state.timer);state.timer=setTimeout(()=>decorateTable(force),120);
+ clearTimeout(state.timer);state.timer=setTimeout(()=>decorateStock(force),120);
 }
 
 async function openEditor(id){
@@ -123,6 +155,7 @@ function install(){
   if(e.target.closest('#refreshConsumables'))setTimeout(()=>scheduleDecorate(true),300);
  },true);
  document.addEventListener('c360:tabchange',()=>setTimeout(()=>scheduleDecorate(true),250));
+ document.addEventListener('c360:screen-changed',e=>{if(e.detail?.id==='insumos')setTimeout(()=>scheduleDecorate(true),180)});
  const section=q('#insumos');if(section)new MutationObserver(()=>{if(!section.hidden)scheduleDecorate(false)}).observe(section,{attributes:true,attributeFilter:['hidden','class']});
 }
 
