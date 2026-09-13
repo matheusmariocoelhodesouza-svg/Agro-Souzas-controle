@@ -1,4 +1,4 @@
-const CACHE='comando360-v7-02-hotfix22';
+const CACHE='comando360-v7-02-hotfix23';
 const STABLE_CACHE='comando360-stable-v1';
 const META_CACHE='comando360-meta-v1';
 const META_KEY='./__c360_recovery_meta__';
