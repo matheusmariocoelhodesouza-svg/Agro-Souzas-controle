@@ -1,4 +1,4 @@
-const CACHE='comando360-v7-02-hotfix12';
+const CACHE='comando360-v7-02-hotfix13';
 const CORE=[
   './',
   './index.html',
@@ -10,7 +10,8 @@ const CORE=[
   './c360-team-chat.js',
   './c360-farm-cache-hotfix.js',
   './c360-consumable-edit.js',
-  './c360-ui-polish.css'
+  './c360-ui-polish.css',
+  './c360-premium-ui.css'
 ];
 
 async function fetchWithTimeout(request,ms=3500){
