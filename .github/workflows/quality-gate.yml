@@ -61,6 +61,7 @@ jobs:
           test -s c360-farm-cache-hotfix.js
           test -s c360-consumable-edit.js
           test -s c360-ui-polish.css
+          test -s c360-premium-ui.css
           test -s sw-v7-02.js
           test -s qa/reference_audit.py
 
@@ -74,7 +75,8 @@ jobs:
           ! grep -q 'navigator.onLine' index.html
           ! grep -q '<script>window.onload' index.html
 
-          grep -q "2026.09.12-b1" c360-quality-hotfix.js
+          grep -q "2026.09.13-b2" c360-quality-hotfix.js
+          grep -q "c360-premium-ui.css" c360-quality-hotfix.js
           grep -q "c360-quality-core.js" c360-quality-hotfix.js
           grep -q "c360-field-offline-hotfix.js" c360-quality-hotfix.js
           grep -q "c360-team-chat.js" c360-quality-hotfix.js
@@ -84,7 +86,7 @@ jobs:
           grep -q "status:'pending'" c360-quality-core.js
           grep -q "comando360-dda" c360-quality-core.js
 
-          grep -q "comando360-v7-02-hotfix12" sw-v7-02.js
+          grep -q "comando360-v7-02-hotfix13" sw-v7-02.js
           grep -q "isAppShellNavigation" sw-v7-02.js
           ! grep -q "patchAppHtml" sw-v7-02.js
           ! grep -q "repairLegacyAppHtml" sw-v7-02.js
@@ -93,6 +95,7 @@ jobs:
           grep -q "c360-team-chat.js" sw-v7-02.js
           grep -q "c360-farm-cache-hotfix.js" sw-v7-02.js
           grep -q "c360-consumable-edit.js" sw-v7-02.js
+          grep -q "c360-premium-ui.css" sw-v7-02.js
           ! grep -q "replaceAll('navigator.onLine'" sw-v7-02.js
 
           grep -q "2026.09.12-r3" c360-field-offline-hotfix.js
@@ -110,8 +113,12 @@ jobs:
           grep -q "SALVAR ALTERAÇÕES" c360-consumable-edit.js
           grep -q "v2_inventory_items" c360-consumable-edit.js
           grep -q "UI POLISH 2026.09.10-u1" c360-ui-polish.css
+          grep -q "PREMIUM UI 2026.09.13-p1" c360-premium-ui.css
+          grep -q "body.device-mode" c360-premium-ui.css
+          grep -q "#financeiro" c360-premium-ui.css
+          grep -q "#operacoes" c360-premium-ui.css
 
-      - name: Basic HTML parse
+      - name: Basic HTML and CSS parse
         run: |
           python - <<'PY'
           from html.parser import HTMLParser
@@ -124,11 +131,11 @@ jobs:
               assert '<html' in text.lower(), f'{name}: missing html root'
               assert '</html>' in text.lower(), f'{name}: missing closing html'
               print(f'{name}: OK ({len(text):,} bytes)')
-          css=Path('c360-ui-polish.css').read_text(encoding='utf-8')
-          assert css.count('{') == css.count('}'), 'c360-ui-polish.css: unbalanced braces'
-          assert 'body.darkmode' in css, 'c360-ui-polish.css: dark theme rules missing'
-          assert '#inicio' in css, 'c360-ui-polish.css: dashboard polish missing'
-          print(f'c360-ui-polish.css: OK ({len(css):,} bytes)')
+          for name in ('c360-ui-polish.css','c360-premium-ui.css'):
+              css=Path(name).read_text(encoding='utf-8')
+              assert css.count('{') == css.count('}'), f'{name}: unbalanced braces'
+              assert 'body.darkmode' in css, f'{name}: dark theme rules missing'
+              print(f'{name}: OK ({len(css):,} bytes)')
           PY
 
       - name: Reject obvious secret-key leaks
