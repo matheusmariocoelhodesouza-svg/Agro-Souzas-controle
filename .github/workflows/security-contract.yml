@@ -16,13 +16,15 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v5
-
       - name: Required security artifacts
         run: |
           test -s supabase/migrations/20260913120000_harden_multitenant_security_v1.sql
+          test -s supabase/migrations/20260913143824_commercial_readiness_v2.sql
+          test -s supabase/migrations/20260913144117_commercial_readiness_v2_patch.sql
           test -s supabase/functions/comando360-device-activate/index.ts
           test -s qa/security_postdeploy.sql
-
+          test -s legal.html
+          test -s c360-saas-readiness.js
       - name: Validate multi-tenant hardening contract
         run: |
           MIG=supabase/migrations/20260913120000_harden_multitenant_security_v1.sql
@@ -32,31 +34,32 @@ jobs:
           grep -qi "v2_has_permission(company_id,'settings.manage')" "$MIG"
           grep -qi "v2_is_company_member(((storage.foldername(name))\[1\])::uuid)" "$MIG"
           ! grep -Ei "profiles.+role.+admin" "$MIG"
-
           grep -q "SECURITY_AUDIT_OK" qa/security_postdeploy.sql
           grep -q "tabela(s) multiempresa sem RLS" qa/security_postdeploy.sql
           grep -q "recurso legado exposto" qa/security_postdeploy.sql
           grep -q "bypass legado em storage" qa/security_postdeploy.sql
-
+      - name: Validate SaaS and privacy security contract
+        run: |
+          MIG=supabase/migrations/20260913143824_commercial_readiness_v2.sql
+          PATCH=supabase/migrations/20260913144117_commercial_readiness_v2_patch.sql
+          grep -q "v2_platform_admins" "$MIG"
+          grep -q "private.c360_is_platform_admin" "$MIG"
+          grep -q "v2_billing_accounts" "$MIG"
+          grep -q "v2_legal_acceptances" "$MIG"
+          grep -q "v2_platform_incidents" "$MIG"
+          grep -q "enable row level security" "$MIG"
+          grep -q "revoke all on table public.v2_billing_accounts from anon" "$MIG"
+          grep -q "revoke all on function private.c360_health_to_incident() from public,anon,authenticated" "$PATCH"
+          grep -q "v2_alerts" "$PATCH"
+          ! grep -Eqi "(secret[_-]?key|service[_-]?role)[[:space:]]*[:=][[:space:]]*['\"][A-Za-z0-9_-]{20,}" c360-saas-readiness.js legal.html
       - name: Validate safe device activation ordering
         run: |
           python - <<'PY'
           from pathlib import Path
           p=Path('supabase/functions/comando360-device-activate/index.ts')
           s=p.read_text(encoding='utf-8')
-          required=[
-              'v2_device_pairing_codes',
-              'code_hash',
-              'used_at',
-              'expires_at',
-              'sha256Hex',
-              'v2_pair_device_service',
-              'admin.auth.admin.createUser',
-              'admin.auth.admin.deleteUser',
-              'https://app.comando360.com.br',
-          ]
-          for marker in required:
-              assert marker in s, f'missing activation security marker: {marker}'
+          required=['v2_device_pairing_codes','code_hash','used_at','expires_at','sha256Hex','v2_pair_device_service','admin.auth.admin.createUser','admin.auth.admin.deleteUser','https://app.comando360.com.br']
+          for marker in required: assert marker in s, f'missing activation security marker: {marker}'
           assert s.index('v2_device_pairing_codes') < s.index('admin.auth.admin.createUser'), 'pairing code must be validated before user creation'
           assert 'SUPABASE_SERVICE_ROLE_KEY' in s and 'Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")' in s
           assert 'service_role' not in s.lower().replace('supabase_service_role_key',''), 'do not embed a service-role credential'

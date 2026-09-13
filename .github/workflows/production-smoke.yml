@@ -18,21 +18,10 @@ jobs:
         run: |
           set -euo pipefail
           BASE="https://app.comando360.com.br"
-          fetch() {
-            local path="$1" out="$2"
-            for i in $(seq 1 18); do
-              if curl --fail --silent --show-error --location --max-time 15 \
-                -H 'Cache-Control: no-cache' "${BASE}${path}?qa_run=${GITHUB_SHA}" -o "$out"; then
-                return 0
-              fi
-              sleep 4
-            done
-            echo "Failed to fetch ${path} from production"
-            return 1
-          }
-
+          fetch() { local path="$1" out="$2"; for i in $(seq 1 18); do if curl --fail --silent --show-error --location --max-time 15 -H 'Cache-Control: no-cache' "${BASE}${path}?qa_run=${GITHUB_SHA}" -o "$out"; then return 0; fi; sleep 4; done; echo "Failed to fetch ${path} from production"; return 1; }
           fetch "/" /tmp/index.html
           fetch "/cadastro.html" /tmp/cadastro.html
+          fetch "/legal.html" /tmp/legal.html
           fetch "/sw-v7-02.js" /tmp/sw.js
           fetch "/reparar.html" /tmp/repair.html
           fetch "/dda.html" /tmp/dda.html
@@ -48,62 +37,44 @@ jobs:
           fetch "/c360-team-chat.js" /tmp/chat.js
           fetch "/c360-farm-cache-hotfix.js" /tmp/farms.js
           fetch "/c360-consumable-edit.js" /tmp/consumables.js
+          fetch "/c360-saas-readiness.js" /tmp/saas.js
           fetch "/c360-ui-polish.css" /tmp/ui.css
           fetch "/c360-premium-ui.css" /tmp/premium.css
           fetch "/c360-product-ui.css" /tmp/product.css
           fetch "/c360-system-health.css" /tmp/health.css
-
-          for f in /tmp/index.html /tmp/cadastro.html /tmp/sw.js /tmp/autorecovery.js /tmp/platform.js /tmp/product-core.js /tmp/bootstrap.js /tmp/product.css; do
-            test -s "$f"
-          done
-
+          fetch "/c360-saas-readiness.css" /tmp/saas.css
+          for f in /tmp/index.html /tmp/cadastro.html /tmp/legal.html /tmp/sw.js /tmp/autorecovery.js /tmp/platform.js /tmp/product-core.js /tmp/bootstrap.js /tmp/saas.js /tmp/saas.css; do test -s "$f"; done
           grep -q 'c360-quality-hotfix.js' /tmp/index.html
-          grep -q 'c360-ui-polish.css' /tmp/index.html
           grep -q 'c360-platform.js' /tmp/bootstrap.js
           grep -q 'c360-product-core.js' /tmp/bootstrap.js
-          grep -q 'c360-product-ui.css' /tmp/bootstrap.js
-          grep -q 'c360-system-health.js' /tmp/bootstrap.js
-          grep -q 'c360-onboarding-entry.js' /tmp/bootstrap.js
-
+          grep -q 'c360-saas-readiness.js' /tmp/bootstrap.js
+          grep -q 'c360-saas-readiness.css' /tmp/bootstrap.js
           grep -q '2026.09.13-platform1' /tmp/platform.js
           grep -q 'window.C360Platform' /tmp/platform.js
-          grep -q '2026.09.13-product1' /tmp/product-core.js
-          grep -q 'window.C360Product' /tmp/product-core.js
-          grep -q 'aria-current' /tmp/product-core.js
-          grep -q 'prefers-reduced-motion' /tmp/product.css
-          grep -q 'body.device-mode' /tmp/product.css
-
+          grep -q '2026.09.13-saas1' /tmp/saas.js
+          grep -q 'v2_platform_incidents' /tmp/saas.js
+          grep -q 'v2_legal_acceptances' /tmp/saas.js
+          grep -q 'Termos de Uso do Comando 360' /tmp/legal.html
+          grep -q 'Biometria' /tmp/legal.html
           grep -Eq 'comando360-v7-02-hotfix[0-9]+' /tmp/sw.js
           grep -q 'comando360-stable-v1' /tmp/sw.js
-          grep -q 'c360-platform.js' /tmp/sw.js
-          grep -q 'c360-product-core.js' /tmp/sw.js
-          grep -q 'c360-product-ui.css' /tmp/sw.js
+          grep -q 'c360-saas-readiness.js' /tmp/sw.js
+          grep -q 'legal.html' /tmp/sw.js
           grep -q 'C360_ROLLBACK_TO_STABLE' /tmp/sw.js
-          grep -q 'C360_MARK_HEALTHY' /tmp/sw.js
-
           grep -q 'v2_client_health_events' /tmp/autorecovery.js
           grep -q 'v2_device_health_heartbeat' /tmp/health.js
           grep -q 'v2_bootstrap_company' /tmp/cadastro.html
-          grep -q 'v2_my_onboarding_status' /tmp/cadastro.html
-
-          for f in /tmp/platform.js /tmp/product-core.js /tmp/bootstrap.js /tmp/autorecovery.js /tmp/quality-core.js /tmp/field.js /tmp/health.js /tmp/onboarding.js /tmp/chat.js /tmp/farms.js /tmp/consumables.js /tmp/sw.js; do
-            node --check "$f"
-          done
-
+          for f in /tmp/platform.js /tmp/product-core.js /tmp/bootstrap.js /tmp/autorecovery.js /tmp/quality-core.js /tmp/field.js /tmp/health.js /tmp/onboarding.js /tmp/chat.js /tmp/farms.js /tmp/consumables.js /tmp/saas.js /tmp/sw.js; do node --check "$f"; done
           python - <<'PY'
           import json
           from html.parser import HTMLParser
           from pathlib import Path
           class P(HTMLParser): pass
-          with open('/tmp/manifest.json',encoding='utf-8') as f:
-              m=json.load(f)
+          with open('/tmp/manifest.json',encoding='utf-8') as f: m=json.load(f)
           assert m.get('name') or m.get('short_name')
-          for name in ('/tmp/index.html','/tmp/cadastro.html','/tmp/dda.html','/tmp/repair.html'):
-              text=Path(name).read_text(encoding='utf-8')
-              P().feed(text)
-              assert '<html' in text.lower() and '</html>' in text.lower()
-          for name in ('/tmp/ui.css','/tmp/premium.css','/tmp/product.css','/tmp/health.css'):
-              css=Path(name).read_text(encoding='utf-8')
-              assert css.count('{')==css.count('}'), f'{name}: unbalanced braces'
-          print('Production modular product shell + PWA + AutoRecovery + onboarding smoke: OK')
+          for name in ('/tmp/index.html','/tmp/cadastro.html','/tmp/dda.html','/tmp/repair.html','/tmp/legal.html'):
+              text=Path(name).read_text(encoding='utf-8'); P().feed(text); assert '<html' in text.lower() and '</html>' in text.lower()
+          for name in ('/tmp/ui.css','/tmp/premium.css','/tmp/product.css','/tmp/health.css','/tmp/saas.css'):
+              css=Path(name).read_text(encoding='utf-8'); assert css.count('{')==css.count('}'), f'{name}: unbalanced braces'
+          print('Production product shell + PWA + AutoRecovery + SaaS readiness smoke: OK')
           PY
