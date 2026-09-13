@@ -54,6 +54,7 @@ jobs:
           test -s dda.html
           test -s reparar.html
           test -s comando360.webmanifest
+          test -s c360-autorecovery.js
           test -s c360-field-offline-hotfix.js
           test -s c360-quality-hotfix.js
           test -s c360-quality-core.js
@@ -75,18 +76,32 @@ jobs:
           ! grep -q 'navigator.onLine' index.html
           ! grep -q '<script>window.onload' index.html
 
-          grep -q "2026.09.13-b2" c360-quality-hotfix.js
+          grep -q "2026.09.13-b3" c360-quality-hotfix.js
+          grep -q "c360-autorecovery.js" c360-quality-hotfix.js
           grep -q "c360-premium-ui.css" c360-quality-hotfix.js
           grep -q "c360-quality-core.js" c360-quality-hotfix.js
           grep -q "c360-field-offline-hotfix.js" c360-quality-hotfix.js
           grep -q "c360-team-chat.js" c360-quality-hotfix.js
           grep -q "c360-farm-cache-hotfix.js" c360-quality-hotfix.js
           grep -q "c360-consumable-edit.js" c360-quality-hotfix.js
+          grep -q "__c360SafeMode" c360-quality-hotfix.js
+
+          grep -q "2026.09.13-ar1" c360-autorecovery.js
+          grep -q "C360_HEAL_CORE" c360-autorecovery.js
+          grep -q "C360_ROLLBACK_TO_STABLE" c360-autorecovery.js
+          grep -q "v2_client_health_events" c360-autorecovery.js
+          grep -q "snapshotDraft" c360-autorecovery.js
+          grep -q "looksLikeSourceLeak" c360-autorecovery.js
+          grep -q "c360_autorecovery_events_v1" c360-autorecovery.js
 
           grep -q "status:'pending'" c360-quality-core.js
           grep -q "comando360-dda" c360-quality-core.js
 
-          grep -q "comando360-v7-02-hotfix13" sw-v7-02.js
+          grep -q "comando360-v7-02-hotfix14" sw-v7-02.js
+          grep -q "comando360-stable-v1" sw-v7-02.js
+          grep -q "c360-autorecovery.js" sw-v7-02.js
+          grep -q "C360_ROLLBACK_TO_STABLE" sw-v7-02.js
+          grep -q "C360_MARK_HEALTHY" sw-v7-02.js
           grep -q "isAppShellNavigation" sw-v7-02.js
           ! grep -q "patchAppHtml" sw-v7-02.js
           ! grep -q "repairLegacyAppHtml" sw-v7-02.js
