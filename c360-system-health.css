@@ -1,0 +1,80 @@
+/* SYSTEM HEALTH 2026.09.13-h1 */
+#saudesistema{--health-blue:#1f68c9;--health-green:#158a55;--health-amber:#b77908;--health-red:#c23a43;--health-line:#e1e8f1;--health-soft:#f7f9fc}
+#saudesistema .health-hero{display:flex;justify-content:space-between;align-items:flex-start;gap:18px;margin:2px 0 16px}
+#saudesistema .health-eyebrow{font-size:10px;font-weight:900;letter-spacing:1.25px;color:#6a7f98;margin-bottom:5px}
+#saudesistema .health-hero h1{margin:0;color:#122b49;font-size:29px;letter-spacing:-.55px}
+#saudesistema .health-hero p{margin:5px 0 0;color:#708198;font-size:13px}
+#saudesistema .health-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+#saudesistema .health-auto{font-size:10px;color:#708198;background:#f6f8fb;border:1px solid #e2e8f0;border-radius:999px;padding:6px 9px;font-weight:800}
+#saudesistema .health-summary{display:flex;gap:13px;align-items:center;border:1px solid var(--health-line);border-radius:16px;background:#fff;padding:14px 16px;margin-bottom:13px;box-shadow:0 4px 14px rgba(18,46,78,.035)}
+#saudesistema .health-score{width:58px;height:58px;border-radius:50%;display:grid;place-items:center;background:#ecf5ff;border:7px solid #d9eaff;color:#175ea9;font-size:20px;font-weight:950;flex:0 0 auto}
+#saudesistema .health-summary h3{margin:0 0 3px;font-size:15px;color:#172e4a}
+#saudesistema .health-summary p{margin:0;color:#708198;font-size:11px;line-height:1.45}
+#saudesistema .health-summary.good .health-score{background:#eaf8f0;border-color:#d5efe0;color:#147044}
+#saudesistema .health-summary.warn .health-score{background:#fff7e5;border-color:#f6e7be;color:#92620a}
+#saudesistema .health-summary.bad .health-score{background:#fff0f1;border-color:#f3d9dc;color:#aa3038}
+#saudesistema .health-kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin-bottom:14px}
+#saudesistema .health-kpi{background:#fff;border:1px solid var(--health-line);border-radius:15px;padding:14px;min-height:98px;box-shadow:0 3px 12px rgba(18,46,78,.03)}
+#saudesistema .health-kpi .t{font-size:9px;letter-spacing:.55px;text-transform:uppercase;color:#71839a;font-weight:900}
+#saudesistema .health-kpi .v{font-size:27px;line-height:1;font-weight:950;color:#17304d;margin:10px 0 5px}
+#saudesistema .health-kpi .s{font-size:10px;color:#7b8da3;line-height:1.3}
+#saudesistema .health-kpi.ok .v{color:var(--health-green)}
+#saudesistema .health-kpi.warn .v{color:var(--health-amber)}
+#saudesistema .health-kpi.bad .v{color:var(--health-red)}
+#saudesistema .health-layout{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(315px,.75fr);gap:13px;align-items:start}
+#saudesistema .health-panel{background:#fff;border:1px solid var(--health-line);border-radius:15px;padding:15px;box-shadow:0 3px 12px rgba(18,46,78,.03);margin-bottom:13px}
+#saudesistema .health-panel-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:11px}
+#saudesistema .health-panel-head h3{margin:0;font-size:15px;color:#17304d}
+#saudesistema .health-panel-head .muted{font-size:10px}
+#saudesistema .health-filters{display:grid;grid-template-columns:minmax(180px,1fr) 180px;gap:8px;margin-bottom:11px}
+#saudesistema .health-filters input,#saudesistema .health-filters select{width:100%;height:40px;border:1px solid #d7e1ec;border-radius:10px;padding:0 11px;background:#fff;color:#243b58;font:inherit;font-size:11px}
+#saudesistema .health-device-list{display:grid;gap:8px}
+#saudesistema .health-device{border:1px solid #e2e9f1;border-radius:13px;padding:12px 13px;background:#fff;display:grid;grid-template-columns:minmax(230px,1.15fr) minmax(145px,.7fr) minmax(145px,.7fr) 130px;gap:10px;align-items:center}
+#saudesistema .health-device.attention{border-color:#efdbac;background:#fffdf7}
+#saudesistema .health-device.critical{border-color:#edc9cc;background:#fffafb}
+#saudesistema .health-device-main{min-width:0}
+#saudesistema .health-device-name{display:flex;align-items:center;gap:7px;min-width:0}
+#saudesistema .health-device-name strong{color:#19324f;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#saudesistema .health-device-meta{font-size:10px;color:#75879e;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#saudesistema .health-cell-label{font-size:8.5px;text-transform:uppercase;letter-spacing:.45px;color:#8a9aaf;font-weight:900;margin-bottom:3px}
+#saudesistema .health-cell-value{font-size:10.5px;color:#314963;font-weight:760;line-height:1.35}
+#saudesistema .health-pill{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:4px 7px;font-size:9px;font-weight:900;border:1px solid #dde5ee;background:#f4f7fa;color:#5d7188;white-space:nowrap}
+#saudesistema .health-pill::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+#saudesistema .health-pill.online{background:#eaf8f0;border-color:#d4eddf;color:#147044}
+#saudesistema .health-pill.recent{background:#eef5ff;border-color:#dceafd;color:#1f68c9}
+#saudesistema .health-pill.warn{background:#fff7e5;border-color:#f1e2ba;color:#9a6809}
+#saudesistema .health-pill.offline{background:#fff0f1;border-color:#f1d5d8;color:#aa3038}
+#saudesistema .health-pill.inactive{background:#f2f4f7;border-color:#e5e9ef;color:#7d8999}
+#saudesistema .health-mini-line{display:flex;justify-content:space-between;gap:8px;padding:8px 0;border-bottom:1px solid #edf1f5;font-size:10.5px}
+#saudesistema .health-mini-line:last-child{border-bottom:0}
+#saudesistema .health-mini-line strong{font-size:10.5px;color:#2a405b}
+#saudesistema .health-mini-line span{color:#71839a;text-align:right}
+#saudesistema .health-alert{border:1px solid #e4eaf2;border-radius:11px;padding:10px 11px;margin-bottom:7px;background:#fbfcfe}
+#saudesistema .health-alert strong{display:block;font-size:10.5px;color:#263f5b}
+#saudesistema .health-alert p{margin:4px 0 0;color:#73859a;font-size:9.5px;line-height:1.4}
+#saudesistema .health-alert.warn{background:#fffaf0;border-color:#f0dfb8}
+#saudesistema .health-alert.bad{background:#fff6f7;border-color:#efd4d7}
+#saudesistema .health-event{padding:9px 0;border-bottom:1px solid #edf1f5}
+#saudesistema .health-event:last-child{border-bottom:0}
+#saudesistema .health-event-top{display:flex;justify-content:space-between;gap:8px;align-items:center}
+#saudesistema .health-event strong{font-size:10.5px;color:#2b435e}
+#saudesistema .health-event p{margin:4px 0 0;font-size:9.5px;color:#71839a;line-height:1.35;word-break:break-word}
+#saudesistema .health-empty{text-align:center;color:#8b9aae;padding:23px 8px;font-size:11px}
+#saudesistema .health-loading{opacity:.62;pointer-events:none}
+.v2navbtn[data-v2tab="saudesistema"] .health-nav-dot{float:right;width:7px;height:7px;border-radius:50%;background:#8192a9;margin-top:5px}
+.v2navbtn[data-v2tab="saudesistema"].health-nav-ok .health-nav-dot{background:#35c27b;box-shadow:0 0 0 3px rgba(53,194,123,.12)}
+.v2navbtn[data-v2tab="saudesistema"].health-nav-warn .health-nav-dot{background:#f0b02e;box-shadow:0 0 0 3px rgba(240,176,46,.12)}
+.v2navbtn[data-v2tab="saudesistema"].health-nav-bad .health-nav-dot{background:#ee6068;box-shadow:0 0 0 3px rgba(238,96,104,.12)}
+.darkmode #saudesistema .health-summary,.darkmode #saudesistema .health-kpi,.darkmode #saudesistema .health-panel,.darkmode #saudesistema .health-device{background:#0f1d2e;border-color:#20334a;color:#e9f0f9}
+.darkmode #saudesistema .health-device.attention{background:#211e14;border-color:#564a2c}
+.darkmode #saudesistema .health-device.critical{background:#24171c;border-color:#5a3138}
+.darkmode #saudesistema .health-hero h1,.darkmode #saudesistema .health-summary h3,.darkmode #saudesistema .health-panel-head h3,.darkmode #saudesistema .health-device-name strong,.darkmode #saudesistema .health-cell-value{color:#edf4fd}
+.darkmode #saudesistema .health-kpi .v{color:#eaf2fc}
+.darkmode #saudesistema .health-filters input,.darkmode #saudesistema .health-filters select{background:#0b1828;border-color:#2a3d55;color:#e9f0f9}
+.darkmode #saudesistema .health-alert{background:#0b1828;border-color:#20334a}
+.darkmode #saudesistema .health-alert.warn{background:#211e14;border-color:#564a2c}
+.darkmode #saudesistema .health-alert.bad{background:#24171c;border-color:#5a3138}
+.darkmode #saudesistema .health-alert strong,.darkmode #saudesistema .health-event strong,.darkmode #saudesistema .health-mini-line strong{color:#e3edf8}
+@media(max-width:1200px){#saudesistema .health-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}#saudesistema .health-layout{grid-template-columns:1fr}#saudesistema .health-device{grid-template-columns:minmax(220px,1fr) 140px 140px 120px}}
+@media(max-width:760px){#saudesistema .health-hero{flex-direction:column}#saudesistema .health-actions{justify-content:flex-start}#saudesistema .health-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}#saudesistema .health-filters{grid-template-columns:1fr}#saudesistema .health-device{grid-template-columns:1fr 1fr}#saudesistema .health-device-main{grid-column:1/-1}}
+@media(max-width:430px){#saudesistema .health-kpis{grid-template-columns:1fr 1fr}#saudesistema .health-device{grid-template-columns:1fr}#saudesistema .health-device-main{grid-column:auto}#saudesistema .health-summary{align-items:flex-start}.v2navbtn[data-v2tab="saudesistema"] .health-nav-dot{margin-top:4px}}
