@@ -1,4 +1,4 @@
-const CACHE='comando360-v7-02-hotfix16';
+const CACHE='comando360-v7-02-hotfix17';
 const STABLE_CACHE='comando360-stable-v1';
 const META_CACHE='comando360-meta-v1';
 const META_KEY='./__c360_recovery_meta__';
@@ -17,9 +17,11 @@ const CORE=[
   './c360-consumable-edit.js',
   './c360-system-health.js',
   './c360-onboarding-entry.js',
+  './c360-fiscal.js',
   './c360-system-health.css',
   './c360-ui-polish.css',
-  './c360-premium-ui.css'
+  './c360-premium-ui.css',
+  './c360-fiscal.css'
 ];
 
 async function fetchWithTimeout(request,ms=3500){
