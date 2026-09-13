@@ -1,8 +1,8 @@
 (()=>{
 'use strict';
-const BOOT_VERSION='2026.09.13-b24';
+const BOOT_VERSION='2026.09.13-b25';
 const recoveryModule='./c360-autorecovery.js';
-const styles=['./c360-premium-ui.css','./c360-product-ui.css','./c360-dashboard-dark-fix.css','./c360-enterprise-ui.css','./c360-commercial.css','./c360-fiscal.css','./c360-saas-readiness.css','./c360-visual-system.css','./c360-contrast-fix.css','./c360-hotfix-dashboard-dark.css','./c360-hotfix-bottom-nav.css','./c360-trailer-hitches.css'];
+const styles=['./c360-premium-ui.css','./c360-product-ui.css','./c360-dashboard-dark-fix.css','./c360-enterprise-ui.css','./c360-commercial.css','./c360-fiscal.css','./c360-saas-readiness.css','./c360-visual-system.css','./c360-contrast-fix.css','./c360-hotfix-dashboard-dark.css','./c360-hotfix-bottom-nav.css','./c360-trailer-hitches.css','./c360-premium-theme-v2.css'];
 const essentialModules=[
  './c360-platform.js',
  './c360-product-core.js',
@@ -22,7 +22,8 @@ const optionalModules=[
  './c360-commercial.js',
  './c360-saas-readiness.js',
  './c360-rpc-bridge.js',
- './c360-trailer-hitches.js'
+ './c360-trailer-hitches.js',
+ './c360-premium-theme-v2.js'
 ];
 function loadStyle(href){return new Promise((resolve,reject)=>{const base=href.split('?')[0];const existing=[...document.querySelectorAll('link[rel="stylesheet"]')].find(l=>{try{return new URL(l.href,location.href).pathname.endsWith(base.replace(/^\.\//,''))}catch{return false}});if(existing)return resolve();const l=document.createElement('link');l.rel='stylesheet';l.href=href+(href.includes('?')?'&':'?')+'v='+encodeURIComponent(BOOT_VERSION);l.dataset.c360Style=base;l.onload=resolve;l.onerror=()=>reject(new Error('Falha ao carregar '+base));document.head.appendChild(l)})}
 function loadScript(src){return new Promise((resolve,reject)=>{const base=src.split('?')[0];const existing=[...document.scripts].find(s=>{try{return new URL(s.src,location.href).pathname.endsWith(base.replace(/^\.\//,''))}catch{return false}});if(existing){if(existing.dataset.c360Loaded==='1'||existing.readyState==='complete')return resolve();existing.addEventListener('load',resolve,{once:true});existing.addEventListener('error',()=>reject(new Error('Falha ao carregar '+base)),{once:true});setTimeout(resolve,1500);return}const s=document.createElement('script');s.src=src+(src.includes('?')?'&':'?')+'v='+encodeURIComponent(BOOT_VERSION);s.async=false;s.dataset.c360Module=base;s.onload=()=>{s.dataset.c360Loaded='1';resolve()};s.onerror=()=>reject(new Error('Falha ao carregar '+base));document.head.appendChild(s)})}
