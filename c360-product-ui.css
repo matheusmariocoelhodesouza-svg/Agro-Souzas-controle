@@ -1,0 +1,226 @@
+/* COMANDO 360 — PRODUCT UI 2026.09.13-product1
+   Camada visual comercial e acessível. Não altera regras de negócio. */
+
+:root{
+  --c360-space-1:4px;
+  --c360-space-2:8px;
+  --c360-space-3:12px;
+  --c360-space-4:16px;
+  --c360-space-5:20px;
+  --c360-space-6:24px;
+  --c360-space-8:32px;
+  --c360-radius-xs:8px;
+  --c360-radius-sm:11px;
+  --c360-radius-md:14px;
+  --c360-radius-lg:18px;
+  --c360-radius-xl:22px;
+  --c360-focus:0 0 0 3px rgba(25,118,210,.22);
+  --c360-shadow-1:0 5px 18px rgba(15,23,42,.05);
+  --c360-shadow-2:0 12px 32px rgba(15,23,42,.09);
+  --c360-fast:140ms cubic-bezier(.2,.7,.2,1);
+  --c360-text:#142033;
+  --c360-text-soft:#64748b;
+  --c360-bg:#f4f7fb;
+  --c360-surface:#fff;
+  --c360-surface-2:#f8fafc;
+  --c360-border:#e3eaf3;
+  --c360-border-strong:#cad5e3;
+  --c360-primary:#1976d2;
+  --c360-primary-strong:#1259a8;
+  --c360-success:#168a51;
+  --c360-warning:#b97800;
+  --c360-danger:#c0363d;
+}
+body.darkmode{
+  --c360-text:#edf4fc;
+  --c360-text-soft:#9fb0c5;
+  --c360-bg:#081321;
+  --c360-surface:#101d2d;
+  --c360-surface-2:#132238;
+  --c360-border:#263a51;
+  --c360-border-strong:#38516d;
+  --c360-shadow-1:0 5px 20px rgba(0,0,0,.22);
+  --c360-shadow-2:0 14px 34px rgba(0,0,0,.31);
+}
+html.c360-product-shell{background:var(--c360-bg);scrollbar-gutter:stable}
+html.c360-product-shell,html.c360-product-shell body{min-height:100%}
+body.c360-product-ready{
+  background:var(--c360-bg)!important;
+  color:var(--c360-text);
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+body.c360-product-ready ::selection{background:rgba(25,118,210,.18)}
+body.c360-product-ready *{scrollbar-width:thin;scrollbar-color:var(--c360-border-strong) transparent}
+body.c360-product-ready *::-webkit-scrollbar{width:9px;height:9px}
+body.c360-product-ready *::-webkit-scrollbar-thumb{background:var(--c360-border-strong);border:2px solid transparent;background-clip:padding-box;border-radius:999px}
+
+/* acessibilidade e interação */
+body.c360-product-ready :where(button,a,input,select,textarea,[tabindex]):focus-visible{
+  outline:none!important;
+  box-shadow:var(--c360-focus)!important;
+  border-color:var(--c360-primary)!important;
+}
+body.c360-product-ready :where(button,.btn,.v2navbtn,.v2new,a){
+  transition:transform var(--c360-fast),box-shadow var(--c360-fast),background-color var(--c360-fast),border-color var(--c360-fast),color var(--c360-fast),opacity var(--c360-fast);
+}
+body.c360-product-ready :where(button,.btn,.v2new):disabled,
+body.c360-product-ready [aria-disabled="true"]{
+  opacity:.52!important;
+  cursor:not-allowed!important;
+  transform:none!important;
+  box-shadow:none!important;
+}
+body.c360-product-ready :where(input,select,textarea)::placeholder{color:color-mix(in srgb,var(--c360-text-soft) 72%,transparent)}
+body.c360-product-ready :where(input,select,textarea):invalid:not(:placeholder-shown){border-color:color-mix(in srgb,var(--c360-danger) 70%,var(--c360-border))!important}
+body.c360-product-ready :where(input,select,textarea):disabled{background:color-mix(in srgb,var(--c360-surface-2) 80%,var(--c360-border))!important;color:var(--c360-text-soft)!important}
+
+/* hierarquia do produto */
+body.app-ready:not(.device-mode).c360-product-ready .wrap{padding-top:22px!important}
+body.app-ready:not(.device-mode).c360-product-ready #screenHost>.section{animation:c360-screen-in .18s ease-out}
+body.app-ready:not(.device-mode).c360-product-ready .v2hero{
+  border-bottom:1px solid color-mix(in srgb,var(--c360-border) 72%,transparent);
+  padding-bottom:14px!important;
+  margin-bottom:18px!important;
+}
+body.app-ready:not(.device-mode).c360-product-ready .v2hero h1{color:var(--c360-text)!important;font-weight:900!important}
+body.app-ready:not(.device-mode).c360-product-ready .v2hero p{color:var(--c360-text-soft)!important}
+body.app-ready:not(.device-mode).c360-product-ready .v2hero>.toolbar{justify-content:flex-end}
+
+/* sidebar: leitura e estado ativo mais fortes */
+body.app-ready:not(.device-mode).c360-product-ready .v2sidebar{
+  box-shadow:8px 0 28px rgba(8,21,38,.10);
+}
+body.app-ready:not(.device-mode).c360-product-ready .v2navbtn{position:relative;overflow:hidden}
+body.app-ready:not(.device-mode).c360-product-ready .v2navbtn.active::before,
+body.app-ready:not(.device-mode).c360-product-ready .v2navbtn[aria-current="page"]::before{
+  content:"";
+  position:absolute;left:0;top:9px;bottom:9px;width:3px;border-radius:999px;background:#fff;
+}
+body.app-ready:not(.device-mode).c360-product-ready .v2navbtn:not(.active):hover{transform:translateX(2px)}
+body.app-ready:not(.device-mode).c360-product-ready .v2group{user-select:none}
+
+/* cartões e painéis */
+body.app-ready:not(.device-mode).c360-product-ready :where(.card,.v2panel,.finance-overview-card,.finance-entry-card,.fleet-card,.rh-list-card,.rh-tool-card){
+  background:var(--c360-surface)!important;
+  border-color:var(--c360-border)!important;
+}
+body.app-ready:not(.device-mode).c360-product-ready :where(.card,.v2panel,.fleet-card):hover{
+  border-color:color-mix(in srgb,var(--c360-primary) 15%,var(--c360-border))!important;
+}
+body.app-ready:not(.device-mode).c360-product-ready .v2kpi,
+body.app-ready:not(.device-mode).c360-product-ready .finance-kpi,
+body.app-ready:not(.device-mode).c360-product-ready .fleet-kpi{
+  background:linear-gradient(180deg,var(--c360-surface),color-mix(in srgb,var(--c360-surface-2) 42%,var(--c360-surface)))!important;
+}
+
+/* formulários */
+body.c360-product-ready .section :where(input:not([type="checkbox"]):not([type="radio"]),select,textarea){
+  background:var(--c360-surface)!important;
+  color:var(--c360-text)!important;
+  border-color:var(--c360-border-strong)!important;
+}
+body.c360-product-ready .section label{line-height:1.35}
+body.c360-product-ready .toolbar{align-items:center}
+body.c360-product-ready .btn.primary,
+body.c360-product-ready .v2new{
+  background:linear-gradient(180deg,var(--c360-primary),var(--c360-primary-strong))!important;
+  border-color:var(--c360-primary-strong)!important;
+}
+body.c360-product-ready .btn.primary:hover:not(:disabled),
+body.c360-product-ready .v2new:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 9px 20px rgba(25,118,210,.2)!important}
+body.c360-product-ready .btn.soft:hover:not(:disabled){transform:translateY(-1px)}
+
+/* tabelas, listas e grandes volumes */
+body.app-ready:not(.device-mode).c360-product-ready .section :where(table,.list){font-variant-numeric:tabular-nums}
+body.app-ready:not(.device-mode).c360-product-ready .section table{width:100%}
+body.app-ready:not(.device-mode).c360-product-ready .section table th{
+  background:color-mix(in srgb,var(--c360-surface-2) 86%,var(--c360-surface))!important;
+  color:var(--c360-text-soft)!important;
+  font-size:10px!important;
+  letter-spacing:.35px;
+  text-transform:uppercase;
+}
+body.app-ready:not(.device-mode).c360-product-ready .section table tbody tr{transition:background-color var(--c360-fast)}
+body.app-ready:not(.device-mode).c360-product-ready .section table tbody tr:hover{background:color-mix(in srgb,var(--c360-primary) 4%,var(--c360-surface))}
+body.app-ready:not(.device-mode).c360-product-ready .list>.item{background:var(--c360-surface)!important;border-color:var(--c360-border)!important}
+
+/* mensagens de estado reutilizáveis */
+.c360-state{
+  min-height:180px;display:grid;place-items:center;text-align:center;padding:28px;border:1px dashed var(--c360-border-strong);border-radius:var(--c360-radius-lg);background:var(--c360-surface-2);color:var(--c360-text-soft)
+}
+.c360-state strong{display:block;color:var(--c360-text);font-size:15px;margin-bottom:5px}
+.c360-state p{margin:0;max-width:460px;line-height:1.5}
+.c360-skeleton{position:relative;overflow:hidden;background:var(--c360-surface-2);border-radius:var(--c360-radius-sm);min-height:14px}
+.c360-skeleton::after{content:"";position:absolute;inset:0;transform:translateX(-100%);background:linear-gradient(90deg,transparent,rgba(148,163,184,.16),transparent);animation:c360-shimmer 1.35s infinite}
+.c360-product-notice{
+  position:fixed;right:18px;bottom:18px;z-index:9999;max-width:min(420px,calc(100vw - 36px));padding:14px 16px;border-radius:14px;background:#fff7ed;border:1px solid #fed7aa;color:#7c2d12;box-shadow:var(--c360-shadow-2);display:grid;gap:4px
+}
+.c360-product-notice strong{font-size:13px}.c360-product-notice span{font-size:12px;line-height:1.45}
+.c360-live-region{position:fixed!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
+
+/* conexão: deixa visual consistente sem poluir */
+body.c360-offline #networkBadge{box-shadow:0 0 0 2px rgba(192,54,61,.10)}
+body.c360-online #networkBadge{box-shadow:0 0 0 2px rgba(22,138,81,.08)}
+
+/* celular de campo */
+body.device-mode.c360-product-ready{
+  overscroll-behavior-y:contain;
+  background:var(--c360-bg)!important;
+}
+body.device-mode.c360-product-ready .wrap{max-width:820px!important;margin:0 auto!important}
+body.device-mode.c360-product-ready .team-home .team-tile,
+body.device-mode.c360-product-ready .team-tile{
+  border-radius:17px!important;
+  border:1px solid var(--c360-border)!important;
+  box-shadow:var(--c360-shadow-1)!important;
+  transition:transform var(--c360-fast),box-shadow var(--c360-fast),border-color var(--c360-fast)!important;
+}
+body.device-mode.c360-product-ready .team-tile:active{transform:scale(.985)!important}
+body.device-mode.c360-product-ready :where(button,.btn,input,select,textarea){min-height:44px}
+body.device-mode.c360-product-ready .field-section,
+body.device-mode.c360-product-ready .card{border-radius:17px!important;border-color:var(--c360-border)!important;background:var(--c360-surface)!important}
+body.device-mode.c360-product-ready .v2hero{margin-bottom:12px!important}
+body.device-mode.c360-product-ready .v2hero h1{font-size:22px!important;line-height:1.1!important}
+body.device-mode.c360-product-ready .v2hero p{font-size:12px!important}
+
+/* responsividade comercial */
+@media(max-width:1180px){
+  body.app-ready:not(.device-mode).c360-product-ready .wrap{padding-left:18px!important;padding-right:18px!important}
+  body.app-ready:not(.device-mode).c360-product-ready .v2-kpis{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+}
+@media(max-width:900px){
+  body.app-ready:not(.device-mode).c360-product-ready .v2hero{align-items:flex-start!important;flex-direction:column!important}
+  body.app-ready:not(.device-mode).c360-product-ready .v2hero>.toolbar{width:100%;justify-content:flex-start}
+  body.app-ready:not(.device-mode).c360-product-ready .v2main{grid-template-columns:1fr!important}
+  body.app-ready:not(.device-mode).c360-product-ready .fleet-controls{grid-template-columns:1fr 1fr!important}
+}
+@media(max-width:680px){
+  body.c360-product-ready .wrap{padding-left:10px!important;padding-right:10px!important}
+  body.app-ready:not(.device-mode).c360-product-ready .v2-kpis{grid-template-columns:1fr!important}
+  body.app-ready:not(.device-mode).c360-product-ready .v2hero h1{font-size:24px!important}
+  body.app-ready:not(.device-mode).c360-product-ready .toolbar{width:100%}
+  body.app-ready:not(.device-mode).c360-product-ready .toolbar>.btn,
+  body.app-ready:not(.device-mode).c360-product-ready .toolbar>.v2new{flex:1 1 auto}
+  body.app-ready:not(.device-mode).c360-product-ready .fleet-controls{grid-template-columns:1fr!important}
+  body.app-ready:not(.device-mode).c360-product-ready .section table{font-size:11px}
+}
+
+/* impressão profissional */
+@media print{
+  body.c360-product-ready{background:#fff!important;color:#000!important}
+  body.c360-product-ready .v2sidebar,
+  body.c360-product-ready header,
+  body.c360-product-ready .no-print,
+  body.c360-product-ready .c360-product-notice{display:none!important}
+  body.c360-product-ready #app{padding-left:0!important}
+  body.c360-product-ready .wrap{padding:0!important;max-width:none!important}
+  body.c360-product-ready :where(.card,.v2panel,.item){box-shadow:none!important;break-inside:avoid}
+}
+
+@media(prefers-reduced-motion:reduce){
+  body.c360-product-ready *,body.c360-product-ready *::before,body.c360-product-ready *::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;scroll-behavior:auto!important}
+}
+
+@keyframes c360-screen-in{from{opacity:.45;transform:translateY(4px)}to{opacity:1;transform:none}}
+@keyframes c360-shimmer{100%{transform:translateX(100%)}}
