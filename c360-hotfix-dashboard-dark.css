@@ -1,0 +1,83 @@
+/* Comando 360 — dashboard dark contrast hotfix 2026.09.13 */
+/* Carregado por último para neutralizar estilos claros legados no dashboard. */
+
+body.darkmode.app-ready:not(.device-mode) #inicio .dash-ring-card,
+body.darkmode.app-ready:not(.device-mode) #inicio .dash-stat,
+body.darkmode.app-ready:not(.device-mode) #inicio .dash-month{
+  background:#0f2238!important;
+  border-color:#29445f!important;
+  color:#f4f8ff!important;
+  box-shadow:0 8px 22px rgba(0,0,0,.18)!important;
+}
+
+body.darkmode.app-ready:not(.device-mode) #inicio .dash-ring{
+  background:conic-gradient(#36a3ff calc(var(--p)*1%),#294057 0)!important;
+}
+body.darkmode.app-ready:not(.device-mode) #inicio .dash-ring:before{
+  background:#0f2238!important;
+}
+
+body.darkmode.app-ready:not(.device-mode) #inicio .dash-ring b,
+body.darkmode.app-ready:not(.device-mode) #inicio .dash-ring-copy strong,
+body.darkmode.app-ready:not(.device-mode) #inicio .dash-stat b,
+body.darkmode.app-ready:not(.device-mode) #inicio .dash-month b{
+  color:#ffffff!important;
+  opacity:1!important;
+}
+
+body.darkmode.app-ready:not(.device-mode) #inicio .dash-ring span,
+body.darkmode.app-ready:not(.device-mode) #inicio .dash-ring-copy span,
+body.darkmode.app-ready:not(.device-mode) #inicio .dash-stat .muted,
+body.darkmode.app-ready:not(.device-mode) #inicio .dash-stat-top .muted,
+body.darkmode.app-ready:not(.device-mode) #inicio .dash-month small{
+  color:#c3d5e8!important;
+  opacity:1!important;
+}
+
+body.darkmode.app-ready:not(.device-mode) #inicio .dash-stat-icon{
+  background:#173653!important;
+  color:#a9d3ff!important;
+  border:1px solid #2a4a69!important;
+}
+body.darkmode.app-ready:not(.device-mode) #inicio .dash-progress{
+  background:#263d54!important;
+}
+body.darkmode.app-ready:not(.device-mode) #inicio .dash-progress i{
+  background:linear-gradient(90deg,#258fff,#54c0ff)!important;
+}
+
+/* Primeiros passos: concluído deve parecer concluído sem perder leitura. */
+body.darkmode.app-ready:not(.device-mode) #c360Launchpad .c360-launch-step{
+  background:#10233a!important;
+  border-color:#29445f!important;
+}
+body.darkmode.app-ready:not(.device-mode) #c360Launchpad .c360-launch-step.done{
+  background:linear-gradient(180deg,#123724,#0e2b1c)!important;
+  border-color:#2e6d4a!important;
+}
+body.darkmode.app-ready:not(.device-mode) #c360Launchpad .c360-launch-step strong,
+body.darkmode.app-ready:not(.device-mode) #c360Launchpad .c360-launch-step.done strong{
+  color:#f7fbff!important;
+  opacity:1!important;
+}
+body.darkmode.app-ready:not(.device-mode) #c360Launchpad .c360-launch-step small{
+  color:#b9cbe0!important;
+  opacity:1!important;
+}
+body.darkmode.app-ready:not(.device-mode) #c360Launchpad .c360-launch-step.done small{
+  color:#bde3cb!important;
+}
+body.darkmode.app-ready:not(.device-mode) #c360Launchpad .c360-launch-step button{
+  color:#83c2ff!important;
+  opacity:1!important;
+}
+body.darkmode.app-ready:not(.device-mode) #c360Launchpad .c360-launch-step.done button,
+body.darkmode.app-ready:not(.device-mode) #c360Launchpad .c360-launch-step.done .ico{
+  color:#73e29b!important;
+}
+
+/* Evita qualquer texto secundário ficar quase branco sobre superfície clara residual. */
+body.darkmode.app-ready:not(.device-mode) #inicio .dash-ring-card *,
+body.darkmode.app-ready:not(.device-mode) #inicio .dash-stat *{
+  text-shadow:none!important;
+}
