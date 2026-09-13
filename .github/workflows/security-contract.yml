@@ -21,6 +21,7 @@ jobs:
           test -s supabase/migrations/20260913120000_harden_multitenant_security_v1.sql
           test -s supabase/migrations/20260913143824_commercial_readiness_v2.sql
           test -s supabase/migrations/20260913144117_commercial_readiness_v2_patch.sql
+          test -s supabase/migrations/20260913144733_commercial_readiness_indexes_v1.sql
           test -s supabase/functions/comando360-device-activate/index.ts
           test -s qa/security_postdeploy.sql
           test -s legal.html
@@ -42,6 +43,7 @@ jobs:
         run: |
           MIG=supabase/migrations/20260913143824_commercial_readiness_v2.sql
           PATCH=supabase/migrations/20260913144117_commercial_readiness_v2_patch.sql
+          IDX=supabase/migrations/20260913144733_commercial_readiness_indexes_v1.sql
           grep -q "v2_platform_admins" "$MIG"
           grep -q "private.c360_is_platform_admin" "$MIG"
           grep -q "v2_billing_accounts" "$MIG"
@@ -51,6 +53,8 @@ jobs:
           grep -q "revoke all on table public.v2_billing_accounts from anon" "$MIG"
           grep -q "revoke all on function private.c360_health_to_incident() from public,anon,authenticated" "$PATCH"
           grep -q "v2_alerts" "$PATCH"
+          grep -q "v2_legal_acceptances_user_idx" "$IDX"
+          grep -q "v2_platform_incidents_resolved_by_idx" "$IDX"
           ! grep -Eqi "(secret[_-]?key|service[_-]?role)[[:space:]]*[:=][[:space:]]*['\"][A-Za-z0-9_-]{20,}" c360-saas-readiness.js legal.html
       - name: Validate safe device activation ordering
         run: |
