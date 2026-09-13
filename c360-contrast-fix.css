@@ -1,0 +1,152 @@
+/* COMANDO 360 — CONTRAST FIX 2026.09.13-c1
+   Ajustes direcionados a telas reais em Android/dark mode.
+   Carregado por ultimo para neutralizar estilos legados claros. */
+
+/* ===== DASHBOARD: EQUIPE, PONTO E RESUMO OPERACIONAL ===== */
+body #inicio .dash-stat,
+body #inicio .dash-ring-card{
+  background:#fff!important;
+  border-color:#d7e2ee!important;
+  color:#102033!important;
+  box-shadow:0 5px 16px rgba(15,31,52,.055)!important;
+}
+body #inicio .dash-stat b,
+body #inicio .dash-ring b,
+body #inicio .dash-ring-copy strong{
+  color:#102033!important;
+}
+body #inicio .dash-stat .muted,
+body #inicio .dash-ring span,
+body #inicio .dash-ring-copy span{
+  color:#5f738b!important;
+}
+body #inicio .dash-stat-icon{
+  background:#e9f3ff!important;
+  color:#1a65b7!important;
+  border:1px solid #d8e8fa!important;
+}
+body #inicio .dash-progress{
+  background:#e3edf7!important;
+}
+body #inicio .dash-ring{
+  background:conic-gradient(#1b91f3 calc(var(--p)*1%),#dfeaf5 0)!important;
+}
+body #inicio .dash-ring:before{
+  background:#fff!important;
+}
+
+body.darkmode #inicio .dash-stat,
+body.darkmode #inicio .dash-ring-card{
+  background:linear-gradient(180deg,#12253b 0%,#0d1c2d 100%)!important;
+  border-color:#304963!important;
+  color:#f3f8fd!important;
+  box-shadow:0 8px 22px rgba(0,0,0,.22)!important;
+}
+body.darkmode #inicio .dash-stat b,
+body.darkmode #inicio .dash-ring b,
+body.darkmode #inicio .dash-ring-copy strong{
+  color:#f7fbff!important;
+}
+body.darkmode #inicio .dash-stat .muted,
+body.darkmode #inicio .dash-ring span,
+body.darkmode #inicio .dash-ring-copy span{
+  color:#b8c9db!important;
+}
+body.darkmode #inicio .dash-stat-icon{
+  background:#19334f!important;
+  color:#8ac3ff!important;
+  border-color:#2d4c6d!important;
+}
+body.darkmode #inicio .dash-progress{
+  background:#263d56!important;
+}
+body.darkmode #inicio .dash-progress i{
+  background:linear-gradient(90deg,#2a8eff,#4fc4ff)!important;
+}
+body.darkmode #inicio .dash-ring{
+  background:conic-gradient(#35a2ff calc(var(--p)*1%),#263d56 0)!important;
+}
+body.darkmode #inicio .dash-ring:before{
+  background:#102136!important;
+}
+body.darkmode #inicio .v2panelhead .btn.soft{
+  background:#162a42!important;
+  color:#e4edf7!important;
+  border-color:#3a5674!important;
+}
+
+/* ===== PRIMEIROS PASSOS ===== */
+body.darkmode .c360-launchpad{
+  background:
+    radial-gradient(circle at 96% 0%,rgba(57,145,255,.15),transparent 34%),
+    linear-gradient(180deg,#102136 0%,#0b1929 100%)!important;
+  border-color:#2e4967!important;
+  box-shadow:0 14px 34px rgba(0,0,0,.24)!important;
+}
+body.darkmode .c360-launchpad h3,
+body.darkmode .c360-launchpad-progress b{
+  color:#f6f9fd!important;
+}
+body.darkmode .c360-launchpad p,
+body.darkmode .c360-launchpad-progress span,
+body.darkmode .c360-launch-dismiss{
+  color:#b4c4d6!important;
+}
+body.darkmode .c360-launchpad-eyebrow{
+  color:#6fb5ff!important;
+}
+body.darkmode .c360-launchpad-bar{
+  background:#27405b!important;
+}
+body.darkmode .c360-launch-step{
+  background:#112238!important;
+  border-color:#304963!important;
+  color:#f4f8fc!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.025)!important;
+}
+body.darkmode .c360-launch-step strong{
+  color:#f5f9fd!important;
+}
+body.darkmode .c360-launch-step small{
+  color:#b5c5d7!important;
+}
+body.darkmode .c360-launch-step button{
+  color:#78baff!important;
+}
+body.darkmode .c360-launch-step.done{
+  background:linear-gradient(180deg,#12352a 0%,#102a24 100%)!important;
+  border-color:#347254!important;
+}
+body.darkmode .c360-launch-step.done .ico{
+  color:#9be8bc!important;
+}
+body.darkmode .c360-launch-step.done strong{
+  color:#f3fff8!important;
+}
+body.darkmode .c360-launch-step.done small{
+  color:#bcd6c8!important;
+}
+body.darkmode .c360-launch-step.done button{
+  color:#78dfa4!important;
+}
+
+/* ===== BARRA INFERIOR MOBILE ===== */
+@media(max-width:680px){
+  body.darkmode.app-ready:not(.device-mode) .mobile-bottom-nav{
+    background:rgba(8,20,33,.98)!important;
+    border-color:#29435e!important;
+    box-shadow:0 14px 34px rgba(0,0,0,.34)!important;
+  }
+  body.darkmode.app-ready:not(.device-mode) .mobile-bottom-nav button{
+    color:#b3c4d6!important;
+  }
+  body.darkmode.app-ready:not(.device-mode) .mobile-bottom-nav button small{
+    color:inherit!important;
+    opacity:1!important;
+  }
+  body.darkmode.app-ready:not(.device-mode) .mobile-bottom-nav button.active{
+    background:#17324f!important;
+    color:#72b8ff!important;
+    box-shadow:inset 0 0 0 1px #284e75!important;
+  }
+}
