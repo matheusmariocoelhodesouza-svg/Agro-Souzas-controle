@@ -61,10 +61,13 @@ jobs:
           test -s c360-team-chat.js
           test -s c360-farm-cache-hotfix.js
           test -s c360-consumable-edit.js
+          test -s c360-system-health.js
+          test -s c360-system-health.css
           test -s c360-ui-polish.css
           test -s c360-premium-ui.css
           test -s sw-v7-02.js
           test -s qa/reference_audit.py
+          test -s supabase/migrations/20260913104500_add_device_health_heartbeat.sql
 
       - name: Reference structural audit
         run: python qa/reference_audit.py
@@ -76,7 +79,7 @@ jobs:
           ! grep -q 'navigator.onLine' index.html
           ! grep -q '<script>window.onload' index.html
 
-          grep -q "2026.09.13-b3" c360-quality-hotfix.js
+          grep -q "2026.09.13-b4" c360-quality-hotfix.js
           grep -q "c360-autorecovery.js" c360-quality-hotfix.js
           grep -q "c360-premium-ui.css" c360-quality-hotfix.js
           grep -q "c360-quality-core.js" c360-quality-hotfix.js
@@ -84,6 +87,7 @@ jobs:
           grep -q "c360-team-chat.js" c360-quality-hotfix.js
           grep -q "c360-farm-cache-hotfix.js" c360-quality-hotfix.js
           grep -q "c360-consumable-edit.js" c360-quality-hotfix.js
+          grep -q "c360-system-health.js" c360-quality-hotfix.js
           grep -q "__c360SafeMode" c360-quality-hotfix.js
 
           grep -q "2026.09.13-ar1" c360-autorecovery.js
@@ -94,12 +98,23 @@ jobs:
           grep -q "looksLikeSourceLeak" c360-autorecovery.js
           grep -q "c360_autorecovery_events_v1" c360-autorecovery.js
 
+          grep -q "2026.09.13-h1" c360-system-health.js
+          grep -q "v2_device_health_heartbeat" c360-system-health.js
+          grep -q "v2_client_health_events" c360-system-health.js
+          grep -q "Saúde do Sistema" c360-system-health.js
+          grep -q "healthKpiRecovered" c360-system-health.js
+          grep -q "health-nav-dot" c360-system-health.css
+          grep -q "SYSTEM HEALTH 2026.09.13-h1" c360-system-health.css
+          grep -q "v2_device_health_heartbeat" supabase/migrations/20260913104500_add_device_health_heartbeat.sql
+
           grep -q "status:'pending'" c360-quality-core.js
           grep -q "comando360-dda" c360-quality-core.js
 
-          grep -q "comando360-v7-02-hotfix14" sw-v7-02.js
+          grep -q "comando360-v7-02-hotfix15" sw-v7-02.js
           grep -q "comando360-stable-v1" sw-v7-02.js
           grep -q "c360-autorecovery.js" sw-v7-02.js
+          grep -q "c360-system-health.js" sw-v7-02.js
+          grep -q "c360-system-health.css" sw-v7-02.js
           grep -q "C360_ROLLBACK_TO_STABLE" sw-v7-02.js
           grep -q "C360_MARK_HEALTHY" sw-v7-02.js
           grep -q "isAppShellNavigation" sw-v7-02.js
@@ -146,11 +161,11 @@ jobs:
               assert '<html' in text.lower(), f'{name}: missing html root'
               assert '</html>' in text.lower(), f'{name}: missing closing html'
               print(f'{name}: OK ({len(text):,} bytes)')
-          for name in ('c360-ui-polish.css','c360-premium-ui.css'):
+          for name in ('c360-ui-polish.css','c360-premium-ui.css','c360-system-health.css'):
               css=Path(name).read_text(encoding='utf-8')
               assert css.count('{') == css.count('}'), f'{name}: unbalanced braces'
-              assert 'body.darkmode' in css, f'{name}: dark theme rules missing'
               print(f'{name}: OK ({len(css):,} bytes)')
+          assert 'darkmode' in Path('c360-system-health.css').read_text(encoding='utf-8')
           PY
 
       - name: Reject obvious secret-key leaks
