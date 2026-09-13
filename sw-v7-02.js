@@ -1,4 +1,4 @@
-const CACHE='comando360-v7-02-hotfix14';
+const CACHE='comando360-v7-02-hotfix15';
 const STABLE_CACHE='comando360-stable-v1';
 const META_CACHE='comando360-meta-v1';
 const META_KEY='./__c360_recovery_meta__';
@@ -14,6 +14,8 @@ const CORE=[
   './c360-team-chat.js',
   './c360-farm-cache-hotfix.js',
   './c360-consumable-edit.js',
+  './c360-system-health.js',
+  './c360-system-health.css',
   './c360-ui-polish.css',
   './c360-premium-ui.css'
 ];
