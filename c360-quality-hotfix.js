@@ -1,9 +1,11 @@
 (()=>{
 'use strict';
-const BOOT_VERSION='2026.09.13-b6';
+const BOOT_VERSION='2026.09.13-b7';
 const recoveryModule='./c360-autorecovery.js';
-const styles=['./c360-premium-ui.css','./c360-fiscal.css'];
+const styles=['./c360-premium-ui.css','./c360-product-ui.css','./c360-fiscal.css'];
 const essentialModules=[
+ './c360-platform.js',
+ './c360-product-core.js',
  './c360-quality-core.js',
  './c360-farm-cache-hotfix.js',
  './c360-field-offline-hotfix.js'
