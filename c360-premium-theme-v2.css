@@ -1,0 +1,128 @@
+/* Comando 360 — Premium Theme V2
+   Linguagem visual oficial inspirada no painel Combustível & KM aprovado.
+   Camada estritamente visual, carregada por último. */
+:root{
+  --p-bg:#f3f7fc;--p-panel:#fff;--p-panel-2:#f7faff;--p-line:#d9e5f2;
+  --p-text:#10213a;--p-soft:#52677f;--p-muted:#74879d;
+  --p-blue:#168cf3;--p-cyan:#38bdf8;--p-green:#12b981;--p-amber:#f5a623;
+  --p-purple:#8258f6;--p-red:#ef5b66;--p-radius:20px;
+  --p-shadow:0 10px 28px rgba(24,65,108,.08)
+}
+body.darkmode{
+  --p-bg:#07121f;--p-panel:#0d1c2e;--p-panel-2:#10243a;--p-line:#28435f;
+  --p-text:#f6f9fd;--p-soft:#c3d1e1;--p-muted:#95a9c0;
+  --p-shadow:0 12px 30px rgba(0,0,0,.28)
+}
+body.app-ready:not(.device-mode){background:var(--p-bg)!important;color:var(--p-text)!important}
+body.darkmode.app-ready:not(.device-mode){background:radial-gradient(circle at 12% -5%,rgba(22,140,243,.12),transparent 28%),linear-gradient(180deg,#07121f,#081727 68%,#07121f)!important}
+
+/* page shells */
+body.app-ready:not(.device-mode) .section.active{animation:c360PremiumEnter .18s ease-out}
+@keyframes c360PremiumEnter{from{opacity:.75;transform:translateY(2px)}to{opacity:1;transform:none}}
+body.app-ready:not(.device-mode) :where(.card,.v2panel,.fleet-controls,.finance-overview-card,.rh-tool-card,.field-section){
+  border-radius:var(--p-radius)!important;border:1px solid var(--p-line)!important;background:var(--p-panel)!important;box-shadow:var(--p-shadow)!important
+}
+body.darkmode.app-ready:not(.device-mode) :where(.card,.v2panel,.fleet-controls,.finance-overview-card,.rh-tool-card,.field-section){
+  background:linear-gradient(180deg,#0f2034,#0b192a)!important;border-color:#29445f!important
+}
+body.app-ready:not(.device-mode) .v2hero{margin-bottom:18px!important}
+body.app-ready:not(.device-mode) .v2hero h1{font-size:clamp(23px,2.4vw,31px)!important;letter-spacing:-.55px!important;color:var(--p-text)!important}
+body.app-ready:not(.device-mode) .v2hero p{font-size:14px!important;color:var(--p-muted)!important;line-height:1.55!important;max-width:760px}
+
+/* action buttons */
+body .btn,body .v2new{min-height:44px;border-radius:14px!important;font-weight:850!important;letter-spacing:.01em;transition:transform .14s ease,box-shadow .14s ease,border-color .14s ease}
+body .btn.primary,body .v2new{background:linear-gradient(135deg,#35b9ff 0%,#168cf3 46%,#1767dc 100%)!important;color:#fff!important;border:1px solid #2a9cf4!important;box-shadow:0 9px 22px rgba(22,140,243,.24)!important}
+body .btn.primary:hover:not(:disabled),body .v2new:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 12px 26px rgba(22,140,243,.3)!important}
+body.darkmode .btn.soft{background:#10253c!important;color:#dce8f5!important;border:1px solid #315474!important}
+body.darkmode .btn.soft:hover{background:#15304d!important;border-color:#47789f!important;color:#fff!important}
+
+/* KPI system */
+body .c360-pro-metric{
+  --tone:#168cf3;--tone2:#38bdf8;--tone-rgb:22,140,243;
+  position:relative!important;overflow:hidden!important;border-radius:20px!important;
+  border:1px solid color-mix(in srgb,var(--tone) 58%,var(--p-line))!important;
+  background:linear-gradient(145deg,color-mix(in srgb,var(--tone) 8%,var(--p-panel)) 0%,var(--p-panel) 62%)!important;
+  box-shadow:0 10px 25px rgba(var(--tone-rgb),.08)!important;
+  min-height:132px!important;padding:20px 18px 18px!important
+}
+body.darkmode .c360-pro-metric{
+  background:radial-gradient(circle at 92% 110%,rgba(var(--tone-rgb),.18),transparent 42%),linear-gradient(145deg,#10253c 0%,#0b192b 72%)!important;
+  border-color:color-mix(in srgb,var(--tone) 58%,#28445f)!important;
+  box-shadow:0 12px 28px rgba(0,0,0,.24),inset 0 1px 0 rgba(255,255,255,.025)!important
+}
+body .c360-pro-metric::before{content:"";position:absolute;left:0;right:0;top:0;height:3px;background:linear-gradient(90deg,var(--tone),var(--tone2));opacity:.95}
+body .c360-pro-metric::after{content:"";position:absolute;right:-36px;bottom:-54px;width:150px;height:100px;border-radius:50%;background:radial-gradient(circle,rgba(var(--tone-rgb),.17),transparent 68%);pointer-events:none}
+body .c360-pro-metric[data-c360-tone="green"]{--tone:#12b981;--tone2:#36d8ae;--tone-rgb:18,185,129}
+body .c360-pro-metric[data-c360-tone="amber"]{--tone:#f5a623;--tone2:#ffc95c;--tone-rgb:245,166,35}
+body .c360-pro-metric[data-c360-tone="purple"]{--tone:#8258f6;--tone2:#a58aff;--tone-rgb:130,88,246}
+body .c360-pro-metric[data-c360-tone="red"]{--tone:#ef5b66;--tone2:#ff8f98;--tone-rgb:239,91,102}
+body .c360-pro-metric[data-c360-tone="cyan"]{--tone:#16a9d8;--tone2:#4bd6ff;--tone-rgb:22,169,216}
+body .c360-pro-metric .c360-metric-icon{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;float:left;margin:0 13px 8px 0;font-size:21px;background:rgba(var(--tone-rgb),.12);border:1px solid rgba(var(--tone-rgb),.24);box-shadow:inset 0 1px 0 rgba(255,255,255,.05)}
+body.darkmode .c360-pro-metric .c360-metric-icon{background:rgba(var(--tone-rgb),.16);border-color:rgba(var(--tone-rgb),.32)}
+body .c360-pro-metric :where(.t,span:first-of-type,.finance-kpi-label,.fleet-kpi span,.rh-kpi-label){font-size:13px!important;line-height:1.25!important;font-weight:800!important;color:var(--p-soft)!important;letter-spacing:0!important;text-transform:none!important}
+body .c360-pro-metric :where(.v,strong,b,.finance-kpi-value){display:block;color:var(--p-text)!important;font-size:clamp(25px,3vw,38px)!important;line-height:1.05!important;font-weight:950!important;letter-spacing:-1.15px!important;margin-top:13px!important;position:relative;z-index:1}
+body .c360-pro-metric :where(.s,small){color:var(--p-muted)!important;font-size:11px!important;line-height:1.35!important}
+body .c360-pro-metric .v2ico,body .c360-pro-metric .fleet-kpi-icon{display:none!important}
+
+/* grids become compact, dashboard-like */
+body :where(.v2-kpis,.fleet-kpis,.finance-kpis,.rh-kpis,.dashboard-kpis){gap:14px!important}
+body #combustivel .v2-kpis,body #insumos .v2-kpis,body #inicio .dashboard-kpis{grid-template-columns:repeat(4,minmax(0,1fr))!important}
+
+/* cards and section headings */
+body .section :where(.v2panelhead,.toolbar):has(h2,h3){padding-bottom:10px;border-bottom:1px solid color-mix(in srgb,var(--p-line) 82%,transparent);margin-bottom:13px}
+body .section :where(.v2panel h3,.card h3,.card h2){color:var(--p-text)!important;font-weight:900!important;letter-spacing:-.25px}
+body .section :where(.v2panel p,.card p,.muted){color:var(--p-muted)!important}
+
+/* list/history cards */
+body .section :where(.item,.poultry-op-card,.fleet-card,.finance-entry-card,.rh-list-card,.c360-hitch-card){border-radius:17px!important;border:1px solid var(--p-line)!important;background:var(--p-panel)!important;box-shadow:0 6px 18px rgba(28,63,100,.045)!important}
+body.darkmode .section :where(.item,.poultry-op-card,.fleet-card,.finance-entry-card,.rh-list-card,.c360-hitch-card){background:linear-gradient(180deg,#102239,#0c1b2d)!important;border-color:#29455f!important;box-shadow:0 9px 22px rgba(0,0,0,.18)!important}
+
+/* table polish */
+body .section table{border-radius:15px!important;overflow:hidden;border-collapse:separate!important;border-spacing:0!important}
+body .section table th{font-size:11px!important;text-transform:uppercase;letter-spacing:.045em!important;font-weight:900!important}
+body .section table td{font-weight:650}
+body.darkmode .section table th{background:#10253b!important;color:#aec2d8!important}
+body.darkmode .section table td{background:#0d1d30!important;color:#eaf1f8!important}
+
+/* forms */
+body .section :where(input:not([type="checkbox"]):not([type="radio"]),select,textarea){min-height:44px;border-radius:13px!important}
+body.darkmode .section :where(input:not([type="checkbox"]):not([type="radio"]),select,textarea){background:#091828!important;border-color:#32516f!important;color:#f6f9fd!important}
+body .section label{font-size:12px!important;color:var(--p-soft)!important}
+
+/* status chips */
+body .pill,body .v2status{border-radius:999px!important;padding:5px 9px!important;font-weight:900!important;letter-spacing:.025em!important}
+
+/* module accents */
+body #financeiro{--section-accent:#168cf3}
+body #combustivel{--section-accent:#12b981}
+body #frota{--section-accent:#8258f6}
+body #manutencoes{--section-accent:#f5a623}
+body #insumos{--section-accent:#16a9d8}
+body #operacoes{--section-accent:#ef5b66}
+body #ponto{--section-accent:#168cf3}
+body #funcionarios,body #equipes,body #documentosrh{--section-accent:#16a9d8}
+body .section.active>.v2hero h1::after{content:"";display:block;width:42px;height:3px;border-radius:9px;background:var(--section-accent,#168cf3);margin-top:8px}
+
+/* mobile */
+@media(max-width:900px){
+  body.app-ready:not(.device-mode) .wrap{padding:14px 14px calc(112px + env(safe-area-inset-bottom))!important}
+  body .section .v2hero{align-items:flex-start!important;gap:10px!important}
+  body .section .v2hero h1{font-size:24px!important}
+  body :where(.v2-kpis,.fleet-kpis,.finance-kpis,.rh-kpis,.dashboard-kpis){grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:11px!important}
+  body #combustivel .v2-kpis,body #insumos .v2-kpis,body #inicio .dashboard-kpis{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  body .c360-pro-metric{min-height:132px!important;padding:15px 13px!important;border-radius:18px!important}
+  body .c360-pro-metric .c360-metric-icon{width:38px;height:38px;border-radius:12px;font-size:18px;margin-right:9px}
+  body .c360-pro-metric :where(.t,span:first-of-type,.finance-kpi-label,.fleet-kpi span,.rh-kpi-label){font-size:11.5px!important}
+  body .c360-pro-metric :where(.v,strong,b,.finance-kpi-value){font-size:clamp(23px,7vw,32px)!important;margin-top:12px!important;letter-spacing:-.8px!important}
+  body .card,body .v2panel{border-radius:20px!important}
+  body .btn,body .v2new{min-height:46px}
+  body .v2hero-actions{width:100%;display:grid!important;grid-template-columns:1fr 1fr!important}
+}
+@media(max-width:420px){
+  body .c360-pro-metric{padding:14px 12px!important;min-height:126px!important}
+  body .c360-pro-metric :where(.v,strong,b,.finance-kpi-value){font-size:24px!important}
+}
+
+/* field phone stays efficient but receives the same contrast language */
+body.device-mode :where(.card,.field-section){border-radius:18px!important;border-color:var(--p-line)!important}
+body.darkmode.device-mode :where(.card,.field-section){background:#0d1d30!important;border-color:#29455f!important;color:#f4f8fc!important}
