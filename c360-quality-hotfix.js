@@ -1,8 +1,8 @@
 (()=>{
 'use strict';
-const BOOT_VERSION='2026.09.13-b9';
+const BOOT_VERSION='2026.09.13-b10';
 const recoveryModule='./c360-autorecovery.js';
-const styles=['./c360-premium-ui.css','./c360-product-ui.css','./c360-fiscal.css'];
+const styles=['./c360-premium-ui.css','./c360-product-ui.css','./c360-enterprise-ui.css','./c360-fiscal.css'];
 const essentialModules=[
  './c360-platform.js',
  './c360-product-core.js',
@@ -16,7 +16,8 @@ const optionalModules=[
  './c360-system-health.js',
  './c360-onboarding-entry.js',
  './c360-fiscal.js',
- './c360-fiscal-issuance.js'
+ './c360-fiscal-issuance.js',
+ './c360-enterprise.js'
 ];
 
 function loadStyle(href){
