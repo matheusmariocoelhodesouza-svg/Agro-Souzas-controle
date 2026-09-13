@@ -1,4 +1,4 @@
-const CACHE='comando360-v7-02-hotfix11';
+const CACHE='comando360-v7-02-hotfix12';
 const CORE=[
   './',
   './index.html',
@@ -6,6 +6,7 @@ const CORE=[
   './comando360-icon.svg',
   './c360-field-offline-hotfix.js',
   './c360-quality-hotfix.js',
+  './c360-quality-core.js',
   './c360-team-chat.js',
   './c360-farm-cache-hotfix.js',
   './c360-consumable-edit.js',
