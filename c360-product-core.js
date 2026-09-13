@@ -104,10 +104,21 @@ function syncTheme(){
  const color=dark?'#081321':'#0f172a';
  if(meta?.getAttribute('content')!==color)meta?.setAttribute('content',color);
 }
+function clearOppositeNetworkToast(online){
+ const stack=doc.getElementById('c360ToastStack');
+ if(!stack)return;
+ [...stack.querySelectorAll('.c360-toast')].forEach(toast=>{
+  const text=(toast.textContent||'').toLocaleLowerCase('pt-BR');
+  const isOffline=text.includes('sem internet');
+  const isOnline=text.includes('conexão restabelecida')||text.includes('voltou a ficar online');
+  if((online&&isOffline)||(!online&&isOnline))toast.remove();
+ });
+}
 function syncNetwork(){
  const online=navigator.onLine!==false;
  doc.body?.classList.toggle('c360-online',online);
  doc.body?.classList.toggle('c360-offline',!online);
+ clearOppositeNetworkToast(online);
  announce(online?'Conexão restabelecida.':'Você está sem internet. O Comando 360 continuará usando os dados disponíveis offline.');
 }
 function setupKeyboard(){
