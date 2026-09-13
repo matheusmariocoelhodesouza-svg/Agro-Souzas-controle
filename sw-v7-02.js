@@ -1,10 +1,11 @@
-const CACHE='comando360-v7-02-hotfix15';
+const CACHE='comando360-v7-02-hotfix16';
 const STABLE_CACHE='comando360-stable-v1';
 const META_CACHE='comando360-meta-v1';
 const META_KEY='./__c360_recovery_meta__';
 const CORE=[
   './',
   './index.html',
+  './cadastro.html',
   './comando360.webmanifest',
   './comando360-icon.svg',
   './c360-autorecovery.js',
@@ -15,6 +16,7 @@ const CORE=[
   './c360-farm-cache-hotfix.js',
   './c360-consumable-edit.js',
   './c360-system-health.js',
+  './c360-onboarding-entry.js',
   './c360-system-health.css',
   './c360-ui-polish.css',
   './c360-premium-ui.css'
