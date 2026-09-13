@@ -1,6 +1,6 @@
 (()=>{
 'use strict';
-const BOOT_VERSION='2026.09.13-b14';
+const BOOT_VERSION='2026.09.13-b15';
 const recoveryModule='./c360-autorecovery.js';
 const styles=['./c360-premium-ui.css','./c360-product-ui.css','./c360-enterprise-ui.css','./c360-commercial.css','./c360-fiscal.css','./c360-saas-readiness.css'];
 const essentialModules=[
@@ -12,6 +12,7 @@ const essentialModules=[
 ];
 const optionalModules=[
  './c360-consumable-edit.js',
+ './c360-consumable-mobile-actions.js',
  './c360-team-chat.js',
  './c360-system-health.js',
  './c360-onboarding-entry.js',
