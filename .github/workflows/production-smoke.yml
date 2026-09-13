@@ -36,6 +36,7 @@ jobs:
           fetch "/reparar.html" /tmp/repair.html
           fetch "/c360-field-offline-hotfix.js" /tmp/field.js
           fetch "/c360-quality-hotfix.js" /tmp/quality.js
+          fetch "/c360-quality-core.js" /tmp/quality-core.js
           fetch "/c360-team-chat.js" /tmp/chat.js
           fetch "/c360-farm-cache-hotfix.js" /tmp/farms.js
           fetch "/c360-consumable-edit.js" /tmp/consumables.js
@@ -47,20 +48,32 @@ jobs:
           test -s /tmp/dda.html
           test -s /tmp/repair.html
           test -s /tmp/field.js
+          test -s /tmp/quality.js
+          test -s /tmp/quality-core.js
           test -s /tmp/ui.css
           test -s /tmp/chat.js
           test -s /tmp/farms.js
           test -s /tmp/consumables.js
           grep -q 'c360-ui-polish.css' /tmp/index.html
-          grep -q 'c360-field-offline-hotfix.js' /tmp/index.html
           grep -q 'c360-quality-hotfix.js' /tmp/index.html
           ! grep -q 'navigator.onLine' /tmp/index.html
           ! grep -q '<script>window.onload' /tmp/index.html
-          grep -q "comando360-v7-02-hotfix11" /tmp/sw.js
+
+          grep -q "2026.09.12-b1" /tmp/quality.js
+          grep -q "c360-quality-core.js" /tmp/quality.js
+          grep -q "c360-field-offline-hotfix.js" /tmp/quality.js
+          grep -q "c360-team-chat.js" /tmp/quality.js
+          grep -q "c360-farm-cache-hotfix.js" /tmp/quality.js
+          grep -q "c360-consumable-edit.js" /tmp/quality.js
+          grep -q "QUALITY_VERSION=" /tmp/quality-core.js
+          grep -q "comando360-dda" /tmp/quality-core.js
+
+          grep -q "comando360-v7-02-hotfix12" /tmp/sw.js
           grep -q "isAppShellNavigation" /tmp/sw.js
           ! grep -q "patchAppHtml" /tmp/sw.js
           ! grep -q "repairLegacyAppHtml" /tmp/sw.js
           ! grep -q "X-Comando360-Repair" /tmp/sw.js
+          grep -q "c360-quality-core.js" /tmp/sw.js
           grep -q "c360-team-chat.js" /tmp/sw.js
           grep -q "c360-farm-cache-hotfix.js" /tmp/sw.js
           grep -q "c360-consumable-edit.js" /tmp/sw.js
@@ -71,8 +84,6 @@ jobs:
           grep -q "looksLikeLeakedSource" /tmp/field.js
           grep -q "getRegistrations" /tmp/repair.html
           grep -q "caches.delete" /tmp/repair.html
-          grep -q "QUALITY_VERSION=" /tmp/quality.js
-          grep -q "comando360-dda" /tmp/quality.js
           grep -q "2026.09.12-c1" /tmp/chat.js
           grep -q "c360_team_chat_queue_v1" /tmp/chat.js
           grep -q "v2_team_messages" /tmp/chat.js
@@ -94,5 +105,5 @@ jobs:
           assert m.get('name') or m.get('short_name')
           css=Path('/tmp/ui.css').read_text(encoding='utf-8')
           assert css.count('{') == css.count('}'), 'Production CSS has unbalanced braces'
-          print('Production PWA + activation + chat + farms + consumable editor smoke: OK')
+          print('Production PWA + bootstrap + activation + chat + farms + consumable editor smoke: OK')
           PY
