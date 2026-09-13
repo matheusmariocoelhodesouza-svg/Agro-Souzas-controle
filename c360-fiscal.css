@@ -1,0 +1,57 @@
+#fiscal{--fiscal-blue:#1f68c9;--fiscal-navy:#132b49;--fiscal-line:#e1e8f0;--fiscal-soft:#f6f9fc}
+#fiscal .fiscal-page{max-width:1500px;margin:0 auto}
+#fiscal .fiscal-hero{display:flex;justify-content:space-between;align-items:flex-end;gap:18px;margin:3px 0 16px}
+#fiscal .fiscal-eyebrow{display:block;color:#617895;font-size:9px;font-weight:900;letter-spacing:1.3px;margin-bottom:7px}
+#fiscal .fiscal-hero h1{margin:0;color:#112a48;font-size:29px;letter-spacing:-.5px}
+#fiscal .fiscal-hero p{margin:5px 0 0;color:#6d8098;font-size:12px}
+#fiscal .fiscal-hero-actions{display:flex;align-items:flex-end;gap:8px;flex-wrap:wrap}
+#fiscal .fiscal-hero-actions label{display:grid;gap:4px;font-size:9px;font-weight:900;color:#657a94;letter-spacing:.5px}
+#fiscal .fiscal-hero-actions input{height:42px;min-width:155px}
+#fiscal .fiscal-notice{background:#eef6ff;border:1px solid #d6e8fb;color:#315778;border-radius:13px;padding:11px 13px;font-size:11px;margin-bottom:13px}
+#fiscal .fiscal-notice b{color:#174f87}
+#fiscal .fiscal-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:11px;margin-bottom:13px}
+#fiscal .fiscal-kpi{background:#fff;border:1px solid var(--fiscal-line);border-radius:15px;padding:14px 15px;min-height:103px;display:flex;justify-content:space-between;gap:10px;box-shadow:0 4px 14px rgba(18,46,78,.035)}
+#fiscal .fiscal-kpi span{display:block;color:#6f829a;font-size:9.5px;font-weight:900;letter-spacing:.45px}
+#fiscal .fiscal-kpi b{display:block;color:#18314f;font-size:23px;margin-top:8px;letter-spacing:-.4px}
+#fiscal .fiscal-kpi small{display:block;color:#8191a6;font-size:10px;margin-top:4px}
+#fiscal .fiscal-kpi i{font-style:normal;width:38px;height:38px;border-radius:12px;background:#edf5ff;display:grid;place-items:center;font-size:18px}
+#fiscal .fiscal-grid-main{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(315px,.7fr);gap:13px;align-items:start}
+#fiscal .fiscal-card{background:#fff;border:1px solid var(--fiscal-line);border-radius:15px;padding:15px;margin-bottom:13px;box-shadow:0 4px 14px rgba(18,46,78,.035)}
+#fiscal .fiscal-card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:12px}
+#fiscal .fiscal-card h3,#fiscal .fiscal-drawer h3{margin:0;color:#17304e;font-size:15px}
+#fiscal .fiscal-card-head p,#fiscal .fiscal-drawer-head p{margin:4px 0 0;color:#75879d;font-size:10.5px;line-height:1.4}
+#fiscal .fiscal-flow{display:grid;gap:7px}
+#fiscal .fiscal-flow-row{display:grid;grid-template-columns:32px 1fr auto;gap:10px;align-items:center;border:1px solid #e6edf4;border-radius:12px;padding:10px 11px;background:#fbfcfe}
+#fiscal .fiscal-step{width:27px;height:27px;border-radius:9px;background:#eaf3ff;color:#1d5ead;display:grid;place-items:center;font-weight:900;font-size:11px}
+#fiscal .fiscal-flow-row strong{font-size:11.5px;color:#253b55}
+#fiscal .fiscal-flow-row p{margin:2px 0 0;color:#7a8a9d;font-size:9.7px}
+#fiscal .fiscal-table-wrap{overflow:auto}
+#fiscal .fiscal-table{width:100%;min-width:720px;border-collapse:separate;border-spacing:0;border:1px solid #e2e9f1;border-radius:12px;overflow:hidden}
+#fiscal .fiscal-table th{background:#f6f8fb;color:#60758d;font-size:9px;text-transform:uppercase;letter-spacing:.4px;padding:9px 10px;text-align:left;border-bottom:1px solid #e4ebf2}
+#fiscal .fiscal-table td{padding:10px;font-size:10.5px;color:#344a63;border-bottom:1px solid #edf1f5;vertical-align:middle}
+#fiscal .fiscal-table tr:last-child td{border-bottom:0}
+#fiscal .fiscal-table td small{display:block;color:#8392a4;margin-top:3px}
+#fiscal .fiscal-file-actions,#fiscal .fiscal-row-actions{display:flex;gap:5px;align-items:center;flex-wrap:wrap}
+#fiscal .fiscal-link{border:0;background:#edf5ff;color:#1c5ca7;border-radius:8px;padding:6px 8px;font-weight:850;font-size:9.5px;cursor:pointer}
+#fiscal .fiscal-empty{border:1px dashed #ced9e6;border-radius:12px;padding:22px;text-align:center;color:#6f8298;background:#fbfcfe}
+#fiscal .fiscal-empty b,#fiscal .fiscal-empty span{display:block}#fiscal .fiscal-empty span{font-size:10px;margin-top:5px}
+#fiscal .fiscal-integration{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;padding:10px 0;border-bottom:1px solid #edf1f5}
+#fiscal .fiscal-integration:last-child{border-bottom:0}
+#fiscal .fiscal-integration strong{display:block;color:#2a405a;font-size:11px}#fiscal .fiscal-integration small{display:block;color:#7c8da1;font-size:9.5px;margin-top:2px}
+#fiscal .fiscal-integration .fiscal-preflight{grid-column:1/-1;justify-self:start;padding:7px 9px;font-size:9.5px}
+#fiscal .fiscal-values-form{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+#fiscal .fiscal-values-form label,#fiscal .fiscal-form-grid label{display:grid;gap:4px;color:#61758d;font-size:9.5px;font-weight:850}
+#fiscal .fiscal-values-form input,#fiscal .fiscal-form-grid input,#fiscal .fiscal-form-grid select{width:100%;min-height:40px;border:1px solid #d8e1eb;border-radius:10px;padding:9px 10px;background:#fff;color:#213b58;font:inherit}
+#fiscal .fiscal-msg{margin-top:8px;line-height:1.4}
+#fiscal .fiscal-drawer{background:#fff;border:1px solid #dbe5ef;border-top:3px solid var(--fiscal-blue);border-radius:15px;padding:16px;margin:13px 0;box-shadow:0 12px 30px rgba(20,53,90,.09)}
+#fiscal .fiscal-drawer-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:13px}
+#fiscal .fiscal-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:11px}
+#fiscal .fiscal-wide{grid-column:1/-1}
+.darkmode #fiscal .fiscal-hero h1,.darkmode #fiscal .fiscal-card h3,.darkmode #fiscal .fiscal-drawer h3,.darkmode #fiscal .fiscal-kpi b{color:#edf4fd}
+.darkmode #fiscal .fiscal-card,.darkmode #fiscal .fiscal-kpi,.darkmode #fiscal .fiscal-drawer{background:#0f1d2e;border-color:#20334a;box-shadow:none}
+.darkmode #fiscal .fiscal-flow-row,.darkmode #fiscal .fiscal-empty{background:#0b1828;border-color:#20334a}
+.darkmode #fiscal .fiscal-table{background:#0f1d2e;border-color:#20334a}.darkmode #fiscal .fiscal-table th{background:#0b1828;color:#9fb2c8;border-color:#20334a}.darkmode #fiscal .fiscal-table td{color:#c6d4e4;border-color:#1d2e43}
+.darkmode #fiscal .fiscal-values-form input,.darkmode #fiscal .fiscal-form-grid input,.darkmode #fiscal .fiscal-form-grid select{background:#0b1828;border-color:#2a3d55;color:#e9f0f9}
+.darkmode #fiscal .fiscal-notice{background:#0d2137;border-color:#24425e;color:#a7c7e6}
+@media(max-width:1050px){#fiscal .fiscal-kpis{grid-template-columns:repeat(2,1fr)}#fiscal .fiscal-grid-main{grid-template-columns:1fr}}
+@media(max-width:680px){#fiscal .fiscal-hero{align-items:flex-start;flex-direction:column}#fiscal .fiscal-hero-actions{width:100%}#fiscal .fiscal-hero-actions label{flex:1}#fiscal .fiscal-hero-actions input{width:100%;min-width:0}#fiscal .fiscal-kpis{grid-template-columns:1fr 1fr}#fiscal .fiscal-kpi{min-height:91px;padding:12px}#fiscal .fiscal-kpi b{font-size:19px}#fiscal .fiscal-flow-row{grid-template-columns:30px 1fr}#fiscal .fiscal-flow-row>.pill{grid-column:2}#fiscal .fiscal-values-form,#fiscal .fiscal-form-grid{grid-template-columns:1fr}#fiscal .fiscal-wide{grid-column:auto}}
