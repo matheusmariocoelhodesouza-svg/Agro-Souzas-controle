@@ -41,6 +41,7 @@ jobs:
           fetch "/c360-farm-cache-hotfix.js" /tmp/farms.js
           fetch "/c360-consumable-edit.js" /tmp/consumables.js
           fetch "/c360-ui-polish.css" /tmp/ui.css
+          fetch "/c360-premium-ui.css" /tmp/premium.css
           fetch "/dda.html" /tmp/dda.html
           fetch "/comando360.webmanifest" /tmp/manifest.json
 
@@ -51,6 +52,7 @@ jobs:
           test -s /tmp/quality.js
           test -s /tmp/quality-core.js
           test -s /tmp/ui.css
+          test -s /tmp/premium.css
           test -s /tmp/chat.js
           test -s /tmp/farms.js
           test -s /tmp/consumables.js
@@ -59,7 +61,8 @@ jobs:
           ! grep -q 'navigator.onLine' /tmp/index.html
           ! grep -q '<script>window.onload' /tmp/index.html
 
-          grep -q "2026.09.12-b1" /tmp/quality.js
+          grep -q "2026.09.13-b2" /tmp/quality.js
+          grep -q "c360-premium-ui.css" /tmp/quality.js
           grep -q "c360-quality-core.js" /tmp/quality.js
           grep -q "c360-field-offline-hotfix.js" /tmp/quality.js
           grep -q "c360-team-chat.js" /tmp/quality.js
@@ -68,7 +71,7 @@ jobs:
           grep -q "QUALITY_VERSION=" /tmp/quality-core.js
           grep -q "comando360-dda" /tmp/quality-core.js
 
-          grep -q "comando360-v7-02-hotfix12" /tmp/sw.js
+          grep -q "comando360-v7-02-hotfix13" /tmp/sw.js
           grep -q "isAppShellNavigation" /tmp/sw.js
           ! grep -q "patchAppHtml" /tmp/sw.js
           ! grep -q "repairLegacyAppHtml" /tmp/sw.js
@@ -77,6 +80,7 @@ jobs:
           grep -q "c360-team-chat.js" /tmp/sw.js
           grep -q "c360-farm-cache-hotfix.js" /tmp/sw.js
           grep -q "c360-consumable-edit.js" /tmp/sw.js
+          grep -q "c360-premium-ui.css" /tmp/sw.js
           ! grep -q "replaceAll('navigator.onLine'" /tmp/sw.js
           grep -q "2026.09.12-r3" /tmp/field.js
           grep -q "c360NetOnline" /tmp/field.js
@@ -95,15 +99,18 @@ jobs:
           grep -q "SALVAR ALTERAÇÕES" /tmp/consumables.js
           grep -q "v2_inventory_items" /tmp/consumables.js
           grep -q "UI POLISH 2026.09.10-u1" /tmp/ui.css
-          grep -q "body.darkmode" /tmp/ui.css
-          grep -q "#inicio" /tmp/ui.css
+          grep -q "PREMIUM UI 2026.09.13-p1" /tmp/premium.css
+          grep -q "body.device-mode" /tmp/premium.css
+          grep -q "#financeiro" /tmp/premium.css
+          grep -q "#operacoes" /tmp/premium.css
           python - <<'PY'
           import json
           from pathlib import Path
           with open('/tmp/manifest.json', encoding='utf-8') as f:
               m=json.load(f)
           assert m.get('name') or m.get('short_name')
-          css=Path('/tmp/ui.css').read_text(encoding='utf-8')
-          assert css.count('{') == css.count('}'), 'Production CSS has unbalanced braces'
-          print('Production PWA + bootstrap + activation + chat + farms + consumable editor smoke: OK')
+          for name in ('/tmp/ui.css','/tmp/premium.css'):
+              css=Path(name).read_text(encoding='utf-8')
+              assert css.count('{') == css.count('}'), f'{name}: unbalanced braces'
+          print('Production PWA + premium UI + bootstrap + activation + chat + farms + consumable editor smoke: OK')
           PY
