@@ -1,0 +1,409 @@
+/* COMANDO 360 — VISUAL SYSTEM 2026.09.13-v1
+   Camada final de contraste, cores e consistência visual.
+   Somente apresentação/UX; não altera regras de negócio. */
+
+:root{
+  --c360-bg:#f3f6fa;
+  --c360-surface:#ffffff;
+  --c360-surface-2:#f7f9fc;
+  --c360-surface-3:#eef3f8;
+  --c360-text:#102033;
+  --c360-text-soft:#40536b;
+  --c360-muted:#667991;
+  --c360-border:#d8e2ed;
+  --c360-border-strong:#bdcbd9;
+  --c360-primary:#176dcc;
+  --c360-primary-strong:#1156a4;
+  --c360-primary-soft:#e8f2ff;
+  --c360-success:#147a46;
+  --c360-success-soft:#e9f8f0;
+  --c360-warning:#9a6500;
+  --c360-warning-soft:#fff5df;
+  --c360-danger:#b82e38;
+  --c360-danger-soft:#fff0f1;
+  --c360-info:#176dcc;
+  --c360-info-soft:#eaf3ff;
+  --c360-shadow-1:0 5px 16px rgba(15,31,52,.055);
+  --c360-shadow-2:0 12px 30px rgba(15,31,52,.085);
+  --c360-focus:0 0 0 3px rgba(23,109,204,.20);
+}
+
+body.darkmode{
+  color-scheme:dark;
+  --c360-bg:#07111e;
+  --c360-surface:#0e1c2d;
+  --c360-surface-2:#122338;
+  --c360-surface-3:#182b43;
+  --c360-text:#f2f7fd;
+  --c360-text-soft:#d0dbea;
+  --c360-muted:#a7b7ca;
+  --c360-border:#2a4059;
+  --c360-border-strong:#3b5674;
+  --c360-primary:#58a8ff;
+  --c360-primary-strong:#2e82e6;
+  --c360-primary-soft:#142e4a;
+  --c360-success:#7cdda9;
+  --c360-success-soft:#103326;
+  --c360-warning:#f1c36e;
+  --c360-warning-soft:#372713;
+  --c360-danger:#ff999f;
+  --c360-danger-soft:#3b1d24;
+  --c360-info:#78b7ff;
+  --c360-info-soft:#142d49;
+  --c360-shadow-1:0 6px 20px rgba(0,0,0,.22);
+  --c360-shadow-2:0 14px 36px rgba(0,0,0,.31);
+  --c360-focus:0 0 0 3px rgba(88,168,255,.24);
+}
+
+html,body{background:var(--c360-bg)!important}
+body.c360-product-ready,body.app-ready{color:var(--c360-text)!important}
+body.darkmode.app-ready:not(.device-mode){
+  background:
+    radial-gradient(circle at 92% -8%,rgba(65,145,235,.14),transparent 30%),
+    linear-gradient(180deg,#07111e 0%,#091625 100%)!important;
+}
+
+/* ===== TIPOGRAFIA / LEGIBILIDADE ===== */
+body :where(h1,h2,h3,h4,h5,h6,strong,b){color:var(--c360-text)}
+body :where(.muted,.label,small,.v2-empty,.fleet-meta,.finance-kpi-label){color:var(--c360-muted)!important}
+body .section :where(p,span,div){text-rendering:optimizeLegibility}
+body.darkmode .section :where(a:not(.btn),button.link){color:#7fbdff}
+body.darkmode .section :where(hr){border-color:var(--c360-border)!important}
+
+/* ===== SUPERFÍCIES / CARDS ===== */
+body.app-ready:not(.device-mode) :where(
+  .card,.v2panel,.v2kpi,.item,.v2mini,
+  .finance-overview-card,.finance-entry-card,.finance-kpi,
+  .fleet-card,.fleet-kpi,.fleet-controls,
+  .rh-list-card,.rh-tool-card,.rh-kpi-card,
+  .poultry-op-card,.poultry-truck-card,.po-site-card,
+  .field-section,.c360-dda-main,.c360-dda-kpi,
+  .dash-prod-block,.dash-month,.dash-team-card
+){
+  background:var(--c360-surface)!important;
+  color:var(--c360-text)!important;
+  border-color:var(--c360-border)!important;
+  box-shadow:var(--c360-shadow-1)!important;
+}
+body.darkmode.app-ready:not(.device-mode) :where(
+  .card,.v2panel,.v2kpi,.item,.v2mini,
+  .finance-overview-card,.finance-entry-card,.finance-kpi,
+  .fleet-card,.fleet-kpi,.fleet-controls,
+  .rh-list-card,.rh-tool-card,.rh-kpi-card,
+  .poultry-op-card,.poultry-truck-card,.po-site-card,
+  .field-section,.c360-dda-main,.c360-dda-kpi,
+  .dash-prod-block,.dash-month,.dash-team-card
+){
+  background:linear-gradient(180deg,#102033 0%,#0d1a2a 100%)!important;
+  border-color:#2b425d!important;
+  box-shadow:0 7px 22px rgba(0,0,0,.20),inset 0 1px 0 rgba(255,255,255,.018)!important;
+}
+body.app-ready:not(.device-mode) :where(.card,.v2panel,.fleet-card,.poultry-op-card,.item):hover{
+  border-color:color-mix(in srgb,var(--c360-primary) 26%,var(--c360-border))!important;
+}
+body.darkmode.app-ready:not(.device-mode) :where(.card,.v2panel,.fleet-card,.poultry-op-card,.item):hover{
+  border-color:#3b5d81!important;
+}
+
+/* painéis internos devem parecer internos, não cards brancos soltos */
+body :where(.v2mini,.po-site-card,.po-detail>div,.fleet-tracking-box,.c360-dda-kpi){
+  background:var(--c360-surface-2)!important;
+  border-color:var(--c360-border)!important;
+  color:var(--c360-text-soft)!important;
+}
+body.darkmode :where(.v2mini,.po-site-card,.po-detail>div,.fleet-tracking-box,.c360-dda-kpi){
+  background:#13243a!important;
+  border-color:#2b425d!important;
+}
+
+/* ===== DASHBOARD ===== */
+body #inicio .dash-action-strip>button{
+  background:var(--c360-surface)!important;
+  border-color:var(--c360-border)!important;
+  color:var(--c360-text)!important;
+}
+body.darkmode #inicio .dash-action-strip>button{
+  background:linear-gradient(180deg,#102137,#0d1b2c)!important;
+  border-color:#2d455f!important;
+}
+body #inicio .dash-action-strip b,
+body #inicio .dash-prod-row b,
+body #inicio .dash-prod-block>strong,
+body #inicio .dash-team-card strong,
+body #inicio .dash-month b{color:var(--c360-text)!important}
+body #inicio .dash-action-strip small,
+body #inicio .dash-prod-row span,
+body #inicio .dash-team-card small{color:var(--c360-muted)!important}
+body.darkmode #inicio .dashboard-kpis .v2kpi{
+  background:linear-gradient(145deg,#102238 0%,#0d1b2c 72%)!important;
+}
+body.darkmode #inicio .dashboard-kpis .v2kpi .v{color:#f7fbff!important}
+body.darkmode #inicio .dashboard-kpis .v2kpi .t{color:#a8bdd4!important}
+body.darkmode #inicio .dashboard-kpis .v2kpi .s{color:#9dafc4!important}
+body #inicio .dash-prod-bar{background:var(--c360-surface-3)!important}
+body.darkmode #inicio .dash-prod-bar{background:#263b54!important}
+body #inicio .dash-prod-bar i{background:linear-gradient(90deg,#168cf3,#52c3ff)!important}
+
+/* ===== BOTÕES ===== */
+body .btn,body .v2new{
+  border-radius:11px!important;
+  font-weight:800!important;
+}
+body .btn.primary,body .v2new{
+  background:linear-gradient(180deg,var(--c360-primary),var(--c360-primary-strong))!important;
+  color:#fff!important;
+  border-color:color-mix(in srgb,var(--c360-primary-strong) 82%,#000)!important;
+  box-shadow:0 6px 16px rgba(23,109,204,.20)!important;
+}
+body.darkmode .btn.primary,body.darkmode .v2new{
+  color:#fff!important;
+  box-shadow:0 7px 18px rgba(23,109,204,.24)!important;
+}
+body .btn.soft{
+  background:var(--c360-surface-2)!important;
+  color:var(--c360-text-soft)!important;
+  border:1px solid var(--c360-border-strong)!important;
+}
+body.darkmode .btn.soft{
+  background:#16283e!important;
+  color:#e0e9f4!important;
+  border-color:#38516d!important;
+}
+body .btn.soft:hover:not(:disabled){
+  background:var(--c360-primary-soft)!important;
+  color:var(--c360-primary)!important;
+  border-color:color-mix(in srgb,var(--c360-primary) 38%,var(--c360-border))!important;
+}
+body .btn.danger{
+  background:linear-gradient(180deg,#c13b45,#a82731)!important;
+  color:#fff!important;
+  border-color:#9f232d!important;
+}
+body :where(button,.btn,.v2new):focus-visible{outline:none!important;box-shadow:var(--c360-focus)!important}
+body :where(button,.btn,.v2new):disabled{opacity:.48!important;filter:saturate(.65)}
+
+/* ===== FORMULÁRIOS ===== */
+body .section :where(input:not([type="checkbox"]):not([type="radio"]),select,textarea){
+  background:var(--c360-surface)!important;
+  color:var(--c360-text)!important;
+  border:1px solid var(--c360-border-strong)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.025);
+}
+body.darkmode .section :where(input:not([type="checkbox"]):not([type="radio"]),select,textarea){
+  background:#0b1929!important;
+  color:#f3f7fc!important;
+  border-color:#38516d!important;
+}
+body.darkmode .section :where(input:not([type="checkbox"]):not([type="radio"]),select,textarea):hover{
+  border-color:#4a6b8f!important;
+}
+body .section :where(input,select,textarea):focus{
+  border-color:var(--c360-primary)!important;
+  box-shadow:var(--c360-focus)!important;
+}
+body.darkmode .section :where(input,textarea)::placeholder{color:#8095ac!important;opacity:1}
+body.darkmode .section select option{background:#0d1b2c;color:#f2f7fd}
+body .section label{color:var(--c360-text-soft)!important;font-weight:800!important}
+body.darkmode .section :where(input,select,textarea):disabled,
+body.darkmode .section :where(input,textarea)[readonly]{
+  background:#112033!important;
+  color:#91a4ba!important;
+  border-color:#293e57!important;
+}
+
+/* ===== TABELAS ===== */
+body .section table{
+  background:var(--c360-surface)!important;
+  color:var(--c360-text)!important;
+  border-color:var(--c360-border)!important;
+}
+body .section table th{
+  background:var(--c360-surface-2)!important;
+  color:var(--c360-text-soft)!important;
+  border-color:var(--c360-border)!important;
+}
+body .section table td{color:var(--c360-text)!important;border-color:var(--c360-border)!important}
+body.darkmode .section table{background:#0e1c2d!important}
+body.darkmode .section table th{background:#15263b!important;color:#b8c8d9!important;border-color:#2c435e!important}
+body.darkmode .section table td{border-color:#243950!important;color:#e7eef7!important}
+body.darkmode .section table tbody tr:hover{background:#13263d!important}
+
+/* ===== BADGES / STATUS ===== */
+body .pill,body .v2status{
+  background:var(--c360-surface-3)!important;
+  color:var(--c360-text-soft)!important;
+  border:1px solid var(--c360-border)!important;
+}
+body .pill.ok,body #networkBadge.online{
+  background:var(--c360-success-soft)!important;
+  color:var(--c360-success)!important;
+  border-color:color-mix(in srgb,var(--c360-success) 28%,var(--c360-border))!important;
+}
+body .pill.warn{
+  background:var(--c360-warning-soft)!important;
+  color:var(--c360-warning)!important;
+  border-color:color-mix(in srgb,var(--c360-warning) 28%,var(--c360-border))!important;
+}
+body .pill.danger,body #networkBadge.offline{
+  background:var(--c360-danger-soft)!important;
+  color:var(--c360-danger)!important;
+  border-color:color-mix(in srgb,var(--c360-danger) 28%,var(--c360-border))!important;
+}
+body.darkmode .pill.ok,body.darkmode #networkBadge.online{color:#8ce6b4!important}
+body.darkmode .pill.warn{color:#f5cb7d!important}
+body.darkmode .pill.danger,body.darkmode #networkBadge.offline{color:#ffadb1!important}
+
+/* ===== FROTA ===== */
+body.darkmode #frota .fleet-hero h1,
+body.darkmode #frota .fleet-name,
+body.darkmode #frota .fleet-kpi b{color:#f2f7fd!important}
+body.darkmode #frota .fleet-hero p,
+body.darkmode #frota .fleet-meta,
+body.darkmode #frota .fleet-kpi span,
+body.darkmode #frota .fleet-result-meta{color:#a6b7ca!important}
+body.darkmode #frota .fleet-title-icon{
+  background:#142d49!important;color:#7bbaff!important;border-color:#2d4d70!important
+}
+body.darkmode #frota .fleet-tag{
+  background:#172a40!important;color:#c6d5e5!important;border-color:#304962!important
+}
+body.darkmode #frota .fleet-tracking{border-left-color:#2a4058!important}
+body.darkmode #frota .fleet-import-btn{
+  background:#16283e!important;color:#dce7f3!important;border-color:#38516d!important
+}
+
+/* ===== FINANCEIRO ===== */
+body.darkmode #financeiro .finance-kpi,
+body.darkmode #financeiro .c360-dda-kpi{background:#13253b!important;border-color:#2c435d!important}
+body.darkmode #financeiro .finance-kpi-value{color:#f5f9fe!important}
+body.darkmode #financeiro .finance-kpi-label{color:#a7b9cc!important}
+
+/* ===== APANHAS / CAMPO ===== */
+body.darkmode #operacoes :where(.poultry-op-card,.poultry-truck-card,.po-site-card,.field-section){
+  background:#0f1e30!important;border-color:#2b425d!important;color:#eef5fc!important
+}
+body.darkmode #operacoes :where(.po-detail,.po-detail>div){color:#d5e0ec!important}
+body.darkmode #operacoes .po-trucks-section{border-color:#2b425d!important}
+
+body.device-mode{
+  background:var(--c360-bg)!important;
+  color:var(--c360-text)!important;
+}
+body.device-mode :where(.card,.field-section,.field-poultry-form,.field-truck-form,.team-mode-bar,.team-tile){
+  background:var(--c360-surface)!important;
+  color:var(--c360-text)!important;
+  border-color:var(--c360-border)!important;
+}
+body.darkmode.device-mode :where(.card,.field-section,.field-poultry-form,.field-truck-form,.team-mode-bar,.team-tile){
+  background:linear-gradient(180deg,#102033,#0d1a2a)!important;
+  border-color:#2c435d!important;
+  color:#f1f6fc!important;
+}
+body.darkmode.device-mode .team-tile strong{color:#f5f9fe!important}
+body.darkmode.device-mode .team-tile small{color:#a9bbce!important}
+body.darkmode.device-mode label{color:#cbd8e6!important}
+body.darkmode.device-mode :where(input:not([type="checkbox"]):not([type="radio"]),select,textarea){
+  background:#0a1828!important;
+  color:#f5f9fe!important;
+  border-color:#3a5573!important;
+}
+body.darkmode.device-mode :where(input,textarea)::placeholder{color:#8298b0!important}
+
+/* ===== CABEÇALHO / SIDEBAR ===== */
+body.darkmode.app-ready:not(.device-mode) header{
+  background:rgba(8,18,31,.96)!important;
+  border-color:#263b53!important;
+}
+body.darkmode.app-ready:not(.device-mode) header .brand b,
+body.darkmode.app-ready:not(.device-mode) #headerModuleTitle{color:#f4f8fd!important}
+body.darkmode.app-ready:not(.device-mode) header #companyName,
+body.darkmode.app-ready:not(.device-mode) #headerModuleSubtitle{color:#9fb1c6!important}
+body.darkmode.app-ready:not(.device-mode) .header-icon-btn{
+  background:#13243a!important;border-color:#304963!important;color:#e8f0f9!important
+}
+body.app-ready:not(.device-mode) .v2sidebar{
+  background:linear-gradient(180deg,#0c1a2e 0%,#091526 58%,#07111f 100%)!important;
+}
+body.app-ready:not(.device-mode) .v2navbtn{color:#cbd8e8!important}
+body.app-ready:not(.device-mode) .v2navbtn:not(.active):hover{background:#142843!important;color:#fff!important}
+body.app-ready:not(.device-mode) .v2navbtn.active{
+  background:linear-gradient(135deg,#2677dc,#185ebd)!important;
+  color:#fff!important;
+  box-shadow:0 8px 20px rgba(18,92,191,.27)!important;
+}
+body.app-ready:not(.device-mode) .v2group{color:#879db8!important}
+
+/* ===== MOBILE ADMIN: BARRA INFERIOR ===== */
+@media(max-width:900px){
+  body.app-ready:not(.device-mode) .mobile-bottom-nav{
+    background:rgba(255,255,255,.97)!important;
+    border-color:#d6e1ec!important;
+    box-shadow:0 13px 34px rgba(13,37,66,.18)!important;
+    padding:6px!important;
+  }
+  body.app-ready:not(.device-mode) .mobile-bottom-nav button{
+    color:#61758e!important;
+    border:1px solid transparent!important;
+  }
+  body.app-ready:not(.device-mode) .mobile-bottom-nav button small{font-size:9px!important;font-weight:850!important}
+  body.app-ready:not(.device-mode) .mobile-bottom-nav button.active{
+    background:#e7f2ff!important;
+    color:#176dcc!important;
+    border-color:#d2e7ff!important;
+  }
+  body.darkmode.app-ready:not(.device-mode) .mobile-bottom-nav{
+    background:rgba(11,24,40,.98)!important;
+    border-color:#2d455f!important;
+    box-shadow:0 15px 38px rgba(0,0,0,.34)!important;
+  }
+  body.darkmode.app-ready:not(.device-mode) .mobile-bottom-nav button{color:#9fb2c8!important}
+  body.darkmode.app-ready:not(.device-mode) .mobile-bottom-nav button.active{
+    background:#163352!important;
+    color:#82c0ff!important;
+    border-color:#28547f!important;
+  }
+}
+
+/* ===== MENUS / MODAIS / TOASTS ===== */
+body :where(.modal,.modal-card,.dialog,.sheet,.dropdown,.menu,.popover,.account-menu,.c360-account-menu){
+  color:var(--c360-text)!important;
+}
+body.darkmode :where(.modal-card,.dialog,.sheet,.dropdown,.menu,.popover,.account-menu,.c360-account-menu){
+  background:#0f1e30!important;
+  border-color:#2c435d!important;
+  color:#eef5fc!important;
+}
+body.darkmode .c360-toast{
+  background:#102033!important;
+  border-color:#304962!important;
+  color:#edf4fc!important;
+}
+body.darkmode .c360-toast strong{color:#f6f9fd!important}
+body.darkmode .c360-toast span{color:#aabacd!important}
+
+/* ===== CHAT / LISTAS ===== */
+body.darkmode .chatbox{background:#0c1929!important;border-color:#2b425d!important}
+body.darkmode .msg.user{background:#18324f!important;color:#edf5fd!important}
+body.darkmode .msg.ai{background:#282217!important;border-color:#5a4927!important;color:#f2e7ca!important}
+body.darkmode .debug{color:#92a8bf!important}
+
+/* ===== ERROS / FEEDBACK ===== */
+body .error{color:var(--c360-danger)!important}
+body .okmsg{color:var(--c360-success)!important}
+body.darkmode .error{color:#ff9da3!important}
+body.darkmode .okmsg{color:#86e2b0!important}
+
+/* melhor separação vertical em telas densas */
+body.app-ready:not(.device-mode) .section>.card + .card,
+body.app-ready:not(.device-mode) .section .v2panel + .v2panel{margin-top:14px}
+
+@media(max-width:600px){
+  body.app-ready:not(.device-mode) :where(.card,.v2panel,.fleet-card,.finance-overview-card){
+    border-radius:15px!important;
+  }
+  body.app-ready:not(.device-mode) .section :where(input,select,textarea){font-size:16px!important}
+}
+
+@media(prefers-reduced-motion:reduce){
+  *{transition-duration:.001ms!important}
+}
