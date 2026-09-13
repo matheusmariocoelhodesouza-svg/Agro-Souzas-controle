@@ -29,7 +29,7 @@ jobs:
           const fs=require('fs');
           const vm=require('vm');
           let failed=false;
-          for(const name of ['index.html','dda.html','reparar.html']){
+          for(const name of ['index.html','dda.html','reparar.html','cadastro.html']){
             const text=fs.readFileSync(name,'utf8');
             const re=/<script\b([^>]*)>([\s\S]*?)<\/script>/gi;
             let m,index=0;
@@ -53,6 +53,7 @@ jobs:
           test -s index.html
           test -s dda.html
           test -s reparar.html
+          test -s cadastro.html
           test -s comando360.webmanifest
           test -s c360-autorecovery.js
           test -s c360-field-offline-hotfix.js
@@ -62,12 +63,14 @@ jobs:
           test -s c360-farm-cache-hotfix.js
           test -s c360-consumable-edit.js
           test -s c360-system-health.js
+          test -s c360-onboarding-entry.js
           test -s c360-system-health.css
           test -s c360-ui-polish.css
           test -s c360-premium-ui.css
           test -s sw-v7-02.js
           test -s qa/reference_audit.py
           test -s supabase/migrations/20260913104500_add_device_health_heartbeat.sql
+          test -s supabase/migrations/20260913203000_self_service_onboarding_v1.sql
 
       - name: Reference structural audit
         run: python qa/reference_audit.py
@@ -79,7 +82,7 @@ jobs:
           ! grep -q 'navigator.onLine' index.html
           ! grep -q '<script>window.onload' index.html
 
-          grep -q "2026.09.13-b4" c360-quality-hotfix.js
+          grep -q "2026.09.13-b5" c360-quality-hotfix.js
           grep -q "c360-autorecovery.js" c360-quality-hotfix.js
           grep -q "c360-premium-ui.css" c360-quality-hotfix.js
           grep -q "c360-quality-core.js" c360-quality-hotfix.js
@@ -88,6 +91,7 @@ jobs:
           grep -q "c360-farm-cache-hotfix.js" c360-quality-hotfix.js
           grep -q "c360-consumable-edit.js" c360-quality-hotfix.js
           grep -q "c360-system-health.js" c360-quality-hotfix.js
+          grep -q "c360-onboarding-entry.js" c360-quality-hotfix.js
           grep -q "__c360SafeMode" c360-quality-hotfix.js
 
           grep -q "2026.09.13-ar1" c360-autorecovery.js
@@ -110,11 +114,13 @@ jobs:
           grep -q "status:'pending'" c360-quality-core.js
           grep -q "comando360-dda" c360-quality-core.js
 
-          grep -q "comando360-v7-02-hotfix15" sw-v7-02.js
+          grep -q "comando360-v7-02-hotfix16" sw-v7-02.js
           grep -q "comando360-stable-v1" sw-v7-02.js
           grep -q "c360-autorecovery.js" sw-v7-02.js
           grep -q "c360-system-health.js" sw-v7-02.js
           grep -q "c360-system-health.css" sw-v7-02.js
+          grep -q "c360-onboarding-entry.js" sw-v7-02.js
+          grep -q "cadastro.html" sw-v7-02.js
           grep -q "C360_ROLLBACK_TO_STABLE" sw-v7-02.js
           grep -q "C360_MARK_HEALTHY" sw-v7-02.js
           grep -q "isAppShellNavigation" sw-v7-02.js
@@ -148,6 +154,17 @@ jobs:
           grep -q "#financeiro" c360-premium-ui.css
           grep -q "#operacoes" c360-premium-ui.css
 
+          grep -q "2026.09.13-o1" c360-onboarding-entry.js
+          grep -q "cadastro.html" c360-onboarding-entry.js
+          grep -q "v2_bootstrap_company" cadastro.html
+          grep -q "v2_my_onboarding_status" cadastro.html
+          grep -q "controla_beta_session" cadastro.html
+          grep -q "COMPANY_TAX_ID_ALREADY_EXISTS" cadastro.html
+          grep -q "v2_bootstrap_company" supabase/migrations/20260913203000_self_service_onboarding_v1.sql
+          grep -q "v2_my_onboarding_status" supabase/migrations/20260913203000_self_service_onboarding_v1.sql
+          grep -q "security definer" supabase/migrations/20260913203000_self_service_onboarding_v1.sql
+          grep -q "to authenticated" supabase/migrations/20260913203000_self_service_onboarding_v1.sql
+
       - name: Basic HTML and CSS parse
         run: |
           python - <<'PY'
@@ -155,7 +172,7 @@ jobs:
           from pathlib import Path
           class P(HTMLParser):
               pass
-          for name in ('index.html','dda.html','reparar.html'):
+          for name in ('index.html','dda.html','reparar.html','cadastro.html'):
               text=Path(name).read_text(encoding='utf-8')
               P().feed(text)
               assert '<html' in text.lower(), f'{name}: missing html root'
