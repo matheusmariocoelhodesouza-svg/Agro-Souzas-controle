@@ -1,13 +1,14 @@
 (()=>{
 'use strict';
-const BOOT_VERSION='2026.09.13-b2';
-const styles=[
- './c360-premium-ui.css'
-];
-const modules=[
+const BOOT_VERSION='2026.09.13-b3';
+const recoveryModule='./c360-autorecovery.js';
+const styles=['./c360-premium-ui.css'];
+const essentialModules=[
  './c360-quality-core.js',
  './c360-farm-cache-hotfix.js',
- './c360-field-offline-hotfix.js',
+ './c360-field-offline-hotfix.js'
+];
+const optionalModules=[
  './c360-consumable-edit.js',
  './c360-team-chat.js'
 ];
@@ -54,19 +55,40 @@ function loadScript(src){
 
 async function boot(){
  const errors=[];
- for(const href of styles){
-  try{await loadStyle(href)}catch(e){errors.push(e?.message||String(e))}
+ try{await loadScript(recoveryModule)}catch(e){errors.push(e?.message||String(e))}
+ const safeMode=!!window.__c360SafeMode;
+ const loadedStyles=[];
+ const loadedModules=[recoveryModule];
+
+ if(!safeMode){
+  for(const href of styles){
+   try{await loadStyle(href);loadedStyles.push(href)}catch(e){errors.push(e?.message||String(e))}
+  }
  }
- for(const src of modules){
-  try{await loadScript(src)}catch(e){errors.push(e?.message||String(e))}
+ for(const src of essentialModules){
+  try{await loadScript(src);loadedModules.push(src)}catch(e){errors.push(e?.message||String(e))}
  }
- window.__c360Bootstrap={version:BOOT_VERSION,styles:[...styles],modules:[...modules],errors,ready:errors.length===0};
+ if(!safeMode){
+  for(const src of optionalModules){
+   try{await loadScript(src);loadedModules.push(src)}catch(e){errors.push(e?.message||String(e))}
+  }
+ }
+ window.__c360Bootstrap={
+  version:BOOT_VERSION,
+  recovery:window.__c360RecoveryVersion||null,
+  safeMode,
+  styles:loadedStyles,
+  modules:loadedModules,
+  errors,
+  ready:errors.length===0
+ };
  if(errors.length)console.error('Comando 360: recursos não carregados:',errors.join(' | '));
  document.dispatchEvent(new CustomEvent('c360:bootstrap-ready',{detail:window.__c360Bootstrap}));
 }
 
 boot().catch(e=>{
- window.__c360Bootstrap={version:BOOT_VERSION,styles:[...styles],modules:[...modules],errors:[e?.message||String(e)],ready:false};
+ window.__c360Bootstrap={version:BOOT_VERSION,recovery:window.__c360RecoveryVersion||null,safeMode:!!window.__c360SafeMode,styles:[],modules:[recoveryModule],errors:[e?.message||String(e)],ready:false};
  console.error('Comando 360 bootstrap',e);
+ document.dispatchEvent(new CustomEvent('c360:bootstrap-ready',{detail:window.__c360Bootstrap}));
 });
 })();
