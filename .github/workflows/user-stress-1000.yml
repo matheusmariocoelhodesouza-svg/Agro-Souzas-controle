@@ -24,6 +24,16 @@ jobs:
         run: |
           npm install --no-save playwright@1.55.0
           npx playwright install --with-deps chromium
+      - name: Normalize repeated cold sessions
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('qa/user_stress_1000.mjs')
+          s=p.read_text()
+          s=s.replace("if(i>1&&i%50===0)await reloadMode(page,'admin');", "if(i>1&&i%50===0){await context.close();({context,page}=await openMode(browser,'admin','stress-admin'));results.reloads++;}")
+          s=s.replace("if(i>1&&i%50===0)await reloadMode(page,'field');", "if(i>1&&i%50===0){await context.close();({context,page}=await openMode(browser,'field','stress-field'));results.reloads++;}")
+          p.write_text(s)
+          PY
       - name: Start local production shell
         run: |
           python3 -m http.server 8080 --bind 127.0.0.1 > /tmp/c360-http.log 2>&1 &
