@@ -1,0 +1,147 @@
+/* Comando 360 — Showcase Theme
+   Aproxima o produto real do mockup premium aprovado pelo usuário.
+   Visual only: sem alterar regra de negócio ou dados. */
+:root{
+  --show-bg:#eef5fc;--show-panel:#ffffff;--show-panel2:#f7fbff;--show-line:#cfe0ef;
+  --show-text:#0f2138;--show-soft:#526a84;--show-muted:#7890a7;--show-blue:#138df4;
+  --show-shadow:0 16px 36px rgba(24,67,110,.10);--show-radius:24px;
+}
+body.darkmode{
+  --show-bg:#06111f;--show-panel:#0b1a2c;--show-panel2:#10233a;--show-line:#294968;
+  --show-text:#f8fbff;--show-soft:#c8d8e9;--show-muted:#91a9c1;--show-blue:#20a4ff;
+  --show-shadow:0 18px 42px rgba(0,0,0,.32)
+}
+body.app-ready:not(.device-mode){background:var(--show-bg)!important;color:var(--show-text)!important}
+body.darkmode.app-ready:not(.device-mode){
+  background:
+    radial-gradient(circle at 12% -8%,rgba(32,164,255,.16),transparent 27%),
+    radial-gradient(circle at 92% 28%,rgba(71,96,255,.07),transparent 29%),
+    linear-gradient(180deg,#06111f 0%,#071625 46%,#06111f 100%)!important
+}
+
+/* ===== ESTRUTURA PRINCIPAL ===== */
+body.app-ready:not(.device-mode) .wrap{max-width:1540px}
+body.app-ready:not(.device-mode) .v2hero{padding:4px 2px 0!important;margin-bottom:18px!important}
+body.app-ready:not(.device-mode) .v2hero h1{font-size:clamp(25px,2.6vw,34px)!important;font-weight:950!important;letter-spacing:-.8px!important;color:var(--show-text)!important}
+body.app-ready:not(.device-mode) .v2hero p{font-size:14px!important;line-height:1.55!important;color:var(--show-muted)!important}
+body.app-ready:not(.device-mode) :where(.v2panel,.card,.finance-overview-card,.fleet-controls,.rh-tool-card){
+  border-radius:var(--show-radius)!important;border:1px solid var(--show-line)!important;
+  background:var(--show-panel)!important;box-shadow:var(--show-shadow)!important
+}
+body.darkmode.app-ready:not(.device-mode) :where(.v2panel,.card,.finance-overview-card,.fleet-controls,.rh-tool-card){
+  background:linear-gradient(180deg,rgba(15,35,57,.98),rgba(8,25,43,.99))!important;
+  border-color:#2b4b68!important;box-shadow:0 18px 42px rgba(0,0,0,.28),inset 0 1px rgba(255,255,255,.025)!important
+}
+
+/* ===== KPIs — visual do mockup ===== */
+body .c360-pro-metric{
+  --tone:#168cf3;--tone2:#43c0ff;--tone-rgb:22,140,243;
+  min-height:158px!important;padding:20px 18px 18px!important;border-radius:22px!important;
+  position:relative!important;overflow:hidden!important;
+  border:1px solid color-mix(in srgb,var(--tone) 58%,var(--show-line))!important;
+  background:
+    radial-gradient(ellipse at 100% 118%,rgba(var(--tone-rgb),.18),transparent 44%),
+    linear-gradient(150deg,color-mix(in srgb,var(--tone) 8%,var(--show-panel)) 0%,var(--show-panel) 68%)!important;
+  box-shadow:0 12px 28px rgba(var(--tone-rgb),.08)!important
+}
+body.darkmode .c360-pro-metric{
+  background:
+    radial-gradient(ellipse at 100% 118%,rgba(var(--tone-rgb),.24),transparent 48%),
+    linear-gradient(150deg,#102844 0%,#0a1a2d 68%,#0a1727 100%)!important;
+  border-color:color-mix(in srgb,var(--tone) 66%,#28445f)!important;
+  box-shadow:0 14px 32px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.03)!important
+}
+body .c360-pro-metric::before{
+  content:"";position:absolute;inset:0 auto auto 0;width:100%;height:3px;
+  background:linear-gradient(90deg,var(--tone),var(--tone2));box-shadow:0 0 14px rgba(var(--tone-rgb),.30)
+}
+body .c360-pro-metric::after{
+  content:"";position:absolute;left:18px;bottom:17px;width:38px;height:8px;border-radius:3px;
+  background:
+    linear-gradient(90deg,var(--tone) 0 15%,transparent 15% 25%,var(--tone) 25% 46%,transparent 46% 58%,var(--tone2) 58% 100%);
+  opacity:.9;filter:drop-shadow(0 0 6px rgba(var(--tone-rgb),.26))
+}
+body .c360-pro-metric[data-c360-tone="green"]{--tone:#10c28c;--tone2:#41e7b9;--tone-rgb:16,194,140}
+body .c360-pro-metric[data-c360-tone="amber"]{--tone:#f2a51b;--tone2:#ffd25f;--tone-rgb:242,165,27}
+body .c360-pro-metric[data-c360-tone="purple"]{--tone:#7658ff;--tone2:#ad93ff;--tone-rgb:118,88,255}
+body .c360-pro-metric[data-c360-tone="red"]{--tone:#ef5462;--tone2:#ff929b;--tone-rgb:239,84,98}
+body .c360-pro-metric[data-c360-tone="cyan"]{--tone:#0eb6d8;--tone2:#55dcff;--tone-rgb:14,182,216}
+body .c360-pro-metric .c360-metric-icon{
+  width:48px;height:48px;border-radius:15px!important;display:grid;place-items:center;float:none!important;
+  margin:0 0 13px!important;font-size:23px!important;background:rgba(var(--tone-rgb),.14)!important;
+  border:1px solid rgba(var(--tone-rgb),.30)!important;box-shadow:inset 0 1px rgba(255,255,255,.06),0 6px 16px rgba(var(--tone-rgb),.08)
+}
+body .c360-pro-metric :where(.t,span:first-of-type,.finance-kpi-label,.fleet-kpi span,.rh-kpi-label){
+  display:block!important;font-size:13px!important;line-height:1.25!important;font-weight:850!important;
+  color:var(--show-soft)!important;text-transform:none!important;letter-spacing:0!important
+}
+body .c360-pro-metric :where(.v,strong,b,.finance-kpi-value){
+  display:block!important;margin:9px 0 25px!important;color:var(--show-text)!important;
+  font-size:clamp(27px,4vw,42px)!important;line-height:1!important;font-weight:950!important;letter-spacing:-1.35px!important
+}
+body .c360-pro-metric :where(.s,small){color:var(--show-muted)!important;font-size:11px!important}
+body .c360-pro-metric .v2ico,body .c360-pro-metric .fleet-kpi-icon{display:none!important}
+
+/* grids — 4 desktop, 2 mobile como o mockup */
+body :where(.v2-kpis,.fleet-kpis,.finance-kpis,.rh-kpis,.dashboard-kpis){gap:15px!important}
+body :where(.v2-kpis,.fleet-kpis,.finance-kpis,.rh-kpis,.dashboard-kpis){grid-template-columns:repeat(4,minmax(0,1fr))!important}
+
+/* ===== AÇÕES ===== */
+body .btn,body .v2new{min-height:47px!important;border-radius:15px!important;font-weight:900!important;font-size:13px!important}
+body .btn.primary,body .v2new{
+  background:linear-gradient(135deg,#37c1ff 0%,#168df4 45%,#1769e2 100%)!important;
+  color:white!important;border:1px solid #30a8ff!important;box-shadow:0 10px 24px rgba(22,141,244,.28)!important
+}
+body .btn.primary:hover:not(:disabled),body .v2new:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 13px 29px rgba(22,141,244,.34)!important}
+body.darkmode .btn.soft{background:#0f2540!important;color:#dbe9f7!important;border:1px solid #315a7d!important}
+body.darkmode .btn.soft:hover{background:#143253!important;border-color:#4a83ab!important;color:#fff!important}
+
+/* ===== LISTAS/HISTÓRICOS ===== */
+body .section :where(.item,.poultry-op-card,.fleet-card,.finance-entry-card,.rh-list-card,.c360-hitch-card){
+  border-radius:19px!important;border:1px solid var(--show-line)!important;background:var(--show-panel)!important;
+  box-shadow:0 8px 22px rgba(22,60,100,.05)!important
+}
+body.darkmode .section :where(.item,.poultry-op-card,.fleet-card,.finance-entry-card,.rh-list-card,.c360-hitch-card){
+  background:linear-gradient(180deg,#10253d,#0b1a2d)!important;border-color:#2a4a67!important;box-shadow:0 11px 26px rgba(0,0,0,.20)!important
+}
+body .section :where(.v2panelhead h3,.card h3,.card h2){font-size:clamp(18px,2vw,23px)!important;font-weight:950!important;color:var(--show-text)!important;letter-spacing:-.35px!important}
+body .section :where(.v2panelhead,.toolbar):has(h2,h3){padding-bottom:13px!important;border-bottom:1px solid color-mix(in srgb,var(--show-line) 85%,transparent)!important;margin-bottom:14px!important}
+
+/* ===== FORMULÁRIOS / TABELAS ===== */
+body .section :where(input:not([type="checkbox"]):not([type="radio"]),select,textarea){border-radius:14px!important;min-height:46px!important}
+body.darkmode .section :where(input:not([type="checkbox"]):not([type="radio"]),select,textarea){background:#091a2d!important;color:#f7fbff!important;border-color:#315473!important}
+body .section table{border-radius:16px!important;overflow:hidden!important}
+body.darkmode .section table{background:#0b1a2d!important}
+body.darkmode .section table th{background:#122a45!important;color:#bcd0e4!important}
+body.darkmode .section table td{color:#eef6ff!important;border-color:#28445f!important}
+
+/* ===== MENU LATERAL / TOPO ===== */
+body.darkmode .v2sidebar{background:linear-gradient(180deg,#071524,#0a1b2d)!important;border-right:1px solid #1e3852!important}
+body.darkmode header{background:rgba(7,21,36,.92)!important;border-bottom:1px solid #24435f!important;backdrop-filter:blur(14px)}
+body.darkmode .v2navbtn.active{background:linear-gradient(135deg,#138df4,#1768de)!important;box-shadow:0 8px 18px rgba(19,141,244,.22)!important}
+
+/* ===== BARRA MOBILE — mais parecida com a demonstração ===== */
+@media(max-width:900px){
+  body.app-ready:not(.device-mode) .wrap{padding:14px 12px 116px!important}
+  body :where(.v2-kpis,.fleet-kpis,.finance-kpis,.rh-kpis,.dashboard-kpis){grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px!important}
+  body .c360-pro-metric{min-height:154px!important;padding:16px 14px 15px!important;border-radius:19px!important}
+  body .c360-pro-metric .c360-metric-icon{width:42px;height:42px;font-size:20px;margin-bottom:10px!important}
+  body .c360-pro-metric :where(.t,span:first-of-type,.finance-kpi-label,.fleet-kpi span,.rh-kpi-label){font-size:12px!important}
+  body .c360-pro-metric :where(.v,strong,b,.finance-kpi-value){font-size:clamp(24px,7vw,34px)!important;letter-spacing:-1px!important;margin-top:8px!important}
+  body #nav{
+    left:12px!important;right:12px!important;bottom:calc(10px + env(safe-area-inset-bottom))!important;
+    border-radius:26px!important;padding:8px!important;min-height:88px!important;
+    background:rgba(6,20,35,.96)!important;border:1px solid #2b4c69!important;
+    box-shadow:0 18px 42px rgba(0,0,0,.36)!important;backdrop-filter:blur(18px)!important
+  }
+  body #nav .v2navbtn{min-height:70px!important;border-radius:20px!important;color:#b9ccdf!important}
+  body #nav .v2navbtn.active{background:linear-gradient(180deg,#11365a,#0d2a47)!important;border:1px solid #178ef4!important;color:#fff!important;box-shadow:0 8px 20px rgba(19,141,244,.22),inset 0 1px rgba(255,255,255,.05)!important}
+  body #nav .v2navbtn.active::before{content:"";position:absolute;top:5px;left:28%;right:28%;height:3px;border-radius:99px;background:#28b8ff;box-shadow:0 0 10px #168df4}
+  body #nav .v2navbtn span{font-size:12px!important;font-weight:850!important}
+}
+@media(max-width:370px){
+  body :where(.v2-kpis,.fleet-kpis,.finance-kpis,.rh-kpis,.dashboard-kpis){grid-template-columns:1fr!important}
+}
+
+/* modo claro mantém a mesma identidade, sem fundo escuro forçado */
+body:not(.darkmode) .c360-pro-metric{background:radial-gradient(ellipse at 100% 118%,rgba(var(--tone-rgb),.10),transparent 46%),linear-gradient(150deg,#fff,#f8fbff)!important}
