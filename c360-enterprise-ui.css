@@ -1,4 +1,4 @@
-/* COMANDO 360 — ENTERPRISE PRODUCT LAYER 2026.09.13-e1 */
+/* COMANDO 360 — ENTERPRISE PRODUCT LAYER 2026.09.13-e2 */
 :root{
   --c360-enterprise-accent:#2563eb;
   --c360-enterprise-accent-2:#0ea5e9;
@@ -101,6 +101,15 @@ body.darkmode .c360-account-btn{background:linear-gradient(160deg,#18324f,#11263
 /* Empty state e loaders com acabamento consistente */
 .c360-enterprise-empty{display:grid;place-items:center;text-align:center;min-height:135px;padding:22px;border:1px dashed var(--c360-border-strong);border-radius:15px;background:var(--c360-surface-2)}
 .c360-enterprise-empty span{font-size:26px;margin-bottom:8px}.c360-enterprise-empty strong{font-size:13px;color:var(--c360-text)}.c360-enterprise-empty small{max-width:440px;margin-top:4px;font-size:10px;line-height:1.45;color:var(--c360-text-soft)}
+
+/* Desktop comum: prioriza título, status e ações; datas técnicas não disputam espaço. */
+@media(max-width:1500px){
+  body.app-ready:not(.device-mode) header .v2date,body.app-ready:not(.device-mode) header #buildBadge{display:none!important}
+  body.app-ready:not(.device-mode) .header-module span{max-width:210px}
+}
+@media(max-width:1180px){
+  body.app-ready:not(.device-mode) .c360-plan-badge{display:none}
+}
 
 /* Mobile: produto enxuto, seguro para polegar */
 @media(max-width:900px){
