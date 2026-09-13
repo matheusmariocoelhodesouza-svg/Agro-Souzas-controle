@@ -1,0 +1,123 @@
+/* COMANDO 360 — ENTERPRISE PRODUCT LAYER 2026.09.13-e1 */
+:root{
+  --c360-enterprise-accent:#2563eb;
+  --c360-enterprise-accent-2:#0ea5e9;
+  --c360-enterprise-good:#16a34a;
+  --c360-enterprise-warn:#d97706;
+  --c360-enterprise-danger:#dc2626;
+  --c360-enterprise-glow:0 20px 60px rgba(37,99,235,.12);
+}
+
+/* Cabeçalho com aparência de SaaS */
+body.app-ready:not(.device-mode) header{
+  border-bottom-color:color-mix(in srgb,var(--c360-border) 82%,transparent)!important;
+}
+body.app-ready:not(.device-mode) .header-module{
+  min-width:0;
+}
+body.app-ready:not(.device-mode) .header-module span{
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:280px;display:block;
+}
+.c360-plan-badge{
+  display:inline-flex;align-items:center;gap:6px;min-height:28px;padding:0 9px;border-radius:999px;
+  font-size:9px;font-weight:900;letter-spacing:.28px;border:1px solid var(--c360-border);
+  color:var(--c360-text-soft);background:var(--c360-surface);
+}
+.c360-plan-badge.trial{color:#9a5b00;background:#fff8e7;border-color:#f3d69a}
+.c360-plan-badge.active{color:#11643d;background:#ecf9f1;border-color:#bfe7cf}
+.c360-plan-badge.pilot{color:#1e5a9d;background:#eef6ff;border-color:#c9def6}
+body.darkmode .c360-plan-badge.trial{color:#ffd37c;background:#3b2b10;border-color:#6e5321}
+body.darkmode .c360-plan-badge.active{color:#9ce1b8;background:#123422;border-color:#265b3d}
+body.darkmode .c360-plan-badge.pilot{color:#acd1ff;background:#122d4a;border-color:#284b70}
+
+.c360-account-wrap{position:relative;display:inline-flex}
+.c360-account-btn{
+  width:38px;height:38px;border-radius:11px;border:1px solid var(--c360-border)!important;
+  display:grid;place-items:center;font-size:11px;font-weight:950;letter-spacing:.25px;
+  background:linear-gradient(160deg,#eff6ff,#e7f0ff)!important;color:#174f97!important;cursor:pointer;
+}
+body.darkmode .c360-account-btn{background:linear-gradient(160deg,#18324f,#11263f)!important;color:#cfe3ff!important}
+.c360-account-menu{
+  position:absolute;right:0;top:46px;width:min(340px,calc(100vw - 24px));z-index:10020;
+  border:1px solid var(--c360-border);border-radius:17px;background:var(--c360-surface);color:var(--c360-text);
+  box-shadow:0 22px 65px rgba(15,23,42,.18);padding:10px;transform-origin:top right;
+}
+.c360-account-menu.hidden{display:none!important}
+.c360-account-head{padding:10px 10px 12px;border-bottom:1px solid var(--c360-border)}
+.c360-account-head strong{display:block;font-size:14px;line-height:1.3}
+.c360-account-head span{display:block;margin-top:3px;font-size:11px;color:var(--c360-text-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.c360-account-meta{display:grid;grid-template-columns:1fr 1fr;gap:7px;padding:10px 4px}
+.c360-account-meta div{padding:9px;border:1px solid var(--c360-border);border-radius:11px;background:var(--c360-surface-2)}
+.c360-account-meta small{display:block;font-size:8px;font-weight:900;letter-spacing:.55px;color:var(--c360-text-soft)}
+.c360-account-meta b{display:block;margin-top:3px;font-size:11px;line-height:1.25}
+.c360-account-actions{display:grid;gap:4px}
+.c360-account-actions button{
+  width:100%;min-height:39px;border:0;border-radius:10px;padding:0 10px;text-align:left;cursor:pointer;
+  background:transparent;color:var(--c360-text);font-size:11px;font-weight:800;
+}
+.c360-account-actions button:hover{background:var(--c360-surface-2)}
+.c360-account-actions button.danger{color:var(--c360-danger)}
+
+/* Sidebar com rodapé de produto */
+.c360-sidebar-product{
+  margin:15px 7px 0;padding:11px;border-top:1px solid rgba(255,255,255,.11);display:grid;gap:8px;
+}
+.c360-sidebar-product .c360-side-company{font-size:10px;font-weight:900;color:#eef5ff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.c360-sidebar-product .c360-side-plan{font-size:9px;color:#91a9c5;line-height:1.35}
+.c360-sidebar-product button{
+  width:100%;min-height:34px;border-radius:9px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);
+  color:#dbe9f8;font-size:10px;font-weight:850;text-align:left;padding:0 10px;cursor:pointer;
+}
+.c360-sidebar-product button:hover{background:rgba(255,255,255,.10)}
+
+/* Primeiros passos */
+.c360-launchpad{
+  margin:0 0 16px;border:1px solid color-mix(in srgb,var(--c360-primary) 16%,var(--c360-border));
+  border-radius:20px;background:
+    radial-gradient(circle at 96% 0%,rgba(37,99,235,.10),transparent 34%),
+    linear-gradient(180deg,var(--c360-surface),color-mix(in srgb,var(--c360-surface-2) 60%,var(--c360-surface)));
+  box-shadow:var(--c360-enterprise-glow);overflow:hidden;
+}
+.c360-launchpad-head{display:flex;justify-content:space-between;gap:14px;align-items:flex-start;padding:17px 18px 12px}
+.c360-launchpad-eyebrow{font-size:9px;font-weight:950;letter-spacing:1.2px;color:var(--c360-primary)}
+.c360-launchpad h3{margin:4px 0 4px;font-size:18px;letter-spacing:-.25px;color:var(--c360-text)}
+.c360-launchpad p{margin:0;font-size:11px;line-height:1.5;color:var(--c360-text-soft)}
+.c360-launchpad-progress{min-width:122px;text-align:right}
+.c360-launchpad-progress b{font-size:20px;color:var(--c360-text)}
+.c360-launchpad-progress span{display:block;font-size:9px;color:var(--c360-text-soft);margin-top:2px}
+.c360-launchpad-bar{height:6px;margin:0 18px 13px;border-radius:999px;background:var(--c360-border);overflow:hidden}
+.c360-launchpad-bar i{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,var(--c360-enterprise-accent),var(--c360-enterprise-accent-2));transition:width .35s ease}
+.c360-launchpad-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;padding:0 18px 18px}
+.c360-launch-step{
+  min-height:105px;border:1px solid var(--c360-border);border-radius:14px;background:var(--c360-surface);padding:11px;display:flex;flex-direction:column;
+}
+.c360-launch-step .ico{font-size:18px}.c360-launch-step strong{font-size:11px;margin-top:8px;color:var(--c360-text)}
+.c360-launch-step small{font-size:9px;line-height:1.4;color:var(--c360-text-soft);margin-top:3px}
+.c360-launch-step button{margin-top:auto;border:0;background:transparent;padding:7px 0 0;text-align:left;color:var(--c360-primary);font-size:9px;font-weight:900;cursor:pointer}
+.c360-launch-step.done{background:color-mix(in srgb,#ecfdf3 58%,var(--c360-surface));border-color:color-mix(in srgb,#86efac 58%,var(--c360-border))}
+.c360-launch-step.done button{color:var(--c360-success)}
+.c360-launch-dismiss{border:0;background:transparent;color:var(--c360-text-soft);font-size:10px;font-weight:850;cursor:pointer;padding:5px}
+
+/* Empty state e loaders com acabamento consistente */
+.c360-enterprise-empty{display:grid;place-items:center;text-align:center;min-height:135px;padding:22px;border:1px dashed var(--c360-border-strong);border-radius:15px;background:var(--c360-surface-2)}
+.c360-enterprise-empty span{font-size:26px;margin-bottom:8px}.c360-enterprise-empty strong{font-size:13px;color:var(--c360-text)}.c360-enterprise-empty small{max-width:440px;margin-top:4px;font-size:10px;line-height:1.45;color:var(--c360-text-soft)}
+
+/* Mobile: produto enxuto, seguro para polegar */
+@media(max-width:900px){
+  .c360-launchpad-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .c360-launchpad-head{align-items:flex-start}.c360-launchpad-progress{min-width:92px}
+  body.app-ready:not(.device-mode) .c360-plan-badge{display:none}
+}
+@media(max-width:680px){
+  body.app-ready:not(.device-mode) header .v2date,body.app-ready:not(.device-mode) header #buildBadge{display:none!important}
+  .c360-account-menu{position:fixed;right:10px;top:68px}
+  .c360-launchpad{border-radius:17px}.c360-launchpad-head{padding:15px 14px 11px}.c360-launchpad-bar{margin-left:14px;margin-right:14px}.c360-launchpad-grid{padding:0 14px 14px;grid-template-columns:1fr 1fr}.c360-launch-step{min-height:100px}
+}
+@media(max-width:390px){.c360-launchpad-grid{grid-template-columns:1fr}.c360-account-meta{grid-template-columns:1fr}}
+
+/* login/admin mais comercial, sem atrapalhar o celular de equipe */
+body:not(.app-ready) #login .card{border-radius:22px!important;box-shadow:0 20px 55px rgba(15,34,62,.13)!important;border-color:#dce6f1!important}
+body:not(.app-ready) #adminLoginCard .admin-brand{margin-bottom:18px!important}
+body:not(.app-ready) #adminLoginCard #loginBtn{min-width:130px}
+
+@media print{.c360-account-wrap,.c360-plan-badge,.c360-launchpad,.c360-sidebar-product{display:none!important}}
