@@ -1,0 +1,70 @@
+/* Comando 360 — correções finais do print real em celular */
+@media(max-width:900px){
+  /* Remove qualquer ícone legado desenhado por pseudo-elemento. */
+  body .mobile-bottom-nav button::before,
+  body .mobile-bottom-nav button::after{
+    content:none!important;
+    display:none!important;
+  }
+
+  /* Texto solto/ícones antigos não podem aparecer junto do ícone novo. */
+  body .mobile-bottom-nav button{
+    font-size:0!important;
+    overflow:hidden!important;
+  }
+  body .mobile-bottom-nav button>span:not(.c360-exact-nav-icon){
+    display:none!important;
+  }
+  body .mobile-bottom-nav button>.c360-exact-nav-icon{
+    display:grid!important;
+    place-items:center!important;
+    width:32px!important;
+    height:32px!important;
+    margin:0 auto!important;
+    font-size:0!important;
+    line-height:1!important;
+    color:inherit!important;
+  }
+  body .mobile-bottom-nav button>.c360-exact-nav-icon svg{
+    display:block!important;
+    width:28px!important;
+    height:28px!important;
+    stroke:currentColor!important;
+    fill:none!important;
+  }
+  body .mobile-bottom-nav button small{
+    display:block!important;
+    font-size:10px!important;
+    line-height:1.05!important;
+    font-weight:850!important;
+    margin:2px 0 0!important;
+    color:inherit!important;
+  }
+  body .mobile-bottom-nav button.active{
+    box-shadow:inset 0 3px 0 #27c8ff,0 0 0 1px rgba(21,156,255,.15),0 8px 22px rgba(0,113,225,.24),inset 0 1px 0 rgba(255,255,255,.06)!important;
+  }
+}
+
+@media(max-width:520px){
+  /* As quatro abas da Frota ficam todas visíveis: não corta Manutenção/Abastecimento. */
+  body #frota .fleet-subnav{
+    display:grid!important;
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    gap:7px!important;
+    overflow:visible!important;
+    padding:7px!important;
+  }
+  body #frota .fleet-subnav button{
+    width:100%!important;
+    min-width:0!important;
+    min-height:42px!important;
+    margin:0!important;
+    padding:8px 7px!important;
+    font-size:11px!important;
+    line-height:1.1!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+    text-align:center!important;
+  }
+}
