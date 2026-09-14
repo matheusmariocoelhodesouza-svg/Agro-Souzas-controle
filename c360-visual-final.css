@@ -1,0 +1,181 @@
+/* Comando 360 — acabamento visual final
+   Camada carregada por ultimo para unificar o app sem alterar regras de negocio. */
+:root{
+  --c360-bg:#061321;
+  --c360-bg2:#08192a;
+  --c360-panel:#0b1d31;
+  --c360-panel2:#0e233b;
+  --c360-line:#274968;
+  --c360-line-soft:#1d3852;
+  --c360-text:#f7fbff;
+  --c360-muted:#a8bbcf;
+  --c360-muted2:#8198b2;
+  --c360-blue:#159dff;
+  --c360-blue2:#39c5ff;
+  --c360-green:#17cda0;
+  --c360-amber:#f1ad2b;
+  --c360-purple:#8068ff;
+  --c360-red:#ef5969;
+  --c360-radius-xl:24px;
+  --c360-radius-lg:18px;
+  --c360-radius-md:14px;
+  --c360-shadow:0 14px 34px rgba(0,0,0,.24);
+}
+
+/* BASE / HIERARQUIA */
+body.darkmode.app-ready{
+  background:
+    radial-gradient(circle at 10% -5%,rgba(28,157,255,.10),transparent 28%),
+    radial-gradient(circle at 96% 28%,rgba(77,93,255,.06),transparent 26%),
+    linear-gradient(180deg,var(--c360-bg),#071727 58%,#06111e)!important;
+  color:var(--c360-text)!important;
+}
+body.app-ready{font-feature-settings:"tnum" 1,"ss01" 1;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+body.app-ready .wrap{max-width:1440px!important;margin:0 auto!important}
+body.app-ready .section{scroll-margin-top:88px}
+body.app-ready .section :where(h1,h2,h3,strong,b){letter-spacing:-.25px}
+body.darkmode.app-ready .section :where(h1,h2,h3,strong,b){color:var(--c360-text)}
+body.darkmode.app-ready .section :where(p,.muted,.label,small){color:var(--c360-muted)}
+body.app-ready .dashboard-eyebrow{font-size:10px!important;letter-spacing:1.35px!important;font-weight:950!important;color:#56b9ff!important}
+
+/* CABECALHO / HERO */
+body.darkmode.app-ready header{background:rgba(5,18,32,.96)!important;border-bottom:1px solid #18344e!important;box-shadow:0 8px 28px rgba(0,0,0,.16)!important;backdrop-filter:blur(16px)}
+body.app-ready .v2hero,body.app-ready #frota .fleet-hero{align-items:center!important;gap:18px!important;margin:8px 0 20px!important}
+body.app-ready .v2hero h1,body.app-ready #frota .fleet-hero h1{font-size:clamp(27px,3vw,38px)!important;line-height:1.05!important;font-weight:950!important;letter-spacing:-1px!important}
+body.darkmode.app-ready .v2hero p,body.darkmode.app-ready #frota .fleet-hero p{font-size:14px!important;line-height:1.45!important;color:var(--c360-muted)!important;max-width:720px}
+body.darkmode.app-ready #frota .fleet-title-icon{background:linear-gradient(145deg,#0e2945,#0a1f35)!important;border-color:#315879!important;color:#7ac8ff!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.04)!important}
+
+/* CARDS DE CONTEUDO */
+body.darkmode.app-ready:not(.device-mode) :where(.card,.v2panel,.finance-overview-card,.fleet-controls,.rh-tool-card,.settings-card,.integration-card,.field-section,.consumable-panel,.trailer-hitch-card){
+  background:linear-gradient(180deg,rgba(12,31,52,.98),rgba(7,24,40,.99))!important;
+  border-color:var(--c360-line-soft)!important;
+  border-radius:var(--c360-radius-lg)!important;
+  box-shadow:0 12px 30px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.025)!important;
+}
+body.app-ready :where(.card,.v2panel,.finance-overview-card,.fleet-controls,.rh-tool-card,.settings-card,.integration-card){overflow-wrap:anywhere}
+body.app-ready .v2panelhead{gap:12px!important;align-items:flex-start!important}
+body.app-ready .v2panelhead h3{font-size:18px!important;line-height:1.2!important}
+
+/* KPI PREMIUM: preserva desenho aprovado, corrige proporcao/legibilidade */
+body .c360-pro-metric.c360-exact-metric{min-width:0!important}
+body .c360-exact-surface{min-width:0!important}
+body .c360-exact-title{overflow-wrap:anywhere!important}
+body .c360-exact-value{font-variant-numeric:tabular-nums!important;max-width:100%!important;overflow-wrap:normal!important;word-break:normal!important}
+body .c360-exact-chart{opacity:.92!important}
+body .c360-exact-bars{opacity:.96!important}
+
+/* BOTOES */
+body.app-ready .btn,body.app-ready .v2new,body.app-ready button{touch-action:manipulation}
+body.app-ready .btn{min-height:44px;border-radius:13px!important;font-weight:850!important}
+body.app-ready .btn.primary,body.app-ready .v2new{background:linear-gradient(135deg,#27bfff,#1598ff 52%,#0b72e9)!important;border:1px solid #29b8ff!important;color:#fff!important;box-shadow:0 8px 20px rgba(16,131,237,.20)!important}
+body.darkmode.app-ready .btn.soft{background:#0b2035!important;border:1px solid #31516e!important;color:#dceaff!important}
+body.darkmode.app-ready .btn.danger{background:#3b1720!important;border:1px solid #7a2b39!important;color:#ffbdc6!important}
+body.app-ready :where(.btn,.module-subnav button,.mobile-bottom-nav button):focus-visible{outline:3px solid rgba(61,190,255,.42)!important;outline-offset:2px!important}
+
+/* ABAS / SUBNAV */
+body.darkmode.app-ready .module-subnav{background:#071827!important;border:1px solid #25455f!important;border-radius:17px!important;padding:7px!important;gap:7px!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.02)!important}
+body.darkmode.app-ready .module-subnav button{min-height:42px!important;color:#afc1d4!important;border-radius:12px!important;font-size:12px!important;font-weight:900!important;transition:.15s ease!important}
+body.darkmode.app-ready .module-subnav button.active{background:#123557!important;color:#56bdff!important;box-shadow:inset 0 0 0 1px rgba(46,159,245,.16)!important}
+body.darkmode.app-ready .module-subnav button:hover{background:#0e2b48!important;color:#e9f6ff!important}
+
+/* FORMULARIOS */
+body.darkmode.app-ready :where(input,select,textarea){
+  color:#edf6ff!important;background:#071827!important;border:1px solid #2d4b67!important;border-radius:12px!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.018)!important
+}
+body.darkmode.app-ready :where(input,select,textarea)::placeholder{color:#7289a2!important;opacity:1!important}
+body.darkmode.app-ready :where(input,select,textarea):focus{outline:3px solid rgba(44,166,255,.17)!important;border-color:#3e9ee9!important}
+body.app-ready label{font-weight:800!important;line-height:1.3!important}
+body.app-ready textarea{line-height:1.45!important;resize:vertical}
+
+/* LISTAS / TABELAS / HISTORICOS */
+body.darkmode.app-ready .item{background:#0a1d31!important;border-color:#203d57!important;color:var(--c360-text)!important}
+body.darkmode.app-ready table{color:#dce8f5!important}
+body.darkmode.app-ready thead th{background:#07192a!important;color:#a9bed4!important;border-color:#27445d!important}
+body.darkmode.app-ready tbody td{border-color:#1c3851!important}
+body.darkmode.app-ready tbody tr:hover td{background:rgba(24,70,108,.20)!important}
+body.app-ready table{font-variant-numeric:tabular-nums}
+body.app-ready :where(.table-wrap,.table-scroll,.responsive-table){max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+body.darkmode.app-ready :where(.pill,.v2status){border:1px solid rgba(255,255,255,.06)}
+
+/* FROTA */
+body.darkmode.app-ready #frota .fleet-controls{gap:10px!important}
+body.darkmode.app-ready #frota :where(.fleet-search input,.fleet-controls select){background:#071827!important;color:#eaf5ff!important;border-color:#2b4c69!important}
+body.darkmode.app-ready #frota .fleet-card{background:linear-gradient(180deg,#0b2036,#08192a)!important;border-color:#244561!important;box-shadow:0 10px 26px rgba(0,0,0,.16)!important}
+body.darkmode.app-ready #frota .fleet-name{color:#f5faff!important}
+body.darkmode.app-ready #frota .fleet-meta{color:#99aec4!important}
+body.darkmode.app-ready #frota .fleet-tag{background:#0d2842!important;color:#c5dbef!important;border-color:#274a67!important}
+body.darkmode.app-ready #frota .fleet-tracking{border-color:#24445d!important}
+body.darkmode.app-ready #frota .fleet-tracking-box{background:#081a2c!important;border-color:#27445d!important;color:#a9bed3!important}
+
+/* MODAIS / DROPDOWNS */
+body.darkmode.app-ready :where(.modal,.modal-card,.global-search-panel,.account-menu,.dropdown-menu){background:#081a2d!important;color:#eef7ff!important;border-color:#2a4964!important;box-shadow:0 24px 70px rgba(0,0,0,.48)!important}
+body.darkmode.app-ready :where(.modal-backdrop,.global-search-backdrop){background:rgba(1,8,16,.68)!important;backdrop-filter:blur(5px)!important}
+
+/* VAZIOS / MENSAGENS */
+body.darkmode.app-ready :where(.v2-empty,.empty-state){color:#8da5bd!important}
+body.darkmode.app-ready .error{color:#ff9cab!important}
+body.darkmode.app-ready .okmsg{color:#6ee7bd!important}
+
+/* MOBILE */
+@media(max-width:900px){
+  body.app-ready .wrap{padding:14px 12px calc(112px + env(safe-area-inset-bottom))!important}
+  body.app-ready .v2hero,body.app-ready #frota .fleet-hero{align-items:flex-start!important;margin:6px 0 17px!important}
+  body.app-ready .v2hero h1,body.app-ready #frota .fleet-hero h1{font-size:31px!important}
+  body.app-ready .v2hero p,body.app-ready #frota .fleet-hero p{font-size:13px!important}
+  body.app-ready :where(.v2-kpis,.fleet-kpis,.finance-kpis,.rh-kpis,.dashboard-kpis,.rh-kpi-grid){gap:10px!important}
+  body .c360-pro-metric.c360-exact-metric{min-height:170px!important;border-radius:19px!important}
+  body .c360-exact-surface{grid-template-columns:46px minmax(0,1fr)!important;column-gap:10px!important;padding:15px 14px 13px!important}
+  body .c360-exact-icon{width:46px!important;height:46px!important;border-radius:13px!important}
+  body .c360-exact-icon svg{width:26px!important;height:26px!important}
+  body .c360-exact-title{font-size:12.5px!important;line-height:1.18!important;max-height:34px!important;overflow:hidden!important}
+  body .c360-exact-value{margin-top:14px!important;font-size:clamp(27px,7.2vw,36px)!important;line-height:1.02!important;letter-spacing:-1px!important}
+  body .c360-exact-chart{height:60px!important;width:80%!important}
+  body .c360-exact-bars{bottom:13px!important;left:14px!important}
+
+  /* Bottom nav: uma unica fonte de icone; neutraliza todo legado. */
+  body .mobile-bottom-nav{z-index:95!important;grid-template-columns:repeat(5,minmax(0,1fr))!important;min-height:82px!important;left:10px!important;right:10px!important;bottom:calc(8px + env(safe-area-inset-bottom))!important;padding:6px!important;border-radius:24px!important;background:rgba(5,17,30,.985)!important;border:1px solid #2a4c69!important;box-shadow:0 18px 42px rgba(0,0,0,.40)!important}
+  body .mobile-bottom-nav button{position:relative!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;min-width:0!important;min-height:68px!important;padding:5px 2px!important;gap:3px!important;border-radius:18px!important;color:#b8cadc!important;font-size:0!important;background:transparent!important;overflow:hidden!important}
+  body .mobile-bottom-nav button::before,body .mobile-bottom-nav button::after,body .mobile-bottom-nav button span::before,body .mobile-bottom-nav button span::after,body .mobile-bottom-nav button small::before,body .mobile-bottom-nav button small::after{content:none!important;display:none!important;background:none!important}
+  body .mobile-bottom-nav button>span:not(.c360-exact-nav-icon){display:none!important}
+  body .mobile-bottom-nav button>.c360-exact-nav-icon{display:grid!important;place-items:center!important;width:31px!important;height:31px!important;margin:0!important;padding:0!important;font-size:0!important;line-height:0!important;background:none!important;border:0!important;box-shadow:none!important;filter:none!important;color:inherit!important}
+  body .mobile-bottom-nav button>.c360-exact-nav-icon svg{display:block!important;width:27px!important;height:27px!important;stroke:currentColor!important;fill:none!important;filter:none!important}
+  body .mobile-bottom-nav button small{display:block!important;margin:1px 0 0!important;font-size:10px!important;line-height:1.05!important;font-weight:900!important;white-space:nowrap!important;color:inherit!important;opacity:1!important}
+  body .mobile-bottom-nav button.active{color:#37bdff!important;background:linear-gradient(180deg,#123b61,#0a2d4b)!important;border:1px solid #1a97e9!important;box-shadow:0 8px 22px rgba(0,113,225,.23),inset 0 1px 0 rgba(255,255,255,.055)!important}
+  body .mobile-bottom-nav button.active::before{content:""!important;display:block!important;position:absolute!important;top:4px!important;left:31%!important;right:31%!important;height:3px!important;border-radius:99px!important;background:#2bc7ff!important;box-shadow:0 0 8px rgba(43,199,255,.72)!important}
+
+  /* Subnavs sempre legiveis no telefone. */
+  body.app-ready .module-subnav{max-width:100%!important}
+  body.app-ready #frota .fleet-subnav{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:7px!important;overflow:visible!important}
+  body.app-ready #frota .fleet-subnav button{width:100%!important;min-width:0!important;white-space:normal!important;overflow:visible!important;text-overflow:clip!important;text-align:center!important;padding:9px 6px!important;line-height:1.15!important}
+
+  /* Formularios e botoes ganham area de toque consistente. */
+  body.app-ready :where(input,select,textarea,.btn){font-size:16px}
+  body.app-ready :where(input,select){min-height:46px}
+  body.app-ready .toolbar{gap:8px!important}
+  body.app-ready .toolbar>.btn{max-width:100%}
+}
+
+@media(max-width:620px){
+  body.app-ready .v2hero,body.app-ready #frota .fleet-hero{flex-direction:column!important}
+  body.app-ready .v2hero>.toolbar,body.app-ready #frota .fleet-hero-actions{width:100%!important;display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important}
+  body.app-ready .v2hero>.toolbar>.btn,body.app-ready #frota .fleet-hero-actions>.btn{width:100%!important;min-width:0!important;white-space:normal!important}
+  body.app-ready #frota .fleet-controls{grid-template-columns:1fr!important}
+  body.app-ready #frota .fleet-card{grid-template-columns:1fr!important;gap:10px!important}
+  body.app-ready #frota .fleet-tracking{border-left:0!important;border-top:1px solid #24445d!important;padding:10px 0 0!important}
+}
+
+@media(max-width:380px){
+  body.app-ready :where(.v2-kpis,.fleet-kpis,.finance-kpis,.rh-kpis,.dashboard-kpis,.rh-kpi-grid){grid-template-columns:1fr!important}
+  body.app-ready .v2hero>.toolbar,body.app-ready #frota .fleet-hero-actions{grid-template-columns:1fr!important}
+  body .c360-pro-metric.c360-exact-metric{min-height:158px!important}
+}
+
+/* FIELD / DEVICE MODE: apenas legibilidade e toque, sem descaracterizar o fluxo. */
+body.darkmode.device-mode :where(.field-section,.card,.item){background:#091d30!important;border-color:#24445e!important;color:#eef7ff!important}
+body.darkmode.device-mode :where(input,select,textarea){background:#061827!important;color:#f2f8ff!important;border-color:#31516d!important}
+body.device-mode :where(input,select,.btn){min-height:48px}
+body.device-mode .field-section-title strong{font-size:16px!important}
+
+/* Reducao de movimento e estabilidade visual. */
+@media(prefers-reduced-motion:reduce){body.app-ready *,body.app-ready *::before,body.app-ready *::after{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
