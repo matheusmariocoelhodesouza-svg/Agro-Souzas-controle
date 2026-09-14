@@ -1,0 +1,573 @@
+/* COMANDO 360 — UI POLISH 2026.09.10-u1
+   Camada visual unificada para tema claro/escuro e acabamento profissional.
+   Carregada por último pelo Service Worker para corrigir inconsistências sem
+   alterar a lógica operacional do aplicativo. */
+
+:root{
+  --c360-bg:#f4f7fb;
+  --c360-surface:#ffffff;
+  --c360-surface-2:#f8fafc;
+  --c360-surface-3:#eef4fb;
+  --c360-text:#142033;
+  --c360-text-soft:#334155;
+  --c360-muted:#64748b;
+  --c360-border:#dfe7f1;
+  --c360-border-strong:#cbd7e6;
+  --c360-primary:#1f62d0;
+  --c360-primary-strong:#164aa5;
+  --c360-primary-soft:#e9f2ff;
+  --c360-success:#15803d;
+  --c360-warning:#b45309;
+  --c360-danger:#b91c1c;
+  --c360-shadow:0 10px 30px rgba(15,23,42,.075);
+  --c360-shadow-soft:0 4px 16px rgba(15,23,42,.045);
+  --c360-radius:16px;
+  --c360-focus:0 0 0 3px rgba(31,98,208,.16);
+}
+
+body.darkmode{
+  --c360-bg:#08111f;
+  --c360-surface:#101c2c;
+  --c360-surface-2:#0c1827;
+  --c360-surface-3:#14243a;
+  --c360-text:#edf4fc;
+  --c360-text-soft:#c9d5e4;
+  --c360-muted:#96a9bf;
+  --c360-border:#24364d;
+  --c360-border-strong:#334a66;
+  --c360-primary:#3b82f6;
+  --c360-primary-strong:#2563eb;
+  --c360-primary-soft:#132943;
+  --c360-success:#72d59a;
+  --c360-warning:#f4c36b;
+  --c360-danger:#ff8c8c;
+  --c360-shadow:0 12px 34px rgba(0,0,0,.26);
+  --c360-shadow-soft:0 5px 18px rgba(0,0,0,.17);
+  --c360-focus:0 0 0 3px rgba(96,165,250,.2);
+}
+
+html{background:var(--c360-bg)}
+body{accent-color:var(--c360-primary)}
+body.app-ready:not(.device-mode){
+  background:
+    radial-gradient(circle at 92% -10%,rgba(59,130,246,.07),transparent 30%),
+    var(--c360-bg)!important;
+  color:var(--c360-text)!important;
+}
+body.darkmode.app-ready:not(.device-mode){
+  background:
+    radial-gradient(circle at 88% -8%,rgba(59,130,246,.12),transparent 28%),
+    var(--c360-bg)!important;
+}
+body.app-ready:not(.device-mode) .wrap{background:transparent!important}
+
+/* ---------- tipografia e hierarquia ---------- */
+body.app-ready:not(.device-mode) h1,
+body.app-ready:not(.device-mode) h2,
+body.app-ready:not(.device-mode) h3,
+body.app-ready:not(.device-mode) h4{color:var(--c360-text)}
+body.app-ready:not(.device-mode) .muted,
+body.app-ready:not(.device-mode) .label{color:var(--c360-muted)!important}
+body.app-ready:not(.device-mode) .dashboard-eyebrow{
+  color:var(--c360-primary)!important;
+  font-size:10px!important;
+  font-weight:900!important;
+  letter-spacing:1.15px!important;
+}
+body.app-ready:not(.device-mode) .v2hero h1{
+  color:var(--c360-text)!important;
+  letter-spacing:-.55px!important;
+  font-weight:900!important;
+}
+body.app-ready:not(.device-mode) .v2hero p{color:var(--c360-muted)!important}
+
+/* ---------- superfícies ---------- */
+body.app-ready:not(.device-mode) .card,
+body.app-ready:not(.device-mode) .v2panel,
+body.app-ready:not(.device-mode) .v2kpi,
+body.app-ready:not(.device-mode) .item{
+  background:var(--c360-surface)!important;
+  border-color:var(--c360-border)!important;
+  color:var(--c360-text)!important;
+  box-shadow:var(--c360-shadow-soft)!important;
+}
+body.app-ready:not(.device-mode) .card,
+body.app-ready:not(.device-mode) .v2panel{border-radius:var(--c360-radius)!important}
+body.app-ready:not(.device-mode) .v2panel{padding:16px!important}
+body.app-ready:not(.device-mode) .v2panelhead{
+  gap:12px;
+  padding-bottom:10px;
+  margin-bottom:12px!important;
+  border-bottom:1px solid color-mix(in srgb,var(--c360-border) 75%,transparent);
+}
+body.app-ready:not(.device-mode) .v2panelhead h3{font-size:15px!important;letter-spacing:-.15px}
+body.app-ready:not(.device-mode) .v2mini{
+  background:var(--c360-surface-2)!important;
+  border-color:var(--c360-border)!important;
+  color:var(--c360-text)!important;
+  border-radius:12px!important;
+}
+body.app-ready:not(.device-mode) .v2-empty{color:var(--c360-muted)!important}
+
+/* ---------- cabeçalho ---------- */
+body.app-ready:not(.device-mode) header{
+  background:rgba(255,255,255,.91)!important;
+  color:var(--c360-text)!important;
+  border-color:rgba(203,215,230,.85)!important;
+  box-shadow:0 5px 24px rgba(15,23,42,.055)!important;
+  backdrop-filter:blur(14px) saturate(1.15);
+  -webkit-backdrop-filter:blur(14px) saturate(1.15);
+}
+body.darkmode.app-ready:not(.device-mode) header{
+  background:rgba(10,20,34,.93)!important;
+  border-color:#23364c!important;
+  box-shadow:0 5px 24px rgba(0,0,0,.23)!important;
+}
+body.app-ready:not(.device-mode) header .brand b,
+body.app-ready:not(.device-mode) #headerModuleTitle{color:var(--c360-text)!important}
+body.app-ready:not(.device-mode) header #companyName,
+body.app-ready:not(.device-mode) #headerModuleSubtitle{color:var(--c360-muted)!important}
+body.app-ready:not(.device-mode) .header-module{
+  border-left-color:var(--c360-border)!important;
+}
+body.app-ready:not(.device-mode) .header-icon-btn{
+  background:var(--c360-surface-2)!important;
+  border:1px solid var(--c360-border)!important;
+  color:var(--c360-text)!important;
+  box-shadow:none!important;
+}
+body.app-ready:not(.device-mode) .header-icon-btn:hover{
+  background:var(--c360-primary-soft)!important;
+  border-color:color-mix(in srgb,var(--c360-primary) 30%,var(--c360-border))!important;
+  color:var(--c360-primary)!important;
+}
+
+/* ---------- sidebar ---------- */
+body.app-ready:not(.device-mode) .v2sidebar{
+  background:linear-gradient(180deg,#0d1b31 0%,#0a1628 58%,#091322 100%)!important;
+  border-right:1px solid rgba(255,255,255,.055);
+  box-shadow:12px 0 32px rgba(4,12,24,.08);
+}
+body.darkmode.app-ready:not(.device-mode) .v2sidebar{
+  background:linear-gradient(180deg,#0b1728 0%,#071321 62%,#06101c 100%)!important;
+  border-right-color:#18283b;
+  box-shadow:12px 0 34px rgba(0,0,0,.18);
+}
+body.app-ready:not(.device-mode) .v2logo{border-bottom-color:rgba(255,255,255,.09)!important}
+body.app-ready:not(.device-mode) .v2group{color:#7890ae!important}
+body.app-ready:not(.device-mode) .v2navbtn{
+  position:relative;
+  color:#c7d4e5!important;
+  border:1px solid transparent!important;
+  transition:background .16s ease,border-color .16s ease,color .16s ease,transform .16s ease;
+}
+body.app-ready:not(.device-mode) .v2navbtn:hover{
+  background:rgba(255,255,255,.06)!important;
+  border-color:rgba(255,255,255,.07)!important;
+  transform:translateX(2px);
+}
+body.app-ready:not(.device-mode) .v2navbtn.active{
+  background:linear-gradient(135deg,#2369da,#1a57bd)!important;
+  border-color:rgba(255,255,255,.12)!important;
+  color:#fff!important;
+  box-shadow:0 7px 18px rgba(25,93,204,.22);
+}
+body.app-ready:not(.device-mode) .v2navbtn.active::before{
+  content:"";
+  position:absolute;
+  left:-7px;
+  top:9px;
+  bottom:9px;
+  width:3px;
+  border-radius:3px;
+  background:#8fc0ff;
+}
+body.app-ready:not(.device-mode) .c360-sidebar-search{
+  background:rgba(255,255,255,.045)!important;
+  border-color:rgba(255,255,255,.07)!important;
+}
+
+/* ---------- botões ---------- */
+body.app-ready:not(.device-mode) .btn{
+  border:1px solid transparent;
+  box-shadow:none;
+  transition:transform .14s ease,box-shadow .14s ease,background .14s ease,border-color .14s ease,color .14s ease;
+}
+body.app-ready:not(.device-mode) .btn.primary,
+body.app-ready:not(.device-mode) .v2new{
+  background:linear-gradient(135deg,var(--c360-primary),var(--c360-primary-strong))!important;
+  color:#fff!important;
+  border-color:transparent!important;
+  box-shadow:0 6px 16px rgba(31,98,208,.18)!important;
+}
+body.app-ready:not(.device-mode) .btn.soft{
+  background:var(--c360-surface-2)!important;
+  color:var(--c360-text-soft)!important;
+  border-color:var(--c360-border)!important;
+}
+body.app-ready:not(.device-mode) .btn.danger{
+  background:#b4232f!important;
+  color:#fff!important;
+  border-color:#a91d28!important;
+}
+body.app-ready:not(.device-mode) .btn:hover:not(:disabled){
+  transform:translateY(-1px);
+  box-shadow:0 7px 16px rgba(15,23,42,.08)!important;
+}
+body.darkmode.app-ready:not(.device-mode) .btn:hover:not(:disabled){box-shadow:0 8px 18px rgba(0,0,0,.24)!important}
+body.app-ready:not(.device-mode) button:disabled,
+body.app-ready:not(.device-mode) .btn:disabled{opacity:.48!important;cursor:not-allowed!important;transform:none!important;box-shadow:none!important}
+body.app-ready:not(.device-mode) button:focus-visible,
+body.app-ready:not(.device-mode) .btn:focus-visible,
+body.app-ready:not(.device-mode) input:focus-visible,
+body.app-ready:not(.device-mode) select:focus-visible,
+body.app-ready:not(.device-mode) textarea:focus-visible{
+  outline:none!important;
+  box-shadow:var(--c360-focus)!important;
+  border-color:var(--c360-primary)!important;
+}
+
+/* ---------- formulários: principal correção do modo escuro ---------- */
+body.app-ready:not(.device-mode) input:not([type="checkbox"]):not([type="radio"]),
+body.app-ready:not(.device-mode) select,
+body.app-ready:not(.device-mode) textarea{
+  background:var(--c360-surface)!important;
+  color:var(--c360-text)!important;
+  border-color:var(--c360-border-strong)!important;
+  border-radius:10px!important;
+  caret-color:var(--c360-primary);
+  transition:border-color .14s ease,box-shadow .14s ease,background .14s ease;
+}
+body.app-ready:not(.device-mode) input::placeholder,
+body.app-ready:not(.device-mode) textarea::placeholder{color:color-mix(in srgb,var(--c360-muted) 78%,transparent)!important}
+body.app-ready:not(.device-mode) input[readonly],
+body.app-ready:not(.device-mode) textarea[readonly],
+body.app-ready:not(.device-mode) select:disabled{
+  background:var(--c360-surface-2)!important;
+  color:var(--c360-muted)!important;
+}
+body.app-ready:not(.device-mode) label{color:var(--c360-text-soft)!important}
+body.darkmode.app-ready:not(.device-mode) input,
+body.darkmode.app-ready:not(.device-mode) select,
+body.darkmode.app-ready:not(.device-mode) textarea{color-scheme:dark}
+
+/* ---------- dashboard ---------- */
+body.app-ready:not(.device-mode) #inicio .v2hero{
+  padding:3px 2px 6px!important;
+  margin-bottom:13px!important;
+}
+body.app-ready:not(.device-mode) #inicio #dashboardTitle{
+  font-size:30px!important;
+  line-height:1.04!important;
+  letter-spacing:-.9px!important;
+}
+body.app-ready:not(.device-mode) #dashboardLastUpdate{
+  color:var(--c360-muted)!important;
+  font-variant-numeric:tabular-nums;
+}
+body.app-ready:not(.device-mode) #inicio .dash-action-strip{
+  gap:10px!important;
+  margin-bottom:17px!important;
+}
+body.app-ready:not(.device-mode) #inicio .dash-action-strip>button{
+  min-height:62px!important;
+  padding:10px 11px!important;
+  background:var(--c360-surface)!important;
+  border-color:var(--c360-border)!important;
+  color:var(--c360-text)!important;
+  box-shadow:var(--c360-shadow-soft)!important;
+  border-radius:14px!important;
+}
+body.app-ready:not(.device-mode) #inicio .dash-action-strip>button:hover{
+  border-color:color-mix(in srgb,var(--c360-primary) 34%,var(--c360-border))!important;
+  background:color-mix(in srgb,var(--c360-primary-soft) 44%,var(--c360-surface))!important;
+  box-shadow:var(--c360-shadow)!important;
+}
+body.app-ready:not(.device-mode) #inicio .dash-action-strip>button>span{
+  background:var(--c360-primary-soft)!important;
+  color:var(--c360-primary)!important;
+  border:1px solid color-mix(in srgb,var(--c360-primary) 12%,transparent);
+}
+body.app-ready:not(.device-mode) #inicio .dash-action-strip b{color:var(--c360-text)!important;font-size:11px!important}
+body.app-ready:not(.device-mode) #inicio .dash-action-strip small{color:var(--c360-muted)!important}
+body.app-ready:not(.device-mode) #inicio .dash-action-strip>button:nth-child(2)>span{background:#eef9f2!important;color:#15803d!important}
+body.app-ready:not(.device-mode) #inicio .dash-action-strip>button:nth-child(4)>span{background:#fff5e8!important;color:#b45309!important}
+body.app-ready:not(.device-mode) #inicio .dash-action-strip>button:nth-child(6)>span{background:#f1edff!important;color:#6d4bd1!important}
+body.darkmode.app-ready:not(.device-mode) #inicio .dash-action-strip>button:nth-child(2)>span{background:#102b20!important;color:#79dfa2!important}
+body.darkmode.app-ready:not(.device-mode) #inicio .dash-action-strip>button:nth-child(4)>span{background:#302213!important;color:#efbd66!important}
+body.darkmode.app-ready:not(.device-mode) #inicio .dash-action-strip>button:nth-child(6)>span{background:#251f3e!important;color:#b7a4ff!important}
+
+body.app-ready:not(.device-mode) #inicio .dashboard-kpis .v2kpi{
+  min-height:116px!important;
+  overflow:hidden;
+  border-radius:16px!important;
+  box-shadow:var(--c360-shadow-soft)!important;
+}
+body.app-ready:not(.device-mode) #inicio .dashboard-kpis .v2kpi::before{
+  content:"";
+  position:absolute;
+  left:0;right:0;top:0;
+  height:3px;
+  background:#3b82f6;
+}
+body.app-ready:not(.device-mode) #inicio .dashboard-kpis .v2kpi:nth-child(2)::before{background:#22a06b}
+body.app-ready:not(.device-mode) #inicio .dashboard-kpis .v2kpi:nth-child(3)::before{background:#d89a25}
+body.app-ready:not(.device-mode) #inicio .dashboard-kpis .v2kpi:nth-child(4)::before{background:#7c5ce0}
+body.app-ready:not(.device-mode) #inicio .dashboard-kpis .v2kpi .v{
+  color:var(--c360-text)!important;
+  font-size:29px!important;
+  letter-spacing:-.5px;
+}
+body.app-ready:not(.device-mode) #inicio .dashboard-kpis .v2kpi .t,
+body.app-ready:not(.device-mode) #inicio .dashboard-kpis .v2kpi .s{color:var(--c360-muted)!important}
+body.app-ready:not(.device-mode) #inicio .dashboard-kpis .v2ico{
+  background:var(--c360-primary-soft)!important;
+  color:var(--c360-primary)!important;
+  border:1px solid color-mix(in srgb,var(--c360-primary) 11%,transparent);
+}
+body.app-ready:not(.device-mode) #inicio .dash-section-label{
+  margin:4px 2px 9px!important;
+  padding-top:2px;
+}
+body.app-ready:not(.device-mode) #inicio .dash-section-label span{color:var(--c360-text-soft)!important}
+body.app-ready:not(.device-mode) #inicio .dash-section-label small{color:var(--c360-muted)!important}
+body.app-ready:not(.device-mode) #inicio .dash-health>*{
+  background:var(--c360-surface)!important;
+  border-color:var(--c360-border)!important;
+  box-shadow:var(--c360-shadow-soft)!important;
+}
+body.app-ready:not(.device-mode) #inicio .v2status{
+  background:var(--c360-primary-soft)!important;
+  color:var(--c360-primary)!important;
+  border:1px solid color-mix(in srgb,var(--c360-primary) 17%,transparent);
+}
+body.app-ready:not(.device-mode) #inicio .v2alert{
+  border-bottom-color:var(--c360-border)!important;
+  color:var(--c360-text-soft)!important;
+}
+
+/* ---------- navegação interna e listas ---------- */
+body.app-ready:not(.device-mode) .module-subnav{
+  background:var(--c360-surface)!important;
+  border:1px solid var(--c360-border)!important;
+  box-shadow:var(--c360-shadow-soft)!important;
+}
+body.app-ready:not(.device-mode) .module-subnav button{
+  color:var(--c360-muted)!important;
+  border-color:transparent!important;
+}
+body.app-ready:not(.device-mode) .module-subnav button.active{
+  background:var(--c360-primary-soft)!important;
+  color:var(--c360-primary)!important;
+  border-color:color-mix(in srgb,var(--c360-primary) 16%,transparent)!important;
+}
+body.app-ready:not(.device-mode) .list>.item:hover{
+  border-color:var(--c360-border-strong)!important;
+}
+body.app-ready:not(.device-mode) details.card>summary{
+  color:var(--c360-text)!important;
+  border-radius:12px;
+}
+body.app-ready:not(.device-mode) details.card[open]>summary{
+  border-bottom:1px solid var(--c360-border);
+  padding-bottom:12px;
+  margin-bottom:12px;
+}
+
+/* ---------- tabelas ---------- */
+body.app-ready:not(.device-mode) .section table{
+  width:100%;
+  color:var(--c360-text)!important;
+  background:var(--c360-surface)!important;
+  border-color:var(--c360-border)!important;
+}
+body.app-ready:not(.device-mode) .section table th{
+  background:var(--c360-surface-2)!important;
+  color:var(--c360-muted)!important;
+  border-color:var(--c360-border)!important;
+  font-size:10px;
+  letter-spacing:.45px;
+  text-transform:uppercase;
+}
+body.app-ready:not(.device-mode) .section table td{
+  color:var(--c360-text-soft)!important;
+  border-color:var(--c360-border)!important;
+}
+body.app-ready:not(.device-mode) .section table tbody tr:hover td{
+  background:color-mix(in srgb,var(--c360-primary-soft) 32%,var(--c360-surface))!important;
+}
+
+/* ---------- pills / estados ---------- */
+body.app-ready:not(.device-mode) .pill{
+  background:var(--c360-surface-3);
+  color:var(--c360-text-soft);
+  border:1px solid var(--c360-border);
+}
+body.darkmode.app-ready:not(.device-mode) .pill.ok{background:#102c20!important;color:#80dfaa!important;border-color:#23563c!important}
+body.darkmode.app-ready:not(.device-mode) .pill.warn{background:#332612!important;color:#f3c86e!important;border-color:#5c4721!important}
+body.darkmode.app-ready:not(.device-mode) .pill.danger{background:#381b22!important;color:#ff9ca5!important;border-color:#64303b!important}
+
+/* ---------- Frota: remove brancos e textos fixos no escuro ---------- */
+body.app-ready:not(.device-mode) #frota .fleet-kpi,
+body.app-ready:not(.device-mode) #frota .fleet-controls,
+body.app-ready:not(.device-mode) #frota .fleet-card{
+  background:var(--c360-surface)!important;
+  border-color:var(--c360-border)!important;
+  box-shadow:var(--c360-shadow-soft)!important;
+}
+body.app-ready:not(.device-mode) #frota .fleet-search input,
+body.app-ready:not(.device-mode) #frota .fleet-controls select,
+body.app-ready:not(.device-mode) #frota .fleet-import-btn{
+  background:var(--c360-surface)!important;
+  color:var(--c360-text)!important;
+  border-color:var(--c360-border-strong)!important;
+}
+body.app-ready:not(.device-mode) #frota .fleet-hero h1,
+body.app-ready:not(.device-mode) #frota .fleet-name,
+body.app-ready:not(.device-mode) #frota .fleet-kpi b{color:var(--c360-text)!important}
+body.app-ready:not(.device-mode) #frota .fleet-hero p,
+body.app-ready:not(.device-mode) #frota .fleet-meta,
+body.app-ready:not(.device-mode) #frota .fleet-result-meta,
+body.app-ready:not(.device-mode) #frota .fleet-kpi span{color:var(--c360-muted)!important}
+body.app-ready:not(.device-mode) #frota .fleet-tag{
+  background:var(--c360-surface-3)!important;
+  color:var(--c360-text-soft)!important;
+  border-color:var(--c360-border)!important;
+}
+body.app-ready:not(.device-mode) #frota .fleet-title-icon{
+  background:var(--c360-primary-soft)!important;
+  color:var(--c360-primary)!important;
+  border-color:color-mix(in srgb,var(--c360-primary) 14%,var(--c360-border))!important;
+}
+body.darkmode.app-ready:not(.device-mode) #frota .fleet-photo{border-color:var(--c360-border)!important;background:var(--c360-surface-2)!important}
+body.darkmode.app-ready:not(.device-mode) #frota .fleet-tracking{border-left-color:var(--c360-border)!important}
+
+/* ---------- Financeiro / DDA ---------- */
+body.app-ready:not(.device-mode) #financeiro .finance-overview-card,
+body.app-ready:not(.device-mode) #financeiro .finance-entry-card,
+body.app-ready:not(.device-mode) #financeiro .finance-kpi{
+  background:var(--c360-surface)!important;
+  border-color:var(--c360-border)!important;
+  box-shadow:var(--c360-shadow-soft)!important;
+}
+body.app-ready:not(.device-mode) #financeiro .finance-kpi-label,
+body.app-ready:not(.device-mode) #financeiro .finance-entry-meta{color:var(--c360-muted)!important}
+body.app-ready:not(.device-mode) #financeiro .finance-kpi-value,
+body.app-ready:not(.device-mode) #financeiro .finance-entry-title{color:var(--c360-text)!important}
+body.app-ready:not(.device-mode) #financeiro .finance-privacy-btn{
+  background:var(--c360-surface-2)!important;
+  color:var(--c360-text-soft)!important;
+  border-color:var(--c360-border)!important;
+}
+body.app-ready:not(.device-mode) .c360-dda-main,
+body.app-ready:not(.device-mode) .c360-dda-kpi{
+  background:var(--c360-surface-2)!important;
+  border-color:var(--c360-border)!important;
+  color:var(--c360-text)!important;
+}
+body.app-ready:not(.device-mode) .c360-dda-main p,
+body.app-ready:not(.device-mode) .c360-dda-kpi span,
+body.app-ready:not(.device-mode) .c360-page-info,
+body.app-ready:not(.device-mode) .c360-fin-tools label{color:var(--c360-muted)!important}
+body.app-ready:not(.device-mode) .c360-fin-tools input,
+body.app-ready:not(.device-mode) .c360-fin-tools select{
+  background:var(--c360-surface)!important;
+  color:var(--c360-text)!important;
+  border-color:var(--c360-border-strong)!important;
+}
+body.darkmode .c360-dda-framewrap,
+body.darkmode .c360-dda-frame{background:#08111f!important}
+body.darkmode .c360-dda-close{background:#14243a!important;color:#edf4fc!important}
+
+/* ---------- RH / cadastros / modais ---------- */
+body.app-ready:not(.device-mode) .rh-employer-card,
+body.app-ready:not(.device-mode) .rh-kpi-card,
+body.app-ready:not(.device-mode) .rh-list-card,
+body.app-ready:not(.device-mode) .rh-tool-card{background:var(--c360-surface)!important;border-color:var(--c360-border)!important}
+body.darkmode.app-ready:not(.device-mode) #editEmployeePhotoPreview{
+  background:var(--c360-surface-2)!important;
+  border-color:var(--c360-border-strong)!important;
+}
+body.app-ready:not(.device-mode) #teamDeviceCodeCard{
+  background:var(--c360-surface)!important;
+  color:var(--c360-text)!important;
+  box-shadow:var(--c360-shadow)!important;
+}
+
+/* ---------- busca, sincronização e sheets ---------- */
+body.app-ready:not(.device-mode) .global-search-panel,
+body.app-ready:not(.device-mode) .route-choice-sheet,
+body.app-ready:not(.device-mode) .offline-sync-box{
+  background:var(--c360-surface)!important;
+  color:var(--c360-text)!important;
+  border-color:var(--c360-border)!important;
+  box-shadow:0 24px 70px rgba(15,23,42,.22)!important;
+}
+body.darkmode.app-ready:not(.device-mode) .global-search-panel,
+body.darkmode.app-ready:not(.device-mode) .route-choice-sheet,
+body.darkmode.app-ready:not(.device-mode) .offline-sync-box{box-shadow:0 24px 72px rgba(0,0,0,.5)!important}
+body.app-ready:not(.device-mode) .route-app-btn{
+  background:var(--c360-surface-2)!important;
+  color:var(--c360-text)!important;
+  border-color:var(--c360-border)!important;
+}
+body.app-ready:not(.device-mode) .global-search-backdrop,
+body.app-ready:not(.device-mode) .route-choice-backdrop{backdrop-filter:blur(3px)}
+
+/* ---------- navegação inferior mobile ---------- */
+body.app-ready:not(.device-mode) .mobile-bottom-nav{
+  background:rgba(255,255,255,.94)!important;
+  border-top-color:var(--c360-border)!important;
+  box-shadow:0 -8px 28px rgba(15,23,42,.08)!important;
+  backdrop-filter:blur(16px) saturate(1.15);
+  -webkit-backdrop-filter:blur(16px) saturate(1.15);
+}
+body.darkmode.app-ready:not(.device-mode) .mobile-bottom-nav{
+  background:rgba(10,20,34,.95)!important;
+  box-shadow:0 -8px 28px rgba(0,0,0,.26)!important;
+}
+body.app-ready:not(.device-mode) .mobile-bottom-nav button{color:var(--c360-muted)!important}
+body.app-ready:not(.device-mode) .mobile-bottom-nav button.active{color:var(--c360-primary)!important}
+body.app-ready:not(.device-mode) .mobile-bottom-nav button.active span{
+  background:var(--c360-primary-soft)!important;
+  color:var(--c360-primary)!important;
+}
+
+/* ---------- login ---------- */
+body:not(.app-ready) .login .card{
+  border-color:var(--c360-border)!important;
+  border-radius:18px!important;
+  box-shadow:var(--c360-shadow)!important;
+}
+body.darkmode:not(.app-ready) .login .card{background:var(--c360-surface)!important;color:var(--c360-text)!important}
+body.darkmode:not(.app-ready) .login input{background:var(--c360-surface-2)!important;color:var(--c360-text)!important;border-color:var(--c360-border-strong)!important}
+
+/* ---------- responsividade ---------- */
+@media(max-width:1100px){
+  body.app-ready:not(.device-mode) #inicio .dashboard-kpis{gap:10px!important}
+  body.app-ready:not(.device-mode) .v2panel{padding:14px!important}
+}
+@media(max-width:900px){
+  body.app-ready:not(.device-mode) .wrap{padding:10px 10px 82px!important}
+  body.app-ready:not(.device-mode) #inicio #dashboardTitle{font-size:24px!important}
+  body.app-ready:not(.device-mode) #inicio .dash-action-strip{gap:8px!important}
+  body.app-ready:not(.device-mode) #inicio .dash-action-strip>button{min-height:60px!important}
+  body.app-ready:not(.device-mode) .card,
+  body.app-ready:not(.device-mode) .v2panel{border-radius:14px!important}
+}
+@media(max-width:600px){
+  body.app-ready:not(.device-mode) .v2panelhead{align-items:flex-start!important}
+  body.app-ready:not(.device-mode) .v2panelhead>.btn{min-height:38px!important;padding:9px 10px!important}
+  body.app-ready:not(.device-mode) #inicio .dashboard-kpis .v2kpi{min-height:105px!important}
+  body.app-ready:not(.device-mode) #inicio .dashboard-kpis .v2kpi .v{font-size:24px!important}
+  body.app-ready:not(.device-mode) .c360-fin-tools{gap:7px!important}
+}
+@media(max-width:420px){
+  body.app-ready:not(.device-mode) #inicio .dash-action-strip>button{padding:8px!important}
+  body.app-ready:not(.device-mode) #inicio .dash-action-strip b{font-size:10.5px!important}
+  body.app-ready:not(.device-mode) .v2panel{padding:12px!important}
+}
+
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation-duration:.001ms!important;animation-iteration-count:1!important}
+}
