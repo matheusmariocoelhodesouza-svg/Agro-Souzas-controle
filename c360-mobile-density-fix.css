@@ -1,0 +1,106 @@
+/* Comando 360 — ajuste final de proporção mobile
+   Mantém a identidade visual aprovada, mas reduz escala e elimina overflow. */
+
+@media (max-width:900px){
+  html,body{max-width:100%!important;overflow-x:hidden!important}
+  body.app-ready .wrap,body.app-ready .section,body.app-ready .v2panel,body.app-ready .card,body.app-ready .toolbar,body.app-ready .v2hero{min-width:0!important;max-width:100%!important}
+  body.app-ready .wrap{padding:11px 10px calc(96px + env(safe-area-inset-bottom))!important}
+
+  /* Ações: sempre cabem dentro da tela. */
+  body.app-ready .toolbar:has(>.c360-showcase-cta),
+  body.app-ready .v2hero>.toolbar,
+  body.app-ready #frota .fleet-hero-actions{
+    width:100%!important;max-width:100%!important;min-width:0!important;
+    display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important;
+  }
+  body .c360-showcase-cta,
+  body.app-ready .v2hero>.toolbar>.btn,
+  body.app-ready #frota .fleet-hero-actions>.btn{
+    width:100%!important;max-width:100%!important;min-width:0!important;
+    min-height:50px!important;padding:0 10px!important;border-radius:14px!important;
+    gap:7px!important;font-size:11.5px!important;line-height:1.08!important;letter-spacing:-.08px!important;
+    white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;
+  }
+  body .c360-showcase-cta .c360-action-icon{width:21px!important;height:21px!important;flex:0 0 21px!important}
+  body .c360-showcase-cta .c360-action-icon svg{width:20px!important;height:20px!important}
+  body .c360-showcase-cta .c360-action-arrow{font-size:22px!important;margin-left:auto!important;flex:0 0 auto!important}
+
+  /* KPIs: mesma estética, aproximadamente 18% mais compactos. */
+  body :where(.v2-kpis,.fleet-kpis,.finance-kpis,.rh-kpis,.dashboard-kpis,.rh-kpi-grid){
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important;max-width:100%!important;
+  }
+  body .c360-pro-metric.c360-exact-metric{
+    min-width:0!important;min-height:148px!important;height:148px!important;border-radius:17px!important;
+  }
+  body .c360-exact-surface{
+    grid-template-columns:40px minmax(0,1fr)!important;grid-template-rows:auto auto 1fr!important;
+    column-gap:8px!important;padding:12px 11px 10px!important;min-width:0!important;
+  }
+  body .c360-exact-icon{width:40px!important;height:40px!important;border-radius:12px!important}
+  body .c360-exact-icon svg{width:22px!important;height:22px!important}
+  body .c360-exact-title{
+    min-width:0!important;font-size:11.3px!important;line-height:1.12!important;font-weight:900!important;
+    max-height:none!important;overflow:hidden!important;overflow-wrap:normal!important;word-break:normal!important;hyphens:none!important;
+    display:-webkit-box!important;-webkit-box-orient:vertical!important;-webkit-line-clamp:3!important;
+  }
+  body .c360-exact-value{
+    margin-top:9px!important;font-size:clamp(22px,6.15vw,29px)!important;line-height:.98!important;
+    letter-spacing:-.8px!important;white-space:nowrap!important;overflow:visible!important;overflow-wrap:normal!important;word-break:normal!important;
+  }
+  body .c360-exact-bars{left:11px!important;bottom:10px!important;gap:3px!important;height:25px!important}
+  body .c360-exact-bars i{width:4px!important}
+  body .c360-exact-bars i:nth-child(1){height:10px!important}
+  body .c360-exact-bars i:nth-child(2){height:17px!important}
+  body .c360-exact-bars i:nth-child(3){height:24px!important}
+  body .c360-exact-chart{right:-1px!important;bottom:-1px!important;width:77%!important;height:48px!important;opacity:.88!important}
+
+  /* Painéis mais proporcionais no telefone. */
+  body.app-ready :where(.v2panel,.card,.finance-overview-card,.fleet-controls,.rh-tool-card,.settings-card,.integration-card,.consumable-panel,.trailer-hitch-card){
+    border-radius:17px!important;
+  }
+  body.app-ready .v2panel{padding:13px!important;margin-bottom:11px!important}
+  body.app-ready .v2panelhead{margin-bottom:8px!important}
+  body.app-ready .v2panelhead h3{font-size:16px!important}
+  body.app-ready .v2hero,body.app-ready #frota .fleet-hero{gap:11px!important;margin:4px 0 14px!important}
+  body.app-ready .v2hero h1,body.app-ready #frota .fleet-hero h1{font-size:27px!important}
+  body.app-ready .v2hero p,body.app-ready #frota .fleet-hero p{font-size:12.5px!important;line-height:1.38!important}
+
+  /* Navegação inferior menor para devolver área útil à tela. */
+  body .mobile-bottom-nav{
+    min-height:72px!important;left:9px!important;right:9px!important;bottom:calc(6px + env(safe-area-inset-bottom))!important;
+    padding:5px!important;border-radius:21px!important;
+  }
+  body .mobile-bottom-nav button{min-height:60px!important;padding:4px 2px!important;border-radius:15px!important;gap:2px!important}
+  body .mobile-bottom-nav button>.c360-exact-nav-icon{width:27px!important;height:27px!important}
+  body .mobile-bottom-nav button>.c360-exact-nav-icon svg{width:23px!important;height:23px!important}
+  body .mobile-bottom-nav button small{font-size:9.5px!important;line-height:1!important}
+  body .mobile-bottom-nav button.active::before{top:3px!important;height:2px!important}
+
+  /* Títulos e controles longos nunca empurram a página para os lados. */
+  body.app-ready :where(h1,h2,h3,p,.muted,.label,.fleet-name,.fleet-meta){max-width:100%!important;overflow-wrap:break-word!important}
+  body.app-ready :where(input,select,textarea,.btn){max-width:100%!important}
+  body.app-ready :where(.table-wrap,.table-scroll,.responsive-table){max-width:100%!important;overflow-x:auto!important}
+}
+
+@media (max-width:620px){
+  body.app-ready .v2hero,body.app-ready #frota .fleet-hero{gap:9px!important}
+  body.app-ready .v2hero>.toolbar,body.app-ready #frota .fleet-hero-actions{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  body.app-ready .toolbar:has(>.c360-showcase-cta){grid-template-columns:repeat(2,minmax(0,1fr))!important}
+}
+
+@media (max-width:390px){
+  body .c360-pro-metric.c360-exact-metric{min-height:142px!important;height:142px!important}
+  body .c360-exact-surface{grid-template-columns:37px minmax(0,1fr)!important;column-gap:7px!important;padding:11px 9px 9px!important}
+  body .c360-exact-icon{width:37px!important;height:37px!important}
+  body .c360-exact-icon svg{width:20px!important;height:20px!important}
+  body .c360-exact-title{font-size:10.7px!important}
+  body .c360-exact-value{font-size:clamp(21px,5.9vw,26px)!important;margin-top:8px!important}
+  body .c360-showcase-cta{font-size:10.8px!important;padding:0 8px!important;gap:5px!important}
+  body .c360-showcase-cta .c360-action-arrow{display:none!important}
+}
+
+@media (max-width:350px){
+  body :where(.v2-kpis,.fleet-kpis,.finance-kpis,.rh-kpis,.dashboard-kpis,.rh-kpi-grid){grid-template-columns:1fr!important}
+  body.app-ready .toolbar:has(>.c360-showcase-cta),body.app-ready .v2hero>.toolbar,body.app-ready #frota .fleet-hero-actions{grid-template-columns:1fr!important}
+  body .c360-pro-metric.c360-exact-metric{height:138px!important;min-height:138px!important}
+}
