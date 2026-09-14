@@ -1,0 +1,47 @@
+name: Comando 360 Profile Stress 3000
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'qa/profile_stress_3000.mjs'
+      - '.github/workflows/profile-stress-3000.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  profile-stress-3000:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install browser test runtime
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Start local production shell
+        run: |
+          python3 -m http.server 8080 --bind 127.0.0.1 > /tmp/c360-http.log 2>&1 &
+          for i in $(seq 1 20); do
+            curl -fsS http://127.0.0.1:8080/ >/dev/null && exit 0
+            sleep 1
+          done
+          cat /tmp/c360-http.log
+          exit 1
+      - name: Simulate 1000 sessions per profile
+        env:
+          C360_STRESS_PER_PROFILE: '1000'
+        run: node qa/profile_stress_3000.mjs
+      - name: Upload stress report and screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: comando360-profile-stress-3000
+          path: qa-profile-stress-artifacts/
+          if-no-files-found: warn
+          retention-days: 14
