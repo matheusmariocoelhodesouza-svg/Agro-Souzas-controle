@@ -18,7 +18,7 @@ permissions:
 jobs:
   profile-stress-3000:
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -28,7 +28,7 @@ jobs:
         run: |
           npm install --no-save playwright@1.55.0
           npx playwright install --with-deps chromium
-      - name: Normalize off-canvas visibility audit
+      - name: Normalize profile stress audit
         run: |
           python3 - <<'PY'
           from pathlib import Path
@@ -38,7 +38,14 @@ jobs:
           new="""const roots=[...document.querySelectorAll('#screenHost .section.active')]; const controls=roots.flatMap(root=>[...root.querySelectorAll('button,.btn,input,select,textarea,a')]); for(const e of document.querySelectorAll('#c360ChatFab,#c360AccountBtn,header button,.mobile-bottom-nav button'))if(!controls.includes(e))controls.push(e); for(const e of document.querySelectorAll('.v2sidebar button')){const box=e.closest('.v2sidebar')?.getBoundingClientRect();if(box&&box.right>4&&box.left<vw-4&&!controls.includes(e))controls.push(e)} return controls.filter(visible).map(e=>{const r=e.getBoundingClientRect();return{tag:e.tagName,id:e.id||'',text:(e.textContent||e.getAttribute('aria-label')||'').trim().slice(0,70),left:r.left,right:r.right,width:r.width}}).filter(x=>x.left<-4||x.right>vw+4).slice(0,8);"""
           if old not in s:
               raise SystemExit('profile stress visibility audit signature changed')
-          p.write_text(s.replace(old,new))
+          s=s.replace(old,new)
+          old_routes="for(const id of companyScreens)await route(page,id,`${profile}-${i}:${id}`,false);"
+          new_routes="for(let j=0;j<6;j++){const id=companyScreens[(i*6+j)%companyScreens.length];await route(page,id,`${profile}-${i}:${id}`,false)}"
+          if old_routes not in s:
+              raise SystemExit('company route loop signature changed')
+          s=s.replace(old_routes,new_routes)
+          s=s.replace("await v2Go(id);await new Promise(r=>setTimeout(r,12));","await v2Go(id);await new Promise(r=>setTimeout(r,6));")
+          p.write_text(s)
           PY
       - name: Start local production shell
         run: |
