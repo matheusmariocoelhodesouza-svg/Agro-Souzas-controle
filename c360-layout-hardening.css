@@ -1,0 +1,91 @@
+/* Comando 360 — layout hardening
+   Camada final e não decorativa: evita regressões de largura, clipping e controles fora da tela. */
+
+html,body{
+  max-width:100%;
+  overflow-x:clip;
+}
+#app,#screenHost,#screenHost>.section,.wrap,
+.card,.v2panel,.v2main,.v2-kpis,.grid,.row,.toolbar{
+  min-width:0;
+}
+#screenHost :where(.card,.v2panel,.item,.settings-card,.fiscal-card,.fleet-page,.tracking-map-card){
+  max-width:100%;
+}
+#screenHost :where(.grid,.row,.toolbar,.v2-kpis,.fleet-kpis,.v2main,.dashboard-grid,.rh-kpi-grid)>*{
+  min-width:0;
+}
+#screenHost :where(h1,h2,h3,h4,p,strong,small,span,label,.muted,.label){
+  overflow-wrap:break-word;
+}
+#screenHost :where(img,video,canvas,svg){
+  max-width:100%;
+}
+#screenHost :where(input,select,textarea,button,.btn){
+  max-width:100%;
+  box-sizing:border-box;
+}
+#screenHost :where(.table-wrap,.table-scroll,.responsive-table,.fleet-table-wrap){
+  max-width:100%;
+  overflow-x:auto;
+  -webkit-overflow-scrolling:touch;
+}
+#screenHost table{max-width:none}
+
+/* Controles nunca podem empurrar a página horizontalmente. */
+.toolbar{max-width:100%}
+.toolbar>*{min-width:0}
+.btn{overflow:hidden;text-overflow:ellipsis}
+
+/* Modais/painéis flutuantes permanecem dentro do viewport. */
+:where(.modal,.dialog,.sheet,.drawer,.c360-modal,.c360-dialog){
+  max-width:calc(100vw - 24px)!important;
+}
+
+/* Foco visível consistente sem alterar o desenho normal. */
+:where(button,.btn,input,select,textarea,a):focus-visible{
+  outline:2px solid #38bdf8;
+  outline-offset:2px;
+}
+
+@media (max-width:900px){
+  body{width:100%;max-width:100%;overflow-x:hidden}
+  #app,#screenHost,#screenHost>.section,.wrap{width:100%;max-width:100%}
+  #screenHost :where(.v2hero,.dashboard-hero,.fleet-hero,.tracking-hero,.settings-hero){
+    min-width:0;
+    max-width:100%;
+  }
+  #screenHost :where(.v2hero,.dashboard-hero,.fleet-hero,.tracking-hero,.settings-hero) :where(h1,h2,h3,p){
+    max-width:100%;
+  }
+  #screenHost :where(.toolbar,.fleet-hero-actions,.settings-actions){
+    min-width:0;
+  }
+  #screenHost :where(.toolbar,.fleet-hero-actions,.settings-actions)>.btn{
+    min-width:0;
+  }
+  .mobile-bottom-nav{
+    max-width:calc(100vw - 16px)!important;
+    left:max(8px,env(safe-area-inset-left))!important;
+    right:max(8px,env(safe-area-inset-right))!important;
+    box-sizing:border-box!important;
+  }
+  :where(.module-subnav,.fleet-subnav,.tabs,.tabbar){
+    max-width:100%;
+  }
+}
+
+/* Tablet de campo: nunca herda dimensões administrativas. */
+@media (max-width:1366px){
+  body.device-mode #app,
+  body.device-mode #screenHost,
+  body.device-mode #screenHost>.section,
+  body.device-mode .wrap{
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+  }
+  body.device-mode #screenHost :where(.row,.grid,.toolbar,.v2-kpis,.team-home-grid,.team-report-grid)>*{
+    min-width:0!important;
+  }
+}
