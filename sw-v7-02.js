@@ -1,4 +1,4 @@
-const CACHE='comando360-v7-02-hotfix50';
+const CACHE='comando360-v7-02-hotfix51';
 const STABLE_CACHE='comando360-stable-v1';
 const META_CACHE='comando360-meta-v1';
 const META_KEY='./__c360_recovery_meta__';
@@ -7,7 +7,7 @@ const CORE=[
   './c360-autorecovery.js','./c360-platform.js','./c360-product-core.js','./c360-field-offline-hotfix.js',
   './c360-quality-hotfix.js','./c360-quality-core.js','./c360-team-chat.js','./c360-farm-cache-hotfix.js',
   './c360-consumable-edit.js','./c360-consumable-action-bridge.js','./c360-consumable-mobile-actions.js','./c360-system-health.js','./c360-onboarding-entry.js',
-  './c360-fiscal.js','./c360-fiscal-issuance.js','./c360-enterprise.js','./c360-commercial.js','./c360-saas-readiness.js','./c360-rpc-bridge.js','./c360-trailer-hitches.js','./c360-premium-theme-v2.js','./c360-showcase-exact.js','./c360-field-route-guard.js',
+  './c360-fiscal.js','./c360-fiscal-issuance.js','./c360-enterprise.js','./c360-commercial.js','./c360-saas-readiness.js','./c360-rpc-bridge.js','./c360-trailer-hitches.js','./c360-premium-theme-v2.js','./c360-showcase-exact.js','./c360-field-route-guard.js','./c360-fuel-type.js',
   './c360-system-health.css','./c360-ui-polish.css','./c360-premium-ui.css','./c360-product-ui.css',
   './c360-dashboard-dark-fix.css','./c360-enterprise-ui.css','./c360-commercial.css','./c360-fiscal.css',
   './c360-saas-readiness.css','./c360-visual-system.css','./c360-contrast-fix.css','./c360-hotfix-dashboard-dark.css','./c360-hotfix-bottom-nav.css','./c360-trailer-hitches.css','./c360-premium-theme-v2.css','./c360-showcase-theme.css','./c360-showcase-mobile-fix.css','./c360-showcase-exact.css','./c360-mobile-final-fix.css','./c360-visual-final.css','./c360-mobile-density-fix.css','./c360-field-mobile-density.css','./c360-layout-hardening.css'
