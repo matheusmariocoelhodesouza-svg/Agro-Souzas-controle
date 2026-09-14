@@ -25,7 +25,7 @@ html,body{
   max-width:100%;
   box-sizing:border-box;
 }
-#screenHost :where(.table-wrap,.table-scroll,.responsive-table,.fleet-table-wrap){
+#screenHost :where(.table-wrap,.table-scroll,.responsive-table,.fleet-table-wrap,.fiscal-table-wrap){
   max-width:100%;
   overflow-x:auto;
   -webkit-overflow-scrolling:touch;
@@ -36,6 +36,57 @@ html,body{
 .toolbar{max-width:100%}
 .toolbar>*{min-width:0}
 .btn{overflow:hidden;text-overflow:ellipsis}
+
+/* Configurações/SaaS: módulos injetados participam do grid principal sem criar uma coluna larga invisível. */
+#configuracoes .settings-grid,
+#configuracoes .settings-grid>*{
+  min-width:0;
+  max-width:100%;
+}
+#configuracoes .settings-grid>.c360-saas-shell>#c360SaasLegal,
+#configuracoes .settings-grid>.c360-saas-shell>#c360SaasBilling,
+#configuracoes .settings-grid>.c360-saas-shell>#c360SaasPlatform{
+  grid-column:1/-1;
+  min-width:0;
+  max-width:100%;
+}
+#configuracoes :where(.c360-saas-card,.c360-saas-companies,.c360-saas-company,.c360-saas-incidents,.c360-saas-incident){
+  min-width:0;
+  max-width:100%;
+}
+#configuracoes .c360-saas-company>*{min-width:0}
+
+/* Fiscal: toda a composição cabe no host; apenas a tabela interna pode rolar horizontalmente. */
+#fiscal,
+#fiscal .fiscal-page,
+#fiscal .fiscal-hero,
+#fiscal .fiscal-hero-actions,
+#fiscal .fiscal-kpis,
+#fiscal .fiscal-grid-main,
+#fiscal .fiscal-grid-main>div,
+#fiscal .fiscal-card,
+#fiscal .fiscal-card-head,
+#fiscal .fiscal-flow,
+#fiscal .fiscal-flow-row,
+#fiscal .fiscal-values-form,
+#fiscal .fiscal-portal-grid,
+#fiscal .fiscal-issuance-foot{
+  min-width:0;
+  max-width:100%;
+}
+#fiscal .fiscal-hero-actions>*,
+#fiscal .fiscal-kpis>*,
+#fiscal .fiscal-grid-main>*,
+#fiscal .fiscal-portal-grid>*{
+  min-width:0;
+}
+#fiscal .fiscal-table-wrap{
+  width:100%;
+  min-width:0;
+  max-width:100%;
+  overflow-x:auto;
+  overscroll-behavior-x:contain;
+}
 
 /* Modais/painéis flutuantes permanecem dentro do viewport. */
 :where(.modal,.dialog,.sheet,.drawer,.c360-modal,.c360-dialog){
@@ -70,7 +121,19 @@ html,body{
     right:max(8px,env(safe-area-inset-right))!important;
     box-sizing:border-box!important;
   }
+  /* O chat administrativo fica acima da navegação inferior e nunca perde o clique para ela. */
+  body.app-ready:not(.device-mode) .c360-chat-fab{
+    right:max(14px,env(safe-area-inset-right))!important;
+    bottom:calc(92px + env(safe-area-inset-bottom))!important;
+    z-index:1200!important;
+  }
   :where(.module-subnav,.fleet-subnav,.tabs,.tabbar){
+    max-width:100%;
+  }
+  #fiscal .fiscal-page,
+  #fiscal .fiscal-card,
+  #fiscal .fiscal-notice{
+    width:100%;
     max-width:100%;
   }
 }
