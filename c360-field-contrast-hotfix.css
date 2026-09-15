@@ -70,3 +70,40 @@ body.darkmode.device-mode #operacoes .poultry-truck-card :where(div,b,strong,.mu
 body.darkmode.device-mode #operacoes .poultry-truck-card :where(b,strong){color:#0f172a!important}
 body.darkmode.device-mode #operacoes .poultry-truck-card .muted{color:#475569!important}
 body.darkmode.device-mode #operacoes .poultry-truck-card > div:nth-child(2){color:#1e293b!important}
+
+/* Indicadores da apanha: Caminhões, Aves carregadas, Catas e Início previsto. */
+body.device-mode #operacoes .po-detail{
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:8px!important;
+}
+body.device-mode #operacoes .po-detail>div{
+  background:#ffffff!important;
+  color:#0f172a!important;
+  border:1px solid #d7e0ea!important;
+  border-radius:12px!important;
+  min-height:78px!important;
+  padding:11px 12px!important;
+  box-shadow:0 4px 12px rgba(15,23,42,.06)!important;
+}
+body.device-mode #operacoes .po-detail>div .muted{
+  color:#475569!important;
+  opacity:1!important;
+  font-weight:800!important;
+  font-size:11.5px!important;
+}
+body.device-mode #operacoes .po-detail>div b{
+  display:inline-block!important;
+  margin-top:4px!important;
+  color:#0f172a!important;
+  opacity:1!important;
+  font-size:21px!important;
+  line-height:1!important;
+  font-weight:950!important;
+}
+body.darkmode.device-mode #operacoes .po-detail>div{
+  background:#ffffff!important;
+  color:#0f172a!important;
+}
+body.darkmode.device-mode #operacoes .po-detail>div .muted{color:#475569!important}
+body.darkmode.device-mode #operacoes .po-detail>div b{color:#0f172a!important}
