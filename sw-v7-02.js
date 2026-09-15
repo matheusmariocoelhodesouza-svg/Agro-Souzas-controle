@@ -1,2 +1,2 @@
-/* Comando 360 — loader 7.04. Mantém o núcleo estável e força reinstalação para atualizar os assets. */
+/* Comando 360 — loader 7.05. Atualiza o PWA para compartilhamento do relatório em PDF. */
 importScripts('./sw-v7-02-core-hotfix54.js');
