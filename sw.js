@@ -1,4 +1,4 @@
-const CACHE='comando360-v6-103';
+const CACHE='comando360-v6-104';
 const CORE=[
   './',
   './index.html',
@@ -14,7 +14,7 @@ async function decorateAppShell(response){
   if(!type.includes('text/html'))return response;
   let html=await response.text();
   if(!html.includes('c360-device-session.js')){
-    const inject='\n<script src="./c360-device-session.js?v=20260914-1"></script>\n<link rel="stylesheet" href="./c360-login-cleanup.css?v=20260914-2">\n';
+    const inject='\n<script src="./c360-device-session.js?v=20260914-2"></script>\n<link rel="stylesheet" href="./c360-login-cleanup.css?v=20260914-3">\n';
     html=html.replace(/<head([^>]*)>/i,'<head$1>'+inject);
   }
   const headers=new Headers(response.headers);
