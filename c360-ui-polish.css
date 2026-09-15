@@ -288,3 +288,196 @@ body:not(.app-ready):not(.darkmode) #deviceActivateBtn{
   background:linear-gradient(135deg,#1684eb,#0565c9)!important;
   color:#fff!important;
 }
+
+/* 7.03 — RELATÓRIO DE APANHA: ALTA LEGIBILIDADE NO CELULAR
+   O cartão funciona como uma prévia do documento impresso: papel branco,
+   texto escuro e contraste fixo mesmo quando o aparelho está em modo escuro. */
+body.device-mode #equipereport{
+  --report-ink:#0f172a;
+  --report-text:#243247;
+  --report-muted:#59697c;
+  --report-line:#d7e0ea;
+  --report-soft:#f4f7fb;
+  --report-blue:#1266cf;
+}
+
+body.device-mode #equipereport > .card{
+  background:linear-gradient(145deg,#10243f,#142d4d)!important;
+  border:1px solid #2e4a6b!important;
+  box-shadow:0 8px 24px rgba(4,13,28,.18)!important;
+}
+body.device-mode #equipereport > .card strong{
+  color:#ffffff!important;
+  font-size:15px!important;
+  line-height:1.25!important;
+}
+body.device-mode #equipereport > .card .muted{
+  color:#c7d6e8!important;
+  opacity:1!important;
+  font-size:12px!important;
+  line-height:1.45!important;
+}
+
+body.device-mode #teamReportToday .catch-report-card{
+  background:#ffffff!important;
+  color:var(--report-ink)!important;
+  border:1px solid #cfd9e5!important;
+  border-radius:18px!important;
+  padding:15px!important;
+  box-shadow:0 10px 26px rgba(4,13,28,.18)!important;
+  opacity:1!important;
+  filter:none!important;
+  overflow:hidden;
+}
+body.device-mode #teamReportToday .catch-report-card *,
+body.darkmode.device-mode #teamReportToday .catch-report-card *{
+  opacity:1;
+  filter:none;
+}
+body.device-mode #teamReportToday .catch-report-title{
+  gap:10px!important;
+  padding-bottom:12px;
+  margin-bottom:10px;
+  border-bottom:1px solid var(--report-line);
+}
+body.device-mode #teamReportToday .catch-report-title > div{
+  min-width:0;
+  flex:1 1 auto;
+}
+body.device-mode #teamReportToday .catch-report-title h3{
+  margin:4px 0 3px!important;
+  color:var(--report-ink)!important;
+  -webkit-text-fill-color:var(--report-ink)!important;
+  font-size:18px!important;
+  line-height:1.2!important;
+  letter-spacing:-.2px;
+  font-weight:950!important;
+  word-break:break-word;
+}
+body.device-mode #teamReportToday .catch-report-card .muted,
+body.darkmode.device-mode #teamReportToday .catch-report-card .muted{
+  color:var(--report-muted)!important;
+  -webkit-text-fill-color:var(--report-muted)!important;
+  opacity:1!important;
+  font-size:11px!important;
+  line-height:1.35!important;
+}
+body.device-mode #teamReportToday .catch-report-title > div > .muted:first-child{
+  color:#53657a!important;
+  -webkit-text-fill-color:#53657a!important;
+  font-size:10px!important;
+  font-weight:900!important;
+  letter-spacing:.35px;
+}
+
+body.device-mode #teamReportToday .catch-report-meta{
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:8px!important;
+  margin-top:0!important;
+}
+body.device-mode #teamReportToday .catch-report-meta > div,
+body.darkmode.device-mode #teamReportToday .catch-report-meta > div{
+  min-width:0;
+  min-height:78px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  background:var(--report-soft)!important;
+  color:var(--report-text)!important;
+  border:1px solid #e0e6ee!important;
+  border-radius:12px!important;
+  padding:10px 11px!important;
+  box-shadow:none!important;
+}
+body.device-mode #teamReportToday .catch-report-meta > div .muted{
+  display:block;
+  margin-bottom:4px;
+  color:#607086!important;
+  -webkit-text-fill-color:#607086!important;
+  font-weight:750!important;
+}
+body.device-mode #teamReportToday .catch-report-total,
+body.darkmode.device-mode #teamReportToday .catch-report-total{
+  margin-top:0!important;
+  color:var(--report-ink)!important;
+  -webkit-text-fill-color:var(--report-ink)!important;
+  font-size:23px!important;
+  line-height:1.05!important;
+  font-weight:950!important;
+  font-variant-numeric:tabular-nums;
+}
+body.device-mode #teamReportToday .catch-report-meta > div:first-child .catch-report-total{
+  color:var(--report-blue)!important;
+  -webkit-text-fill-color:var(--report-blue)!important;
+}
+body.device-mode #teamReportToday .catch-report-card b,
+body.darkmode.device-mode #teamReportToday .catch-report-card b{
+  color:var(--report-ink)!important;
+  -webkit-text-fill-color:var(--report-ink)!important;
+  font-weight:900!important;
+  line-height:1.35!important;
+}
+
+body.device-mode #teamReportToday .pill,
+body.darkmode.device-mode #teamReportToday .pill{
+  flex:0 0 auto;
+  align-self:flex-start;
+  background:#e8f7ee!important;
+  color:#11663b!important;
+  -webkit-text-fill-color:#11663b!important;
+  border:1px solid #bfe6cf!important;
+  padding:5px 9px!important;
+  font-size:10px!important;
+  line-height:1!important;
+  font-weight:950!important;
+  letter-spacing:.15px;
+}
+body.device-mode #teamReportToday .pill.warn,
+body.darkmode.device-mode #teamReportToday .pill.warn{
+  background:#fff4d6!important;
+  color:#8a5700!important;
+  -webkit-text-fill-color:#8a5700!important;
+  border-color:#efd691!important;
+}
+
+body.device-mode #teamReportToday .catch-report-card > .toolbar{
+  display:grid!important;
+  grid-template-columns:1fr!important;
+  gap:8px!important;
+  margin-top:12px!important;
+}
+body.device-mode #teamReportToday .catchReportPrint{
+  width:100%!important;
+  min-height:50px!important;
+  background:linear-gradient(135deg,#1684eb,#075ec4)!important;
+  color:#ffffff!important;
+  -webkit-text-fill-color:#ffffff!important;
+  border:1px solid #075bbd!important;
+  border-radius:13px!important;
+  font-size:13px!important;
+  font-weight:950!important;
+  letter-spacing:.15px;
+  box-shadow:0 7px 17px rgba(18,102,207,.24)!important;
+}
+body.device-mode #teamReportToday .catchReportA4{
+  width:100%!important;
+  min-height:46px!important;
+  background:#f6f8fb!important;
+  color:#26364a!important;
+  -webkit-text-fill-color:#26364a!important;
+  border:1px solid #d5dee9!important;
+  border-radius:13px!important;
+  font-size:12px!important;
+  font-weight:900!important;
+  box-shadow:none!important;
+}
+
+@media(max-width:380px){
+  body.device-mode #teamReportToday .catch-report-meta{
+    grid-template-columns:1fr!important;
+  }
+  body.device-mode #teamReportToday .catch-report-meta > div{
+    min-height:68px;
+  }
+}
