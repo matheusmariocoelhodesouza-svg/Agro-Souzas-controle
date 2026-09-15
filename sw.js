@@ -1,4 +1,4 @@
-const CACHE='comando360-v6-99';
+const CACHE='comando360-v6-100';
 const CORE=[
   './',
   './index.html',
