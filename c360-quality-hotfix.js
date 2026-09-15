@@ -1,6 +1,6 @@
 (()=>{
 'use strict';
-const BOOT_VERSION='2026.09.14-b40';
+const BOOT_VERSION='2026.09.15-b41';
 const recoveryModule='./c360-autorecovery.js';
 const styles=['./c360-premium-ui.css','./c360-product-ui.css','./c360-dashboard-dark-fix.css','./c360-enterprise-ui.css','./c360-commercial.css','./c360-fiscal.css','./c360-saas-readiness.css','./c360-visual-system.css','./c360-contrast-fix.css','./c360-hotfix-dashboard-dark.css','./c360-hotfix-bottom-nav.css','./c360-trailer-hitches.css','./c360-premium-theme-v2.css','./c360-showcase-theme.css','./c360-showcase-mobile-fix.css','./c360-showcase-exact.css','./c360-mobile-final-fix.css','./c360-visual-final.css','./c360-mobile-density-fix.css','./c360-field-mobile-density.css','./c360-layout-hardening.css'];
 const essentialModules=[
@@ -8,7 +8,8 @@ const essentialModules=[
  './c360-product-core.js',
  './c360-quality-core.js',
  './c360-farm-cache-hotfix.js',
- './c360-field-offline-hotfix.js'
+ './c360-field-offline-hotfix.js',
+ './c360-field-stability.js'
 ];
 const optionalModules=[
  './c360-consumable-edit.js',
