@@ -1,483 +1,173 @@
-@import url('./c360-ui-polish-base.css');
+@import url('./c360-ui-polish-legacy-20260915.css');
 
-/* COMANDO 360 — RELATÓRIO DE APANHA NO CAMPO
-   Ajuste exclusivamente visual. Mantém estrutura, dados, ordem,
-   lógica e impressão caminhão por caminhão exatamente como estavam. */
-
-body.device-mode #equipereport{
-  color:var(--c360-text)!important;
+/* 7.04 — CAMINHÃO / APANHA NO CELULAR: CORREÇÃO DE LAYOUT E CONTRASTE
+   Corrige o cartão CATA que estava virando um bloco branco gigante e
+   melhora leitura dos campos sem alterar dados, cálculos ou fluxo. */
+body.device-mode #poTruckCard{
+  overflow:hidden!important;
 }
-
-body.device-mode #equipereport .v2hero h1{
-  color:var(--c360-text)!important;
+body.device-mode #poTruckCard .field-section{
+  overflow:hidden!important;
 }
-body.device-mode #equipereport .v2hero p,
-body.device-mode #equipereport .muted{
-  color:var(--c360-muted)!important;
+body.device-mode #poTruckCard .field-section-title strong,
+body.darkmode.device-mode #poTruckCard .field-section-title strong,
+body.device-mode #poTruckCard .field-form-head h3,
+body.darkmode.device-mode #poTruckCard .field-form-head h3{
+  color:#f5f9ff!important;
+  -webkit-text-fill-color:#f5f9ff!important;
 }
-
-body.device-mode #teamReportDate{
-  background:var(--c360-surface)!important;
-  color:var(--c360-text)!important;
-  border:1px solid var(--c360-border-strong)!important;
-  box-shadow:none!important;
-}
-body.darkmode.device-mode #teamReportDate{color-scheme:dark}
-
-body.device-mode #refreshTeamReport{
-  background:var(--c360-surface-2)!important;
-  color:var(--c360-text-soft)!important;
-  border:1px solid var(--c360-border)!important;
-  box-shadow:none!important;
-}
-
-body.device-mode #equipereport > .card{
-  background:var(--c360-surface)!important;
-  color:var(--c360-text)!important;
-  border-color:var(--c360-border)!important;
-  box-shadow:var(--c360-shadow-soft)!important;
-}
-body.device-mode #equipereport > .card strong{
-  color:var(--c360-text)!important;
-}
-
-body.device-mode #teamReportToday .catch-report-card{
-  background:var(--c360-surface)!important;
-  color:var(--c360-text)!important;
-  border-color:var(--c360-border)!important;
-  box-shadow:var(--c360-shadow-soft)!important;
-}
-body.device-mode #teamReportToday .catch-report-title h3{
-  color:var(--c360-text)!important;
-  font-weight:900!important;
-}
-body.device-mode #teamReportToday .catch-report-meta > div{
-  background:var(--c360-surface-2)!important;
-  color:var(--c360-text)!important;
-  border:1px solid var(--c360-border)!important;
-}
-body.device-mode #teamReportToday .catch-report-total,
-body.device-mode #teamReportToday b{
-  color:var(--c360-text)!important;
-}
-body.device-mode #teamReportToday .catch-report-total{
-  font-weight:950!important;
-}
-
-body.device-mode #teamReportToday .pill{
-  border:1px solid var(--c360-border)!important;
-  color:var(--c360-text-soft)!important;
-  background:var(--c360-surface-3)!important;
-}
-body.darkmode.device-mode #teamReportToday .pill.ok{
-  background:#102c20!important;
-  color:#80dfaa!important;
-  border-color:#23563c!important;
-}
-body.darkmode.device-mode #teamReportToday .pill.warn{
-  background:#332612!important;
-  color:#f3c86e!important;
-  border-color:#5c4721!important;
-}
-body.device-mode:not(.darkmode) #teamReportToday .pill.ok{
-  background:#dcfce7!important;
-  color:#166534!important;
-  border-color:#bbf7d0!important;
-}
-body.device-mode:not(.darkmode) #teamReportToday .pill.warn{
-  background:#fef3c7!important;
-  color:#92400e!important;
-  border-color:#fde68a!important;
-}
-
-body.device-mode #teamReportToday .catchReportPrint{
-  background:linear-gradient(135deg,var(--c360-primary),var(--c360-primary-strong))!important;
-  color:#fff!important;
-  border:1px solid transparent!important;
-  box-shadow:0 6px 16px rgba(31,98,208,.18)!important;
-}
-body.device-mode #teamReportToday .catchReportA4{
-  background:var(--c360-surface-3)!important;
-  color:var(--c360-text-soft)!important;
-  border:1px solid var(--c360-border)!important;
-  box-shadow:none!important;
-}
-body.device-mode #teamReportToday .catchReportPrint:focus-visible,
-body.device-mode #teamReportToday .catchReportA4:focus-visible,
-body.device-mode #refreshTeamReport:focus-visible,
-body.device-mode #teamReportDate:focus-visible{
-  outline:none!important;
-  box-shadow:var(--c360-focus)!important;
-  border-color:var(--c360-primary)!important;
-}
-
-/* COMANDO 360 — REGRA GERAL DE CONTRASTE DO ADMIN EM MODO CLARO
-   Somente visual: não altera navegação, dados, formulários ou lógica. */
-body.app-ready:not(.device-mode):not(.darkmode){
-  --c360-bg:#f4f7fb;
-  --c360-surface:#ffffff;
-  --c360-surface-2:#f8fafc;
-  --c360-surface-3:#eef4fb;
-  --c360-text:#0f172a;
-  --c360-text-soft:#334155;
-  --c360-muted:#64748b;
-  --c360-border:#d9e2ec;
-  --c360-border-strong:#bdcbd9;
-  --c360-primary:#1d4ed8;
-  --c360-primary-strong:#1e40af;
-  --c360-primary-soft:#eaf2ff;
-  background:var(--c360-bg)!important;
-  color:var(--c360-text)!important;
-}
-
-body.app-ready:not(.device-mode):not(.darkmode) h1,
-body.app-ready:not(.device-mode):not(.darkmode) h2,
-body.app-ready:not(.device-mode):not(.darkmode) h3,
-body.app-ready:not(.device-mode):not(.darkmode) h4,
-body.app-ready:not(.device-mode):not(.darkmode) strong,
-body.app-ready:not(.device-mode):not(.darkmode) b{
-  color:var(--c360-text)!important;
-}
-
-body.app-ready:not(.device-mode):not(.darkmode) .muted,
-body.app-ready:not(.device-mode):not(.darkmode) .label,
-body.app-ready:not(.device-mode):not(.darkmode) .v2hero p,
-body.app-ready:not(.device-mode):not(.darkmode) .fleet-meta,
-body.app-ready:not(.device-mode):not(.darkmode) .fleet-result-meta,
-body.app-ready:not(.device-mode):not(.darkmode) .finance-kpi-label,
-body.app-ready:not(.device-mode):not(.darkmode) .finance-entry-meta,
-body.app-ready:not(.device-mode):not(.darkmode) .c360-page-info{
-  color:var(--c360-muted)!important;
-}
-
-body.app-ready:not(.device-mode):not(.darkmode) .card,
-body.app-ready:not(.device-mode):not(.darkmode) .v2panel,
-body.app-ready:not(.device-mode):not(.darkmode) .v2kpi,
-body.app-ready:not(.device-mode):not(.darkmode) .item,
-body.app-ready:not(.device-mode):not(.darkmode) .rh-employer-card,
-body.app-ready:not(.device-mode):not(.darkmode) .rh-kpi-card,
-body.app-ready:not(.device-mode):not(.darkmode) .rh-list-card,
-body.app-ready:not(.device-mode):not(.darkmode) .rh-tool-card,
-body.app-ready:not(.device-mode):not(.darkmode) .finance-overview-card,
-body.app-ready:not(.device-mode):not(.darkmode) .finance-entry-card,
-body.app-ready:not(.device-mode):not(.darkmode) .finance-kpi,
-body.app-ready:not(.device-mode):not(.darkmode) .fleet-kpi,
-body.app-ready:not(.device-mode):not(.darkmode) .fleet-controls,
-body.app-ready:not(.device-mode):not(.darkmode) .fleet-card{
-  background:#fff!important;
-  color:var(--c360-text)!important;
-  border-color:var(--c360-border)!important;
-}
-
-body.app-ready:not(.device-mode):not(.darkmode) input:not([type="checkbox"]):not([type="radio"]),
-body.app-ready:not(.device-mode):not(.darkmode) select,
-body.app-ready:not(.device-mode):not(.darkmode) textarea{
-  background:#fff!important;
-  color:var(--c360-text)!important;
-  border-color:var(--c360-border-strong)!important;
-}
-body.app-ready:not(.device-mode):not(.darkmode) input::placeholder,
-body.app-ready:not(.device-mode):not(.darkmode) textarea::placeholder{
-  color:#7b8ba0!important;
+body.device-mode #poTruckCard .field-section-title .muted,
+body.darkmode.device-mode #poTruckCard .field-section-title .muted,
+body.device-mode #poTruckCard .field-form-head .muted,
+body.darkmode.device-mode #poTruckCard .field-form-head .muted{
+  color:#b8c9dc!important;
+  -webkit-text-fill-color:#b8c9dc!important;
   opacity:1!important;
 }
-body.app-ready:not(.device-mode):not(.darkmode) label{
-  color:var(--c360-text-soft)!important;
-}
 
-body.app-ready:not(.device-mode):not(.darkmode) .btn.soft,
-body.app-ready:not(.device-mode):not(.darkmode) .header-icon-btn,
-body.app-ready:not(.device-mode):not(.darkmode) .finance-privacy-btn{
-  background:#f8fafc!important;
-  color:#26364a!important;
-  border:1px solid var(--c360-border)!important;
+body.device-mode #poTruckCard label:not(.field-cata-switch),
+body.darkmode.device-mode #poTruckCard label:not(.field-cata-switch){
+  color:#9fb7d1!important;
+  -webkit-text-fill-color:#9fb7d1!important;
+  font-weight:800!important;
 }
-body.app-ready:not(.device-mode):not(.darkmode) .btn.primary,
-body.app-ready:not(.device-mode):not(.darkmode) .v2new{
-  background:linear-gradient(135deg,var(--c360-primary),var(--c360-primary-strong))!important;
-  color:#fff!important;
-  border-color:transparent!important;
-}
-
-body.app-ready:not(.device-mode):not(.darkmode) .module-subnav,
-body.app-ready:not(.device-mode):not(.darkmode) table,
-body.app-ready:not(.device-mode):not(.darkmode) .section table{
-  background:#fff!important;
-  color:var(--c360-text)!important;
-  border-color:var(--c360-border)!important;
-}
-body.app-ready:not(.device-mode):not(.darkmode) .section table th{
-  background:#f8fafc!important;
-  color:#475569!important;
-  border-color:var(--c360-border)!important;
-}
-body.app-ready:not(.device-mode):not(.darkmode) .section table td{
-  color:#334155!important;
-  border-color:var(--c360-border)!important;
-}
-body.app-ready:not(.device-mode):not(.darkmode) .module-subnav button{
-  color:#475569!important;
-}
-body.app-ready:not(.device-mode):not(.darkmode) .module-subnav button.active{
-  background:#eaf2ff!important;
-  color:#1d4ed8!important;
-  border-color:#bfdbfe!important;
-}
-
-body.app-ready:not(.device-mode):not(.darkmode) .pill{
-  background:#eef4fb!important;
-  color:#334155!important;
-  border-color:#d9e2ec!important;
-}
-body.app-ready:not(.device-mode):not(.darkmode) .pill.ok{
-  background:#dcfce7!important;
-  color:#166534!important;
-  border-color:#bbf7d0!important;
-}
-body.app-ready:not(.device-mode):not(.darkmode) .pill.warn{
-  background:#fef3c7!important;
-  color:#92400e!important;
-  border-color:#fde68a!important;
-}
-body.app-ready:not(.device-mode):not(.darkmode) .pill.danger{
-  background:#fee2e2!important;
-  color:#991b1b!important;
-  border-color:#fecaca!important;
-}
-
-/* Tela inicial de ativação / acesso do administrador em modo claro */
-body:not(.app-ready):not(.darkmode) .team-entry .card{
-  background:#ffffff!important;
-  color:#0f172a!important;
-  border-color:#cfd9e5!important;
-}
-body:not(.app-ready):not(.darkmode) .team-entry-title h2,
-body:not(.app-ready):not(.darkmode) .admin-brand h2{
-  color:#0f172a!important;
-}
-body:not(.app-ready):not(.darkmode) .team-entry .muted,
-body:not(.app-ready):not(.darkmode) #deviceSetupSubtitle,
-body:not(.app-ready):not(.darkmode) #deviceMsg{
-  color:#56667a!important;
-  opacity:1!important;
-}
-body:not(.app-ready):not(.darkmode) .team-entry label{
-  color:#334155!important;
-  font-weight:700!important;
-}
-body:not(.app-ready):not(.darkmode) .team-code-input,
-body:not(.app-ready):not(.darkmode) .login input{
-  background:#ffffff!important;
-  color:#0f172a!important;
-  border-color:#b9c7d6!important;
-  opacity:1!important;
-}
-body:not(.app-ready):not(.darkmode) .team-code-input::placeholder,
-body:not(.app-ready):not(.darkmode) .login input::placeholder{
-  color:#64748b!important;
-  opacity:1!important;
-}
-body:not(.app-ready):not(.darkmode) .team-entry .btn.soft,
-body:not(.app-ready):not(.darkmode) #showAdminLogin{
-  background:#f8fafc!important;
-  color:#1e293b!important;
-  border:1px solid #cfd9e5!important;
-}
-body:not(.app-ready):not(.darkmode) .team-entry .btn.primary,
-body:not(.app-ready):not(.darkmode) #deviceActivateBtn{
-  background:linear-gradient(135deg,#1684eb,#0565c9)!important;
-  color:#fff!important;
-}
-
-/* 7.03 — RELATÓRIO DE APANHA: ALTA LEGIBILIDADE NO CELULAR
-   O cartão funciona como uma prévia do documento impresso: papel branco,
-   texto escuro e contraste fixo mesmo quando o aparelho está em modo escuro. */
-body.device-mode #equipereport{
-  --report-ink:#0f172a;
-  --report-text:#243247;
-  --report-muted:#59697c;
-  --report-line:#d7e0ea;
-  --report-soft:#f4f7fb;
-  --report-blue:#1266cf;
-}
-
-body.device-mode #equipereport > .card{
-  background:linear-gradient(145deg,#10243f,#142d4d)!important;
-  border:1px solid #2e4a6b!important;
-  box-shadow:0 8px 24px rgba(4,13,28,.18)!important;
-}
-body.device-mode #equipereport > .card strong{
-  color:#ffffff!important;
-  font-size:15px!important;
-  line-height:1.25!important;
-}
-body.device-mode #equipereport > .card .muted{
-  color:#c7d6e8!important;
-  opacity:1!important;
-  font-size:12px!important;
-  line-height:1.45!important;
-}
-
-body.device-mode #teamReportToday .catch-report-card{
-  background:#ffffff!important;
-  color:var(--report-ink)!important;
-  border:1px solid #cfd9e5!important;
-  border-radius:18px!important;
-  padding:15px!important;
-  box-shadow:0 10px 26px rgba(4,13,28,.18)!important;
-  opacity:1!important;
-  filter:none!important;
-  overflow:hidden;
-}
-body.device-mode #teamReportToday .catch-report-card *,
-body.darkmode.device-mode #teamReportToday .catch-report-card *{
-  opacity:1;
-  filter:none;
-}
-body.device-mode #teamReportToday .catch-report-title{
-  gap:10px!important;
-  padding-bottom:12px;
-  margin-bottom:10px;
-  border-bottom:1px solid var(--report-line);
-}
-body.device-mode #teamReportToday .catch-report-title > div{
-  min-width:0;
-  flex:1 1 auto;
-}
-body.device-mode #teamReportToday .catch-report-title h3{
-  margin:4px 0 3px!important;
-  color:var(--report-ink)!important;
-  -webkit-text-fill-color:var(--report-ink)!important;
-  font-size:18px!important;
-  line-height:1.2!important;
-  letter-spacing:-.2px;
-  font-weight:950!important;
-  word-break:break-word;
-}
-body.device-mode #teamReportToday .catch-report-card .muted,
-body.darkmode.device-mode #teamReportToday .catch-report-card .muted{
-  color:var(--report-muted)!important;
-  -webkit-text-fill-color:var(--report-muted)!important;
-  opacity:1!important;
-  font-size:11px!important;
-  line-height:1.35!important;
-}
-body.device-mode #teamReportToday .catch-report-title > div > .muted:first-child{
-  color:#53657a!important;
-  -webkit-text-fill-color:#53657a!important;
-  font-size:10px!important;
-  font-weight:900!important;
-  letter-spacing:.35px;
-}
-
-body.device-mode #teamReportToday .catch-report-meta{
-  display:grid!important;
-  grid-template-columns:repeat(2,minmax(0,1fr))!important;
-  gap:8px!important;
-  margin-top:0!important;
-}
-body.device-mode #teamReportToday .catch-report-meta > div,
-body.darkmode.device-mode #teamReportToday .catch-report-meta > div{
-  min-width:0;
-  min-height:78px;
-  display:flex;
-  flex-direction:column;
-  justify-content:center;
-  background:var(--report-soft)!important;
-  color:var(--report-text)!important;
-  border:1px solid #e0e6ee!important;
+body.device-mode #poTruckCard input:not([type='checkbox']),
+body.device-mode #poTruckCard select,
+body.device-mode #poTruckCard textarea,
+body.darkmode.device-mode #poTruckCard input:not([type='checkbox']),
+body.darkmode.device-mode #poTruckCard select,
+body.darkmode.device-mode #poTruckCard textarea{
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  background:#0d1a2b!important;
+  color:#f3f8ff!important;
+  -webkit-text-fill-color:#f3f8ff!important;
+  border:1px solid #3d5e82!important;
   border-radius:12px!important;
-  padding:10px 11px!important;
+  box-shadow:none!important;
+  opacity:1!important;
+}
+body.device-mode #poTruckCard input::placeholder,
+body.device-mode #poTruckCard textarea::placeholder,
+body.darkmode.device-mode #poTruckCard input::placeholder,
+body.darkmode.device-mode #poTruckCard textarea::placeholder{
+  color:#9eb3ca!important;
+  -webkit-text-fill-color:#9eb3ca!important;
+  opacity:1!important;
+}
+body.device-mode #poTruckCard input:focus,
+body.device-mode #poTruckCard select:focus,
+body.device-mode #poTruckCard textarea:focus{
+  border-color:#2f8cff!important;
+  box-shadow:0 0 0 3px rgba(47,140,255,.16)!important;
+}
+body.device-mode #poTruckCard .field-device-memory{
+  color:#9fb4cc!important;
+  opacity:1!important;
+}
+
+/* CATA: mantém checkbox e texto na mesma linha, sem caixa branca estourada */
+body.device-mode #poTruckCard .field-cata-switch,
+body.darkmode.device-mode #poTruckCard .field-cata-switch{
+  display:flex!important;
+  position:static!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  min-height:0!important;
+  height:auto!important;
+  align-items:center!important;
+  justify-content:flex-start!important;
+  gap:11px!important;
+  margin:14px 0 10px!important;
+  padding:12px 13px!important;
+  background:#101f32!important;
+  color:#f3f8ff!important;
+  border:1px solid #35516f!important;
+  border-radius:12px!important;
+  box-shadow:none!important;
+  overflow:hidden!important;
+  cursor:pointer!important;
+}
+body.device-mode #poTruckCard .field-cata-switch input[type='checkbox'],
+body.darkmode.device-mode #poTruckCard .field-cata-switch input[type='checkbox']{
+  appearance:auto!important;
+  -webkit-appearance:checkbox!important;
+  display:block!important;
+  position:static!important;
+  width:22px!important;
+  height:22px!important;
+  min-width:22px!important;
+  max-width:22px!important;
+  min-height:22px!important;
+  max-height:22px!important;
+  flex:0 0 22px!important;
+  margin:0!important;
+  padding:0!important;
+  opacity:1!important;
+  transform:none!important;
+  accent-color:#1684eb!important;
+  background:transparent!important;
   box-shadow:none!important;
 }
-body.device-mode #teamReportToday .catch-report-meta > div .muted{
-  display:block;
-  margin-bottom:4px;
-  color:#607086!important;
-  -webkit-text-fill-color:#607086!important;
-  font-weight:750!important;
+body.device-mode #poTruckCard .field-cata-switch > span,
+body.darkmode.device-mode #poTruckCard .field-cata-switch > span{
+  display:flex!important;
+  position:static!important;
+  min-width:0!important;
+  flex:1 1 auto!important;
+  flex-direction:column!important;
+  align-items:flex-start!important;
+  gap:2px!important;
+  margin:0!important;
+  padding:0!important;
+  transform:none!important;
 }
-body.device-mode #teamReportToday .catch-report-total,
-body.darkmode.device-mode #teamReportToday .catch-report-total{
-  margin-top:0!important;
-  color:var(--report-ink)!important;
-  -webkit-text-fill-color:var(--report-ink)!important;
-  font-size:23px!important;
-  line-height:1.05!important;
-  font-weight:950!important;
-  font-variant-numeric:tabular-nums;
-}
-body.device-mode #teamReportToday .catch-report-meta > div:first-child .catch-report-total{
-  color:var(--report-blue)!important;
-  -webkit-text-fill-color:var(--report-blue)!important;
-}
-body.device-mode #teamReportToday .catch-report-card b,
-body.darkmode.device-mode #teamReportToday .catch-report-card b{
-  color:var(--report-ink)!important;
-  -webkit-text-fill-color:var(--report-ink)!important;
-  font-weight:900!important;
-  line-height:1.35!important;
-}
-
-body.device-mode #teamReportToday .pill,
-body.darkmode.device-mode #teamReportToday .pill{
-  flex:0 0 auto;
-  align-self:flex-start;
-  background:#e8f7ee!important;
-  color:#11663b!important;
-  -webkit-text-fill-color:#11663b!important;
-  border:1px solid #bfe6cf!important;
-  padding:5px 9px!important;
-  font-size:10px!important;
-  line-height:1!important;
-  font-weight:950!important;
-  letter-spacing:.15px;
-}
-body.device-mode #teamReportToday .pill.warn,
-body.darkmode.device-mode #teamReportToday .pill.warn{
-  background:#fff4d6!important;
-  color:#8a5700!important;
-  -webkit-text-fill-color:#8a5700!important;
-  border-color:#efd691!important;
-}
-
-body.device-mode #teamReportToday .catch-report-card > .toolbar{
-  display:grid!important;
-  grid-template-columns:1fr!important;
-  gap:8px!important;
-  margin-top:12px!important;
-}
-body.device-mode #teamReportToday .catchReportPrint{
-  width:100%!important;
-  min-height:50px!important;
-  background:linear-gradient(135deg,#1684eb,#075ec4)!important;
-  color:#ffffff!important;
-  -webkit-text-fill-color:#ffffff!important;
-  border:1px solid #075bbd!important;
-  border-radius:13px!important;
+body.device-mode #poTruckCard .field-cata-switch strong,
+body.darkmode.device-mode #poTruckCard .field-cata-switch strong{
+  display:block!important;
+  color:#f8fbff!important;
+  -webkit-text-fill-color:#f8fbff!important;
   font-size:13px!important;
-  font-weight:950!important;
-  letter-spacing:.15px;
-  box-shadow:0 7px 17px rgba(18,102,207,.24)!important;
-}
-body.device-mode #teamReportToday .catchReportA4{
-  width:100%!important;
-  min-height:46px!important;
-  background:#f6f8fb!important;
-  color:#26364a!important;
-  -webkit-text-fill-color:#26364a!important;
-  border:1px solid #d5dee9!important;
-  border-radius:13px!important;
-  font-size:12px!important;
+  line-height:1.25!important;
   font-weight:900!important;
-  box-shadow:none!important;
+  white-space:normal!important;
+}
+body.device-mode #poTruckCard .field-cata-switch small,
+body.darkmode.device-mode #poTruckCard .field-cata-switch small{
+  display:block!important;
+  color:#a9bdd3!important;
+  -webkit-text-fill-color:#a9bdd3!important;
+  font-size:10px!important;
+  line-height:1.35!important;
+  white-space:normal!important;
 }
 
-@media(max-width:380px){
-  body.device-mode #teamReportToday .catch-report-meta{
+body.device-mode #poTruckCard .field-single-aviary,
+body.device-mode #poTruckCard .field-main-total,
+body.device-mode #poTruckCard .field-compact-time{
+  min-width:0!important;
+  max-width:100%!important;
+}
+body.device-mode #poTruckCard .field-main-total input{
+  font-size:18px!important;
+  font-weight:900!important;
+}
+body.device-mode #poTruckCard input[type='datetime-local']{
+  color-scheme:dark!important;
+  font-size:14px!important;
+}
+
+@media(max-width:520px){
+  body.device-mode #poTruckCard .po-truck-driver-grid,
+  body.device-mode #poTruckCard .po-time-grid{
     grid-template-columns:1fr!important;
   }
-  body.device-mode #teamReportToday .catch-report-meta > div{
-    min-height:68px;
+  body.device-mode #poTruckCard .field-section{
+    padding:13px!important;
+  }
+  body.device-mode #poTruckCard .field-cata-switch{
+    padding:11px 12px!important;
   }
 }
