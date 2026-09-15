@@ -1,0 +1,9 @@
+/* COMANDO 360 — ENTRADA LIMPA DE CELULAR DE EQUIPE */
+body:not(.app-ready) header,
+body:not(.app-ready) .v2sidebar,
+body:not(.app-ready) .mobile-bottom-nav,
+body:not(.app-ready) #nav{display:none!important}
+body:not(.app-ready) #app{padding-left:0!important}
+body:not(.app-ready) .wrap{max-width:100%!important;padding:14px!important}
+body:not(.app-ready) .team-entry{margin:5vh auto!important}
+@media(max-width:600px){body:not(.app-ready) .wrap{padding:12px!important}body:not(.app-ready) .team-entry{margin:3vh auto!important}body:not(.app-ready) .team-entry .card{padding:22px 18px!important}}
