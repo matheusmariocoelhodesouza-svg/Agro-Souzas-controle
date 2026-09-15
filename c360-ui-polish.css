@@ -110,3 +110,181 @@ body.device-mode #teamReportDate:focus-visible{
   box-shadow:var(--c360-focus)!important;
   border-color:var(--c360-primary)!important;
 }
+
+/* COMANDO 360 — REGRA GERAL DE CONTRASTE DO ADMIN EM MODO CLARO
+   Somente visual: não altera navegação, dados, formulários ou lógica. */
+body.app-ready:not(.device-mode):not(.darkmode){
+  --c360-bg:#f4f7fb;
+  --c360-surface:#ffffff;
+  --c360-surface-2:#f8fafc;
+  --c360-surface-3:#eef4fb;
+  --c360-text:#0f172a;
+  --c360-text-soft:#334155;
+  --c360-muted:#64748b;
+  --c360-border:#d9e2ec;
+  --c360-border-strong:#bdcbd9;
+  --c360-primary:#1d4ed8;
+  --c360-primary-strong:#1e40af;
+  --c360-primary-soft:#eaf2ff;
+  background:var(--c360-bg)!important;
+  color:var(--c360-text)!important;
+}
+
+body.app-ready:not(.device-mode):not(.darkmode) h1,
+body.app-ready:not(.device-mode):not(.darkmode) h2,
+body.app-ready:not(.device-mode):not(.darkmode) h3,
+body.app-ready:not(.device-mode):not(.darkmode) h4,
+body.app-ready:not(.device-mode):not(.darkmode) strong,
+body.app-ready:not(.device-mode):not(.darkmode) b{
+  color:var(--c360-text)!important;
+}
+
+body.app-ready:not(.device-mode):not(.darkmode) .muted,
+body.app-ready:not(.device-mode):not(.darkmode) .label,
+body.app-ready:not(.device-mode):not(.darkmode) .v2hero p,
+body.app-ready:not(.device-mode):not(.darkmode) .fleet-meta,
+body.app-ready:not(.device-mode):not(.darkmode) .fleet-result-meta,
+body.app-ready:not(.device-mode):not(.darkmode) .finance-kpi-label,
+body.app-ready:not(.device-mode):not(.darkmode) .finance-entry-meta,
+body.app-ready:not(.device-mode):not(.darkmode) .c360-page-info{
+  color:var(--c360-muted)!important;
+}
+
+body.app-ready:not(.device-mode):not(.darkmode) .card,
+body.app-ready:not(.device-mode):not(.darkmode) .v2panel,
+body.app-ready:not(.device-mode):not(.darkmode) .v2kpi,
+body.app-ready:not(.device-mode):not(.darkmode) .item,
+body.app-ready:not(.device-mode):not(.darkmode) .rh-employer-card,
+body.app-ready:not(.device-mode):not(.darkmode) .rh-kpi-card,
+body.app-ready:not(.device-mode):not(.darkmode) .rh-list-card,
+body.app-ready:not(.device-mode):not(.darkmode) .rh-tool-card,
+body.app-ready:not(.device-mode):not(.darkmode) .finance-overview-card,
+body.app-ready:not(.device-mode):not(.darkmode) .finance-entry-card,
+body.app-ready:not(.device-mode):not(.darkmode) .finance-kpi,
+body.app-ready:not(.device-mode):not(.darkmode) .fleet-kpi,
+body.app-ready:not(.device-mode):not(.darkmode) .fleet-controls,
+body.app-ready:not(.device-mode):not(.darkmode) .fleet-card{
+  background:#fff!important;
+  color:var(--c360-text)!important;
+  border-color:var(--c360-border)!important;
+}
+
+body.app-ready:not(.device-mode):not(.darkmode) input:not([type="checkbox"]):not([type="radio"]),
+body.app-ready:not(.device-mode):not(.darkmode) select,
+body.app-ready:not(.device-mode):not(.darkmode) textarea{
+  background:#fff!important;
+  color:var(--c360-text)!important;
+  border-color:var(--c360-border-strong)!important;
+}
+body.app-ready:not(.device-mode):not(.darkmode) input::placeholder,
+body.app-ready:not(.device-mode):not(.darkmode) textarea::placeholder{
+  color:#7b8ba0!important;
+  opacity:1!important;
+}
+body.app-ready:not(.device-mode):not(.darkmode) label{
+  color:var(--c360-text-soft)!important;
+}
+
+body.app-ready:not(.device-mode):not(.darkmode) .btn.soft,
+body.app-ready:not(.device-mode):not(.darkmode) .header-icon-btn,
+body.app-ready:not(.device-mode):not(.darkmode) .finance-privacy-btn{
+  background:#f8fafc!important;
+  color:#26364a!important;
+  border:1px solid var(--c360-border)!important;
+}
+body.app-ready:not(.device-mode):not(.darkmode) .btn.primary,
+body.app-ready:not(.device-mode):not(.darkmode) .v2new{
+  background:linear-gradient(135deg,var(--c360-primary),var(--c360-primary-strong))!important;
+  color:#fff!important;
+  border-color:transparent!important;
+}
+
+body.app-ready:not(.device-mode):not(.darkmode) .module-subnav,
+body.app-ready:not(.device-mode):not(.darkmode) table,
+body.app-ready:not(.device-mode):not(.darkmode) .section table{
+  background:#fff!important;
+  color:var(--c360-text)!important;
+  border-color:var(--c360-border)!important;
+}
+body.app-ready:not(.device-mode):not(.darkmode) .section table th{
+  background:#f8fafc!important;
+  color:#475569!important;
+  border-color:var(--c360-border)!important;
+}
+body.app-ready:not(.device-mode):not(.darkmode) .section table td{
+  color:#334155!important;
+  border-color:var(--c360-border)!important;
+}
+body.app-ready:not(.device-mode):not(.darkmode) .module-subnav button{
+  color:#475569!important;
+}
+body.app-ready:not(.device-mode):not(.darkmode) .module-subnav button.active{
+  background:#eaf2ff!important;
+  color:#1d4ed8!important;
+  border-color:#bfdbfe!important;
+}
+
+body.app-ready:not(.device-mode):not(.darkmode) .pill{
+  background:#eef4fb!important;
+  color:#334155!important;
+  border-color:#d9e2ec!important;
+}
+body.app-ready:not(.device-mode):not(.darkmode) .pill.ok{
+  background:#dcfce7!important;
+  color:#166534!important;
+  border-color:#bbf7d0!important;
+}
+body.app-ready:not(.device-mode):not(.darkmode) .pill.warn{
+  background:#fef3c7!important;
+  color:#92400e!important;
+  border-color:#fde68a!important;
+}
+body.app-ready:not(.device-mode):not(.darkmode) .pill.danger{
+  background:#fee2e2!important;
+  color:#991b1b!important;
+  border-color:#fecaca!important;
+}
+
+/* Tela inicial de ativação / acesso do administrador em modo claro */
+body:not(.app-ready):not(.darkmode) .team-entry .card{
+  background:#ffffff!important;
+  color:#0f172a!important;
+  border-color:#cfd9e5!important;
+}
+body:not(.app-ready):not(.darkmode) .team-entry-title h2,
+body:not(.app-ready):not(.darkmode) .admin-brand h2{
+  color:#0f172a!important;
+}
+body:not(.app-ready):not(.darkmode) .team-entry .muted,
+body:not(.app-ready):not(.darkmode) #deviceSetupSubtitle,
+body:not(.app-ready):not(.darkmode) #deviceMsg{
+  color:#56667a!important;
+  opacity:1!important;
+}
+body:not(.app-ready):not(.darkmode) .team-entry label{
+  color:#334155!important;
+  font-weight:700!important;
+}
+body:not(.app-ready):not(.darkmode) .team-code-input,
+body:not(.app-ready):not(.darkmode) .login input{
+  background:#ffffff!important;
+  color:#0f172a!important;
+  border-color:#b9c7d6!important;
+  opacity:1!important;
+}
+body:not(.app-ready):not(.darkmode) .team-code-input::placeholder,
+body:not(.app-ready):not(.darkmode) .login input::placeholder{
+  color:#64748b!important;
+  opacity:1!important;
+}
+body:not(.app-ready):not(.darkmode) .team-entry .btn.soft,
+body:not(.app-ready):not(.darkmode) #showAdminLogin{
+  background:#f8fafc!important;
+  color:#1e293b!important;
+  border:1px solid #cfd9e5!important;
+}
+body:not(.app-ready):not(.darkmode) .team-entry .btn.primary,
+body:not(.app-ready):not(.darkmode) #deviceActivateBtn{
+  background:linear-gradient(135deg,#1684eb,#0565c9)!important;
+  color:#fff!important;
+}
