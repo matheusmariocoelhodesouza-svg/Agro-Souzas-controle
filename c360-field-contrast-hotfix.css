@@ -1,0 +1,72 @@
+/* Comando 360 — contraste do carregamento no celular de equipe
+   Corrige especificamente os cartões brancos de caminhão no modo campo.
+   Não altera lógica, dados, rotas, impressão nem rolagem. */
+
+body.device-mode #operacoes .poultry-truck-card{
+  background:#ffffff!important;
+  color:#0f172a!important;
+  border-color:#d7e0ea!important;
+  box-shadow:0 5px 16px rgba(15,23,42,.08)!important;
+}
+
+body.device-mode #operacoes .poultry-truck-card :where(b,strong){
+  color:#0f172a!important;
+  opacity:1!important;
+}
+
+body.device-mode #operacoes .poultry-truck-card > div:not(.pill),
+body.device-mode #operacoes .poultry-truck-card .toolbar,
+body.device-mode #operacoes .poultry-truck-card .toolbar > div{
+  color:#1e293b!important;
+}
+
+body.device-mode #operacoes .poultry-truck-card .muted{
+  color:#475569!important;
+  opacity:1!important;
+  font-weight:700!important;
+}
+
+/* Linha Caixas / Aves por caixa / Vazias / Mortes precisa continuar muito legível. */
+body.device-mode #operacoes .poultry-truck-card > .muted:last-child{
+  color:#334155!important;
+  font-weight:800!important;
+  font-size:12px!important;
+  line-height:1.45!important;
+}
+
+/* Horários, total de aves e aviário dentro do cartão branco. */
+body.device-mode #operacoes .poultry-truck-card > div:nth-child(2){
+  color:#1e293b!important;
+  font-weight:650!important;
+}
+body.device-mode #operacoes .poultry-truck-card > div:nth-child(2) b{
+  color:#0f172a!important;
+  font-weight:950!important;
+}
+
+/* Placa e motorista logo abaixo de Caminhão X. */
+body.device-mode #operacoes .poultry-truck-card .toolbar .muted{
+  color:#475569!important;
+  font-weight:750!important;
+}
+
+/* Mantém badges de estado com suas próprias cores. */
+body.device-mode #operacoes .poultry-truck-card .pill.warn{
+  background:#fef3c7!important;
+  color:#92400e!important;
+  border-color:#fde68a!important;
+}
+body.device-mode #operacoes .poultry-truck-card .pill.ok{
+  background:#dcfce7!important;
+  color:#166534!important;
+  border-color:#bbf7d0!important;
+}
+
+/* Evita que o tema escuro volte a clarear textos em superfícies brancas. */
+body.darkmode.device-mode #operacoes .poultry-truck-card,
+body.darkmode.device-mode #operacoes .poultry-truck-card :where(div,b,strong,.muted){
+  text-shadow:none!important;
+}
+body.darkmode.device-mode #operacoes .poultry-truck-card :where(b,strong){color:#0f172a!important}
+body.darkmode.device-mode #operacoes .poultry-truck-card .muted{color:#475569!important}
+body.darkmode.device-mode #operacoes .poultry-truck-card > div:nth-child(2){color:#1e293b!important}
