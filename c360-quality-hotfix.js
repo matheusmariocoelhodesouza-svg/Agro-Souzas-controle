@@ -1,6 +1,6 @@
 (()=>{
 'use strict';
-const BOOT_VERSION='2026.09.15-b45';
+const BOOT_VERSION='2026.09.17-b46';
 const recoveryModule='./c360-autorecovery.js';
 const styles=['./c360-premium-ui.css','./c360-product-ui.css','./c360-dashboard-dark-fix.css','./c360-enterprise-ui.css','./c360-commercial.css','./c360-fiscal.css','./c360-saas-readiness.css','./c360-visual-system.css','./c360-contrast-fix.css','./c360-hotfix-dashboard-dark.css','./c360-hotfix-bottom-nav.css','./c360-trailer-hitches.css','./c360-premium-theme-v2.css','./c360-showcase-theme.css','./c360-showcase-mobile-fix.css','./c360-showcase-exact.css','./c360-mobile-final-fix.css','./c360-visual-final.css','./c360-mobile-density-fix.css','./c360-field-mobile-density.css','./c360-field-home-stack.css','./c360-layout-hardening.css','./c360-field-contrast-hotfix.css'];
 const essentialModules=[
@@ -28,6 +28,8 @@ const optionalModules=[
  './c360-trailer-hitches.js',
  './c360-showcase-exact.js',
  './c360-field-route-guard.js',
+ './c360-device-control-compat.js',
+ './c360-device-control.js',
  './c360-fuel-type.js'
 ];
 function loadStyle(href){return new Promise((resolve,reject)=>{const base=href.split('?')[0];const existing=[...document.querySelectorAll('link[rel="stylesheet"]')].find(l=>{try{return new URL(l.href,location.href).pathname.endsWith(base.replace(/^\.\//,''))}catch{return false}});if(existing)return resolve();const l=document.createElement('link');l.rel='stylesheet';l.href=href+(href.includes('?')?'&':'?')+'v='+encodeURIComponent(BOOT_VERSION);l.dataset.c360Style=base;l.onload=resolve;l.onerror=()=>reject(new Error('Falha ao carregar '+base));document.head.appendChild(l)})}
