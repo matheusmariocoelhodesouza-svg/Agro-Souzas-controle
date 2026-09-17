@@ -10,12 +10,11 @@ import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
 import android.view.Gravity
-import android.view.ViewGroup
-import android.widget.*
 import android.webkit.JavascriptInterface
 import android.webkit.WebChromeClient
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import org.json.JSONArray
@@ -51,9 +50,7 @@ class MainActivity : AppCompatActivity() {
             setBackgroundColor(Color.rgb(0, 105, 190))
             setOnClickListener { showPrinterSetup() }
         }
-        val lp = FrameLayout.LayoutParams(dp(132), dp(48), Gravity.END or Gravity.BOTTOM).apply {
-            setMargins(dp(12), dp(12), dp(14), dp(18))
-        }
+        val lp = FrameLayout.LayoutParams(dp(132), dp(48), Gravity.END or Gravity.BOTTOM).apply { setMargins(dp(12), dp(12), dp(14), dp(18)) }
         root.addView(b, lp)
     }
 
@@ -69,25 +66,19 @@ class MainActivity : AppCompatActivity() {
         }
         box.addView(status)
         val devices = adapter?.bondedDevices?.toList()?.sortedBy { it.name ?: "" } ?: emptyList()
-        if (devices.isEmpty()) {
-            box.addView(TextView(this).apply { text = "Nenhum dispositivo Bluetooth pareado. Pareie a RPP02N nas Configurações do Android e volte aqui." })
-        } else {
-            devices.forEach { d ->
-                val btn = Button(this).apply {
-                    text = "${d.name ?: "Bluetooth"}\n${d.address}"
-                    isAllCaps = false
-                    setOnClickListener {
-                        status.text = "Conectando a ${d.name ?: "impressora"}..."
-                        Thread {
-                            val result = PrinterBridge().connect(d.address)
-                            runOnUiThread {
-                                status.text = if (JSONObject(result).optBoolean("ok")) "Conectada: ${d.name ?: "impressora"}" else "Falha: ${JSONObject(result).optString("error")}" 
-                            }
-                        }.start()
-                    }
+        if (devices.isEmpty()) box.addView(TextView(this).apply { text = "Nenhum dispositivo Bluetooth pareado. Pareie a RPP02N nas Configurações do Android e volte aqui." })
+        else devices.forEach { d ->
+            val btn = Button(this).apply {
+                text = "${d.name ?: "Bluetooth"}\n${d.address}"; isAllCaps = false
+                setOnClickListener {
+                    status.text = "Conectando a ${d.name ?: "impressora"}..."
+                    Thread {
+                        val result = PrinterBridge().connect(d.address)
+                        runOnUiThread { status.text = if (JSONObject(result).optBoolean("ok")) "Conectada: ${d.name ?: "impressora"}" else "Falha: ${JSONObject(result).optString("error")}" }
+                    }.start()
                 }
-                box.addView(btn, LinearLayout.LayoutParams(-1, -2))
             }
+            box.addView(btn, LinearLayout.LayoutParams(-1, -2))
         }
         val test = Button(this).apply {
             text = "TESTE DE IMPRESSÃO"
@@ -115,9 +106,44 @@ class MainActivity : AppCompatActivity() {
         web.settings.javaScriptEnabled = true
         web.settings.domStorageEnabled = true
         web.settings.databaseEnabled = true
-        web.webViewClient = WebViewClient()
         web.webChromeClient = WebChromeClient()
         web.addJavascriptInterface(PrinterBridge(), "Comando360Printer")
+        web.webViewClient = object : WebViewClient() {
+            override fun onPageFinished(view: WebView?, url: String?) {
+                super.onPageFinished(view, url)
+                injectDirectPrint()
+                Thread { try { PrinterBridge().connectSaved() } catch (_: Exception) {} }.start()
+            }
+        }
+    }
+
+    private fun injectDirectPrint() {
+        val js = """
+            (function(){
+              if(window.__c360DirectPrintInstalled)return;
+              window.__c360DirectPrintInstalled=true;
+              window.Comando360DirectPrint=function(text){
+                try{return JSON.parse(window.Comando360Printer.printText(String(text||'')));}
+                catch(e){return {ok:false,error:String(e)}}
+              };
+              document.addEventListener('click',function(ev){
+                var el=ev.target && ev.target.closest ? ev.target.closest('button,a,[role=button]') : null;
+                if(!el)return;
+                var label=(el.innerText||el.textContent||'').trim().toLowerCase();
+                if(!(label==='imprimir'||label.indexOf('imprimir ')===0||label.indexOf(' impressão')>=0))return;
+                var area=el.closest('[data-print-area],.print-area,.receipt,.comprovante,.relatorio,.report,.modal,.card,section,article');
+                if(!area)return;
+                var text=(area.innerText||area.textContent||'').trim();
+                if(text.length<20)return;
+                ev.preventDefault(); ev.stopPropagation();
+                setTimeout(function(){
+                  var r=window.Comando360DirectPrint(text);
+                  if(!r.ok)alert('Não foi possível imprimir: '+(r.error||'erro desconhecido'));
+                },0);
+              },true);
+            })();
+        """.trimIndent()
+        web.evaluateJavascript(js, null)
     }
 
     @SuppressLint("MissingPermission")
