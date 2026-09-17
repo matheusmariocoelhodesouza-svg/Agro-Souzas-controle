@@ -26,3 +26,4 @@ jobs:
           name: comando360-bluetooth-debug
           path: android-native/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
+# build trigger: integrated direct report printing
