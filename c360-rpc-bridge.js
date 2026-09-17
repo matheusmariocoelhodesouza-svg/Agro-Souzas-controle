@@ -12,9 +12,10 @@ function load(src){
  try{
   const base=String(src).split('?')[0];
   if([...document.scripts].some(s=>{try{return new URL(s.src,location.href).pathname.endsWith(base.replace(/^\.\//,''))}catch(_){return false}}))return;
-  const el=document.createElement('script');el.src=src+(src.includes('?')?'&':'?')+'v=20260917-1';el.async=false;document.head.appendChild(el);
+  const el=document.createElement('script');el.src=src+(src.includes('?')?'&':'?')+'v=20260917-2';el.async=false;document.head.appendChild(el);
  }catch(e){console.warn('Comando 360 módulo complementar',e)}
 }
 load('./c360-device-control.js');
 load('./c360-device-permission-guard.js');
+load('./c360-team-report-recovery.js');
 })();
