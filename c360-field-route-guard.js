@@ -1,6 +1,6 @@
 (()=>{
 'use strict';
-const VERSION='2026.09.17-field-route-guard2';
+const VERSION='2026.09.17-field-route-guard3';
 const ALWAYS_FORBIDDEN=new Set(['financeiro','frota','rastreamento','funcionarios','equipes','documentosrh','configuracoes','integracoes','ia','alertas','fiscal']);
 const ROUTE_PERMISSION={
  ponto:'ponto',
@@ -17,8 +17,9 @@ function isDevice(){
 }
 function permissions(){
  try{
-  const p=(typeof deviceAccess!=='undefined'&&deviceAccess&&deviceAccess.permissions)||{};
-  return {...DEFAULTS,...p};
+  const live=window.__c360DevicePermissions||null;
+  const linked=(typeof deviceAccess!=='undefined'&&deviceAccess&&deviceAccess.permissions)||{};
+  return {...DEFAULTS,...linked,...(live||{})};
  }catch(_){return {...DEFAULTS}}
 }
 function allowed(target){
@@ -60,6 +61,7 @@ function install(){
  window.__c360FieldRouteGuardInstalledV2=true;
  window.C360FieldRouteGuard={version:VERSION,forbidden:[...ALWAYS_FORBIDDEN],routePermission:{...ROUTE_PERMISSION},sync:syncVisibleActions,allowed};
  syncVisibleActions();
+ document.addEventListener('c360:device-permissions',syncVisibleActions);
  const observer=new MutationObserver(()=>syncVisibleActions());
  observer.observe(document.documentElement,{subtree:true,childList:true});
 }
