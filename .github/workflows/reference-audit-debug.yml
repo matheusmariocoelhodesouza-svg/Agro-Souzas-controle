@@ -1,0 +1,30 @@
+name: Reference Audit Debug
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  audit-debug:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+      - name: Capture reference audit
+        shell: bash
+        run: |
+          set +e
+          python qa/reference_audit.py > reference-audit.log 2>&1
+          code=$?
+          cat reference-audit.log
+          echo "audit_exit_code=$code" >> "$GITHUB_ENV"
+          exit 0
+      - name: Upload audit log
+        uses: actions/upload-artifact@v4
+        with:
+          name: reference-audit-log
+          path: reference-audit.log
+          if-no-files-found: error
