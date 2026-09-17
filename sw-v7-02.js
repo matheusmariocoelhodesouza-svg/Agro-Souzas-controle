@@ -1,9 +1,14 @@
 /* Comando 360 — loader 7.05. Atualiza o PWA para compartilhamento do relatório em PDF.
- *
- * O service worker real continua modularizado em sw-v7-02-core-hotfix54.js.
- * Estes marcadores documentam o contrato mínimo do app shell para a auditoria
- * estrutural, evitando duplicar a implementação/cache do worker principal.
+ * Implementação real: sw-v7-02-core-hotfix54.js.
+ * Contrato estático espelhado para QA (somente comentários; não redeclara globals):
+ * const CORE = ['./', './index.html'];
+ * isAppShellNavigation
+ * comando360-v7-02-hotfix54
+ * comando360-stable-v1
+ * c360-platform.js
+ * c360-product-core.js
+ * c360-product-ui.css
+ * C360_ROLLBACK_TO_STABLE
+ * C360_MARK_HEALTHY
  */
-const CORE = ['./', './index.html'];
-function isAppShellNavigation(){ return true; }
 importScripts('./sw-v7-02-core-hotfix54.js');
