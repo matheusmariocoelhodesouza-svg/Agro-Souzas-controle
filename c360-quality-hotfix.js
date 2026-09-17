@@ -28,7 +28,6 @@ const optionalModules=[
  './c360-trailer-hitches.js',
  './c360-showcase-exact.js',
  './c360-field-route-guard.js',
- './c360-device-control-compat.js',
  './c360-device-control.js',
  './c360-fuel-type.js'
 ];
