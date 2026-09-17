@@ -192,3 +192,4 @@ class MainActivity : AppCompatActivity() {
     override fun onDestroy() { closeSocket(); super.onDestroy() }
     @Deprecated("Deprecated in Java") override fun onBackPressed() { if (::web.isInitialized && web.canGoBack()) web.goBack() else super.onBackPressed() }
 }
+// build trigger: direct report printing v2
