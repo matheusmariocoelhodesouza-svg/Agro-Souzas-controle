@@ -6,8 +6,12 @@ import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothSocket
 import android.content.pm.PackageManager
+import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
+import android.view.Gravity
+import android.view.ViewGroup
+import android.widget.*
 import android.webkit.JavascriptInterface
 import android.webkit.WebChromeClient
 import android.webkit.WebView
@@ -21,6 +25,7 @@ import java.util.UUID
 
 class MainActivity : AppCompatActivity() {
     private lateinit var web: WebView
+    private lateinit var root: FrameLayout
     private val adapter: BluetoothAdapter? get() = BluetoothAdapter.getDefaultAdapter()
     private var socket: BluetoothSocket? = null
     private val spp = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB")
@@ -29,17 +34,80 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         requestBtPermission()
+        root = FrameLayout(this)
         web = WebView(this)
-        setContentView(web)
+        root.addView(web, FrameLayout.LayoutParams(-1, -1))
+        addPrinterButton()
+        setContentView(root)
         configureWebView()
         web.loadUrl("https://app.comando360.com.br/")
     }
 
-    private fun requestBtPermission() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
-            ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.BLUETOOTH_CONNECT, Manifest.permission.BLUETOOTH_SCAN), 360)
+    private fun addPrinterButton() {
+        val b = Button(this).apply {
+            text = "🖨 Impressora"
+            textSize = 13f
+            setTextColor(Color.WHITE)
+            setBackgroundColor(Color.rgb(0, 105, 190))
+            setOnClickListener { showPrinterSetup() }
         }
+        val lp = FrameLayout.LayoutParams(dp(132), dp(48), Gravity.END or Gravity.BOTTOM).apply {
+            setMargins(dp(12), dp(12), dp(14), dp(18))
+        }
+        root.addView(b, lp)
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun showPrinterSetup() {
+        if (!hasBtPermission()) { requestBtPermission(); Toast.makeText(this, "Permita Dispositivos próximos e toque novamente", Toast.LENGTH_LONG).show(); return }
+        val box = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(dp(20), dp(8), dp(20), 0) }
+        val status = TextView(this).apply {
+            textSize = 15f
+            val saved = prefs.getString("name", null)
+            text = if (socket?.isConnected == true) "Conectada: ${saved ?: "impressora"}" else if (saved != null) "Vinculada: $saved" else "Nenhuma impressora vinculada"
+            setPadding(0, dp(8), 0, dp(12))
+        }
+        box.addView(status)
+        val devices = adapter?.bondedDevices?.toList()?.sortedBy { it.name ?: "" } ?: emptyList()
+        if (devices.isEmpty()) {
+            box.addView(TextView(this).apply { text = "Nenhum dispositivo Bluetooth pareado. Pareie a RPP02N nas Configurações do Android e volte aqui." })
+        } else {
+            devices.forEach { d ->
+                val btn = Button(this).apply {
+                    text = "${d.name ?: "Bluetooth"}\n${d.address}"
+                    isAllCaps = false
+                    setOnClickListener {
+                        status.text = "Conectando a ${d.name ?: "impressora"}..."
+                        Thread {
+                            val result = PrinterBridge().connect(d.address)
+                            runOnUiThread {
+                                status.text = if (JSONObject(result).optBoolean("ok")) "Conectada: ${d.name ?: "impressora"}" else "Falha: ${JSONObject(result).optString("error")}" 
+                            }
+                        }.start()
+                    }
+                }
+                box.addView(btn, LinearLayout.LayoutParams(-1, -2))
+            }
+        }
+        val test = Button(this).apply {
+            text = "TESTE DE IMPRESSÃO"
+            setOnClickListener {
+                status.text = "Enviando teste..."
+                Thread {
+                    val result = PrinterBridge().testPrint()
+                    runOnUiThread { status.text = if (JSONObject(result).optBoolean("ok")) "Teste enviado ✓" else "Falha: ${JSONObject(result).optString("error")}" }
+                }.start()
+            }
+        }
+        box.addView(test, LinearLayout.LayoutParams(-1, -2))
+        val forget = Button(this).apply { text = "ESQUECER IMPRESSORA"; setOnClickListener { PrinterBridge().forgetPrinter(); status.text = "Impressora removida" } }
+        box.addView(forget, LinearLayout.LayoutParams(-1, -2))
+        androidx.appcompat.app.AlertDialog.Builder(this).setTitle("Impressora Bluetooth").setView(box).setNegativeButton("Fechar", null).show()
+    }
+
+    private fun requestBtPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED)
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.BLUETOOTH_CONNECT, Manifest.permission.BLUETOOTH_SCAN), 360)
     }
 
     @SuppressLint("SetJavaScriptEnabled")
@@ -56,47 +124,29 @@ class MainActivity : AppCompatActivity() {
     inner class PrinterBridge {
         @JavascriptInterface fun listPairedPrinters(): String {
             if (!hasBtPermission()) return JSONObject().put("ok", false).put("error", "Permissão Bluetooth não concedida").toString()
-            val arr = JSONArray()
-            adapter?.bondedDevices?.forEach { d -> arr.put(JSONObject().put("name", d.name ?: "Bluetooth").put("address", d.address)) }
+            val arr = JSONArray(); adapter?.bondedDevices?.forEach { d -> arr.put(JSONObject().put("name", d.name ?: "Bluetooth").put("address", d.address)) }
             return JSONObject().put("ok", true).put("devices", arr).toString()
         }
-
         @JavascriptInterface fun connect(address: String): String {
             if (!hasBtPermission()) return fail("Permissão Bluetooth não concedida")
             return try {
-                closeSocket()
-                adapter?.cancelDiscovery()
+                closeSocket(); adapter?.cancelDiscovery()
                 val device = adapter?.getRemoteDevice(address) ?: return fail("Bluetooth indisponível")
                 socket = device.createRfcommSocketToServiceRecord(spp).also { it.connect() }
                 prefs.edit().putString("address", address).putString("name", device.name ?: "Impressora").apply()
                 ok(JSONObject().put("connected", true).put("name", device.name).put("address", address))
             } catch (e: Exception) { closeSocket(); fail(e.message ?: "Falha ao conectar") }
         }
-
-        @JavascriptInterface fun connectSaved(): String {
-            val address = prefs.getString("address", null) ?: return fail("Nenhuma impressora vinculada")
-            return connect(address)
-        }
-
-        @JavascriptInterface fun getStatus(): String {
-            return ok(JSONObject().put("connected", socket?.isConnected == true)
-                .put("name", prefs.getString("name", ""))
-                .put("address", prefs.getString("address", "")))
-        }
-
+        @JavascriptInterface fun connectSaved(): String { val a = prefs.getString("address", null) ?: return fail("Nenhuma impressora vinculada"); return connect(a) }
+        @JavascriptInterface fun getStatus(): String = ok(JSONObject().put("connected", socket?.isConnected == true).put("name", prefs.getString("name", "")).put("address", prefs.getString("address", "")))
         @JavascriptInterface fun printText(text: String): String {
             return try {
-                ensureConnected()
-                val out = socket?.outputStream ?: return fail("Impressora desconectada")
-                out.write(byteArrayOf(0x1B, 0x40))
-                out.write(text.toByteArray(Charset.forName("CP860")))
-                out.write("\n\n\n".toByteArray())
-                out.flush()
+                ensureConnected(); val out = socket?.outputStream ?: return fail("Impressora desconectada")
+                out.write(byteArrayOf(0x1B, 0x40)); out.write(text.toByteArray(Charset.forName("CP860"))); out.write("\n\n\n".toByteArray()); out.flush()
                 ok(JSONObject().put("printed", true))
             } catch (e: Exception) { closeSocket(); fail(e.message ?: "Falha na impressão") }
         }
-
-        @JavascriptInterface fun testPrint(): String = printText("        COMANDO 360\n--------------------------------\nIMPRESSORA BLUETOOTH OK\nSem RawBT\n--------------------------------\n")
+        @JavascriptInterface fun testPrint(): String = printText("                COMANDO 360\n------------------------------------------------\nIMPRESSORA BLUETOOTH OK\nRPP02N - impressao direta sem RawBT\n------------------------------------------------\n")
         @JavascriptInterface fun disconnect(): String { closeSocket(); return ok(JSONObject().put("connected", false)) }
         @JavascriptInterface fun forgetPrinter(): String { closeSocket(); prefs.edit().clear().apply(); return ok(JSONObject().put("forgotten", true)) }
     }
@@ -105,16 +155,14 @@ class MainActivity : AppCompatActivity() {
     private fun ensureConnected() {
         if (socket?.isConnected == true) return
         val address = prefs.getString("address", null) ?: throw IllegalStateException("Selecione uma impressora primeiro")
-        adapter?.cancelDiscovery()
-        val device: BluetoothDevice = adapter?.getRemoteDevice(address) ?: throw IllegalStateException("Bluetooth indisponível")
-        socket = device.createRfcommSocketToServiceRecord(spp).also { it.connect() }
+        adapter?.cancelDiscovery(); val d: BluetoothDevice = adapter?.getRemoteDevice(address) ?: throw IllegalStateException("Bluetooth indisponível")
+        socket = d.createRfcommSocketToServiceRecord(spp).also { it.connect() }
     }
-
-    private fun hasBtPermission(): Boolean = Build.VERSION.SDK_INT < Build.VERSION_CODES.S || ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED
+    private fun hasBtPermission() = Build.VERSION.SDK_INT < Build.VERSION_CODES.S || ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED
     private fun closeSocket() { try { socket?.close() } catch (_: Exception) {}; socket = null }
     private fun ok(data: JSONObject) = JSONObject().put("ok", true).put("data", data).toString()
     private fun fail(message: String) = JSONObject().put("ok", false).put("error", message).toString()
-
+    private fun dp(v: Int) = (v * resources.displayMetrics.density).toInt()
     override fun onDestroy() { closeSocket(); super.onDestroy() }
     @Deprecated("Deprecated in Java") override fun onBackPressed() { if (::web.isInitialized && web.canGoBack()) web.goBack() else super.onBackPressed() }
 }
