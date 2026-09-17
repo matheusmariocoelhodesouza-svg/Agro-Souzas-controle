@@ -32,6 +32,7 @@ SOURCE_MARKERS = (
 )
 SOURCE_EXCLUDED_TAGS = {"script", "style", "noscript", "textarea", "pre", "code", "option"}
 
+
 class AuditParser(HTMLParser):
     def __init__(self) -> None:
         super().__init__(convert_charrefs=True)
@@ -83,7 +84,6 @@ class AuditParser(HTMLParser):
                 self.inline_handlers.append((name, value, line))
 
     def handle_startendtag(self, tag, attrs):
-        # Reuse validations without leaving a void element on the stack.
         self.handle_starttag(tag, attrs)
         if self._tag_stack and self._tag_stack[-1] == tag:
             self._tag_stack.pop()
@@ -166,6 +166,24 @@ def check_tenant_neutrality(index_text: str, parser: AuditParser, errors: list[s
                 errors.append(
                     f"index.html: EMPLOYER_FALLBACK.{key} não pode conter identidade de uma empresa específica"
                 )
+
+
+def service_worker_contract_text(sw: Path, errors: list[str]) -> str:
+    """Read the loader plus local importScripts() workers used by the active SW."""
+    text = sw.read_text(encoding="utf-8")
+    combined = [text]
+    for ref in re.findall(r"importScripts\(\s*['\"]([^'\"]+)['\"]\s*\)", text):
+        imported = local_path(ref)
+        if imported is None:
+            continue
+        if not imported.is_file():
+            errors.append(f"{sw.name}: importScripts referencia arquivo ausente: {ref}")
+            continue
+        try:
+            combined.append(imported.read_text(encoding="utf-8"))
+        except UnicodeDecodeError:
+            errors.append(f"{sw.name}: importScripts não pôde ser lido como UTF-8: {ref}")
+    return "\n".join(combined)
 
 
 def main() -> int:
@@ -264,19 +282,18 @@ def main() -> int:
     if not sw.exists():
         errors.append("sw-v7-02.js: ausente")
     else:
-        sw_text = sw.read_text(encoding="utf-8")
+        sw_text = service_worker_contract_text(sw, errors)
         m = re.search(r"const\s+CORE\s*=\s*\[(.*?)\]", sw_text, flags=re.S)
         if not m:
-            errors.append("sw-v7-02.js: lista CORE não encontrada")
+            errors.append("sw-v7-02.js: lista CORE não encontrada no loader ou worker importado")
         else:
             for ref in re.findall(r"['\"]([^'\"]+)['\"]", m.group(1)):
                 p = local_path(ref)
                 if p is not None and not p.exists():
                     errors.append(f"sw-v7-02.js: CORE referencia arquivo ausente: {ref}")
         if "isAppShellNavigation" not in sw_text:
-            errors.append("sw-v7-02.js: proteção de navegação do app shell ausente")
+            errors.append("sw-v7-02.js: proteção de navegação do app shell ausente no loader ou worker importado")
 
-    # Architecture debt signals. These are warnings, not blockers.
     legacy_candidates = [
         "index-6.html", "index.html.html", "manifest.webmanifest",
         "operza.webmanifest", "agro-souzas-controle-v7.webmanifest",
@@ -303,6 +320,7 @@ def main() -> int:
         return 1
     print("\nRESULT: PASS")
     return 0
+
 
 if __name__ == "__main__":
     sys.exit(main())

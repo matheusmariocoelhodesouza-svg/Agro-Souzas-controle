@@ -96,15 +96,16 @@ jobs:
           grep -q 'c360-live-region' c360-product-ui.css
           grep -q 'body.device-mode' c360-product-ui.css
 
-          grep -Eq "comando360-v7-02-hotfix[0-9]+" sw-v7-02.js
-          grep -q 'comando360-stable-v1' sw-v7-02.js
-          grep -q 'c360-platform.js' sw-v7-02.js
-          grep -q 'c360-product-core.js' sw-v7-02.js
-          grep -q 'c360-product-ui.css' sw-v7-02.js
-          grep -q 'C360_ROLLBACK_TO_STABLE' sw-v7-02.js
-          grep -q 'C360_MARK_HEALTHY' sw-v7-02.js
-          ! grep -q 'patchAppHtml' sw-v7-02.js
-          ! grep -q 'repairLegacyAppHtml' sw-v7-02.js
+          SW_CONTRACT="$(cat sw-v7-02.js sw-v7-02-core-hotfix54.js)"
+          grep -Eq "comando360-v7-02-hotfix[0-9]+" <<<"$SW_CONTRACT"
+          grep -q 'comando360-stable-v1' <<<"$SW_CONTRACT"
+          grep -q 'c360-platform.js' <<<"$SW_CONTRACT"
+          grep -q 'c360-product-core.js' <<<"$SW_CONTRACT"
+          grep -q 'c360-product-ui.css' <<<"$SW_CONTRACT"
+          grep -q 'C360_ROLLBACK_TO_STABLE' <<<"$SW_CONTRACT"
+          grep -q 'C360_MARK_HEALTHY' <<<"$SW_CONTRACT"
+          ! grep -q 'patchAppHtml' <<<"$SW_CONTRACT"
+          ! grep -q 'repairLegacyAppHtml' <<<"$SW_CONTRACT"
 
           grep -q 'v2_device_health_heartbeat' c360-system-health.js
           grep -q 'v2_client_health_events' c360-autorecovery.js
