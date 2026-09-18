@@ -1,7 +1,8 @@
 (function(){
  'use strict';
- const REPAIR_VERSION='2026.09.12-r3';
+ const REPAIR_VERSION='2026.09.18-r4';
  const RECOVERY_KEY='c360_source_leak_recovery_'+REPAIR_VERSION;
+ const DEVICE_RECOVERY_KEY='c360_device_session_recovery_'+REPAIR_VERSION;
  const SW_URL='./sw-v7-02.js';
  let registrationPromise=null;
  let recovering=false;
@@ -9,6 +10,90 @@
  // Fonte única para o estado de rede. O restante do app chama c360NetOnline().
  if(typeof window.c360NetOnline!=='function'){
   window.c360NetOnline=function(){return navigator.onLine!==false};
+ }
+
+ function installEntrySafety(){
+  if(document.getElementById('c360EntrySafetyStyle'))return;
+  const style=document.createElement('style');
+  style.id='c360EntrySafetyStyle';
+  style.textContent=`
+   body:not(.app-ready) #mobileBottomNav{display:none!important}
+   body:not(.app-ready) #mobileMenuBtn{display:none!important}
+   body:not(.app-ready) .mobile-menu-backdrop{display:none!important}
+  `;
+  (document.head||document.documentElement).appendChild(style);
+ }
+
+ function installRouteGuard(){
+  let attempts=0;
+  const tryInstall=()=>{
+   attempts++;
+   const current=window.v2Go;
+   if(typeof current!=='function')return false;
+   if(current.__c360EntrySafetyGuard)return true;
+   const wrapped=async function(){
+    const app=document.getElementById('app');
+    const ready=!!document.body?.classList.contains('app-ready')&&!!app&&!app.classList.contains('hidden');
+    if(!ready)return false;
+    return await current.apply(this,arguments);
+   };
+   wrapped.__c360EntrySafetyGuard=true;
+   wrapped.__c360Original=current;
+   window.v2Go=wrapped;
+   return true;
+  };
+  if(tryInstall())return;
+  const timer=setInterval(()=>{
+   if(tryInstall()||attempts>=160)clearInterval(timer);
+  },100);
+ }
+
+ function storedSession(){
+  try{return JSON.parse(localStorage.getItem('controla_beta_session')||'null')}catch(_){return null}
+ }
+ function looksLikeDeviceUser(user){
+  return !!(user&&(user.is_anonymous===true||user.app_metadata?.comando360_device===true||user.user_metadata?.comando360_device===true||user.user_metadata?.controla_device===true));
+ }
+ function entryScreenVisible(){
+  const app=document.getElementById('app');
+  const login=document.getElementById('login');
+  return !!login&&!login.classList.contains('hidden')&&(!app||app.classList.contains('hidden'));
+ }
+ async function recoverStaleDeviceSession(){
+  if(!c360NetOnline()||!entryScreenVisible())return false;
+  let already=false;
+  try{already=sessionStorage.getItem(DEVICE_RECOVERY_KEY)==='1'}catch(_){}
+  if(already)return false;
+
+  const s=storedSession();
+  if(!s?.access_token||!looksLikeDeviceUser(s.user))return false;
+  let deviceCode='';
+  try{deviceCode=String(localStorage.getItem('c360_device_public_id')||'').trim().toUpperCase()}catch(_){}
+  if(!/^[A-Z0-9]{8,16}$/.test(deviceCode))return false;
+  if(typeof window.rpc!=='function'||typeof window.enterApp!=='function')return false;
+
+  try{sessionStorage.setItem(DEVICE_RECOVERY_KEY,'1')}catch(_){}
+  try{
+   const rows=await window.rpc('v2_recover_device_session',{p_device_code:deviceCode});
+   const row=Array.isArray(rows)?rows[0]:rows;
+   if(!row?.recovered)return false;
+   const user=s.user||(typeof window.getUser==='function'?await window.getUser():null);
+   if(!user)return false;
+   await window.enterApp(user);
+   return true;
+  }catch(err){
+   console.warn('Comando 360: recuperação automática do celular',err);
+   return false;
+  }
+ }
+ function scheduleDeviceRecovery(){
+  let tries=0;
+  const run=async()=>{
+   tries++;
+   if(await recoverStaleDeviceSession())return;
+   if(tries<20&&entryScreenVisible())setTimeout(run,500);
+  };
+  setTimeout(run,250);
  }
 
  function registerServiceWorkerEarly(){
@@ -142,12 +227,20 @@
   }catch(_){goToHardRepair()}
  }
 
+ installEntrySafety();
+ installRouteGuard();
  registerServiceWorkerEarly();
  if(document.readyState==='loading'){
-  document.addEventListener('DOMContentLoaded',()=>setTimeout(recoverLeakedSource,0),{once:true});
+  document.addEventListener('DOMContentLoaded',()=>{
+   setTimeout(recoverLeakedSource,0);
+   scheduleDeviceRecovery();
+  },{once:true});
  }else{
   setTimeout(recoverLeakedSource,0);
+  scheduleDeviceRecovery();
  }
+ window.addEventListener('online',()=>setTimeout(scheduleDeviceRecovery,250));
  window.c360RecoverLeakedSource=recoverLeakedSource;
+ window.c360RecoverStaleDeviceSession=recoverStaleDeviceSession;
  window.C360_FIELD_BOOT_REPAIR_VERSION=REPAIR_VERSION;
 })();
