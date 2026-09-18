@@ -1,2 +1,2 @@
-/* Comando 360 — loader 7.05. Atualiza o PWA para compartilhamento do relatório em PDF. */
-importScripts('./sw-v7-02-core-hotfix54.js');
+/* Comando 360 — loader 7.06. Recuperação automática de sessão dos celulares de campo. */
+importScripts('./sw-v7-02-core-hotfix55.js');
