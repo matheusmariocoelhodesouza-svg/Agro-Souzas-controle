@@ -1,27 +1,87 @@
 (function(){
  'use strict';
- const REPAIR_VERSION='2026.09.18-r4';
+ const REPAIR_VERSION='2026.09.18-r5';
  const RECOVERY_KEY='c360_source_leak_recovery_'+REPAIR_VERSION;
  const DEVICE_RECOVERY_KEY='c360_device_session_recovery_'+REPAIR_VERSION;
+ const DEVICE_SESSION_BACKUP_KEY='c360_device_session_backup_v1';
  const SW_URL='./sw-v7-02.js';
  let registrationPromise=null;
  let recovering=false;
+ let backupTimer=null;
 
  // Fonte única para o estado de rede. O restante do app chama c360NetOnline().
  if(typeof window.c360NetOnline!=='function'){
   window.c360NetOnline=function(){return navigator.onLine!==false};
  }
 
+ function storedSession(){
+  try{return JSON.parse(localStorage.getItem('controla_beta_session')||'null')}catch(_){return null}
+ }
+ function looksLikeDeviceUser(user){
+  return !!(user&&(user.is_anonymous===true||user.app_metadata?.comando360_device===true||user.user_metadata?.comando360_device===true||user.user_metadata?.controla_device===true));
+ }
+ function validDeviceSession(s){
+  return !!(s?.access_token&&s?.refresh_token&&looksLikeDeviceUser(s.user));
+ }
+ function backupDeviceSession(){
+  try{
+   const s=storedSession();
+   if(!validDeviceSession(s))return false;
+   localStorage.setItem(DEVICE_SESSION_BACKUP_KEY,JSON.stringify({saved_at:Date.now(),session:s}));
+   return true;
+  }catch(_){return false}
+ }
+ function restoreDeviceSessionBackup(){
+  try{
+   const current=storedSession();
+   if(validDeviceSession(current)){backupDeviceSession();return false}
+   const raw=localStorage.getItem(DEVICE_SESSION_BACKUP_KEY);
+   if(!raw)return false;
+   const backup=JSON.parse(raw);
+   const age=Date.now()-Number(backup?.saved_at||0);
+   if(!validDeviceSession(backup?.session)||!Number.isFinite(age)||age>45*24*60*60*1000){
+    localStorage.removeItem(DEVICE_SESSION_BACKUP_KEY);
+    return false;
+   }
+   localStorage.setItem('controla_beta_session',JSON.stringify(backup.session));
+   document.documentElement.dataset.c360DeviceSession='restored';
+   return true;
+  }catch(_){return false}
+ }
+ function watchDeviceSessionBackup(){
+  backupDeviceSession();
+  clearInterval(backupTimer);
+  backupTimer=setInterval(backupDeviceSession,4000);
+  window.addEventListener('pagehide',backupDeviceSession);
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')backupDeviceSession()});
+ }
+
+ function entryScreenVisible(){
+  const app=document.getElementById('app');
+  const login=document.getElementById('login');
+  return !!login&&!login.classList.contains('hidden')&&(!app||app.classList.contains('hidden'));
+ }
+ function syncEntrySafetyState(){
+  try{document.body?.classList.toggle('c360-entry-active',entryScreenVisible())}catch(_){}
+ }
  function installEntrySafety(){
   if(document.getElementById('c360EntrySafetyStyle'))return;
   const style=document.createElement('style');
   style.id='c360EntrySafetyStyle';
   style.textContent=`
-   body:not(.app-ready) #mobileBottomNav{display:none!important}
-   body:not(.app-ready) #mobileMenuBtn{display:none!important}
-   body:not(.app-ready) .mobile-menu-backdrop{display:none!important}
+   body:not(.app-ready) #mobileBottomNav,body.c360-entry-active #mobileBottomNav{display:none!important}
+   body:not(.app-ready) #mobileMenuBtn,body.c360-entry-active #mobileMenuBtn{display:none!important}
+   body:not(.app-ready) .mobile-menu-backdrop,body.c360-entry-active .mobile-menu-backdrop{display:none!important}
   `;
   (document.head||document.documentElement).appendChild(style);
+  const observe=()=>{
+   syncEntrySafetyState();
+   const login=document.getElementById('login'),app=document.getElementById('app');
+   const obs=new MutationObserver(syncEntrySafetyState);
+   if(login)obs.observe(login,{attributes:true,attributeFilter:['class','style']});
+   if(app)obs.observe(app,{attributes:true,attributeFilter:['class','style']});
+  };
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',observe,{once:true});else observe();
  }
 
  function installRouteGuard(){
@@ -33,7 +93,7 @@
    if(current.__c360EntrySafetyGuard)return true;
    const wrapped=async function(){
     const app=document.getElementById('app');
-    const ready=!!document.body?.classList.contains('app-ready')&&!!app&&!app.classList.contains('hidden');
+    const ready=!entryScreenVisible()&&!!document.body?.classList.contains('app-ready')&&!!app&&!app.classList.contains('hidden');
     if(!ready)return false;
     return await current.apply(this,arguments);
    };
@@ -48,23 +108,13 @@
   },100);
  }
 
- function storedSession(){
-  try{return JSON.parse(localStorage.getItem('controla_beta_session')||'null')}catch(_){return null}
- }
- function looksLikeDeviceUser(user){
-  return !!(user&&(user.is_anonymous===true||user.app_metadata?.comando360_device===true||user.user_metadata?.comando360_device===true||user.user_metadata?.controla_device===true));
- }
- function entryScreenVisible(){
-  const app=document.getElementById('app');
-  const login=document.getElementById('login');
-  return !!login&&!login.classList.contains('hidden')&&(!app||app.classList.contains('hidden'));
- }
  async function recoverStaleDeviceSession(){
   if(!c360NetOnline()||!entryScreenVisible())return false;
   let already=false;
   try{already=sessionStorage.getItem(DEVICE_RECOVERY_KEY)==='1'}catch(_){}
   if(already)return false;
 
+  restoreDeviceSessionBackup();
   const s=storedSession();
   if(!s?.access_token||!looksLikeDeviceUser(s.user))return false;
   let deviceCode='';
@@ -80,6 +130,8 @@
    const user=s.user||(typeof window.getUser==='function'?await window.getUser():null);
    if(!user)return false;
    await window.enterApp(user);
+   backupDeviceSession();
+   syncEntrySafetyState();
    return true;
   }catch(err){
    console.warn('Comando 360: recuperação automática do celular',err);
@@ -227,20 +279,25 @@
   }catch(_){goToHardRepair()}
  }
 
+ restoreDeviceSessionBackup();
+ watchDeviceSessionBackup();
  installEntrySafety();
  installRouteGuard();
  registerServiceWorkerEarly();
  if(document.readyState==='loading'){
   document.addEventListener('DOMContentLoaded',()=>{
+   syncEntrySafetyState();
    setTimeout(recoverLeakedSource,0);
    scheduleDeviceRecovery();
   },{once:true});
  }else{
+  syncEntrySafetyState();
   setTimeout(recoverLeakedSource,0);
   scheduleDeviceRecovery();
  }
  window.addEventListener('online',()=>setTimeout(scheduleDeviceRecovery,250));
  window.c360RecoverLeakedSource=recoverLeakedSource;
  window.c360RecoverStaleDeviceSession=recoverStaleDeviceSession;
+ window.c360BackupDeviceSession=backupDeviceSession;
  window.C360_FIELD_BOOT_REPAIR_VERSION=REPAIR_VERSION;
 })();
