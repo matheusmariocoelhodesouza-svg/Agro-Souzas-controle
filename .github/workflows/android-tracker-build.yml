@@ -1,0 +1,44 @@
+name: Comando 360 Android Tracker
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'android-tracker/**'
+      - '.github/workflows/android-tracker-build.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: android-actions/setup-android@v3
+
+      - name: Install Android SDK 35
+        run: |
+          yes | sdkmanager --licenses >/dev/null || true
+          sdkmanager "platforms;android-35" "build-tools;35.0.0"
+
+      - name: Install Gradle 8.11.1
+        run: |
+          wget -q https://services.gradle.org/distributions/gradle-8.11.1-bin.zip
+          unzip -q gradle-8.11.1-bin.zip
+
+      - name: Build tracker APK
+        run: ./gradle-8.11.1/bin/gradle -p android-tracker :app:assembleDebug --stacktrace
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: comando360-rastreador-24h
+          path: android-tracker/app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 30

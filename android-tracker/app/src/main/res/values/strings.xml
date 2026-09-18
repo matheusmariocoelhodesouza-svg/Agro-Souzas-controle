@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Comando 360 Rastreador</string>
+    <string name="device_admin_description">Permite ao Comando 360 aplicar controles corporativos quando o aparelho estiver em modo gerenciado.</string>
+</resources>
