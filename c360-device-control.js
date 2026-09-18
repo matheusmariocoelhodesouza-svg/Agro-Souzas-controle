@@ -1,6 +1,6 @@
 (()=>{
 'use strict';
-const VERSION='2026.09.17-device-control1';
+const VERSION='2026.09.17-device-control2';
 const DEFAULT_PERMISSIONS={ponto:true,apanha:true,abastecimento:true,relatorio:true,impressao:true,manutencao:false,insumos:false,frota:false};
 const PERMISSION_LABELS={
   ponto:'Ponto e reconhecimento facial',
@@ -15,6 +15,9 @@ const PERMISSION_LABELS={
 let adminDevices=new Map();
 let ringTimer=null,ringCtx=null;
 let lastLocationAt=0;
+let locationWatchId=null;
+let locationPermissionState='unknown';
+let lastLocationStatusKey='';
 let polling=false;
 let adminDecorating=false;
 
@@ -42,6 +45,9 @@ function injectStyles(){
  #c360DeviceLockOverlay .box{width:min(520px,100%);padding:28px;border:1px solid rgba(255,255,255,.14);border-radius:24px;background:#0f1f34;box-shadow:0 24px 80px rgba(0,0,0,.45)}
  #c360DeviceLockOverlay .ico{font-size:58px;margin-bottom:8px}#c360DeviceLockOverlay h2{font-size:27px;margin:6px 0}#c360DeviceLockOverlay p{color:#cbd5e1;line-height:1.5}
  #c360RingOverlay{position:fixed;left:14px;right:14px;bottom:18px;z-index:20020;background:#b91c1c;color:white;border-radius:16px;padding:14px;box-shadow:0 16px 40px rgba(127,29,29,.35);display:flex;justify-content:space-between;align-items:center;gap:12px}
+ #c360LocationPermissionCard{position:fixed;left:12px;right:12px;bottom:14px;z-index:19000;background:#fff;border:1px solid #d9e5f1;border-radius:16px;padding:13px 14px;box-shadow:0 16px 44px rgba(15,23,42,.20);color:#173451}
+ #c360LocationPermissionCard strong{display:block;font-size:14px}#c360LocationPermissionCard p{font-size:11.5px;line-height:1.45;color:#60758c;margin:5px 0 10px}
+ #c360LocationPermissionCard .toolbar{justify-content:flex-end}.darkmode #c360LocationPermissionCard{background:#0f1d2e;border-color:#26394f;color:#e8f0fa}.darkmode #c360LocationPermissionCard p{color:#9fb3cb}
  `;document.head.appendChild(s);
 }
 
@@ -63,6 +69,15 @@ function stateLabel(d){
  if(st==='app_locked')return '<span class="c360-device-state locked">● APP BLOQUEADO</span>';
  return '<span class="c360-device-state">● LIBERADO</span>';
 }
+function locationPermissionLabel(d){
+ const p=String(d?.device_info?.location_permission||'unknown');
+ const err=String(d?.device_info?.location_error||'').trim();
+ if(p==='granted')return '<span style="color:#15803d;font-weight:900">● GPS LIBERADO</span>';
+ if(p==='denied')return '<span style="color:#b91c1c;font-weight:900">● GPS BLOQUEADO</span>'+(err?'<div class="muted" style="margin-top:3px">'+escapeHtml(err)+'</div>':'');
+ if(p==='prompt')return '<span style="color:#9a6700;font-weight:900">● AGUARDANDO PERMISSÃO DE GPS</span>';
+ if(p==='unavailable')return '<span style="color:#b91c1c;font-weight:900">● GPS INDISPONÍVEL</span>';
+ return '<span class="muted">● GPS AINDA NÃO CONFIGURADO</span>';
+}
 function locationLabel(loc){
  if(!loc)return '📍 Localização ainda não recebida.';
  const at=loc.recorded_at?new Date(loc.recorded_at).toLocaleString('pt-BR'):'sem horário';
@@ -83,8 +98,10 @@ async function decorateAdminCards(){
      const nativeManaged=!!d.device_info?.native_managed;
      const loc=locMap.get(d.id);
      const box=document.createElement('div');box.dataset.c360DeviceControls=d.id;
-     box.innerHTML=`<div class="c360-device-loc">${stateLabel(d)}<br>${locationLabel(loc)}</div><div class="c360-device-actions">
+     const mapButton=loc?`<button class="btn soft" type="button" data-c360-device-action="map" data-id="${d.id}" data-lat="${loc.latitude}" data-lon="${loc.longitude}">🗺️ Abrir mapa</button>`:'';
+     box.innerHTML=`<div class="c360-device-loc">${stateLabel(d)}<br>${locationPermissionLabel(d)}<br>${locationLabel(loc)}</div><div class="c360-device-actions">
        <button class="btn soft" type="button" data-c360-device-action="permissions" data-id="${d.id}">⚙️ Permissões</button>
+       ${mapButton}
        <button class="btn soft" type="button" data-c360-device-action="ring" data-id="${d.id}">🔊 Tocar</button>
        <button class="btn soft" type="button" data-c360-device-action="locate" data-id="${d.id}">📍 Localizar</button>
        <button class="btn soft" type="button" data-c360-device-action="lockapp" data-id="${d.id}">🔒 Bloquear app</button>
@@ -127,6 +144,12 @@ async function setDeviceState(deviceId,state,message=null){
 async function adminAction(action,id){
  const d=adminDevices.get(id);if(!d)return;
  if(action==='permissions')return openPermissions(id);
+ if(action==='map'){
+   const btn=document.querySelector('[data-c360-device-action="map"][data-id="'+CSS.escape(id)+'"]');
+   const lat=Number(btn?.dataset?.lat),lon=Number(btn?.dataset?.lon);
+   if(Number.isFinite(lat)&&Number.isFinite(lon))window.open('https://www.google.com/maps?q='+encodeURIComponent(lat+','+lon),'_blank','noopener,noreferrer');
+   return;
+ }
  if(action==='ring'){await issueCommand(id,'ring',{repeat:true});toast('Alarme enviado','O aparelho tocará assim que receber o comando.');return}
  if(action==='locate'){await issueCommand(id,'locate_now',{});toast('Localização solicitada','O aparelho enviará uma nova posição assim que puder.');return}
  if(action==='lockapp'){await setDeviceState(id,'app_locked','Uso bloqueado pela administração.');await issueCommand(id,'lock_app',{});toast('Comando 360 bloqueado','O aparelho ficará preso na tela de bloqueio do sistema.','success');return}
@@ -163,20 +186,85 @@ async function batteryInfo(){
  try{if(navigator.getBattery){const b=await navigator.getBattery();return {battery_percent:Math.round(b.level*100),charging:!!b.charging}}}catch(_){}
  return {battery_percent:null,charging:null};
 }
+function geolocationErrorText(e){
+ const code=Number(e?.code||0);
+ if(code===1)return 'Permissão de localização negada no Android/Chrome.';
+ if(code===2)return 'O celular não conseguiu obter uma posição GPS.';
+ if(code===3)return 'Tempo esgotado ao tentar obter a localização.';
+ return String(e?.message||'Falha ao obter localização.');
+}
+async function reportLocationStatus(permission,error=''){
+ const available=!!navigator.geolocation;
+ const key=[permission,error,available].join('|');
+ if(key===lastLocationStatusKey)return;
+ lastLocationStatusKey=key;locationPermissionState=permission||'unknown';
+ try{if(typeof rpc==='function')await rpc('v2_device_location_status',{p_permission:locationPermissionState,p_error:error||null,p_available:available})}catch(e){console.warn('C360 location status',e)}
+}
+function removeLocationPermissionCard(){document.getElementById('c360LocationPermissionCard')?.remove()}
+function showLocationPermissionCard(permission,error=''){
+ if(!isDeviceMode())return;
+ if(permission==='granted'){removeLocationPermissionCard();return}
+ let card=document.getElementById('c360LocationPermissionCard');
+ if(!card){card=document.createElement('div');card.id='c360LocationPermissionCard';document.body.appendChild(card)}
+ const denied=permission==='denied';
+ card.innerHTML='<strong>📍 '+(denied?'Localização bloqueada':'Ativar rastreamento deste celular')+'</strong>'+
+   '<p>'+(denied?'Abra as permissões do Chrome/Comando 360 no Android e permita Localização. Depois toque em TENTAR NOVAMENTE.':'O Comando 360 precisa da localização para o administrador enxergar onde está o celular da equipe.')+(error?'<br><b>'+escapeHtml(error)+'</b>':'')+'</p>'+
+   '<div class="toolbar"><button class="btn primary" type="button" data-c360-enable-location>'+(denied?'TENTAR NOVAMENTE':'ATIVAR LOCALIZAÇÃO')+'</button></div>';
+}
+async function readLocationPermission(){
+ if(!navigator.geolocation){await reportLocationStatus('unavailable','Geolocalização não disponível neste aparelho.');showLocationPermissionCard('unavailable');return 'unavailable'}
+ try{
+   if(navigator.permissions?.query){
+     const p=await navigator.permissions.query({name:'geolocation'});
+     const state=String(p.state||'unknown');
+     await reportLocationStatus(state,'');
+     showLocationPermissionCard(state);
+     p.onchange=()=>{readLocationPermission().then(s=>{if(s==='granted')startLocationWatch()})};
+     return state;
+   }
+ }catch(_){}
+ await reportLocationStatus('unknown','');
+ showLocationPermissionCard('unknown');
+ return 'unknown';
+}
+async function persistPosition(pos){
+ const access=currentAccess(),team=currentTeam();if(!access?.id)return false;
+ try{
+   const b=await batteryInfo(),c=pos.coords,recorded=nowIso();
+   const payload={company_id:access.company_id,team_id:access.team_id||team?.id||null,device_access_id:access.id,latitude:Number(c.latitude),longitude:Number(c.longitude),accuracy_m:Number(c.accuracy||0)||null,speed_kmh:c.speed==null?null:Math.max(0,Number(c.speed)*3.6),heading_deg:c.heading==null?null:Number(c.heading),battery_percent:b.battery_percent,charging:b.charging,recorded_at:recorded};
+   await restInsert('v2_device_location_history',payload);
+   await restUpsert('v2_device_location_current',{...payload,updated_at:recorded},'device_access_id');
+   lastLocationAt=Date.now();
+   await reportLocationStatus('granted','');
+   removeLocationPermissionCard();
+   return true;
+ }catch(e){console.warn('C360 persist location',e);return false}
+}
 async function reportLocation(force=false){
- const access=currentAccess(),team=currentTeam();if(!access?.id||!navigator.geolocation)return false;
+ const access=currentAccess();if(!access?.id||!navigator.geolocation){await reportLocationStatus('unavailable','Geolocalização não disponível neste aparelho.');return false}
  if(!force&&Date.now()-lastLocationAt<55000)return false;
  return await new Promise(resolve=>{
-   navigator.geolocation.getCurrentPosition(async pos=>{
-     try{
-       const b=await batteryInfo();const c=pos.coords;const recorded=nowIso();
-       const payload={company_id:access.company_id,team_id:access.team_id||team?.id||null,device_access_id:access.id,latitude:Number(c.latitude),longitude:Number(c.longitude),accuracy_m:Number(c.accuracy||0)||null,speed_kmh:c.speed==null?null:Math.max(0,Number(c.speed)*3.6),heading_deg:c.heading==null?null:Number(c.heading),battery_percent:b.battery_percent,charging:b.charging,recorded_at:recorded};
-       await restInsert('v2_device_location_history',payload);
-       await restUpsert('v2_device_location_current',{...payload,updated_at:recorded},'device_access_id');
-       lastLocationAt=Date.now();resolve(true);
-     }catch(e){console.warn('C360 report location',e);resolve(false)}
-   },e=>{console.warn('C360 geolocation',e?.message||e);resolve(false)},{enableHighAccuracy:true,timeout:12000,maximumAge:30000});
+   navigator.geolocation.getCurrentPosition(async pos=>resolve(await persistPosition(pos)),async e=>{
+     const msg=geolocationErrorText(e),permission=Number(e?.code||0)===1?'denied':locationPermissionState;
+     console.warn('C360 geolocation',msg);await reportLocationStatus(permission||'unknown',msg);showLocationPermissionCard(permission||'unknown',msg);resolve(false);
+   },{enableHighAccuracy:true,timeout:15000,maximumAge:20000});
  });
+}
+function startLocationWatch(){
+ if(!isDeviceMode()||!navigator.geolocation||locationWatchId!=null)return;
+ try{
+   locationWatchId=navigator.geolocation.watchPosition(pos=>{
+     if(Date.now()-lastLocationAt>=45000)persistPosition(pos).catch(()=>{});
+   },async e=>{
+     const msg=geolocationErrorText(e),permission=Number(e?.code||0)===1?'denied':locationPermissionState;
+     await reportLocationStatus(permission||'unknown',msg);showLocationPermissionCard(permission||'unknown',msg);
+   },{enableHighAccuracy:true,maximumAge:20000,timeout:20000});
+ }catch(e){console.warn('C360 watch location',e)}
+}
+async function initializeLocationTracking(){
+ if(!isDeviceMode())return;
+ const state=await readLocationPermission();
+ if(state==='granted'){startLocationWatch();await reportLocation(true)}
 }
 
 function ringOverlay(){
@@ -235,12 +323,13 @@ document.addEventListener('click',async e=>{
  const close=e.target.closest('[data-c360-close-modal]');if(close){document.getElementById('c360ControlModal')?.remove();return}
  const save=e.target.closest('[data-c360-save-permissions]');if(save){try{await savePermissions(save.dataset.c360SavePermissions)}catch(err){alert('Não foi possível salvar as permissões: '+(err?.message||err))}return}
  if(e.target.closest('[data-c360-stop-local-ring]')){stopRing();return}
+ if(e.target.closest('[data-c360-enable-location]')){e.preventDefault();const ok=await reportLocation(true);if(ok){startLocationWatch();toast('Localização ativada','Este celular já está enviando a posição para o Comando 360.','success')}return}
 });
 
-document.addEventListener('c360:bootstrap-ready',()=>{installAdminHook();pollDevice()});
-document.addEventListener('c360:device-activated',()=>setTimeout(pollDevice,400));
-document.addEventListener('visibilitychange',()=>{if(!document.hidden)pollDevice()});
-window.addEventListener('online',()=>pollDevice());
-injectStyles();installAdminHook();setInterval(pollDevice,15000);setInterval(()=>{if(!isDeviceMode())decorateAdminCards()},30000);setTimeout(pollDevice,1200);
-window.C360DeviceControl={version:VERSION,defaults:DEFAULT_PERMISSIONS,permissions:mergedPermissions,startRing,stopRing,reportLocation,decorateAdminCards};
+document.addEventListener('c360:bootstrap-ready',()=>{installAdminHook();pollDevice();setTimeout(initializeLocationTracking,600)});
+document.addEventListener('c360:device-activated',()=>setTimeout(()=>{pollDevice();initializeLocationTracking()},400));
+document.addEventListener('visibilitychange',()=>{if(!document.hidden){pollDevice();initializeLocationTracking()}});
+window.addEventListener('online',()=>{pollDevice();initializeLocationTracking()});
+injectStyles();installAdminHook();setInterval(pollDevice,15000);setInterval(()=>{if(!isDeviceMode())decorateAdminCards()},30000);setTimeout(()=>{pollDevice();initializeLocationTracking()},1200);
+window.C360DeviceControl={version:VERSION,defaults:DEFAULT_PERMISSIONS,permissions:mergedPermissions,startRing,stopRing,reportLocation,initializeLocationTracking,decorateAdminCards};
 })();
