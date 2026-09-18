@@ -1,6 +1,6 @@
 (()=>{
 'use strict';
-const VERSION='2026.09.17-device-control2';
+const VERSION='2026.09.17-device-control3';
 const DEFAULT_PERMISSIONS={ponto:true,apanha:true,abastecimento:true,relatorio:true,impressao:true,manutencao:false,insumos:false,frota:false};
 const PERMISSION_LABELS={
   ponto:'Ponto e reconhecimento facial',
@@ -264,7 +264,17 @@ function startLocationWatch(){
 async function initializeLocationTracking(){
  if(!isDeviceMode())return;
  const state=await readLocationPermission();
- if(state==='granted'){startLocationWatch();await reportLocation(true)}
+ if(state==='granted'){
+   startLocationWatch();
+   await reportLocation(true);
+   return;
+ }
+ if(state==='prompt'||state==='unknown'){
+   // Tenta imediatamente. No Chrome/Android isso abre a permissão do sistema
+   // sem depender do botão interno do Comando 360.
+   const ok=await reportLocation(true);
+   if(ok)startLocationWatch();
+ }
 }
 
 function ringOverlay(){
