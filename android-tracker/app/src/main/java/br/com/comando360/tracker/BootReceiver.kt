@@ -14,6 +14,8 @@ class BootReceiver : BroadcastReceiver() {
         if (SessionStore.load(context) == null) return
 
         DeviceOwnerHelper.applyCorporatePolicy(context)
+        TrackerWatchdog.schedule(context, 60_000L)
+
         val foregroundGranted =
             context.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
                 context.checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
