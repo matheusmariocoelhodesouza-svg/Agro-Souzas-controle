@@ -59,18 +59,19 @@ jobs:
             c360-team-chat.js c360-farm-cache-hotfix.js c360-consumable-edit.js
             c360-system-health.js c360-onboarding-entry.js c360-fiscal.js
             c360-ui-polish.css c360-premium-ui.css c360-product-ui.css c360-release-core.css
-            c360-system-health.css c360-fiscal.css qa/reference_audit.py qa/release_scorecard.py
+            c360-system-health.css c360-fiscal.css qa/reference_audit.py qa/release_scorecard.py qa/performance_budget.mjs
             supabase/migrations/20260913104500_add_device_health_heartbeat.sql
             supabase/migrations/20260913203000_self_service_onboarding_v1.sql
             supabase/migrations/20260920122000_explicit_internal_table_deny_policies.sql
             supabase/migrations/20260920122100_preserve_device_security_metadata.sql
+            supabase/migrations/20260920140000_dedupe_legacy_employee_rls.sql
           )
           for f in "${files[@]}"; do test -s "$f" || { echo "Missing: $f"; exit 1; }; done
 
       - name: Reference structural audit
         run: python qa/reference_audit.py
 
-      - name: Release 9.5 scorecard
+      - name: Release 9.7 scorecard
         run: python qa/release_scorecard.py
 
       - name: Product architecture contract
@@ -80,7 +81,8 @@ jobs:
           grep -q 'c360-ui-polish.css' index.html
           ! grep -q '<script>window.onload' index.html
 
-          grep -Eq "BOOT_VERSION='[0-9]{4}\.[0-9]{2}\.[0-9]{2}-(b[0-9]+|r[0-9]+-[0-9]+)'" c360-quality-hotfix.js
+          grep -q "BOOT_VERSION='2026.09.20-r97-1'" c360-quality-hotfix.js
+          grep -q "const VERSION='2026.09.20-r97-1'" c360-release-core.js
           grep -q 'c360-autorecovery.js' c360-quality-hotfix.js
           grep -q 'c360-platform.js' c360-quality-hotfix.js
           grep -q 'c360-product-core.js' c360-quality-hotfix.js
@@ -104,16 +106,26 @@ jobs:
           grep -q 'body.device-mode' c360-product-ui.css
 
           SW_CORE="$(grep -oE 'sw-v7-02-core-hotfix[0-9]+\.js' sw-v7-02.js | head -n1)"
-          test -n "$SW_CORE" && test -s "$SW_CORE"
+          test "$SW_CORE" = 'sw-v7-02-core-hotfix57.js'
+          test -s "$SW_CORE"
           SW_CONTRACT="$(cat sw-v7-02.js "$SW_CORE")"
-          grep -Eq "comando360-v7-02-hotfix[0-9]+" <<<"$SW_CONTRACT"
+          grep -q "comando360-v7-02-hotfix57" <<<"$SW_CONTRACT"
           grep -q 'comando360-stable-v1' <<<"$SW_CONTRACT"
           grep -q 'c360-platform.js' <<<"$SW_CONTRACT"
           grep -q 'c360-product-core.js' <<<"$SW_CONTRACT"
+          grep -q './c360-release-core.js' "$SW_CORE"
+          grep -q './c360-release-core.css' "$SW_CORE"
+          ! grep -q 'CORE.push' sw-v7-02.js
+          ! grep -q '?' sw-v7-02.js
           grep -q 'C360_ROLLBACK_TO_STABLE' <<<"$SW_CONTRACT"
           grep -q 'C360_MARK_HEALTHY' <<<"$SW_CONTRACT"
           ! grep -q 'patchAppHtml' <<<"$SW_CONTRACT"
           ! grep -q 'repairLegacyAppHtml' <<<"$SW_CONTRACT"
+
+          grep -q 'interactiveWall>1500' qa/performance_budget.mjs
+          grep -q 'completeWall>2500' qa/performance_budget.mjs
+          grep -q 'metrics.resources>90' qa/performance_budget.mjs
+          grep -q 'longTasks' qa/performance_budget.mjs
 
           grep -q 'v2_device_health_heartbeat' c360-system-health.js
           grep -q 'v2_client_health_events' c360-autorecovery.js
