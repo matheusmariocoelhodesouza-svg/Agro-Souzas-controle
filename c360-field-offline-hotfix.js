@@ -1,18 +1,17 @@
 (function(){
  'use strict';
- const REPAIR_VERSION='2026.09.19-r6';
+ const REPAIR_VERSION='2026.09.19-r7';
  const RECOVERY_KEY='c360_source_leak_recovery_'+REPAIR_VERSION;
  const DEVICE_RECOVERY_KEY='c360_device_session_recovery_'+REPAIR_VERSION;
  const DEVICE_SESSION_BACKUP_KEY='c360_device_session_backup_v1';
  const DEVICE_SESSION_MAX_AGE=7*24*60*60*1000;
  const SW_URL='./sw-v7-02.js';
- const RUNTIME_MODULES=['./c360-autorecovery.js','./c360-device-control.js','./c360-system-health.js'];
+ const RUNTIME_MODULES=['./c360-autorecovery.js','./c360-device-control.js','./c360-native-tracker-admin.js','./c360-system-health.js'];
  let registrationPromise=null;
  let recovering=false;
  let backupTimer=null;
  let runtimePromise=null;
 
- // Fonte única para o estado de rede. O restante do app chama c360NetOnline().
  if(typeof window.c360NetOnline!=='function'){
   window.c360NetOnline=function(){return navigator.onLine!==false};
  }
