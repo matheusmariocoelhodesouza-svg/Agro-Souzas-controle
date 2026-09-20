@@ -26,6 +26,11 @@ const interactiveWall=Date.now()-started;
 await page.waitForFunction(()=>window.__c360Bootstrap?.featuresReady===true||window.__c360Bootstrap?.safeMode===true,{timeout:10000});
 const completeWall=Date.now()-started;
 
+// O runtime de release faz o enhancement via requestIdleCallback (timeout ~900 ms)
+// para não bloquear a interação. Aguarde essa janela antes de avaliar o indicador,
+// sem contaminar os budgets de bootstrap medidos acima.
+await page.waitForFunction(()=>window.__c360ReleaseHealth?.enhanced===true,{timeout:1500}).catch(()=>{});
+
 const metrics=await page.evaluate(()=>{
   const entries=performance.getEntriesByType('resource');
   const boot=window.__c360Bootstrap||{};
