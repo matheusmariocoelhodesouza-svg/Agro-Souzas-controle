@@ -31,7 +31,8 @@ def main():
     release_js=text('c360-release-core.js')
     sw_loader=text('sw-v7-02.js')
     sw_ref=re.search(r"importScripts\(['\"]([^'\"]+)['\"]\)",sw_loader)
-    sw=text(sw_ref.group(1).replace('./','')) if sw_ref and exists(sw_ref.group(1).replace('./','')) else ''
+    sw_path=sw_ref.group(1).split('?',1)[0].replace('./','') if sw_ref else ''
+    sw=text(sw_path) if sw_path and exists(sw_path) else ''
 
     security=Category('Segurança')
     security.check('hardening multiempresa versionado',20,exists('supabase/migrations/20260913120000_harden_multitenant_security_v1.sql'))
