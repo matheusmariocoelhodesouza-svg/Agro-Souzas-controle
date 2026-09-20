@@ -1,6 +1,6 @@
 (()=>{
 'use strict';
-const BOOT_VERSION='2026.09.20-r97-1';
+const BOOT_VERSION='2026.09.20-r98-live1';
 const recoveryModule='./c360-autorecovery.js';
 const styles=[
  './c360-premium-ui.css','./c360-product-ui.css','./c360-dashboard-dark-fix.css','./c360-enterprise-ui.css',
@@ -23,7 +23,7 @@ const optionalModules=[
  './c360-report-share.js','./c360-consumable-edit.js','./c360-consumable-action-bridge.js','./c360-consumable-mobile-actions.js',
  './c360-team-chat.js','./c360-system-health.js','./c360-onboarding-entry.js','./c360-fiscal.js','./c360-fiscal-issuance.js',
  './c360-enterprise.js','./c360-commercial.js','./c360-saas-readiness.js','./c360-rpc-bridge.js','./c360-trailer-hitches.js',
- './c360-showcase-exact.js','./c360-field-route-guard.js','./c360-fuel-type.js'
+ './c360-showcase-exact.js','./c360-field-route-guard.js','./c360-fuel-type.js','./c360-native-tracker-admin.js'
 ];
 const resourceUrl=src=>src+(src.includes('?')?'&':'?')+'v='+encodeURIComponent(BOOT_VERSION);
 const baseName=src=>src.split('?')[0];
@@ -53,7 +53,6 @@ async function loadStylesParallel(list){
  return results.map(r=>r.status==='fulfilled'?r.value:{ok:false,error:r.reason?.message||String(r.reason)});
 }
 async function loadScriptsOrderedParallel(list){
- /* async=false preserva a ordem de execucao; inserir todos antes de aguardar permite downloads concorrentes. */
  const pending=list.map(appendScript);
  const results=await Promise.allSettled(pending);
  return results.map(r=>r.status==='fulfilled'?r.value:{ok:false,error:r.reason?.message||String(r.reason)});
