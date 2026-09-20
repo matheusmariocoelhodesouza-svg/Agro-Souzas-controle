@@ -45,6 +45,7 @@ class LocationService : Service() {
                 TrackerApi.heartbeat(applicationContext, true)
                 stopIfRevoked()
             }
+            TrackerWatchdog.schedule(applicationContext)
             handler.postDelayed(this, 5 * 60_000L)
         }
     }
@@ -64,15 +65,18 @@ class LocationService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         DeviceOwnerHelper.applyCorporatePolicy(this)
         if (SessionStore.load(this) == null) {
+            TrackerWatchdog.cancel(this)
             stopSelf()
             return START_NOT_STICKY
         }
         if (!hasLocationPermission()) {
             executor.execute { TrackerApi.heartbeat(applicationContext, false) }
+            TrackerWatchdog.schedule(this)
             stopSelf()
             return START_NOT_STICKY
         }
         startTracking()
+        TrackerWatchdog.schedule(this)
         handler.removeCallbacks(heartbeat)
         handler.post(heartbeat)
         executor.execute {
@@ -84,6 +88,7 @@ class LocationService : Service() {
 
     private fun stopIfRevoked() {
         if (SessionStore.load(applicationContext) == null) {
+            TrackerWatchdog.cancel(applicationContext)
             handler.post { stopSelf() }
         }
     }
@@ -99,6 +104,7 @@ class LocationService : Service() {
             fused.requestLocationUpdates(request, callback, Looper.getMainLooper())
             tracking = true
         } catch (_: SecurityException) {
+            TrackerWatchdog.schedule(this, 30_000L)
             stopSelf()
         }
     }
@@ -137,11 +143,24 @@ class LocationService : Service() {
             .build()
     }
 
+    override fun onTaskRemoved(rootIntent: Intent?) {
+        if (SessionStore.load(applicationContext) != null) {
+            TrackerWatchdog.schedule(applicationContext, 20_000L)
+        }
+        super.onTaskRemoved(rootIntent)
+    }
+
     override fun onDestroy() {
         if (tracking) fused.removeLocationUpdates(callback)
         tracking = false
         handler.removeCallbacks(heartbeat)
-        executor.execute { TrackerApi.heartbeat(applicationContext, false) }
+        val shouldRecover = SessionStore.load(applicationContext) != null
+        if (shouldRecover) {
+            TrackerWatchdog.schedule(applicationContext, 30_000L)
+            executor.execute { TrackerApi.heartbeat(applicationContext, false) }
+        } else {
+            TrackerWatchdog.cancel(applicationContext)
+        }
         executor.shutdown()
         super.onDestroy()
     }
