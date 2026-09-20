@@ -46,7 +46,7 @@ class LocationService : Service() {
                 stopIfRevoked()
             }
             TrackerWatchdog.schedule(applicationContext)
-            handler.postDelayed(this, 5 * 60_000L)
+            handler.postDelayed(this, 60_000L)
         }
     }
 
@@ -95,9 +95,9 @@ class LocationService : Service() {
 
     private fun startTracking() {
         if (tracking) return
-        val request = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 60_000L)
-            .setMinUpdateIntervalMillis(30_000L)
-            .setMinUpdateDistanceMeters(20f)
+        val request = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 30_000L)
+            .setMinUpdateIntervalMillis(15_000L)
+            .setMinUpdateDistanceMeters(5f)
             .setWaitForAccurateLocation(false)
             .build()
         try {
@@ -136,7 +136,7 @@ class LocationService : Service() {
         return Notification.Builder(this, "c360_tracking")
             .setSmallIcon(br.com.comando360.tracker.R.drawable.ic_location)
             .setContentTitle("Comando 360 • Rastreamento ativo")
-            .setContentText("Localização do celular da equipe sendo atualizada.")
+            .setContentText("Localização, velocidade e bateria da equipe sendo atualizadas.")
             .setContentIntent(pending)
             .setOngoing(true)
             .setCategory(Notification.CATEGORY_SERVICE)
