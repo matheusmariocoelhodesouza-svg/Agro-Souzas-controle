@@ -25,6 +25,7 @@ jobs:
           fetch "/sw-v7-02.js" /tmp/sw.js
           SW_CORE="$(grep -oE 'sw-v7-02-core-hotfix[0-9]+\.js' /tmp/sw.js | head -n1 || true)"
           test -n "$SW_CORE"
+          test "$SW_CORE" = "sw-v7-02-core-hotfix57.js"
           fetch "/$SW_CORE" /tmp/sw-core.js
           fetch "/reparar.html" /tmp/repair.html
           fetch "/dda.html" /tmp/dda.html
@@ -62,7 +63,8 @@ jobs:
           grep -q 'c360-saas-readiness.css' /tmp/bootstrap.js
           grep -q '2026.09.13-platform1' /tmp/platform.js
           grep -q 'window.C360Platform' /tmp/platform.js
-          grep -q '2026.09.20-r95-1' /tmp/release-core.js
+          grep -q '2026.09.20-r97-1' /tmp/release-core.js
+          grep -q "BOOT_VERSION='2026.09.20-r97-1'" /tmp/bootstrap.js
           grep -q 'prefers-reduced-motion' /tmp/release-core.css
           grep -q 'min-height:44px' /tmp/release-core.css
           grep -q '2026.09.13-saas1' /tmp/saas.js
@@ -71,7 +73,10 @@ jobs:
           grep -q 'Termos de Uso do Comando 360' /tmp/legal.html
           grep -q 'Biometria' /tmp/legal.html
           grep -q "$SW_CORE" /tmp/sw.js
-          grep -Eq 'comando360-v7-02-hotfix[0-9]+' /tmp/sw-core.js
+          ! grep -q 'CORE.push' /tmp/sw.js
+          grep -q "const CACHE='comando360-v7-02-hotfix57'" /tmp/sw-core.js
+          grep -q './c360-release-core.js' /tmp/sw-core.js
+          grep -q './c360-release-core.css' /tmp/sw-core.js
           grep -q 'comando360-stable-v1' /tmp/sw-core.js
           grep -q 'C360_ROLLBACK_TO_STABLE' /tmp/sw-core.js
           grep -q 'v2_client_health_events' /tmp/autorecovery.js
@@ -89,5 +94,5 @@ jobs:
               value=Path(name).read_text(encoding='utf-8'); P().feed(value); assert '<html' in value.lower() and '</html>' in value.lower()
           for name in ('/tmp/ui.css','/tmp/premium.css','/tmp/product.css','/tmp/release-core.css','/tmp/health.css','/tmp/saas.css'):
               css=Path(name).read_text(encoding='utf-8'); assert css.count('{')==css.count('}'), f'{name}: unbalanced braces'
-          print('Production product shell + parallel bootstrap + PWA rollback + AutoRecovery + SaaS readiness smoke: OK')
+          print('Production r97 shell + isolated PWA cache + rollback + AutoRecovery + SaaS readiness smoke: OK')
           PY

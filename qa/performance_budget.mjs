@@ -7,8 +7,9 @@ const page=await context.newPage();
 const pageErrors=[];
 page.on('pageerror',e=>pageErrors.push(String(e?.message||e)));
 
-// Simula uma rede de campo moderada para arquivos do app. Em vez de medir localhost
-// puro, cada JS/CSS recebe atraso fixo; downloads concorrentes vencem, cascatas sequenciais falham.
+// Simula uma rede de campo moderada. Cada JS/CSS recebe atraso fixo para expor
+// carregamentos em cascata; o orçamento abaixo deve continuar confortável apenas
+// quando o bootstrap permanece concorrente e sem tarefas longas.
 await page.route('**/*',async route=>{
   const u=new URL(route.request().url());
   if(u.hostname==='127.0.0.1'||u.hostname==='localhost'){
@@ -47,10 +48,13 @@ console.log(JSON.stringify(metrics,null,2));
 const failures=[];
 if(metrics.bootstrapErrors.length)failures.push('bootstrap errors: '+metrics.bootstrapErrors.join(' | '));
 if(pageErrors.length)failures.push('page errors: '+pageErrors.join(' | '));
-if(interactiveWall>3000)failures.push(`interactive bootstrap ${interactiveWall}ms > 3000ms budget`);
-if(completeWall>6000)failures.push(`complete bootstrap ${completeWall}ms > 6000ms budget`);
-if(metrics.resources>115)failures.push(`resource count ${metrics.resources} > 115 budget`);
+if(interactiveWall>1500)failures.push(`interactive bootstrap ${interactiveWall}ms > 1500ms budget`);
+if(completeWall>2500)failures.push(`complete bootstrap ${completeWall}ms > 2500ms budget`);
+if(metrics.resources>90)failures.push(`resource count ${metrics.resources} > 90 budget`);
 if(!metrics.releaseHealth?.enhanced)failures.push('release runtime did not complete DOM enhancement');
+if((metrics.releaseHealth?.runtimeErrors??0)!==0)failures.push(`runtime errors: ${metrics.releaseHealth.runtimeErrors}`);
+if((metrics.releaseHealth?.unhandledRejections??0)!==0)failures.push(`unhandled rejections: ${metrics.releaseHealth.unhandledRejections}`);
+if((metrics.releaseHealth?.longTasks??0)!==0)failures.push(`long tasks: ${metrics.releaseHealth.longTasks}`);
 
 await browser.close();
 if(failures.length){

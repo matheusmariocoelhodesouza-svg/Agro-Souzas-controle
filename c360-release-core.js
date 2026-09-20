@@ -1,6 +1,6 @@
 (()=>{
 'use strict';
-const VERSION='2026.09.20-r95-1';
+const VERSION='2026.09.20-r97-1';
 const state={version:VERSION,startedAt:Date.now(),runtimeErrors:0,unhandledRejections:0,longTasks:0,lastLongTaskMs:0,enhanced:false};
 window.__c360ReleaseHealth=state;
 

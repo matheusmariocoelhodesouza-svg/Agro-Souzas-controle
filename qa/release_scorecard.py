@@ -1,15 +1,16 @@
 #!/usr/bin/env python3
 """Comando 360 release scorecard.
 
-This is a release contract, not a marketing rating. It converts five quality
-areas into reproducible repository checks. A category below 95 blocks release;
-browser QA, production smoke and database tests remain separate gates.
+Contrato de release: transforma qualidade em verificações reproduzíveis. Cada
+categoria precisa atingir pelo menos 97/100; navegador, smoke de produção,
+banco e stress continuam como gates independentes.
 """
 from pathlib import Path
 import re
 import sys
 
 ROOT=Path(__file__).resolve().parents[1]
+MIN_SCORE=97.0
 
 class Category:
     def __init__(self,name): self.name=name; self.items=[]
@@ -29,10 +30,14 @@ def main():
     boot=text('c360-quality-hotfix.js')
     release_css=text('c360-release-core.css')
     release_js=text('c360-release-core.js')
+    perf_budget=text('qa/performance_budget.mjs')
     sw_loader=text('sw-v7-02.js')
     sw_ref=re.search(r"importScripts\(['\"]([^'\"]+)['\"]\)",sw_loader)
-    sw_path=sw_ref.group(1).split('?',1)[0].replace('./','') if sw_ref else ''
+    sw_ref_value=sw_ref.group(1) if sw_ref else ''
+    sw_path=sw_ref_value.split('?',1)[0].replace('./','') if sw_ref else ''
     sw=text(sw_path) if sw_path and exists(sw_path) else ''
+    sw_version_match=re.search(r'hotfix(\d+)\.js$',sw_path)
+    sw_version=int(sw_version_match.group(1)) if sw_version_match else 0
 
     security=Category('Segurança')
     security.check('hardening multiempresa versionado',20,exists('supabase/migrations/20260913120000_harden_multitenant_security_v1.sql'))
@@ -61,11 +66,11 @@ def main():
     ux.check('links externos e imagens endurecidos/otimizados',20,'noopener' in release_js and "img.loading='lazy'" in release_js)
 
     reliability=Category('Confiabilidade')
-    reliability.check('rollback automático disponível no PWA',25,'C360_ROLLBACK_TO_STABLE' in sw)
+    reliability.check('rollback automático disponível no PWA',20,'C360_ROLLBACK_TO_STABLE' in sw)
     reliability.check('cache estável separado da versão atual',20,'comando360-stable-v1' in sw)
     reliability.check('autorecovery do cliente presente',15,exists('c360-autorecovery.js'))
     reliability.check('fila/offline de campo presente',15,exists('c360-field-offline-hotfix.js'))
-    reliability.check('heartbeat de saúde presente',10,exists('c360-system-health.js') and 'v2_device_health_heartbeat' in text('c360-system-health.js'))
+    reliability.check('heartbeat de saúde presente',15,exists('c360-system-health.js') and 'v2_device_health_heartbeat' in text('c360-system-health.js'))
     reliability.check('tracker Android reinicia e mantém fila local',15,exists('android-tracker/app/src/main/java/br/com/comando360/tracker/BootReceiver.kt') and exists('android-tracker/app/src/main/java/br/com/comando360/tracker/LocationQueue.kt'))
 
     functionality=Category('Funcionalidade')
@@ -77,20 +82,27 @@ def main():
     functionality.check('stress de 1.000 usuários e perfil 3.000',15,exists('qa/user_stress_1000.mjs') and exists('qa/profile_stress_3000.mjs'))
     functionality.check('build automatizado do tracker Android',15,exists('.github/workflows/android-tracker-build.yml'))
 
-    categories=[security,performance,ux,reliability,functionality]
+    architecture=Category('Arquitetura + Operação')
+    architecture.check('service worker usa geração isolada hotfix57+',20,sw_version>=57 and f"comando360-v7-02-hotfix{sw_version}" in sw)
+    architecture.check('assets da release estão dentro do core offline',20,'./c360-release-core.js' in sw and './c360-release-core.css' in sw)
+    architecture.check('loader não muta cache em runtime nem usa query de versão',20,'CORE.push' not in sw_loader and '?' not in sw_ref_value)
+    architecture.check('budget rígido: 1,5s interativo / 2,5s total / 90 recursos',20,'interactiveWall>1500' in perf_budget and 'completeWall>2500' in perf_budget and 'metrics.resources>90' in perf_budget)
+    architecture.check('RLS legado duplicado removido por migration',20,exists('supabase/migrations/20260920140000_dedupe_legacy_employee_rls.sql'))
+
+    categories=[security,performance,ux,reliability,functionality,architecture]
     failed=False
     print('=== COMANDO 360 • RELEASE SCORECARD ===')
     for c in categories:
         print(f'\n{c.name}: {c.score:.1f}/100')
         for label,points,ok in c.items:
             print(f"  {'✓' if ok else '✗'} {points:>2} pts — {label}")
-        if c.score<95: failed=True
+        if c.score<MIN_SCORE: failed=True
     average=round(sum(c.score for c in categories)/len(categories),1)
-    print(f'\nMÉDIA: {average:.1f}/100 • mínimo por categoria: 95.0')
-    if failed or average<95:
+    print(f'\nMÉDIA: {average:.1f}/100 • mínimo por categoria: {MIN_SCORE:.1f}')
+    if failed or average<MIN_SCORE:
         print('RESULT: FAIL — release bloqueada')
         return 1
-    print('RESULT: PASS — contrato automatizado >= 9,5/10')
+    print('RESULT: PASS — contrato automatizado >= 9,7/10')
     return 0
 
 if __name__=='__main__': sys.exit(main())
