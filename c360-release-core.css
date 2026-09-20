@@ -51,7 +51,7 @@ html body.darkmode #financeiro .c360-dda-kpi b{color:#f8fafc!important}
 /* Campo: aviso de permissão continua visível, sem esconder a primeira ação. */
 html body.device-mode #c360LocationPermissionCard{top:calc(68px + env(safe-area-inset-top,0px))!important;bottom:auto!important;width:min(390px,calc(100% - 24px))!important;max-height:132px!important;padding:9px 11px!important;overflow:auto!important;border-radius:14px!important;box-shadow:0 12px 34px rgba(2,18,38,.22)!important}
 html body.device-mode #c360LocationPermissionCard p{margin:2px 0 5px!important;line-height:1.25!important;font-size:12px!important}
-html body.device-mode #c360LocationPermissionCard .muted{font-size:10px!important;line-height:1.2!important}
+html body.device-mode #c360LocationPermissionCard .muted{display:none!important}
 html body.device-mode #c360LocationPermissionCard .btn,html body.device-mode #c360LocationPermissionCard button{min-height:38px!important;padding:6px 9px!important;font-size:10px!important}
 @supports selector(body:has(*)){
   html body.device-mode:has(#c360LocationPermissionCard:not(.hidden):not([hidden])) #screenHost{padding-top:136px!important}

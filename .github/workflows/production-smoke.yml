@@ -25,7 +25,7 @@ jobs:
           fetch "/sw-v7-02.js" /tmp/sw.js
           SW_CORE="$(grep -oE 'sw-v7-02-core-hotfix[0-9]+\.js' /tmp/sw.js | head -n1 || true)"
           test -n "$SW_CORE"
-          test "$SW_CORE" = "sw-v7-02-core-hotfix57.js"
+          test "$SW_CORE" = "sw-v7-02-core-hotfix58.js"
           fetch "/$SW_CORE" /tmp/sw-core.js
           fetch "/reparar.html" /tmp/repair.html
           fetch "/dda.html" /tmp/dda.html
@@ -35,6 +35,7 @@ jobs:
           fetch "/c360-product-core.js" /tmp/product-core.js
           fetch "/c360-release-core.js" /tmp/release-core.js
           fetch "/c360-release-core.css" /tmp/release-core.css
+          fetch "/c360-app-shell.css" /tmp/app-shell.css
           fetch "/c360-quality-hotfix.js" /tmp/bootstrap.js
           fetch "/c360-quality-core.js" /tmp/quality-core.js
           fetch "/c360-field-offline-hotfix.js" /tmp/field.js
@@ -49,9 +50,10 @@ jobs:
           fetch "/c360-product-ui.css" /tmp/product.css
           fetch "/c360-system-health.css" /tmp/health.css
           fetch "/c360-saas-readiness.css" /tmp/saas.css
-          for f in /tmp/index.html /tmp/cadastro.html /tmp/legal.html /tmp/sw.js /tmp/sw-core.js /tmp/autorecovery.js /tmp/platform.js /tmp/product-core.js /tmp/release-core.js /tmp/release-core.css /tmp/bootstrap.js /tmp/saas.js /tmp/saas.css; do test -s "$f"; done
-          test "$(wc -c < /tmp/index.html)" -le 700000
+          for f in /tmp/index.html /tmp/cadastro.html /tmp/legal.html /tmp/sw.js /tmp/sw-core.js /tmp/autorecovery.js /tmp/platform.js /tmp/product-core.js /tmp/release-core.js /tmp/release-core.css /tmp/app-shell.css /tmp/bootstrap.js /tmp/saas.js /tmp/saas.css; do test -s "$f"; done
+          test "$(wc -c < /tmp/index.html)" -le 600000
           grep -q 'c360-quality-hotfix.js' /tmp/index.html
+          grep -q 'c360-app-shell.css' /tmp/index.html
           grep -q 'c360-platform.js' /tmp/bootstrap.js
           grep -q 'c360-product-core.js' /tmp/bootstrap.js
           grep -q 'c360-release-core.js' /tmp/bootstrap.js
@@ -74,9 +76,10 @@ jobs:
           grep -q 'Biometria' /tmp/legal.html
           grep -q "$SW_CORE" /tmp/sw.js
           ! grep -q 'CORE.push' /tmp/sw.js
-          grep -q "const CACHE='comando360-v7-02-hotfix57'" /tmp/sw-core.js
+          grep -q "const CACHE='comando360-v7-02-hotfix58'" /tmp/sw-core.js
           grep -q './c360-release-core.js' /tmp/sw-core.js
           grep -q './c360-release-core.css' /tmp/sw-core.js
+          grep -q './c360-app-shell.css' /tmp/sw-core.js
           grep -q 'comando360-stable-v1' /tmp/sw-core.js
           grep -q 'C360_ROLLBACK_TO_STABLE' /tmp/sw-core.js
           grep -q 'v2_client_health_events' /tmp/autorecovery.js
@@ -92,7 +95,7 @@ jobs:
           assert m.get('name') or m.get('short_name')
           for name in ('/tmp/index.html','/tmp/cadastro.html','/tmp/dda.html','/tmp/repair.html','/tmp/legal.html'):
               value=Path(name).read_text(encoding='utf-8'); P().feed(value); assert '<html' in value.lower() and '</html>' in value.lower()
-          for name in ('/tmp/ui.css','/tmp/premium.css','/tmp/product.css','/tmp/release-core.css','/tmp/health.css','/tmp/saas.css'):
+          for name in ('/tmp/ui.css','/tmp/premium.css','/tmp/product.css','/tmp/release-core.css','/tmp/app-shell.css','/tmp/health.css','/tmp/saas.css'):
               css=Path(name).read_text(encoding='utf-8'); assert css.count('{')==css.count('}'), f'{name}: unbalanced braces'
-          print('Production r97 shell + isolated PWA cache + rollback + AutoRecovery + SaaS readiness smoke: OK')
+          print('Production r97 modular shell + hotfix58 isolated PWA cache + rollback + AutoRecovery + SaaS readiness smoke: OK')
           PY
