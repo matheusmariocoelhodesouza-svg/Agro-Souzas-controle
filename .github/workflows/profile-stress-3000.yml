@@ -10,6 +10,16 @@ on:
       - 'c360-field-route-guard.js'
       - 'c360-quality-hotfix.js'
       - 'sw-v7-02.js'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'c360-*.js'
+      - 'c360-*.css'
+      - 'sw-v7-02.js'
+      - 'sw-v7-02-core-*.js'
+      - 'qa/profile_stress_3000.mjs'
+      - '.github/workflows/profile-stress-3000.yml'
   workflow_dispatch:
 
 permissions:

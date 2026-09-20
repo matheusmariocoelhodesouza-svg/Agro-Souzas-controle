@@ -22,19 +22,26 @@ jobs:
           test -s supabase/migrations/20260913143824_commercial_readiness_v2.sql
           test -s supabase/migrations/20260913144117_commercial_readiness_v2_patch.sql
           test -s supabase/migrations/20260913144733_commercial_readiness_indexes_v1.sql
+          test -s supabase/migrations/20260920122000_explicit_internal_table_deny_policies.sql
+          test -s supabase/migrations/20260920122100_preserve_device_security_metadata.sql
           test -s supabase/functions/comando360-device-activate/index.ts
+          test -s supabase/functions/comando360-native-tracker-activate/index.ts
           test -s qa/security_postdeploy.sql
           test -s legal.html
           test -s c360-saas-readiness.js
       - name: Validate multi-tenant hardening contract
         run: |
           MIG=supabase/migrations/20260913120000_harden_multitenant_security_v1.sql
+          DENY=supabase/migrations/20260920122000_explicit_internal_table_deny_policies.sql
           grep -qi "revoke all privileges on table public.employees from anon, authenticated" "$MIG"
           grep -qi "revoke all privileges on table public.v2_integration_credentials from anon, authenticated" "$MIG"
           grep -qi "revoke truncate, references, trigger on all tables in schema public from anon, authenticated" "$MIG"
           grep -qi "v2_has_permission(company_id,'settings.manage')" "$MIG"
           grep -qi "v2_is_company_member(((storage.foldername(name))\[1\])::uuid)" "$MIG"
           ! grep -Ei "profiles.+role.+admin" "$MIG"
+          for t in movit_configuration v2_attendance_audit_log v2_integration_credentials v2_integration_oauth_states v2_native_tracker_pairing_codes; do grep -q "$t" "$DENY"; done
+          grep -q "as restrictive for all to anon, authenticated" "$DENY"
+          grep -q "using (false) with check (false)" "$DENY"
           grep -q "SECURITY_AUDIT_OK" qa/security_postdeploy.sql
           grep -q "tabela(s) multiempresa sem RLS" qa/security_postdeploy.sql
           grep -q "recurso legado exposto" qa/security_postdeploy.sql
@@ -60,12 +67,20 @@ jobs:
         run: |
           python - <<'PY'
           from pathlib import Path
-          p=Path('supabase/functions/comando360-device-activate/index.ts')
-          s=p.read_text(encoding='utf-8')
-          required=['v2_device_pairing_codes','code_hash','used_at','expires_at','sha256Hex','v2_pair_device_service','admin.auth.admin.createUser','admin.auth.admin.deleteUser','https://app.comando360.com.br']
-          for marker in required: assert marker in s, f'missing activation security marker: {marker}'
-          assert s.index('v2_device_pairing_codes') < s.index('admin.auth.admin.createUser'), 'pairing code must be validated before user creation'
-          assert 'SUPABASE_SERVICE_ROLE_KEY' in s and 'Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")' in s
-          assert 'service_role' not in s.lower().replace('supabase_service_role_key',''), 'do not embed a service-role credential'
+          for name, marker in [
+              ('supabase/functions/comando360-device-activate/index.ts','v2_device_pairing_codes'),
+              ('supabase/functions/comando360-native-tracker-activate/index.ts','v2_native_tracker_pairing_codes'),
+          ]:
+              s=Path(name).read_text(encoding='utf-8')
+              required=[marker,'code_hash','used_at','expires_at','admin.auth.admin.createUser','admin.auth.admin.deleteUser','https://app.comando360.com.br']
+              for value in required: assert value in s, f'{name}: missing activation security marker: {value}'
+              assert s.index(marker) < s.index('admin.auth.admin.createUser'), f'{name}: pairing code must be validated before user creation'
+              assert 'SUPABASE_SERVICE_ROLE_KEY' in s and 'Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")' in s
+              assert 'service_role' not in s.lower().replace('supabase_service_role_key',''), f'{name}: do not embed a service-role credential'
           print('Device activation security ordering: OK')
           PY
+      - name: Validate device metadata cannot be wiped by identity refresh
+        run: |
+          MIG=supabase/migrations/20260920122100_preserve_device_security_metadata.sql
+          grep -q "private.v2_is_device_session" "$MIG"
+          grep -q "coalesce(device_info,'{}'::jsonb) || coalesce(p_device_info,'{}'::jsonb)" "$MIG"
