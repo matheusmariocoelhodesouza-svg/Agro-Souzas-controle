@@ -12,7 +12,7 @@ import org.json.JSONObject
 import java.util.concurrent.TimeUnit
 
 object TrackerApi {
-    const val VERSION = "1.0.0"
+    const val VERSION = "1.0.1"
     private const val BASE_URL = "https://aycbrqziusxtxhsdfqjk.supabase.co"
     private const val API_KEY = "sb_publishable_OGJX3NBA__JxoyjB3IZNvQ_0nNwh_Xc"
     private val JSON = "application/json; charset=utf-8".toMediaType()
