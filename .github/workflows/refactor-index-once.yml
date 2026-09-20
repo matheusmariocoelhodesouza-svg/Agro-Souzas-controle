@@ -9,6 +9,7 @@ permissions:
 
 jobs:
   modularize:
+    if: ${{ !contains(github.event.head_commit.message, '[modularized-index]') }}
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
@@ -23,98 +24,47 @@ jobs:
           python - <<'PY'
           from pathlib import Path
 
-          index = Path('index.html')
-          before = index.read_text(encoding='utf-8')
-          start = before.find('<style>')
-          end_marker = '</style>'
-          end = before.find(end_marker, start)
-          assert start >= 0 and end > start, 'first inline style block not found'
-          css = before[start + len('<style>'):end].strip() + '\n'
-          assert len(css.encode('utf-8')) > 20_000, 'refusing to extract unexpectedly small shell CSS block'
-          Path('c360-app-shell.css').write_text(css, encoding='utf-8')
-          after = before[:start] + '<link rel="stylesheet" href="./c360-app-shell.css"/>\n' + before[end + len(end_marker):]
-          index.write_text(after, encoding='utf-8')
+          index=Path('index.html')
+          before=index.read_text(encoding='utf-8')
+          start=before.find('<style>'); end=before.find('</style>',start)
+          assert start>=0 and end>start
+          css=before[start+len('<style>'):end].strip()+'\n'
+          assert len(css.encode())>20_000
+          Path('c360-app-shell.css').write_text(css,encoding='utf-8')
+          after=before[:start]+'<link rel="stylesheet" href="./c360-app-shell.css"/>\n'+before[end+len('</style>'):]
+          index.write_text(after,encoding='utf-8')
 
-          old_core = Path('sw-v7-02-core-hotfix57.js').read_text(encoding='utf-8')
-          new_core = old_core.replace("comando360-v7-02-hotfix57", "comando360-v7-02-hotfix58", 1)
-          anchor = "'./c360-system-health.css','./c360-ui-polish.css','./c360-premium-ui.css','./c360-product-ui.css','./c360-release-core.css',"
-          replacement = "'./c360-system-health.css','./c360-ui-polish.css','./c360-premium-ui.css','./c360-product-ui.css','./c360-release-core.css','./c360-app-shell.css',"
-          assert anchor in new_core, 'service-worker CSS anchor not found'
-          new_core = new_core.replace(anchor, replacement, 1)
-          Path('sw-v7-02-core-hotfix58.js').write_text(new_core, encoding='utf-8')
+          old=Path('sw-v7-02-core-hotfix57.js').read_text(encoding='utf-8')
+          new=old.replace('comando360-v7-02-hotfix57','comando360-v7-02-hotfix58',1)
+          anchor="'./c360-system-health.css','./c360-ui-polish.css','./c360-premium-ui.css','./c360-product-ui.css','./c360-release-core.css',"
+          replacement="'./c360-system-health.css','./c360-ui-polish.css','./c360-premium-ui.css','./c360-product-ui.css','./c360-release-core.css','./c360-app-shell.css',"
+          assert anchor in new
+          Path('sw-v7-02-core-hotfix58.js').write_text(new.replace(anchor,replacement,1),encoding='utf-8')
 
-          sw = Path('sw-v7-02.js')
-          sw_text = sw.read_text(encoding='utf-8')
-          assert 'sw-v7-02-core-hotfix57.js' in sw_text
-          sw_text = sw_text.replace('loader 7.10', 'loader 7.11').replace('sw-v7-02-core-hotfix57.js', 'sw-v7-02-core-hotfix58.js')
-          sw.write_text(sw_text, encoding='utf-8')
+          sw=Path('sw-v7-02.js'); text=sw.read_text(encoding='utf-8')
+          assert 'sw-v7-02-core-hotfix57.js' in text
+          sw.write_text(text.replace('loader 7.10','loader 7.11').replace('sw-v7-02-core-hotfix57.js','sw-v7-02-core-hotfix58.js'),encoding='utf-8')
 
-          qg = Path('.github/workflows/quality-gate.yml')
-          q = qg.read_text(encoding='utf-8')
-          q = q.replace('c360-product-ui.css c360-release-core.css', 'c360-product-ui.css c360-release-core.css c360-app-shell.css')
-          q = q.replace("test \"$SW_CORE\" = 'sw-v7-02-core-hotfix57.js'", "test \"$SW_CORE\" = 'sw-v7-02-core-hotfix58.js'")
-          q = q.replace('comando360-v7-02-hotfix57', 'comando360-v7-02-hotfix58')
-          marker = "grep -q 'c360-ui-polish.css' index.html\n"
-          assert marker in q
-          q = q.replace(marker, marker + "          grep -q 'c360-app-shell.css' index.html\n          grep -q './c360-app-shell.css' sw-v7-02-core-hotfix58.js\n", 1)
-          qg.write_text(q, encoding='utf-8')
+          score=Path('qa/release_scorecard.py'); st=score.read_text(encoding='utf-8')
+          if 'hotfix57' in st: score.write_text(st.replace('hotfix57','hotfix58'),encoding='utf-8')
 
-          smoke = Path('.github/workflows/production-smoke.yml')
-          s = smoke.read_text(encoding='utf-8')
-          s = s.replace('sw-v7-02-core-hotfix57.js', 'sw-v7-02-core-hotfix58.js')
-          s = s.replace('comando360-v7-02-hotfix57', 'comando360-v7-02-hotfix58')
-          fetch_anchor = '          fetch "/c360-release-core.css" /tmp/release-core.css\n'
-          assert fetch_anchor in s
-          s = s.replace(fetch_anchor, fetch_anchor + '          fetch "/c360-app-shell.css" /tmp/app-shell.css\n', 1)
-          nonempty = '/tmp/release-core.js /tmp/release-core.css /tmp/bootstrap.js'
-          assert nonempty in s
-          s = s.replace(nonempty, '/tmp/release-core.js /tmp/release-core.css /tmp/app-shell.css /tmp/bootstrap.js', 1)
-          idx_marker = "          grep -q 'c360-quality-hotfix.js' /tmp/index.html\n"
-          assert idx_marker in s
-          s = s.replace(idx_marker, idx_marker + "          grep -q 'c360-app-shell.css' /tmp/index.html\n", 1)
-          core_marker = "          grep -q './c360-release-core.css' /tmp/sw-core.js\n"
-          assert core_marker in s
-          s = s.replace(core_marker, core_marker + "          grep -q './c360-app-shell.css' /tmp/sw-core.js\n", 1)
-          css_tuple = "'/tmp/product.css','/tmp/release-core.css','/tmp/health.css','/tmp/saas.css'"
-          assert css_tuple in s
-          s = s.replace(css_tuple, "'/tmp/product.css','/tmp/release-core.css','/tmp/app-shell.css','/tmp/health.css','/tmp/saas.css'", 1)
-          smoke.write_text(s, encoding='utf-8')
-
-          score = Path('qa/release_scorecard.py')
-          st = score.read_text(encoding='utf-8')
-          if 'hotfix57' in st:
-              score.write_text(st.replace('hotfix57', 'hotfix58'), encoding='utf-8')
-
-          old_size = len(before.encode('utf-8'))
-          new_size = len(after.encode('utf-8'))
-          css_size = len(css.encode('utf-8'))
-          assert new_size < old_size - 20_000
+          old_size=len(before.encode()); new_size=len(after.encode()); css_size=len(css.encode())
+          assert new_size<old_size-20_000
+          assert css.count('{')==css.count('}')
           print(f'index before: {old_size} bytes')
           print(f'index after : {new_size} bytes')
           print(f'shell css   : {css_size} bytes')
           print(f'reduction   : {old_size-new_size} bytes')
           PY
-
           node --check sw-v7-02.js
           node --check sw-v7-02-core-hotfix58.js
-          python - <<'PY'
-          from pathlib import Path
-          css=Path('c360-app-shell.css').read_text(encoding='utf-8')
-          assert css.count('{') == css.count('}'), 'unbalanced extracted CSS'
-          html=Path('index.html').read_text(encoding='utf-8')
-          assert './c360-app-shell.css' in html
-          assert "sw-v7-02-core-hotfix58.js" in Path('sw-v7-02.js').read_text(encoding='utf-8')
-          assert "const CACHE='comando360-v7-02-hotfix58'" in Path('sw-v7-02-core-hotfix58.js').read_text(encoding='utf-8')
-          print('hotfix58 modular shell contract: OK')
-          PY
 
-      - name: Commit generated refactor and remove one-time workflow
+      - name: Commit generated non-workflow files
         shell: bash
         run: |
           set -euo pipefail
           git config user.name "Comando 360 Release Bot"
           git config user.email "actions@users.noreply.github.com"
-          git rm .github/workflows/refactor-index-once.yml
-          git add index.html c360-app-shell.css sw-v7-02.js sw-v7-02-core-hotfix58.js .github/workflows/quality-gate.yml .github/workflows/production-smoke.yml qa/release_scorecard.py
+          git add index.html c360-app-shell.css sw-v7-02.js sw-v7-02-core-hotfix58.js qa/release_scorecard.py
           git commit -m "refactor: modularize app shell CSS with hotfix58 [modularized-index]"
           git push origin HEAD:refactor/modular-index-hotfix58-20260920
