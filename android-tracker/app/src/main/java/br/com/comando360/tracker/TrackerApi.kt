@@ -12,7 +12,7 @@ import org.json.JSONObject
 import java.util.concurrent.TimeUnit
 
 object TrackerApi {
-    const val VERSION = "1.0.3"
+    const val VERSION = "1.0.4"
     private const val BASE_URL = "https://aycbrqziusxtxhsdfqjk.supabase.co"
     private const val API_KEY = "sb_publishable_OGJX3NBA__JxoyjB3IZNvQ_0nNwh_Xc"
     private val JSON = "application/json; charset=utf-8".toMediaType()
@@ -150,18 +150,38 @@ object TrackerApi {
 
     fun heartbeat(context: Context, serviceRunning: Boolean) {
         val session = validSession(context) ?: return
-        val body = JSONObject()
+        val battery = battery(context)
+        val bodyV2 = JSONObject()
             .put("p_native_version", VERSION)
             .put("p_background_permission", DeviceOwnerHelper.hasBackgroundLocation(context))
             .put("p_service_running", serviceRunning)
             .put("p_device_owner", DeviceOwnerHelper.isDeviceOwner(context))
-        val status = postRest(
-            "$BASE_URL/rest/v1/rpc/v2_native_tracker_heartbeat",
-            body,
+            .put("p_battery_percent", battery.first ?: JSONObject.NULL)
+            .put("p_charging", battery.second ?: JSONObject.NULL)
+        val statusV2 = postRest(
+            "$BASE_URL/rest/v1/rpc/v2_native_tracker_heartbeat_v2",
+            bodyV2,
             session.accessToken,
             "return=minimal"
         )
-        if (isRevokedStatus(status)) revokeLocal(context)
+        if (isRevokedStatus(statusV2)) {
+            revokeLocal(context)
+            return
+        }
+        if (statusV2 in 200..299) return
+
+        val fallback = JSONObject()
+            .put("p_native_version", VERSION)
+            .put("p_background_permission", DeviceOwnerHelper.hasBackgroundLocation(context))
+            .put("p_service_running", serviceRunning)
+            .put("p_device_owner", DeviceOwnerHelper.isDeviceOwner(context))
+        val fallbackStatus = postRest(
+            "$BASE_URL/rest/v1/rpc/v2_native_tracker_heartbeat",
+            fallback,
+            session.accessToken,
+            "return=minimal"
+        )
+        if (isRevokedStatus(fallbackStatus)) revokeLocal(context)
     }
 
     private fun postRest(url: String, body: JSONObject, token: String, prefer: String): Int {

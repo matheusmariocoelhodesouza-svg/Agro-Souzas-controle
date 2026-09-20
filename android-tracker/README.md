@@ -7,23 +7,22 @@ Aplicativo Android complementar ao Comando 360 para manter a localização dos c
 - vínculo por código de 10 caracteres gerado no administrador do Comando 360;
 - sessão nativa separada, ligada ao mesmo `v2_device_access` do celular de campo;
 - `ForegroundService` do tipo `location` com notificação permanente;
-- atualização aproximada a cada 60 segundos / 20 metros;
-- heartbeat do serviço a cada 5 minutos;
+- posição/velocidade em alta precisão aproximadamente a cada 30 segundos, com intervalo mínimo de 15 segundos / 5 metros;
+- heartbeat do serviço e bateria aproximadamente a cada 1 minuto;
 - watchdog de recuperação a cada 10 minutos para religar o serviço se o Android matar o processo;
 - fila local de até 200 posições quando ficar sem internet;
 - retomada após reiniciar o Android e após atualização do APK quando `ACCESS_BACKGROUND_LOCATION` estiver concedida;
 - tokens salvos criptografados com Android Keystore;
 - suporte opcional a Device Owner para celulares corporativos gerenciados.
 
-## Versão 1.0.3
+## Versão 1.0.4
 
-A versão 1.0.3 reforça a persistência em segundo plano, especialmente em aparelhos que encerram serviços agressivamente:
+A versão 1.0.4 adiciona telemetria para o painel ao vivo do administrador:
 
-- watchdog por `AlarmManager`;
-- recuperação após remoção da tela de recentes;
-- nova tentativa após destruição inesperada do serviço;
-- recuperação após boot e atualização do pacote;
-- mantém o vínculo e a sessão existentes ao instalar por cima da versão 1.0.2.
+- bateria e status do serviço via heartbeat v2;
+- localização e velocidade com atualização mais frequente;
+- painel do admin com mapa, bateria, velocidade, precisão GPS e última atualização;
+- mantém o watchdog e a sessão/vínculo existente ao atualizar por cima da versão 1.0.3.
 
 ## Configuração no aparelho
 

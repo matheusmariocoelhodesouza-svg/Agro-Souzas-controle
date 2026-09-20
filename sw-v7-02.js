@@ -1,2 +1,2 @@
-/* Comando 360 — loader 7.10 / release 9.7. Cache isolado, rollback limpo e runtime de qualidade. */
-importScripts('./sw-v7-02-core-hotfix57.js');
+/* Comando 360 — loader 7.12 / release live tracker. Cache isolado, rollback limpo e painel ao vivo. */
+importScripts('./sw-v7-02-core-hotfix59.js');
