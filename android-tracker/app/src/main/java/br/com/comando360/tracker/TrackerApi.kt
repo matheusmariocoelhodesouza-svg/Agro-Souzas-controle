@@ -12,7 +12,7 @@ import org.json.JSONObject
 import java.util.concurrent.TimeUnit
 
 object TrackerApi {
-    const val VERSION = "1.0.1"
+    const val VERSION = "1.0.2"
     private const val BASE_URL = "https://aycbrqziusxtxhsdfqjk.supabase.co"
     private const val API_KEY = "sb_publishable_OGJX3NBA__JxoyjB3IZNvQ_0nNwh_Xc"
     private val JSON = "application/json; charset=utf-8".toMediaType()
@@ -47,10 +47,18 @@ object TrackerApi {
                 teamId = d.optString("team_id", ""),
                 deviceName = d.optString("device_name", deviceName)
             )
+            LocationQueue.clear(context)
             SessionStore.save(context, session)
             return session
         }
     }
+
+    private fun revokeLocal(context: Context) {
+        SessionStore.clear(context)
+        LocationQueue.clear(context)
+    }
+
+    private fun isRevokedStatus(code: Int): Boolean = code == 401 || code == 403
 
     @Synchronized
     private fun validSession(context: Context): TrackerSession? {
@@ -64,18 +72,24 @@ object TrackerApi {
             .header("apikey", API_KEY)
             .post(body.toString().toRequestBody(JSON))
             .build()
-        client.newCall(request).execute().use { response ->
-            if (!response.isSuccessful) return null
-            val j = JSONObject(response.body?.string().orEmpty())
-            s.accessToken = j.getString("access_token")
-            s.refreshToken = j.optString("refresh_token", s.refreshToken)
-            s.expiresAtEpochSec = j.optLong("expires_at", now + j.optLong("expires_in", 3600L))
-            SessionStore.save(context, s)
-            return s
-        }
+        return runCatching {
+            client.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) {
+                    if (response.code == 400 || isRevokedStatus(response.code)) revokeLocal(context)
+                    return@use null
+                }
+                val j = JSONObject(response.body?.string().orEmpty())
+                s.accessToken = j.getString("access_token")
+                s.refreshToken = j.optString("refresh_token", s.refreshToken)
+                s.expiresAtEpochSec = j.optLong("expires_at", now + j.optLong("expires_in", 3600L))
+                SessionStore.save(context, s)
+                s
+            }
+        }.getOrNull()
     }
 
     fun enqueueAndFlush(context: Context, point: LocationPoint) {
+        if (SessionStore.load(context) == null) return
         LocationQueue.enqueue(context, point)
         flush(context)
     }
@@ -85,6 +99,7 @@ object TrackerApi {
         while (true) {
             val point = LocationQueue.snapshot(context).firstOrNull() ?: break
             if (!sendPoint(context, session, point)) {
+                if (SessionStore.load(context) == null) break
                 session = validSession(context) ?: break
                 if (!sendPoint(context, session, point)) break
             }
@@ -108,19 +123,29 @@ object TrackerApi {
             .put("recorded_at", point.recordedAt)
 
         val current = JSONObject(payload.toString()).put("updated_at", java.time.Instant.now().toString())
-        val currentOk = postRest(
+        val currentStatus = postRest(
             "$BASE_URL/rest/v1/v2_device_location_current?on_conflict=device_access_id",
             current,
             session.accessToken,
             "resolution=merge-duplicates,return=minimal"
         )
-        if (!currentOk) return false
-        return postRest(
+        if (isRevokedStatus(currentStatus)) {
+            revokeLocal(context)
+            return false
+        }
+        if (currentStatus !in 200..299) return false
+
+        val historyStatus = postRest(
             "$BASE_URL/rest/v1/v2_device_location_history",
             payload,
             session.accessToken,
             "return=minimal"
         )
+        if (isRevokedStatus(historyStatus)) {
+            revokeLocal(context)
+            return false
+        }
+        return historyStatus in 200..299
     }
 
     fun heartbeat(context: Context, serviceRunning: Boolean) {
@@ -130,15 +155,16 @@ object TrackerApi {
             .put("p_background_permission", DeviceOwnerHelper.hasBackgroundLocation(context))
             .put("p_service_running", serviceRunning)
             .put("p_device_owner", DeviceOwnerHelper.isDeviceOwner(context))
-        postRest(
+        val status = postRest(
             "$BASE_URL/rest/v1/rpc/v2_native_tracker_heartbeat",
             body,
             session.accessToken,
             "return=minimal"
         )
+        if (isRevokedStatus(status)) revokeLocal(context)
     }
 
-    private fun postRest(url: String, body: JSONObject, token: String, prefer: String): Boolean {
+    private fun postRest(url: String, body: JSONObject, token: String, prefer: String): Int {
         val request = Request.Builder()
             .url(url)
             .header("apikey", API_KEY)
@@ -147,8 +173,8 @@ object TrackerApi {
             .post(body.toString().toRequestBody(JSON))
             .build()
         return runCatching {
-            client.newCall(request).execute().use { it.isSuccessful }
-        }.getOrDefault(false)
+            client.newCall(request).execute().use { it.code }
+        }.getOrDefault(0)
     }
 
     private fun battery(context: Context): Pair<Int?, Boolean?> {
