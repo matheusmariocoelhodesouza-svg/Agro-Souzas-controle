@@ -42,11 +42,39 @@ td,th{overflow-wrap:anywhere}
 .c360-loading[aria-busy="true"]{pointer-events:none;opacity:.72}
 .c360-loading[aria-busy="true"]::after{content:"";display:inline-block;width:1em;height:1em;margin-left:.5em;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;vertical-align:-.15em;animation:c360-spin .7s linear infinite}
 @keyframes c360-spin{to{transform:rotate(360deg)}}
+
+/* Financeiro: a camada showcase antiga ainda pintava texto claro sobre cards claros.
+   Esta release deixa valores legiveis e impede moeda de quebrar de forma agressiva. */
+html body:not(.darkmode) #financeiro :is(.finance-kpi,.v2kpi){background-color:#fff!important;color:#0f172a!important}
+html body:not(.darkmode) #financeiro :is(.finance-kpi-label,.v2kpi .t,.label){color:#53657c!important;text-shadow:none!important}
+html body:not(.darkmode) #financeiro :is(.finance-kpi-value,.v2kpi .v,.kpi){color:#0f172a!important;text-shadow:none!important}
+#financeiro .finance-kpi-value{font-size:clamp(20px,2vw,30px)!important;line-height:1.05!important;white-space:nowrap!important;letter-spacing:-.04em}
+#financeiro .finance-kpi-value.count{font-size:clamp(24px,2.2vw,34px)!important;letter-spacing:-.02em}
+#financeiro .v2kpi .v{font-size:clamp(24px,2.4vw,38px)!important;line-height:1!important;max-width:100%;overflow-wrap:anywhere;word-break:normal}
+#financeiro :is(.finance-kpi,.v2kpi){overflow:hidden}
+
+/* Campo: aviso de permissão continua visível, mas não pode esconder metade da home. */
+html body.device-mode #c360LocationPermissionCard{
+  top:calc(68px + env(safe-area-inset-top,0px))!important;
+  bottom:auto!important;
+  width:min(390px,calc(100% - 24px))!important;
+  max-height:142px!important;
+  padding:9px 11px!important;
+  overflow:auto!important;
+  border-radius:14px!important;
+  box-shadow:0 12px 34px rgba(2,18,38,.22)!important;
+}
+html body.device-mode #c360LocationPermissionCard p{margin:2px 0 5px!important;line-height:1.25!important;font-size:12px!important}
+html body.device-mode #c360LocationPermissionCard .muted{font-size:10px!important;line-height:1.2!important}
+html body.device-mode #c360LocationPermissionCard .btn,
+html body.device-mode #c360LocationPermissionCard button{min-height:40px!important;padding:7px 10px!important;font-size:10px!important}
+
 @media (max-width:720px){
   :where(.card,.item,.v2panel){border-radius:var(--c360-radius-md)}
   input,select,textarea{font-size:16px}
   .toolbar{row-gap:8px}
   .toolbar>.btn,.toolbar>button{min-height:44px}
+  html body.device-mode #c360LocationPermissionCard{width:calc(100% - 24px)!important;max-height:132px!important}
 }
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
