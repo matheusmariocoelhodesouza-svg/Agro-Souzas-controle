@@ -31,14 +31,20 @@ class LocationService : Service() {
         override fun onLocationResult(result: LocationResult) {
             result.locations.forEach { location ->
                 val point = LocationPoint.fromLocation(location)
-                executor.execute { TrackerApi.enqueueAndFlush(applicationContext, point) }
+                executor.execute {
+                    TrackerApi.enqueueAndFlush(applicationContext, point)
+                    stopIfRevoked()
+                }
             }
         }
     }
 
     private val heartbeat = object : Runnable {
         override fun run() {
-            executor.execute { TrackerApi.heartbeat(applicationContext, true) }
+            executor.execute {
+                TrackerApi.heartbeat(applicationContext, true)
+                stopIfRevoked()
+            }
             handler.postDelayed(this, 5 * 60_000L)
         }
     }
@@ -57,6 +63,10 @@ class LocationService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         DeviceOwnerHelper.applyCorporatePolicy(this)
+        if (SessionStore.load(this) == null) {
+            stopSelf()
+            return START_NOT_STICKY
+        }
         if (!hasLocationPermission()) {
             executor.execute { TrackerApi.heartbeat(applicationContext, false) }
             stopSelf()
@@ -65,8 +75,17 @@ class LocationService : Service() {
         startTracking()
         handler.removeCallbacks(heartbeat)
         handler.post(heartbeat)
-        executor.execute { TrackerApi.flush(applicationContext) }
+        executor.execute {
+            TrackerApi.flush(applicationContext)
+            stopIfRevoked()
+        }
         return START_STICKY
+    }
+
+    private fun stopIfRevoked() {
+        if (SessionStore.load(applicationContext) == null) {
+            handler.post { stopSelf() }
+        }
     }
 
     private fun startTracking() {
