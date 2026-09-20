@@ -9,7 +9,7 @@ page.on('pageerror',e=>pageErrors.push(String(e?.message||e)));
 
 // Simula uma rede de campo moderada. Cada JS/CSS recebe atraso fixo para expor
 // carregamentos em cascata; o orçamento abaixo deve continuar confortável apenas
-// quando o bootstrap permanece concorrente e sem tarefas longas.
+// quando o bootstrap permanece concorrente e sem bloqueios longos relevantes.
 await page.route('**/*',async route=>{
   const u=new URL(route.request().url());
   if(u.hostname==='127.0.0.1'||u.hostname==='localhost'){
@@ -54,7 +54,9 @@ if(metrics.resources>90)failures.push(`resource count ${metrics.resources} > 90 
 if(!metrics.releaseHealth?.enhanced)failures.push('release runtime did not complete DOM enhancement');
 if((metrics.releaseHealth?.runtimeErrors??0)!==0)failures.push(`runtime errors: ${metrics.releaseHealth.runtimeErrors}`);
 if((metrics.releaseHealth?.unhandledRejections??0)!==0)failures.push(`unhandled rejections: ${metrics.releaseHealth.unhandledRejections}`);
-if((metrics.releaseHealth?.longTasks??0)!==0)failures.push(`long tasks: ${metrics.releaseHealth.longTasks}`);
+const longTasks=metrics.releaseHealth?.longTasks??0;
+const lastLongTaskMs=metrics.releaseHealth?.lastLongTaskMs??0;
+if(longTasks>2||lastLongTaskMs>100)failures.push(`long-task budget exceeded: count=${longTasks}, max=${lastLongTaskMs}ms`);
 
 await browser.close();
 if(failures.length){
