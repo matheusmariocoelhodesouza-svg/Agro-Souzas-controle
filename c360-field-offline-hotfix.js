@@ -1,13 +1,16 @@
 (function(){
  'use strict';
- const REPAIR_VERSION='2026.09.18-r5';
+ const REPAIR_VERSION='2026.09.19-r6';
  const RECOVERY_KEY='c360_source_leak_recovery_'+REPAIR_VERSION;
  const DEVICE_RECOVERY_KEY='c360_device_session_recovery_'+REPAIR_VERSION;
  const DEVICE_SESSION_BACKUP_KEY='c360_device_session_backup_v1';
+ const DEVICE_SESSION_MAX_AGE=7*24*60*60*1000;
  const SW_URL='./sw-v7-02.js';
+ const RUNTIME_MODULES=['./c360-autorecovery.js','./c360-device-control.js','./c360-system-health.js'];
  let registrationPromise=null;
  let recovering=false;
  let backupTimer=null;
+ let runtimePromise=null;
 
  // Fonte única para o estado de rede. O restante do app chama c360NetOnline().
  if(typeof window.c360NetOnline!=='function'){
@@ -22,6 +25,10 @@
  }
  function validDeviceSession(s){
   return !!(s?.access_token&&s?.refresh_token&&looksLikeDeviceUser(s.user));
+ }
+ function clearDeviceSessionBackup(clearCurrent=false){
+  try{localStorage.removeItem(DEVICE_SESSION_BACKUP_KEY)}catch(_){}
+  if(clearCurrent){try{localStorage.removeItem('controla_beta_session')}catch(_){}}
  }
  function backupDeviceSession(){
   try{
@@ -39,8 +46,8 @@
    if(!raw)return false;
    const backup=JSON.parse(raw);
    const age=Date.now()-Number(backup?.saved_at||0);
-   if(!validDeviceSession(backup?.session)||!Number.isFinite(age)||age>45*24*60*60*1000){
-    localStorage.removeItem(DEVICE_SESSION_BACKUP_KEY);
+   if(!validDeviceSession(backup?.session)||!Number.isFinite(age)||age>DEVICE_SESSION_MAX_AGE){
+    clearDeviceSessionBackup(false);
     return false;
    }
    localStorage.setItem('controla_beta_session',JSON.stringify(backup.session));
@@ -51,7 +58,7 @@
  function watchDeviceSessionBackup(){
   backupDeviceSession();
   clearInterval(backupTimer);
-  backupTimer=setInterval(backupDeviceSession,4000);
+  backupTimer=setInterval(backupDeviceSession,30000);
   window.addEventListener('pagehide',backupDeviceSession);
   document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')backupDeviceSession()});
  }
@@ -108,6 +115,31 @@
   },100);
  }
 
+ function runtimeLoaded(src){
+  const file=src.split('/').pop();
+  return [...document.scripts].some(s=>String(s.src||'').split('?')[0].endsWith('/'+file));
+ }
+ function loadRuntimeScript(src){
+  if(runtimeLoaded(src))return Promise.resolve(true);
+  return new Promise(resolve=>{
+   const script=document.createElement('script');
+   script.src=src+'?v='+encodeURIComponent(REPAIR_VERSION);
+   script.async=false;
+   script.dataset.c360Runtime='1';
+   script.onload=()=>resolve(true);
+   script.onerror=()=>{console.warn('Comando 360: módulo complementar não carregou',src);resolve(false)};
+   (document.head||document.documentElement).appendChild(script);
+  });
+ }
+ function installRuntimeModules(){
+  if(runtimePromise)return runtimePromise;
+  runtimePromise=(async()=>{
+   for(const src of RUNTIME_MODULES)await loadRuntimeScript(src);
+   return true;
+  })();
+  return runtimePromise;
+ }
+
  async function recoverStaleDeviceSession(){
   if(!c360NetOnline()||!entryScreenVisible())return false;
   let already=false;
@@ -126,7 +158,11 @@
   try{
    const rows=await window.rpc('v2_recover_device_session',{p_device_code:deviceCode});
    const row=Array.isArray(rows)?rows[0]:rows;
-   if(!row?.recovered)return false;
+   if(!row?.recovered){
+    const msg=String(row?.message||'').toLocaleLowerCase('pt-BR');
+    if(msg.includes('desvinculado pela administração'))clearDeviceSessionBackup(true);
+    return false;
+   }
    const user=s.user||(typeof window.getUser==='function'?await window.getUser():null);
    if(!user)return false;
    await window.enterApp(user);
@@ -288,16 +324,19 @@
   document.addEventListener('DOMContentLoaded',()=>{
    syncEntrySafetyState();
    setTimeout(recoverLeakedSource,0);
+   setTimeout(installRuntimeModules,75);
    scheduleDeviceRecovery();
   },{once:true});
  }else{
   syncEntrySafetyState();
   setTimeout(recoverLeakedSource,0);
+  setTimeout(installRuntimeModules,75);
   scheduleDeviceRecovery();
  }
  window.addEventListener('online',()=>setTimeout(scheduleDeviceRecovery,250));
  window.c360RecoverLeakedSource=recoverLeakedSource;
  window.c360RecoverStaleDeviceSession=recoverStaleDeviceSession;
  window.c360BackupDeviceSession=backupDeviceSession;
+ window.c360InstallRuntimeModules=installRuntimeModules;
  window.C360_FIELD_BOOT_REPAIR_VERSION=REPAIR_VERSION;
 })();
