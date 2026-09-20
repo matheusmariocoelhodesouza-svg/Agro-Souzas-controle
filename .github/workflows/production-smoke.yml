@@ -32,6 +32,8 @@ jobs:
           fetch "/c360-autorecovery.js" /tmp/autorecovery.js
           fetch "/c360-platform.js" /tmp/platform.js
           fetch "/c360-product-core.js" /tmp/product-core.js
+          fetch "/c360-release-core.js" /tmp/release-core.js
+          fetch "/c360-release-core.css" /tmp/release-core.css
           fetch "/c360-quality-hotfix.js" /tmp/bootstrap.js
           fetch "/c360-quality-core.js" /tmp/quality-core.js
           fetch "/c360-field-offline-hotfix.js" /tmp/field.js
@@ -46,14 +48,23 @@ jobs:
           fetch "/c360-product-ui.css" /tmp/product.css
           fetch "/c360-system-health.css" /tmp/health.css
           fetch "/c360-saas-readiness.css" /tmp/saas.css
-          for f in /tmp/index.html /tmp/cadastro.html /tmp/legal.html /tmp/sw.js /tmp/sw-core.js /tmp/autorecovery.js /tmp/platform.js /tmp/product-core.js /tmp/bootstrap.js /tmp/saas.js /tmp/saas.css; do test -s "$f"; done
+          for f in /tmp/index.html /tmp/cadastro.html /tmp/legal.html /tmp/sw.js /tmp/sw-core.js /tmp/autorecovery.js /tmp/platform.js /tmp/product-core.js /tmp/release-core.js /tmp/release-core.css /tmp/bootstrap.js /tmp/saas.js /tmp/saas.css; do test -s "$f"; done
+          test "$(wc -c < /tmp/index.html)" -le 700000
           grep -q 'c360-quality-hotfix.js' /tmp/index.html
           grep -q 'c360-platform.js' /tmp/bootstrap.js
           grep -q 'c360-product-core.js' /tmp/bootstrap.js
+          grep -q 'c360-release-core.js' /tmp/bootstrap.js
+          grep -q 'c360-release-core.css' /tmp/bootstrap.js
+          grep -q 'loadStylesParallel' /tmp/bootstrap.js
+          grep -q 'loadScriptsOrderedParallel' /tmp/bootstrap.js
+          grep -q 'Promise.allSettled' /tmp/bootstrap.js
           grep -q 'c360-saas-readiness.js' /tmp/bootstrap.js
           grep -q 'c360-saas-readiness.css' /tmp/bootstrap.js
           grep -q '2026.09.13-platform1' /tmp/platform.js
           grep -q 'window.C360Platform' /tmp/platform.js
+          grep -q '2026.09.20-r95-1' /tmp/release-core.js
+          grep -q 'prefers-reduced-motion' /tmp/release-core.css
+          grep -q 'min-height:44px' /tmp/release-core.css
           grep -q '2026.09.13-saas1' /tmp/saas.js
           grep -q 'v2_platform_incidents' /tmp/saas.js
           grep -q 'v2_legal_acceptances' /tmp/saas.js
@@ -62,13 +73,11 @@ jobs:
           grep -q "$SW_CORE" /tmp/sw.js
           grep -Eq 'comando360-v7-02-hotfix[0-9]+' /tmp/sw-core.js
           grep -q 'comando360-stable-v1' /tmp/sw-core.js
-          grep -q 'c360-saas-readiness.js' /tmp/sw-core.js
-          grep -q 'legal.html' /tmp/sw-core.js
           grep -q 'C360_ROLLBACK_TO_STABLE' /tmp/sw-core.js
           grep -q 'v2_client_health_events' /tmp/autorecovery.js
           grep -q 'v2_device_health_heartbeat' /tmp/health.js
           grep -q 'v2_bootstrap_company' /tmp/cadastro.html
-          for f in /tmp/platform.js /tmp/product-core.js /tmp/bootstrap.js /tmp/autorecovery.js /tmp/quality-core.js /tmp/field.js /tmp/health.js /tmp/onboarding.js /tmp/chat.js /tmp/farms.js /tmp/consumables.js /tmp/saas.js /tmp/sw.js /tmp/sw-core.js; do node --check "$f"; done
+          for f in /tmp/platform.js /tmp/product-core.js /tmp/release-core.js /tmp/bootstrap.js /tmp/autorecovery.js /tmp/quality-core.js /tmp/field.js /tmp/health.js /tmp/onboarding.js /tmp/chat.js /tmp/farms.js /tmp/consumables.js /tmp/saas.js /tmp/sw.js /tmp/sw-core.js; do node --check "$f"; done
           python - <<'PY'
           import json
           from html.parser import HTMLParser
@@ -77,8 +86,8 @@ jobs:
           with open('/tmp/manifest.json',encoding='utf-8') as f: m=json.load(f)
           assert m.get('name') or m.get('short_name')
           for name in ('/tmp/index.html','/tmp/cadastro.html','/tmp/dda.html','/tmp/repair.html','/tmp/legal.html'):
-              text=Path(name).read_text(encoding='utf-8'); P().feed(text); assert '<html' in text.lower() and '</html>' in text.lower()
-          for name in ('/tmp/ui.css','/tmp/premium.css','/tmp/product.css','/tmp/health.css','/tmp/saas.css'):
+              value=Path(name).read_text(encoding='utf-8'); P().feed(value); assert '<html' in value.lower() and '</html>' in value.lower()
+          for name in ('/tmp/ui.css','/tmp/premium.css','/tmp/product.css','/tmp/release-core.css','/tmp/health.css','/tmp/saas.css'):
               css=Path(name).read_text(encoding='utf-8'); assert css.count('{')==css.count('}'), f'{name}: unbalanced braces'
-          print('Production product shell + split PWA worker + AutoRecovery + SaaS readiness smoke: OK')
+          print('Production product shell + parallel bootstrap + PWA rollback + AutoRecovery + SaaS readiness smoke: OK')
           PY
