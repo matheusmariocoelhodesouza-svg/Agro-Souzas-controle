@@ -43,6 +43,11 @@
         </receiver>
 
         <receiver
+            android:name=".TrackerWatchdogReceiver"
+            android:enabled="true"
+            android:exported="false" />
+
+        <receiver
             android:name=".ComandoDeviceAdminReceiver"
             android:description="@string/device_admin_description"
             android:exported="true"
