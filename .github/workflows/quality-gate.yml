@@ -57,7 +57,7 @@ jobs:
             c360-autorecovery.js c360-platform.js c360-product-core.js c360-release-core.js
             c360-quality-hotfix.js c360-quality-core.js c360-field-offline-hotfix.js
             c360-team-chat.js c360-farm-cache-hotfix.js c360-consumable-edit.js
-            c360-system-health.js c360-onboarding-entry.js c360-fiscal.js
+            c360-system-health.js c360-onboarding-entry.js c360-fiscal.js c360-native-tracker-admin.js
             c360-ui-polish.css c360-premium-ui.css c360-product-ui.css c360-release-core.css
             c360-system-health.css c360-fiscal.css qa/reference_audit.py qa/release_scorecard.py qa/performance_budget.mjs
             supabase/migrations/20260913104500_add_device_health_heartbeat.sql
@@ -65,6 +65,7 @@ jobs:
             supabase/migrations/20260920122000_explicit_internal_table_deny_policies.sql
             supabase/migrations/20260920122100_preserve_device_security_metadata.sql
             supabase/migrations/20260920140000_dedupe_legacy_employee_rls.sql
+            supabase/migrations/20260920220000_native_tracker_live_status_v104.sql
           )
           for f in "${files[@]}"; do test -s "$f" || { echo "Missing: $f"; exit 1; }; done
 
@@ -81,7 +82,7 @@ jobs:
           grep -q 'c360-ui-polish.css' index.html
           ! grep -q '<script>window.onload' index.html
 
-          grep -q "BOOT_VERSION='2026.09.20-r97-1'" c360-quality-hotfix.js
+          grep -q "BOOT_VERSION='2026.09.20-r98-live1'" c360-quality-hotfix.js
           grep -q "const VERSION='2026.09.20-r97-1'" c360-release-core.js
           grep -q 'c360-autorecovery.js' c360-quality-hotfix.js
           grep -q 'c360-platform.js' c360-quality-hotfix.js
@@ -94,6 +95,14 @@ jobs:
           grep -q 'c360-field-offline-hotfix.js' c360-quality-hotfix.js
           grep -q 'c360-system-health.js' c360-quality-hotfix.js
           grep -q 'c360-onboarding-entry.js' c360-quality-hotfix.js
+          grep -q 'c360-native-tracker-admin.js' c360-quality-hotfix.js
+
+          grep -q 'v2_device_location_current' c360-native-tracker-admin.js
+          grep -q 'Rastreadores ao vivo' c360-native-tracker-admin.js
+          grep -q 'native_battery_percent' c360-native-tracker-admin.js
+          grep -q 'v2_native_tracker_heartbeat_v2' android-tracker/app/src/main/java/br/com/comando360/tracker/TrackerApi.kt
+          grep -q 'VERSION = "1.0.4"' android-tracker/app/src/main/java/br/com/comando360/tracker/TrackerApi.kt
+          grep -q 'handler.postDelayed(this, 60_000L)' android-tracker/app/src/main/java/br/com/comando360/tracker/LocationService.kt
 
           grep -q '2026.09.13-platform1' c360-platform.js
           grep -q 'window.C360Platform' c360-platform.js
@@ -106,15 +115,16 @@ jobs:
           grep -q 'body.device-mode' c360-product-ui.css
 
           SW_CORE="$(grep -oE 'sw-v7-02-core-hotfix[0-9]+\.js' sw-v7-02.js | head -n1)"
-          test "$SW_CORE" = 'sw-v7-02-core-hotfix57.js'
+          test "$SW_CORE" = 'sw-v7-02-core-hotfix59.js'
           test -s "$SW_CORE"
           SW_CONTRACT="$(cat sw-v7-02.js "$SW_CORE")"
-          grep -q "comando360-v7-02-hotfix57" <<<"$SW_CONTRACT"
+          grep -q "comando360-v7-02-hotfix59" <<<"$SW_CONTRACT"
           grep -q 'comando360-stable-v1' <<<"$SW_CONTRACT"
           grep -q 'c360-platform.js' <<<"$SW_CONTRACT"
           grep -q 'c360-product-core.js' <<<"$SW_CONTRACT"
           grep -q './c360-release-core.js' "$SW_CORE"
           grep -q './c360-release-core.css' "$SW_CORE"
+          grep -q './c360-native-tracker-admin.js' "$SW_CORE"
           ! grep -q 'CORE.push' sw-v7-02.js
           ! grep -q '?' sw-v7-02.js
           grep -q 'C360_ROLLBACK_TO_STABLE' <<<"$SW_CONTRACT"
