@@ -13,73 +13,56 @@
 html{font-family:var(--c360-font);text-rendering:optimizeLegibility;-webkit-text-size-adjust:100%}
 body{min-height:100dvh}
 button,input,select,textarea{font:inherit}
-button,.btn,[role="button"],input[type="button"],input[type="submit"],input[type="reset"],select{
-  min-height:44px;
-}
+button,.btn,[role="button"],input[type="button"],input[type="submit"],input[type="reset"],select{min-height:44px}
 button,.btn,[role="button"]{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 a,button,input,select,textarea,[tabindex]:not([tabindex="-1"]){scroll-margin:88px 16px}
-:where(a,button,input,select,textarea,[role="button"],[tabindex]):focus-visible{
-  outline:2px solid var(--c360-focus)!important;
-  outline-offset:2px!important;
-  box-shadow:var(--c360-focus-ring);
-}
-:where(button,.btn,[role="button"]):disabled,
-:where(input,select,textarea):disabled{cursor:not-allowed;opacity:.58}
+:where(a,button,input,select,textarea,[role="button"],[tabindex]):focus-visible{outline:2px solid var(--c360-focus)!important;outline-offset:2px!important;box-shadow:var(--c360-focus-ring)}
+:where(button,.btn,[role="button"]):disabled,:where(input,select,textarea):disabled{cursor:not-allowed;opacity:.58}
 :where(input,select,textarea)[aria-invalid="true"]{border-color:#dc2626!important;box-shadow:0 0 0 3px rgba(220,38,38,.12)}
 :where(.card,.item,.v2panel,.fleet-card){contain:layout style}
 .section:not(.active){content-visibility:auto;contain-intrinsic-size:1px 700px}
 img{max-width:100%;height:auto}
 img:not([width]):not([height]){content-visibility:auto}
 .table-scroll,.table-wrap,[data-table-scroll]{overflow:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
-table{border-collapse:collapse}
-td,th{overflow-wrap:anywhere}
+table{border-collapse:collapse}td,th{overflow-wrap:anywhere}
 [hidden],.hidden{display:none!important}
-.c360-sr-only{
-  position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;
-  overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important;
-}
+.c360-sr-only{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
 #c360-release-live{position:fixed;left:-10000px;top:auto;width:1px;height:1px;overflow:hidden}
 .c360-loading[aria-busy="true"]{pointer-events:none;opacity:.72}
 .c360-loading[aria-busy="true"]::after{content:"";display:inline-block;width:1em;height:1em;margin-left:.5em;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;vertical-align:-.15em;animation:c360-spin .7s linear infinite}
 @keyframes c360-spin{to{transform:rotate(360deg)}}
 
-/* Financeiro: a camada showcase antiga ainda pintava texto claro sobre cards claros.
-   Esta release deixa valores legiveis e impede moeda de quebrar de forma agressiva. */
-html body:not(.darkmode) #financeiro :is(.finance-kpi,.v2kpi){background-color:#fff!important;color:#0f172a!important}
-html body:not(.darkmode) #financeiro :is(.finance-kpi-label,.v2kpi .t,.label){color:#53657c!important;text-shadow:none!important}
-html body:not(.darkmode) #financeiro :is(.finance-kpi-value,.v2kpi .v,.kpi){color:#0f172a!important;text-shadow:none!important}
-#financeiro .finance-kpi-value{font-size:clamp(20px,2vw,30px)!important;line-height:1.05!important;white-space:nowrap!important;letter-spacing:-.04em}
-#financeiro .finance-kpi-value.count{font-size:clamp(24px,2.2vw,34px)!important;letter-spacing:-.02em}
-#financeiro .v2kpi .v{font-size:clamp(24px,2.4vw,38px)!important;line-height:1!important;max-width:100%;overflow-wrap:anywhere;word-break:normal}
-#financeiro :is(.finance-kpi,.v2kpi){overflow:hidden}
+/* Financeiro: normaliza cards que receberam regras conflitantes de temas antigos. */
+html body #financeiro .finance-kpi{background:#fff!important;color:#0f172a!important;overflow:hidden}
+html body #financeiro .finance-kpi-label{color:#53657c!important;text-shadow:none!important}
+html body #financeiro .finance-kpi-value{color:#0f172a!important;text-shadow:none!important;font-size:clamp(20px,2vw,30px)!important;line-height:1.05!important;white-space:nowrap!important;letter-spacing:-.04em}
+html body #financeiro .finance-kpi-value.count{font-size:clamp(24px,2.2vw,34px)!important;letter-spacing:-.02em}
+html body #financeiro .c360-dda-kpi{min-width:0!important;overflow:hidden!important;background:#f8fafc!important;color:#0f172a!important}
+html body #financeiro .c360-dda-kpi span{color:#53657c!important;text-shadow:none!important;font-size:11px!important;line-height:1.15!important}
+html body #financeiro .c360-dda-kpi b{color:#0f172a!important;text-shadow:none!important;font-size:clamp(22px,2.2vw,32px)!important;line-height:1!important;max-width:100%;overflow-wrap:anywhere;word-break:normal}
+html body #financeiro #c360DdaOpenAmount{font-size:clamp(19px,1.9vw,28px)!important;white-space:nowrap!important;letter-spacing:-.04em}
+html body.darkmode #financeiro .finance-kpi{background:#112033!important;color:#f8fafc!important;border-color:#2a3d55!important}
+html body.darkmode #financeiro .finance-kpi-label{color:#aebed1!important}
+html body.darkmode #financeiro .finance-kpi-value{color:#f8fafc!important}
+html body.darkmode #financeiro .c360-dda-kpi{background:#112033!important;color:#f8fafc!important;border-color:#2a3d55!important}
+html body.darkmode #financeiro .c360-dda-kpi span{color:#aebed1!important}
+html body.darkmode #financeiro .c360-dda-kpi b{color:#f8fafc!important}
 
-/* Campo: aviso de permissão continua visível, mas não pode esconder metade da home. */
-html body.device-mode #c360LocationPermissionCard{
-  top:calc(68px + env(safe-area-inset-top,0px))!important;
-  bottom:auto!important;
-  width:min(390px,calc(100% - 24px))!important;
-  max-height:142px!important;
-  padding:9px 11px!important;
-  overflow:auto!important;
-  border-radius:14px!important;
-  box-shadow:0 12px 34px rgba(2,18,38,.22)!important;
-}
+/* Campo: aviso de permissão continua visível, sem esconder a primeira ação. */
+html body.device-mode #c360LocationPermissionCard{top:calc(68px + env(safe-area-inset-top,0px))!important;bottom:auto!important;width:min(390px,calc(100% - 24px))!important;max-height:132px!important;padding:9px 11px!important;overflow:auto!important;border-radius:14px!important;box-shadow:0 12px 34px rgba(2,18,38,.22)!important}
 html body.device-mode #c360LocationPermissionCard p{margin:2px 0 5px!important;line-height:1.25!important;font-size:12px!important}
 html body.device-mode #c360LocationPermissionCard .muted{font-size:10px!important;line-height:1.2!important}
-html body.device-mode #c360LocationPermissionCard .btn,
-html body.device-mode #c360LocationPermissionCard button{min-height:40px!important;padding:7px 10px!important;font-size:10px!important}
+html body.device-mode #c360LocationPermissionCard .btn,html body.device-mode #c360LocationPermissionCard button{min-height:38px!important;padding:6px 9px!important;font-size:10px!important}
+@supports selector(body:has(*)){
+  html body.device-mode:has(#c360LocationPermissionCard:not(.hidden):not([hidden])) #screenHost{padding-top:136px!important}
+}
 
 @media (max-width:720px){
   :where(.card,.item,.v2panel){border-radius:var(--c360-radius-md)}
   input,select,textarea{font-size:16px}
-  .toolbar{row-gap:8px}
-  .toolbar>.btn,.toolbar>button{min-height:44px}
-  html body.device-mode #c360LocationPermissionCard{width:calc(100% - 24px)!important;max-height:132px!important}
+  .toolbar{row-gap:8px}.toolbar>.btn,.toolbar>button{min-height:44px}
+  html body.device-mode #c360LocationPermissionCard{width:calc(100% - 24px)!important;max-height:126px!important}
+  @supports selector(body:has(*)){html body.device-mode:has(#c360LocationPermissionCard:not(.hidden):not([hidden])) #screenHost{padding-top:132px!important}}
 }
-@media (prefers-reduced-motion:reduce){
-  *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
-}
-@media (prefers-contrast:more){
-  :where(.card,.item,.v2panel,.fleet-card){border-width:2px}
-  .muted,.label{color:currentColor;opacity:.78}
-}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+@media (prefers-contrast:more){:where(.card,.item,.v2panel,.fleet-card){border-width:2px}.muted,.label{color:currentColor;opacity:.78}}
