@@ -6,6 +6,11 @@ on:
     paths:
       - 'android-tracker/**'
       - '.github/workflows/android-tracker-build.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'android-tracker/**'
+      - '.github/workflows/android-tracker-build.yml'
   workflow_dispatch:
 
 permissions:
@@ -48,6 +53,6 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: comando360-rastreador-24h-v1.0.1
+          name: comando360-rastreador-24h-v1.0.2
           path: android-tracker/app/build/outputs/apk/debug/app-debug.apk
           retention-days: 30
