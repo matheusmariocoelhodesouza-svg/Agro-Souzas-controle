@@ -13,7 +13,7 @@ permissions:
 jobs:
   static-quality:
     runs-on: ubuntu-24.04
-    timeout-minutes: 7
+    timeout-minutes: 8
     steps:
       - uses: actions/checkout@v5
 
@@ -54,19 +54,24 @@ jobs:
           set -euo pipefail
           files=(
             index.html cadastro.html dda.html reparar.html comando360.webmanifest sw-v7-02.js
-            c360-autorecovery.js c360-platform.js c360-product-core.js
+            c360-autorecovery.js c360-platform.js c360-product-core.js c360-release-core.js
             c360-quality-hotfix.js c360-quality-core.js c360-field-offline-hotfix.js
             c360-team-chat.js c360-farm-cache-hotfix.js c360-consumable-edit.js
             c360-system-health.js c360-onboarding-entry.js c360-fiscal.js
-            c360-ui-polish.css c360-premium-ui.css c360-product-ui.css
-            c360-system-health.css c360-fiscal.css qa/reference_audit.py
+            c360-ui-polish.css c360-premium-ui.css c360-product-ui.css c360-release-core.css
+            c360-system-health.css c360-fiscal.css qa/reference_audit.py qa/release_scorecard.py
             supabase/migrations/20260913104500_add_device_health_heartbeat.sql
             supabase/migrations/20260913203000_self_service_onboarding_v1.sql
+            supabase/migrations/20260920122000_explicit_internal_table_deny_policies.sql
+            supabase/migrations/20260920122100_preserve_device_security_metadata.sql
           )
           for f in "${files[@]}"; do test -s "$f" || { echo "Missing: $f"; exit 1; }; done
 
       - name: Reference structural audit
         run: python qa/reference_audit.py
+
+      - name: Release 9.5 scorecard
+        run: python qa/release_scorecard.py
 
       - name: Product architecture contract
         run: |
@@ -75,12 +80,14 @@ jobs:
           grep -q 'c360-ui-polish.css' index.html
           ! grep -q '<script>window.onload' index.html
 
-          grep -Eq "BOOT_VERSION='[0-9]{4}\.[0-9]{2}\.[0-9]{2}-b[0-9]+'" c360-quality-hotfix.js
+          grep -Eq "BOOT_VERSION='[0-9]{4}\.[0-9]{2}\.[0-9]{2}-(b[0-9]+|r[0-9]+-[0-9]+)'" c360-quality-hotfix.js
           grep -q 'c360-autorecovery.js' c360-quality-hotfix.js
           grep -q 'c360-platform.js' c360-quality-hotfix.js
           grep -q 'c360-product-core.js' c360-quality-hotfix.js
-          grep -q 'c360-product-ui.css' c360-quality-hotfix.js
-          grep -q 'c360-premium-ui.css' c360-quality-hotfix.js
+          grep -q 'c360-release-core.js' c360-quality-hotfix.js
+          grep -q 'c360-release-core.css' c360-quality-hotfix.js
+          grep -q 'Promise.allSettled' c360-quality-hotfix.js
+          grep -q 'loadScriptsOrderedParallel' c360-quality-hotfix.js
           grep -q 'c360-quality-core.js' c360-quality-hotfix.js
           grep -q 'c360-field-offline-hotfix.js' c360-quality-hotfix.js
           grep -q 'c360-system-health.js' c360-quality-hotfix.js
@@ -96,12 +103,13 @@ jobs:
           grep -q 'c360-live-region' c360-product-ui.css
           grep -q 'body.device-mode' c360-product-ui.css
 
-          SW_CONTRACT="$(cat sw-v7-02.js sw-v7-02-core-hotfix54.js)"
+          SW_CORE="$(grep -oE 'sw-v7-02-core-hotfix[0-9]+\.js' sw-v7-02.js | head -n1)"
+          test -n "$SW_CORE" && test -s "$SW_CORE"
+          SW_CONTRACT="$(cat sw-v7-02.js "$SW_CORE")"
           grep -Eq "comando360-v7-02-hotfix[0-9]+" <<<"$SW_CONTRACT"
           grep -q 'comando360-stable-v1' <<<"$SW_CONTRACT"
           grep -q 'c360-platform.js' <<<"$SW_CONTRACT"
           grep -q 'c360-product-core.js' <<<"$SW_CONTRACT"
-          grep -q 'c360-product-ui.css' <<<"$SW_CONTRACT"
           grep -q 'C360_ROLLBACK_TO_STABLE' <<<"$SW_CONTRACT"
           grep -q 'C360_MARK_HEALTHY' <<<"$SW_CONTRACT"
           ! grep -q 'patchAppHtml' <<<"$SW_CONTRACT"
@@ -134,10 +142,10 @@ jobs:
           from pathlib import Path
           size=Path('index.html').stat().st_size
           print(f'index.html: {size:,} bytes')
-          if size>900_000:
-              raise SystemExit('index.html exceeded 900 KB architecture guard')
-          if size>650_000:
-              print('::warning::index.html is still monolithic; continue extracting modules in future refactors.')
+          if size>700_000:
+              raise SystemExit('index.html exceeded 700 KB release guard')
+          if size>600_000:
+              print('::warning::index.html remains monolithic; extraction continues after this release without blocking today.')
           PY
 
       - name: Reject obvious privileged secret leaks
