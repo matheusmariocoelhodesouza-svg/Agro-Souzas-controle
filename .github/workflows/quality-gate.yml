@@ -58,7 +58,7 @@ jobs:
             c360-quality-hotfix.js c360-quality-core.js c360-field-offline-hotfix.js
             c360-team-chat.js c360-farm-cache-hotfix.js c360-consumable-edit.js
             c360-system-health.js c360-onboarding-entry.js c360-fiscal.js
-            c360-ui-polish.css c360-premium-ui.css c360-product-ui.css c360-release-core.css
+            c360-ui-polish.css c360-premium-ui.css c360-product-ui.css c360-release-core.css c360-app-shell.css
             c360-system-health.css c360-fiscal.css qa/reference_audit.py qa/release_scorecard.py qa/performance_budget.mjs
             supabase/migrations/20260913104500_add_device_health_heartbeat.sql
             supabase/migrations/20260913203000_self_service_onboarding_v1.sql
@@ -79,6 +79,7 @@ jobs:
           set -euo pipefail
           grep -q 'c360-quality-hotfix.js' index.html
           grep -q 'c360-ui-polish.css' index.html
+          grep -q 'c360-app-shell.css' index.html
           ! grep -q '<script>window.onload' index.html
 
           grep -q "BOOT_VERSION='2026.09.20-r97-1'" c360-quality-hotfix.js
@@ -106,15 +107,16 @@ jobs:
           grep -q 'body.device-mode' c360-product-ui.css
 
           SW_CORE="$(grep -oE 'sw-v7-02-core-hotfix[0-9]+\.js' sw-v7-02.js | head -n1)"
-          test "$SW_CORE" = 'sw-v7-02-core-hotfix57.js'
+          test "$SW_CORE" = 'sw-v7-02-core-hotfix58.js'
           test -s "$SW_CORE"
           SW_CONTRACT="$(cat sw-v7-02.js "$SW_CORE")"
-          grep -q "comando360-v7-02-hotfix57" <<<"$SW_CONTRACT"
+          grep -q "comando360-v7-02-hotfix58" <<<"$SW_CONTRACT"
           grep -q 'comando360-stable-v1' <<<"$SW_CONTRACT"
           grep -q 'c360-platform.js' <<<"$SW_CONTRACT"
           grep -q 'c360-product-core.js' <<<"$SW_CONTRACT"
           grep -q './c360-release-core.js' "$SW_CORE"
           grep -q './c360-release-core.css' "$SW_CORE"
+          grep -q './c360-app-shell.css' "$SW_CORE"
           ! grep -q 'CORE.push' sw-v7-02.js
           ! grep -q '?' sw-v7-02.js
           grep -q 'C360_ROLLBACK_TO_STABLE' <<<"$SW_CONTRACT"
@@ -154,10 +156,10 @@ jobs:
           from pathlib import Path
           size=Path('index.html').stat().st_size
           print(f'index.html: {size:,} bytes')
-          if size>700_000:
-              raise SystemExit('index.html exceeded 700 KB release guard')
           if size>600_000:
-              print('::warning::index.html remains monolithic; extraction continues after this release without blocking today.')
+              raise SystemExit('index.html exceeded 600 KB modular release guard')
+          if size>540_000:
+              print('::warning::index.html is improved but still large; continue extracting modules in later safe releases.')
           PY
 
       - name: Reject obvious privileged secret leaks
