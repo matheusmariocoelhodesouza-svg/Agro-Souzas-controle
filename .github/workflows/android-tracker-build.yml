@@ -15,6 +15,7 @@ on:
 
 permissions:
   contents: read
+  id-token: write
 
 jobs:
   build:
@@ -48,11 +49,105 @@ jobs:
           curl -fsSL -o gradle-8.11.1-bin.zip https://services.gradle.org/distributions/gradle-8.11.1-bin.zip
           unzip -q gradle-8.11.1-bin.zip
 
-      - name: Build tracker APK
+      - name: Prepare stable Android signing
+        if: github.event_name != 'pull_request'
+        shell: bash
+        env:
+          SIGNING_URL: https://aycbrqziusxtxhsdfqjk.supabase.co/functions/v1/comando360-android-signing
+          OIDC_AUDIENCE: comando360-android-signing-v1
+        run: |
+          set -euo pipefail
+
+          OIDC_JSON="$(curl -fsSL \
+            -H "Authorization: Bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" \
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=${OIDC_AUDIENCE}")"
+          OIDC_TOKEN="$(python -c 'import json,sys; print(json.load(sys.stdin)["value"])' <<<"$OIDC_JSON")"
+
+          MATERIAL="$(curl -fsSL \
+            -H "Authorization: Bearer ${OIDC_TOKEN}" \
+            -H 'Cache-Control: no-store' \
+            "$SIGNING_URL")"
+
+          INITIALIZED="$(python -c 'import json,sys; print(str(json.load(sys.stdin).get("initialized", False)).lower())' <<<"$MATERIAL")"
+          if [ "$INITIALIZED" != "true" ]; then
+            STORE_PASSWORD="$(python - <<'PY'
+import secrets,string
+alphabet=string.ascii_letters+string.digits
+print(''.join(secrets.choice(alphabet) for _ in range(40)))
+PY
+)"
+            keytool -genkeypair -v \
+              -keystore /tmp/comando360-release.jks \
+              -storetype PKCS12 \
+              -storepass "$STORE_PASSWORD" \
+              -keypass "$STORE_PASSWORD" \
+              -alias comando360 \
+              -keyalg RSA \
+              -keysize 4096 \
+              -validity 10000 \
+              -dname "CN=Comando 360, OU=Agro Souzas, O=Comando 360, L=Laranjal Paulista, ST=Sao Paulo, C=BR"
+            export STORE_PASSWORD
+            python - <<'PY' >/tmp/c360-signing-init.json
+import base64, json, os
+from pathlib import Path
+payload = {
+    "keystore_b64": base64.b64encode(Path('/tmp/comando360-release.jks').read_bytes()).decode('ascii'),
+    "store_password": os.environ['STORE_PASSWORD'],
+    "key_alias": "comando360",
+}
+print(json.dumps(payload, separators=(',', ':')))
+PY
+            MATERIAL="$(curl -fsSL -X POST \
+              -H "Authorization: Bearer ${OIDC_TOKEN}" \
+              -H 'Content-Type: application/json' \
+              --data-binary @/tmp/c360-signing-init.json \
+              "$SIGNING_URL")"
+            rm -f /tmp/c360-signing-init.json
+          fi
+
+          python - <<'PY' <<<"$MATERIAL"
+import base64, json, os, sys
+from pathlib import Path
+m=json.load(sys.stdin)
+if not m.get('initialized'):
+    raise SystemExit('stable signing material was not initialized')
+Path('/tmp/comando360-release.jks').write_bytes(base64.b64decode(m['keystore_b64']))
+password=m['store_password']
+alias=m.get('key_alias') or 'comando360'
+with open(os.environ['GITHUB_ENV'],'a',encoding='utf-8') as f:
+    f.write('C360_KEYSTORE_PATH=/tmp/comando360-release.jks\n')
+    f.write(f'C360_KEYSTORE_PASSWORD={password}\n')
+    f.write(f'C360_KEY_PASSWORD={password}\n')
+    f.write(f'C360_KEY_ALIAS={alias}\n')
+print(f'::add-mask::{password}')
+PY
+
+      - name: Build tracker APK (PR debug)
+        if: github.event_name == 'pull_request'
         run: ./gradle-8.11.1/bin/gradle -p android-tracker :app:assembleDebug --stacktrace
 
+      - name: Build tracker APK (stable release)
+        if: github.event_name != 'pull_request'
+        run: ./gradle-8.11.1/bin/gradle -p android-tracker :app:assembleRelease --stacktrace
+
+      - name: Verify stable APK signature
+        if: github.event_name != 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK=android-tracker/app/build/outputs/apk/release/app-release.apk
+          "$ANDROID_SDK_ROOT/build-tools/35.0.0/apksigner" verify --verbose --print-certs "$APK"
+
       - uses: actions/upload-artifact@v4
+        if: github.event_name == 'pull_request'
         with:
-          name: comando360-rastreador-24h-v1.0.4
+          name: comando360-rastreador-24h-v1.0.4-pr-debug
           path: android-tracker/app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 14
+
+      - uses: actions/upload-artifact@v4
+        if: github.event_name != 'pull_request'
+        with:
+          name: comando360-rastreador-24h-v1.0.4-stable
+          path: android-tracker/app/build/outputs/apk/release/app-release.apk
           retention-days: 30
