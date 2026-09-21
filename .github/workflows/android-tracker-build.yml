@@ -48,11 +48,67 @@ jobs:
           curl -fsSL -o gradle-8.11.1-bin.zip https://services.gradle.org/distributions/gradle-8.11.1-bin.zip
           unzip -q gradle-8.11.1-bin.zip
 
-      - name: Build tracker APK
+      - name: Prepare stable release signing
+        if: github.event_name != 'pull_request'
+        shell: bash
+        env:
+          KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          test -n "$KEYSTORE_B64" || { echo 'Missing ANDROID_KEYSTORE_BASE64'; exit 1; }
+          test -n "$KEYSTORE_PASSWORD" || { echo 'Missing ANDROID_KEYSTORE_PASSWORD'; exit 1; }
+          test -n "$KEY_ALIAS" || { echo 'Missing ANDROID_KEY_ALIAS'; exit 1; }
+          test -n "$KEY_PASSWORD" || { echo 'Missing ANDROID_KEY_PASSWORD'; exit 1; }
+          printf '%s' "$KEYSTORE_B64" | base64 --decode > "$RUNNER_TEMP/comando360-release.jks"
+          chmod 600 "$RUNNER_TEMP/comando360-release.jks"
+          echo "ANDROID_KEYSTORE_PATH=$RUNNER_TEMP/comando360-release.jks" >> "$GITHUB_ENV"
+          echo "ANDROID_KEYSTORE_PASSWORD=$KEYSTORE_PASSWORD" >> "$GITHUB_ENV"
+          echo "ANDROID_KEY_ALIAS=$KEY_ALIAS" >> "$GITHUB_ENV"
+          echo "ANDROID_KEY_PASSWORD=$KEY_PASSWORD" >> "$GITHUB_ENV"
+
+      - name: Build debug APK for pull request
+        if: github.event_name == 'pull_request'
         run: ./gradle-8.11.1/bin/gradle -p android-tracker :app:assembleDebug --stacktrace
 
-      - uses: actions/upload-artifact@v4
+      - name: Build signed release APK
+        if: github.event_name != 'pull_request'
+        run: ./gradle-8.11.1/bin/gradle -p android-tracker :app:assembleRelease --stacktrace
+
+      - name: Verify release signature and pinned certificate
+        if: github.event_name != 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK="android-tracker/app/build/outputs/apk/release/app-release.apk"
+          APKSIGNER="$ANDROID_SDK_ROOT/build-tools/35.0.0/apksigner"
+          test -f "$APK"
+          "$APKSIGNER" verify --verbose --print-certs "$APK"
+          ACTUAL="$($APKSIGNER verify --print-certs "$APK" | sed -n 's/^Signer #1 certificate SHA-256 digest: //p' | tr '[:lower:]' '[:upper:]' | tr -d ':[:space:]')"
+          EXPECTED="$(tr '[:lower:]' '[:upper:]' < android-tracker/signing-cert.sha256 | tr -d ':[:space:]')"
+          test -n "$ACTUAL"
+          if [ "$ACTUAL" != "$EXPECTED" ]; then
+            echo "Signing certificate mismatch"
+            echo "Expected: $EXPECTED"
+            echo "Actual:   $ACTUAL"
+            exit 1
+          fi
+          echo "Signing certificate validated: $ACTUAL"
+
+      - name: Upload debug APK
+        if: github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v4
         with:
-          name: comando360-rastreador-24h-v1.0.4
+          name: comando360-rastreador-pr-debug
           path: android-tracker/app/build/outputs/apk/debug/app-debug.apk
-          retention-days: 30
+          retention-days: 7
+
+      - name: Upload definitive signed APK
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: comando360-rastreador-definitivo-v1.0.4
+          path: android-tracker/app/build/outputs/apk/release/app-release.apk
+          retention-days: 90
