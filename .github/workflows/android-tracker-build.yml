@@ -58,24 +58,14 @@ jobs:
         run: |
           set -euo pipefail
 
-          OIDC_JSON="$(curl -fsSL \
-            -H "Authorization: Bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" \
-            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=${OIDC_AUDIENCE}")"
+          OIDC_JSON="$(curl -fsSL -H "Authorization: Bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=${OIDC_AUDIENCE}")"
           OIDC_TOKEN="$(python -c 'import json,sys; print(json.load(sys.stdin)["value"])' <<<"$OIDC_JSON")"
 
-          MATERIAL="$(curl -fsSL \
-            -H "Authorization: Bearer ${OIDC_TOKEN}" \
-            -H 'Cache-Control: no-store' \
-            "$SIGNING_URL")"
-
+          MATERIAL="$(curl -fsSL -H "Authorization: Bearer ${OIDC_TOKEN}" -H 'Cache-Control: no-store' "$SIGNING_URL")"
           INITIALIZED="$(python -c 'import json,sys; print(str(json.load(sys.stdin).get("initialized", False)).lower())' <<<"$MATERIAL")"
+
           if [ "$INITIALIZED" != "true" ]; then
-            STORE_PASSWORD="$(python - <<'PY'
-import secrets,string
-alphabet=string.ascii_letters+string.digits
-print(''.join(secrets.choice(alphabet) for _ in range(40)))
-PY
-)"
+            STORE_PASSWORD="$(python -c 'import secrets,string; a=string.ascii_letters+string.digits; print("".join(secrets.choice(a) for _ in range(40)))')"
             keytool -genkeypair -v \
               -keystore /tmp/comando360-release.jks \
               -storetype PKCS12 \
@@ -86,41 +76,30 @@ PY
               -keysize 4096 \
               -validity 10000 \
               -dname "CN=Comando 360, OU=Agro Souzas, O=Comando 360, L=Laranjal Paulista, ST=Sao Paulo, C=BR"
-            export STORE_PASSWORD
-            python - <<'PY' >/tmp/c360-signing-init.json
-import base64, json, os
-from pathlib import Path
-payload = {
-    "keystore_b64": base64.b64encode(Path('/tmp/comando360-release.jks').read_bytes()).decode('ascii'),
-    "store_password": os.environ['STORE_PASSWORD'],
-    "key_alias": "comando360",
-}
-print(json.dumps(payload, separators=(',', ':')))
-PY
-            MATERIAL="$(curl -fsSL -X POST \
-              -H "Authorization: Bearer ${OIDC_TOKEN}" \
-              -H 'Content-Type: application/json' \
-              --data-binary @/tmp/c360-signing-init.json \
-              "$SIGNING_URL")"
+
+            KEYSTORE_B64="$(base64 -w0 /tmp/comando360-release.jks)"
+            export STORE_PASSWORD KEYSTORE_B64
+            python -c 'import json,os; print(json.dumps({"keystore_b64":os.environ["KEYSTORE_B64"],"store_password":os.environ["STORE_PASSWORD"],"key_alias":"comando360"},separators=(",",":")))' > /tmp/c360-signing-init.json
+
+            MATERIAL="$(curl -fsSL -X POST -H "Authorization: Bearer ${OIDC_TOKEN}" -H 'Content-Type: application/json' --data-binary @/tmp/c360-signing-init.json "$SIGNING_URL")"
             rm -f /tmp/c360-signing-init.json
           fi
 
-          python - <<'PY' <<<"$MATERIAL"
-import base64, json, os, sys
-from pathlib import Path
-m=json.load(sys.stdin)
-if not m.get('initialized'):
-    raise SystemExit('stable signing material was not initialized')
-Path('/tmp/comando360-release.jks').write_bytes(base64.b64decode(m['keystore_b64']))
-password=m['store_password']
-alias=m.get('key_alias') or 'comando360'
-with open(os.environ['GITHUB_ENV'],'a',encoding='utf-8') as f:
-    f.write('C360_KEYSTORE_PATH=/tmp/comando360-release.jks\n')
-    f.write(f'C360_KEYSTORE_PASSWORD={password}\n')
-    f.write(f'C360_KEY_PASSWORD={password}\n')
-    f.write(f'C360_KEY_ALIAS={alias}\n')
-print(f'::add-mask::{password}')
-PY
+          export MATERIAL
+          INITIALIZED="$(python -c 'import json,os; print(str(json.loads(os.environ["MATERIAL"]).get("initialized",False)).lower())')"
+          test "$INITIALIZED" = "true"
+          KEYSTORE_B64="$(python -c 'import json,os; print(json.loads(os.environ["MATERIAL"])["keystore_b64"])')"
+          STORE_PASSWORD="$(python -c 'import json,os; print(json.loads(os.environ["MATERIAL"])["store_password"])')"
+          KEY_ALIAS="$(python -c 'import json,os; print(json.loads(os.environ["MATERIAL"]).get("key_alias") or "comando360")')"
+
+          printf '%s' "$KEYSTORE_B64" | base64 -d > /tmp/comando360-release.jks
+          echo "::add-mask::$STORE_PASSWORD"
+          {
+            echo 'C360_KEYSTORE_PATH=/tmp/comando360-release.jks'
+            echo "C360_KEYSTORE_PASSWORD=$STORE_PASSWORD"
+            echo "C360_KEY_PASSWORD=$STORE_PASSWORD"
+            echo "C360_KEY_ALIAS=$KEY_ALIAS"
+          } >> "$GITHUB_ENV"
 
       - name: Build tracker APK (PR debug)
         if: github.event_name == 'pull_request'
