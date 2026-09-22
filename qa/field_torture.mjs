@@ -2,7 +2,7 @@ import { chromium } from 'playwright';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
-const VERSION='2026.09.22-r100-field-torture1';
+const VERSION='2026.09.22-r100-field-torture2';
 const base=process.env.C360_BASE_URL||'http://127.0.0.1:8080';
 const out=path.resolve('qa-artifacts-r100');
 await fs.mkdir(out,{recursive:true});
@@ -126,7 +126,7 @@ async function runViewport(browser,{name,width,height}){
  assert(`${name}:status-offline`,offline==='offline',offline);
  await context.setOffline(false);
  await page.evaluate(async()=>{
-  localStorage.setItem('c360_team_chat_queue_v1_qa',[{body:'pendente'}]&&JSON.stringify([{body:'pendente'}]));
+  localStorage.setItem('c360_team_chat_queue_v1_qa',JSON.stringify([{body:'pendente'}]));
   await window.C360Release?.refreshFieldSyncStatus?.();
  });
  const pending=await page.locator('#c360FieldSyncStatus').evaluate(el=>({state:el.dataset.state,text:el.textContent}));
@@ -139,8 +139,15 @@ async function runViewport(browser,{name,width,height}){
  });
  assert(`${name}:anti-duplo-salvamento`,clicks===1,String(clicks));
 
- // Falha assíncrona em Relatórios precisa ser capturada sem derrubar o shell.
- await page.evaluate(async()=>{await v2Go('relatorios')});
+ // A rejeição de Relatórios é um cenário administrativo. Troca temporariamente o contexto
+ // apenas para validar o error boundary, sem liberar a rota no celular da equipe.
+ await page.evaluate(()=>{
+  document.body.classList.remove('device-mode');
+  deviceMode=false;
+  for(const el of document.querySelectorAll('[data-screen],.section'))el.classList.remove('active');
+  const reports=document.getElementById('relatorios');
+  if(reports){reports.hidden=false;reports.classList.remove('hidden');reports.classList.add('active');reports.style.setProperty('display','block','important')}
+ });
  const before=await page.evaluate(()=>window.__c360ReleaseHealth?.unhandledRejections||0);
  await page.evaluate(()=>{
   const event=new PromiseRejectionEvent('unhandledrejection',{promise:Promise.resolve(),reason:new Error('QA report rejection')});
@@ -151,8 +158,11 @@ async function runViewport(browser,{name,width,height}){
  assert(`${name}:relatorio-rejection-capturada`,rejection.count===before+1,JSON.stringify(rejection));
  assert(`${name}:relatorio-shell-continua`,rejection.app&&/Relatório/.test(rejection.live),JSON.stringify(rejection));
 
- // Campo continua sem conteúdo administrativo exposto.
- await page.evaluate(async()=>{await v2Go('equipehome')});
+ // Restaura o aparelho para campo e confirma que conteúdo administrativo segue oculto.
+ await page.evaluate(async()=>{
+  const reports=document.getElementById('relatorios');if(reports){reports.style.removeProperty('display');reports.classList.remove('active')}
+  deviceMode=true;document.body.classList.add('device-mode');if(typeof applyDeviceUi==='function')applyDeviceUi();if(typeof v2Go==='function')await v2Go('equipehome');
+ });
  const adminVisible=await page.evaluate(()=>[...document.querySelectorAll('.admin-only')].some(e=>e.getClientRects().length&&getComputedStyle(e).display!=='none'&&getComputedStyle(e).visibility!=='hidden'));
  assert(`${name}:admin-oculto`,!adminVisible,String(adminVisible));
 
