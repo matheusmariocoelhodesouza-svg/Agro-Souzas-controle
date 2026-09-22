@@ -3,7 +3,7 @@
    controlados pelo mesmo service worker, evitando "Invalid Refresh Token: Already Used". */
 'use strict';
 
-const C360_AUTH_REFRESH_GUARD_VERSION='2026.09.21-r1';
+const C360_AUTH_REFRESH_GUARD_VERSION='2026.09.22-r2';
 const C360_REFRESH_REUSE_MS=2*60*1000;
 const c360RefreshFlights=new Map();
 
@@ -28,6 +28,7 @@ async function c360RefreshKey(req){
 async function c360SnapshotResponse(response){
   const body=await response.arrayBuffer();
   return {
+    ok:response.ok,
     status:response.status,
     statusText:response.statusText,
     headers:[...response.headers.entries()],
@@ -49,8 +50,12 @@ async function c360HandleRefresh(req){
 
   const existing=c360RefreshFlights.get(key);
   if(existing&&Date.now()-existing.createdAt<C360_REFRESH_REUSE_MS){
-    const snapshot=await existing.promise;
-    return c360ResponseFromSnapshot(snapshot);
+    try{
+      const snapshot=await existing.promise;
+      return c360ResponseFromSnapshot(snapshot);
+    }catch(_){
+      if(c360RefreshFlights.get(key)===existing)c360RefreshFlights.delete(key);
+    }
   }
 
   const entry={createdAt:Date.now(),promise:null};
@@ -60,15 +65,21 @@ async function c360HandleRefresh(req){
   })();
   c360RefreshFlights.set(key,entry);
 
-  entry.promise.finally(()=>{
-    setTimeout(()=>{
-      const current=c360RefreshFlights.get(key);
-      if(current===entry)c360RefreshFlights.delete(key);
-    },C360_REFRESH_REUSE_MS);
-  }).catch(()=>{});
-
-  const snapshot=await entry.promise;
-  return c360ResponseFromSnapshot(snapshot);
+  try{
+    const snapshot=await entry.promise;
+    if(snapshot.ok){
+      setTimeout(()=>{
+        const current=c360RefreshFlights.get(key);
+        if(current===entry)c360RefreshFlights.delete(key);
+      },C360_REFRESH_REUSE_MS);
+    }else if(c360RefreshFlights.get(key)===entry){
+      c360RefreshFlights.delete(key);
+    }
+    return c360ResponseFromSnapshot(snapshot);
+  }catch(error){
+    if(c360RefreshFlights.get(key)===entry)c360RefreshFlights.delete(key);
+    throw error;
+  }
 }
 
 self.addEventListener('fetch',event=>{
