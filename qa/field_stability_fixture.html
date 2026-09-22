@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <style>
+    *{box-sizing:border-box}body{margin:0;font-family:system-ui;background:#f4f7fb}.team-home{max-width:480px;margin:0 auto;padding:12px}.team-home-grid{display:grid;gap:10px}.team-tile{min-height:96px;border:0;border-radius:14px;background:#fff;padding:14px;text-align:left}.warn{background:#fff7df;border:1px solid #f2c665}.toolbar{display:flex;gap:8px}.btn{min-height:40px}
+  </style>
+</head>
+<body class="device-mode">
+  <main id="app">
+    <section class="team-home">
+      <div id="c360LocationPermissionCard" class="warn">
+        <h3>Localização bloqueada</h3>
+        <p>Ative a localização para registrar os dados do campo com precisão.</p>
+        <div class="toolbar"><button class="btn" id="retryLocation">Tentar novamente</button></div>
+      </div>
+      <div class="team-home-grid">
+        <button class="team-tile" id="apanha"><strong>Apanha</strong></button>
+        <button class="team-tile" id="ponto"><strong>Ponto</strong></button>
+        <button class="team-tile" id="abastecimento"><strong>Abastecimento</strong></button>
+      </div>
+    </section>
+  </main>
+  <script src="/c360-field-location-ui-hotfix.js"></script>
+</body>
+</html>
