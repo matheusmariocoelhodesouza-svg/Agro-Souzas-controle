@@ -23,6 +23,7 @@ jobs:
           for f in ./*.js; do
             [ -f "$f" ] && node --check "$f"
           done
+          node --check qa/field_torture.mjs
 
       - name: Inline JavaScript syntax
         run: |
@@ -56,16 +57,17 @@ jobs:
             index.html cadastro.html dda.html reparar.html comando360.webmanifest sw-v7-02.js
             c360-autorecovery.js c360-platform.js c360-product-core.js c360-release-core.js
             c360-quality-hotfix.js c360-quality-core.js c360-field-offline-hotfix.js
-            c360-team-chat.js c360-farm-cache-hotfix.js c360-consumable-edit.js
+            c360-field-location-ui-hotfix.js c360-team-chat.js c360-farm-cache-hotfix.js c360-consumable-edit.js
             c360-system-health.js c360-onboarding-entry.js c360-fiscal.js c360-native-tracker-admin.js
             c360-ui-polish.css c360-premium-ui.css c360-product-ui.css c360-release-core.css
-            c360-system-health.css c360-fiscal.css qa/reference_audit.py qa/release_scorecard.py qa/performance_budget.mjs
+            c360-system-health.css c360-fiscal.css qa/reference_audit.py qa/release_scorecard.py qa/performance_budget.mjs qa/field_torture.mjs
             supabase/migrations/20260913104500_add_device_health_heartbeat.sql
             supabase/migrations/20260913203000_self_service_onboarding_v1.sql
             supabase/migrations/20260920122000_explicit_internal_table_deny_policies.sql
             supabase/migrations/20260920122100_preserve_device_security_metadata.sql
             supabase/migrations/20260920140000_dedupe_legacy_employee_rls.sql
             supabase/migrations/20260920220000_native_tracker_live_status_v104.sql
+            supabase/migrations/20260922233000_r100_field_hot_path_indexes.sql
           )
           for f in "${files[@]}"; do test -s "$f" || { echo "Missing: $f"; exit 1; }; done
 
@@ -83,7 +85,7 @@ jobs:
           ! grep -q '<script>window.onload' index.html
 
           grep -q "BOOT_VERSION='2026.09.20-r98-live1'" c360-quality-hotfix.js
-          grep -q "const VERSION='2026.09.20-r97-1'" c360-release-core.js
+          grep -q "const VERSION='2026.09.22-r100-1'" c360-release-core.js
           grep -q 'c360-autorecovery.js' c360-quality-hotfix.js
           grep -q 'c360-platform.js' c360-quality-hotfix.js
           grep -q 'c360-product-core.js' c360-quality-hotfix.js
@@ -131,6 +133,8 @@ jobs:
           grep -q 'C360_MARK_HEALTHY' <<<"$SW_CONTRACT"
           ! grep -q 'patchAppHtml' <<<"$SW_CONTRACT"
           ! grep -q 'repairLegacyAppHtml' <<<"$SW_CONTRACT"
+          grep -q 'sw-auth-refresh-guard.js' sw-v7-02.js
+          grep -q "C360_AUTH_REFRESH_GUARD_VERSION='2026.09.22-r2'" sw-auth-refresh-guard.js
 
           grep -q 'interactiveWall>1500' qa/performance_budget.mjs
           grep -q 'completeWall>2500' qa/performance_budget.mjs
@@ -141,6 +145,9 @@ jobs:
           grep -q 'v2_client_health_events' c360-autorecovery.js
           grep -q 'v2_bootstrap_company' cadastro.html
           grep -q 'v2_my_onboarding_status' cadastro.html
+          grep -q 'c360FieldSyncStatus' c360-release-core.js
+          grep -q 'anti-duplo-salvamento' qa/field_torture.mjs
+          grep -q 'idx_v2_operations_created_by_r100' supabase/migrations/20260922233000_r100_field_hot_path_indexes.sql
 
       - name: HTML and CSS parse
         run: |
