@@ -148,16 +148,8 @@ function visible(el){
 }
 function currentRoute(){
   try{
-    const explicit=String(
-      document.body?.dataset?.screen||
-      document.body?.dataset?.route||
-      document.documentElement?.dataset?.screen||
-      document.documentElement?.dataset?.route||
-      window.currentScreen||window.currentRoute||''
-    ).replace(/^#/,'').trim();
-    if(explicit)return explicit;
-
-    // Relatórios recebe tratamento especial porque já houve rejeição real capturada em produção.
+    // O que está realmente visível tem prioridade sobre estados globais que podem ficar
+    // alguns milissegundos atrasados durante trocas de tela.
     const reports=document.getElementById('relatorios');
     if(reports?.classList.contains('active')&&visible(reports))return 'relatorios';
 
@@ -169,7 +161,16 @@ function currentRoute(){
     const nav=document.querySelector('[aria-current="page"][data-screen],[aria-current="page"][data-go],[aria-current="page"][href^="#"]');
     if(nav?.dataset?.screen)return nav.dataset.screen;
     if(nav?.dataset?.go)return nav.dataset.go;
-    return String(nav?.getAttribute('href')||'').replace(/^#/,'');
+    const hrefRoute=String(nav?.getAttribute('href')||'').replace(/^#/,'');
+    if(hrefRoute)return hrefRoute;
+
+    return String(
+      document.body?.dataset?.screen||
+      document.body?.dataset?.route||
+      document.documentElement?.dataset?.screen||
+      document.documentElement?.dataset?.route||
+      window.currentScreen||window.currentRoute||''
+    ).replace(/^#/,'').trim();
   }catch(_){return''}
 }
 function errorFingerprint(reason,route){
