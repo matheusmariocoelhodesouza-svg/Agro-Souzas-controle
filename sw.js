@@ -1,9 +1,15 @@
-const CACHE='comando360-v6-106';
+/* Comando 360 — Service Worker principal.
+   O guard de autenticação precisa ser carregado ANTES do handler geral para
+   serializar a rotação do refresh token do Supabase entre PWA/abas/contextos. */
+importScripts('./sw-auth-refresh-guard.js');
+
+const CACHE='comando360-v6-107';
 const CORE=[
   './',
   './index.html',
   './comando360.webmanifest',
-  './comando360-icon.svg'
+  './comando360-icon.svg',
+  './sw-auth-refresh-guard.js'
 ];
 
 async function refreshCore(){
