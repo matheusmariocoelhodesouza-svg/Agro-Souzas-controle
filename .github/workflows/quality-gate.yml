@@ -57,9 +57,10 @@ jobs:
             c360-autorecovery.js c360-platform.js c360-product-core.js c360-release-core.js
             c360-quality-hotfix.js c360-quality-core.js c360-field-offline-hotfix.js
             c360-team-chat.js c360-farm-cache-hotfix.js c360-consumable-edit.js
-            c360-system-health.js c360-onboarding-entry.js c360-fiscal.js c360-native-tracker-admin.js
+            c360-system-health.js c360-onboarding-entry.js c360-fiscal.js c360-native-tracker-admin.js c360-ux-polish-hotfix.js
             c360-ui-polish.css c360-premium-ui.css c360-product-ui.css c360-release-core.css
             c360-system-health.css c360-fiscal.css qa/reference_audit.py qa/release_scorecard.py qa/performance_budget.mjs
+            qa/ux_polish.mjs qa/ux_polish_fixture.html
             supabase/migrations/20260913104500_add_device_health_heartbeat.sql
             supabase/migrations/20260913203000_self_service_onboarding_v1.sql
             supabase/migrations/20260920122000_explicit_internal_table_deny_policies.sql
@@ -82,7 +83,7 @@ jobs:
           grep -q 'c360-ui-polish.css' index.html
           ! grep -q '<script>window.onload' index.html
 
-          grep -q "BOOT_VERSION='2026.09.20-r98-live1'" c360-quality-hotfix.js
+          grep -q "BOOT_VERSION='2026.09.22-r99-ux1'" c360-quality-hotfix.js
           grep -q "const VERSION='2026.09.20-r97-1'" c360-release-core.js
           grep -q 'c360-autorecovery.js' c360-quality-hotfix.js
           grep -q 'c360-platform.js' c360-quality-hotfix.js
@@ -96,6 +97,11 @@ jobs:
           grep -q 'c360-system-health.js' c360-quality-hotfix.js
           grep -q 'c360-onboarding-entry.js' c360-quality-hotfix.js
           grep -q 'c360-native-tracker-admin.js' c360-quality-hotfix.js
+          grep -q 'c360-ux-polish-hotfix.js' c360-quality-hotfix.js
+          grep -q "const VERSION='2026.09.22-ux1'" c360-ux-polish-hotfix.js
+          grep -q 'c360FieldToastSlot' c360-ux-polish-hotfix.js
+          grep -q 'c360UtilityDock' c360-ux-polish-hotfix.js
+          grep -q 'finance-kpi-label' c360-ux-polish-hotfix.js
 
           grep -q 'v2_device_location_current' c360-native-tracker-admin.js
           grep -q 'Rastreadores ao vivo' c360-native-tracker-admin.js
@@ -125,6 +131,7 @@ jobs:
           grep -q './c360-release-core.js' "$SW_CORE"
           grep -q './c360-release-core.css' "$SW_CORE"
           grep -q './c360-native-tracker-admin.js' "$SW_CORE"
+          grep -q './c360-ux-polish-hotfix.js' "$SW_CORE"
           ! grep -q 'CORE.push' sw-v7-02.js
           ! grep -q '?' sw-v7-02.js
           grep -q 'C360_ROLLBACK_TO_STABLE' <<<"$SW_CONTRACT"

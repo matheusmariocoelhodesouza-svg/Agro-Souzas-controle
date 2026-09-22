@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:system-ui;background:#06182a;color:#fff}header{height:64px;background:#fff;color:#172033;display:flex;align-items:center;justify-content:flex-end;padding:8px 12px}.v2sidebar{position:fixed;left:0;top:0;width:232px;height:100vh;background:#0d1b32;padding:12px}.plan-chip{background:#f8fafc;border:1px solid #dbe3ee;border-radius:12px;padding:8px 12px}.sidebar-plan{display:block;margin-top:300px;color:#a7b7ca}.team-home-grid{display:grid;gap:10px}.team-tile{height:90px;border:1px solid #7dd3fc;border-radius:18px;padding:20px;background:#092747}.team-home{padding:0 10px}.section{display:none}.section.active{display:block}#screenHost{padding-top:132px}#c360LocationPermissionCard{position:relative;top:68px;max-height:126px;overflow:auto;background:#fff;color:#fff;border-radius:14px;padding:9px 11px}.muted{color:#fff}#c360ToastStack{position:fixed;left:10px;right:10px;bottom:320px}.c360-toast{background:#fff;color:#172033;padding:10px;border-radius:12px}#financeiro{margin-left:245px;background:#eef3f9;color:#172033;padding:20px}.finance-kpi{background:#fff;padding:16px;border-radius:16px}.finance-kpi-label,.finance-kpi-value{color:#fff;-webkit-text-fill-color:#fff}.finance-kpi-value{display:block;font-size:28px;margin-top:10px}#c360NativeTrackerQuick,#c360ChatFab{position:fixed;right:14px;bottom:76px}#c360ChatFab{bottom:18px}
+</style>
+</head>
+<body class="device-mode">
+<header><span class="plan-chip">Plano não configurado</span></header>
+<div class="v2sidebar"><strong>Comando 360</strong><small class="sidebar-plan">Sem plano</small></div>
+<div id="c360ToastStack"><div class="c360-toast success"><strong>Conexão restabelecida</strong></div></div>
+<div id="screenHost">
+ <section id="equipehome" class="section active team-home">
+  <div id="c360LocationPermissionCard"><strong>📍 Localização bloqueada</strong><p>Abra as permissões do Chrome/Comando 360 no Android e permita Localização.</p><div class="muted">Permissão de localização negada no Android/Chrome.</div><div class="toolbar"><button type="button">TENTAR NOVAMENTE</button></div></div>
+  <div class="team-home-grid"><div class="team-tile" id="firstTile">Apanha</div><div class="team-tile">Ponto</div></div>
+ </section>
+ <section id="financeiro" class="section"><div class="finance-kpi"><span class="finance-kpi-label">ENTRADAS DO MÊS</span><strong class="finance-kpi-value">R$ ••••••</strong></div></section>
+</div>
+<button id="c360NativeTrackerQuick">📍 Rastreadores ao vivo</button><button id="c360ChatFab">💬 Chat</button>
+<script src="../c360-ux-polish-hotfix.js"></script>
+</body>
+</html>

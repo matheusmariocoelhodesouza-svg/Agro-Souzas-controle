@@ -26,6 +26,7 @@ jobs:
           fetch "/sw-auth-refresh-guard.js" /tmp/auth-guard.js
           fetch "/c360-field-location-ui-hotfix.js" /tmp/location-ui.js
           fetch "/c360-report-stability.js" /tmp/report-stability.js
+          fetch "/c360-ux-polish-hotfix.js" /tmp/ux-polish.js
           SW_CORE="$(grep -oE 'sw-v7-02-core-hotfix[0-9]+\.js' /tmp/sw.js | head -n1 || true)"
           test -n "$SW_CORE"
           test "$SW_CORE" = "sw-v7-02-core-hotfix59.js"
@@ -53,7 +54,7 @@ jobs:
           fetch "/c360-product-ui.css" /tmp/product.css
           fetch "/c360-system-health.css" /tmp/health.css
           fetch "/c360-saas-readiness.css" /tmp/saas.css
-          for f in /tmp/index.html /tmp/cadastro.html /tmp/legal.html /tmp/sw.js /tmp/sw-core.js /tmp/auth-guard.js /tmp/location-ui.js /tmp/report-stability.js /tmp/autorecovery.js /tmp/platform.js /tmp/product-core.js /tmp/release-core.js /tmp/release-core.css /tmp/bootstrap.js /tmp/saas.js /tmp/saas.css /tmp/tracker-admin.js; do test -s "$f"; done
+          for f in /tmp/index.html /tmp/cadastro.html /tmp/legal.html /tmp/sw.js /tmp/sw-core.js /tmp/auth-guard.js /tmp/location-ui.js /tmp/report-stability.js /tmp/ux-polish.js /tmp/autorecovery.js /tmp/platform.js /tmp/product-core.js /tmp/release-core.js /tmp/release-core.css /tmp/bootstrap.js /tmp/saas.js /tmp/saas.css /tmp/tracker-admin.js; do test -s "$f"; done
           test "$(wc -c < /tmp/index.html)" -le 700000
           grep -q 'c360-quality-hotfix.js' /tmp/index.html
           grep -q 'c360-platform.js' /tmp/bootstrap.js
@@ -67,10 +68,15 @@ jobs:
           grep -q 'c360-saas-readiness.css' /tmp/bootstrap.js
           grep -q 'c360-native-tracker-admin.js' /tmp/bootstrap.js
           grep -q 'c360-report-stability.js' /tmp/bootstrap.js
+          grep -q 'c360-ux-polish-hotfix.js' /tmp/bootstrap.js
           grep -q '2026.09.13-platform1' /tmp/platform.js
           grep -q 'window.C360Platform' /tmp/platform.js
           grep -q '2026.09.20-r97-1' /tmp/release-core.js
-          grep -q "BOOT_VERSION='2026.09.20-r98-live1'" /tmp/bootstrap.js
+          grep -q "BOOT_VERSION='2026.09.22-r99-ux1'" /tmp/bootstrap.js
+          grep -q "const VERSION='2026.09.22-ux1'" /tmp/ux-polish.js
+          grep -q 'c360FieldToastSlot' /tmp/ux-polish.js
+          grep -q 'c360UtilityDock' /tmp/ux-polish.js
+          grep -q 'finance-kpi-label' /tmp/ux-polish.js
           grep -q 'v2_device_location_current' /tmp/tracker-admin.js
           grep -q 'Rastreadores ao vivo' /tmp/tracker-admin.js
           grep -q 'native_battery_percent' /tmp/tracker-admin.js
@@ -97,12 +103,13 @@ jobs:
           grep -q './c360-release-core.css' /tmp/sw-core.js
           grep -q './c360-native-tracker-admin.js' /tmp/sw-core.js
           grep -q './c360-field-location-ui-hotfix.js' /tmp/sw-core.js
+          grep -q './c360-ux-polish-hotfix.js' /tmp/sw-core.js
           grep -q 'comando360-stable-v1' /tmp/sw-core.js
           grep -q 'C360_ROLLBACK_TO_STABLE' /tmp/sw-core.js
           grep -q 'v2_client_health_events' /tmp/autorecovery.js
           grep -q 'v2_device_health_heartbeat' /tmp/health.js
           grep -q 'v2_bootstrap_company' /tmp/cadastro.html
-          for f in /tmp/platform.js /tmp/product-core.js /tmp/release-core.js /tmp/bootstrap.js /tmp/autorecovery.js /tmp/quality-core.js /tmp/field.js /tmp/health.js /tmp/onboarding.js /tmp/chat.js /tmp/farms.js /tmp/consumables.js /tmp/saas.js /tmp/tracker-admin.js /tmp/sw.js /tmp/sw-core.js /tmp/auth-guard.js /tmp/location-ui.js /tmp/report-stability.js; do node --check "$f"; done
+          for f in /tmp/platform.js /tmp/product-core.js /tmp/release-core.js /tmp/bootstrap.js /tmp/autorecovery.js /tmp/quality-core.js /tmp/field.js /tmp/health.js /tmp/onboarding.js /tmp/chat.js /tmp/farms.js /tmp/consumables.js /tmp/saas.js /tmp/tracker-admin.js /tmp/sw.js /tmp/sw-core.js /tmp/auth-guard.js /tmp/location-ui.js /tmp/report-stability.js /tmp/ux-polish.js; do node --check "$f"; done
           python - <<'PY'
           import json
           from html.parser import HTMLParser
@@ -114,5 +121,5 @@ jobs:
               value=Path(name).read_text(encoding='utf-8'); P().feed(value); assert '<html' in value.lower() and '</html>' in value.lower()
           for name in ('/tmp/ui.css','/tmp/premium.css','/tmp/product.css','/tmp/release-core.css','/tmp/health.css','/tmp/saas.css'):
               css=Path(name).read_text(encoding='utf-8'); assert css.count('{')==css.count('}'), f'{name}: unbalanced braces'
-          print('Production shell + field auth/location + report stability + live tracker + isolated PWA cache + rollback smoke: OK')
+          print('Production shell + field auth/location + report stability + UX polish + live tracker + isolated PWA cache + rollback smoke: OK')
           PY
