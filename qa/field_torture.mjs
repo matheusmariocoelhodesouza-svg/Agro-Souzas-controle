@@ -2,7 +2,7 @@ import { chromium } from 'playwright';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
-const VERSION='2026.09.22-r100-field-torture2';
+const VERSION='2026.09.22-r100-field-torture3';
 const base=process.env.C360_BASE_URL||'http://127.0.0.1:8080';
 const out=path.resolve('qa-artifacts-r100');
 await fs.mkdir(out,{recursive:true});
@@ -158,10 +158,12 @@ async function runViewport(browser,{name,width,height}){
  assert(`${name}:relatorio-rejection-capturada`,rejection.count===before+1,JSON.stringify(rejection));
  assert(`${name}:relatorio-shell-continua`,rejection.app&&/Relatório/.test(rejection.live),JSON.stringify(rejection));
 
- // Restaura o aparelho para campo e confirma que conteúdo administrativo segue oculto.
+ // Restaura o aparelho para campo sem remontar os elementos internos já roteados.
  await page.evaluate(async()=>{
-  const reports=document.getElementById('relatorios');if(reports){reports.style.removeProperty('display');reports.classList.remove('active')}
-  deviceMode=true;document.body.classList.add('device-mode');if(typeof applyDeviceUi==='function')applyDeviceUi();if(typeof v2Go==='function')await v2Go('equipehome');
+  const reports=document.getElementById('relatorios');
+  if(reports){reports.style.removeProperty('display');reports.classList.remove('active');reports.classList.add('hidden');reports.hidden=true}
+  deviceMode=true;document.body.classList.add('device-mode');
+  if(typeof v2Go==='function')await v2Go('equipehome');
  });
  const adminVisible=await page.evaluate(()=>[...document.querySelectorAll('.admin-only')].some(e=>e.getClientRects().length&&getComputedStyle(e).display!=='none'&&getComputedStyle(e).visibility!=='hidden'));
  assert(`${name}:admin-oculto`,!adminVisible,String(adminVisible));
