@@ -142,8 +142,35 @@ function installRapidActionGuard(){
     setTimeout(()=>{if(Number(btn.dataset.c360RapidUntil||0)<=Date.now())delete btn.dataset.c360RapidUntil},RAPID_ACTION_MS+80);
   },true);
 }
+function visible(el){
+  if(!el)return false;
+  try{const s=getComputedStyle(el);return s.display!=='none'&&s.visibility!=='hidden'&&el.getClientRects().length>0}catch(_){return false}
+}
 function currentRoute(){
-  try{return [...document.querySelectorAll('[data-screen],.section')].find(el=>el.classList.contains('active')&&getComputedStyle(el).display!=='none')?.id||''}catch(_){return''}
+  try{
+    const explicit=String(
+      document.body?.dataset?.screen||
+      document.body?.dataset?.route||
+      document.documentElement?.dataset?.screen||
+      document.documentElement?.dataset?.route||
+      window.currentScreen||window.currentRoute||''
+    ).replace(/^#/,'').trim();
+    if(explicit)return explicit;
+
+    // Relatórios recebe tratamento especial porque já houve rejeição real capturada em produção.
+    const reports=document.getElementById('relatorios');
+    if(reports?.classList.contains('active')&&visible(reports))return 'relatorios';
+
+    const active=[...document.querySelectorAll('[data-screen].active,.screen.active,.section.active,main [id].active')]
+      .find(el=>visible(el)&&!el.matches('button,a,[role="button"]'));
+    if(active?.dataset?.screen)return String(active.dataset.screen).replace(/^#/,'');
+    if(active?.id)return active.id;
+
+    const nav=document.querySelector('[aria-current="page"][data-screen],[aria-current="page"][data-go],[aria-current="page"][href^="#"]');
+    if(nav?.dataset?.screen)return nav.dataset.screen;
+    if(nav?.dataset?.go)return nav.dataset.go;
+    return String(nav?.getAttribute('href')||'').replace(/^#/,'');
+  }catch(_){return''}
 }
 function errorFingerprint(reason,route){
   const raw=String(reason?.message||reason||'erro').slice(0,240);let h=2166136261;
@@ -167,7 +194,7 @@ window.addEventListener('offline',scheduleFieldSync);
 window.addEventListener('storage',scheduleFieldSync);
 document.addEventListener('c360:screen-changed',scheduleFieldSync);
 document.addEventListener('c360:bootstrap-ready',scheduleFieldSync);
-window.C360Release={version:VERSION,state,announce,enhance,refreshFieldSyncStatus,offlinePendingCount};
+window.C360Release={version:VERSION,state,announce,enhance,refreshFieldSyncStatus,offlinePendingCount,currentRoute};
 
 function start(){ensureLiveRegion();scheduleEnhance();observeDom();installRapidActionGuard();scheduleFieldSync();setInterval(scheduleFieldSync,12000)}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
