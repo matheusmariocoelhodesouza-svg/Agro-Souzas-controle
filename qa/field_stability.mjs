@@ -41,9 +41,10 @@ try{
   assert(result.version==='2026.09.22-locui2','unexpected location UI version');
 
   await page.evaluate(()=>{
-    document.getElementById('c360FieldLocationSlot')?.remove();
     const card=document.getElementById('c360LocationPermissionCard');
-    document.body.appendChild(card);
+    const slot=document.getElementById('c360FieldLocationSlot');
+    if(card)document.body.appendChild(card);
+    slot?.remove();
     const marker=document.createElement('div');
     marker.textContent='mutation';
     document.body.appendChild(marker);
