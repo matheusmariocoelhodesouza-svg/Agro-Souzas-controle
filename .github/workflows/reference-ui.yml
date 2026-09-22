@@ -13,6 +13,8 @@ on:
       - 'qa/performance_budget.mjs'
       - 'qa/field_stability.mjs'
       - 'qa/field_stability_fixture.html'
+      - 'qa/report_stability.mjs'
+      - 'qa/report_stability_fixture.html'
       - '.github/workflows/reference-ui.yml'
   pull_request:
     branches: [main]
@@ -46,6 +48,8 @@ jobs:
         run: node qa/reference_ui.mjs
       - name: Run field mobile stability regression
         run: node qa/field_stability.mjs
+      - name: Run report rejection regression
+        run: node qa/report_stability.mjs
       - name: Enforce measured performance budget
         run: node qa/performance_budget.mjs
       - name: Upload QA screenshots and report
