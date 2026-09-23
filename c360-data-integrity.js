@@ -1,11 +1,11 @@
 (()=>{
 'use strict';
 if(window.C360_DATA_INTEGRITY_VERSION)return;
-const VERSION='2026.09.23-integrity1';
+const VERSION='2026.09.23-integrity2';
 let timer=null,busy={pricing:false,biometric:false,poultry:false,fiscal:false};
 const $=s=>document.querySelector(s);
 const norm=v=>String(v??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/\s+/g,' ').trim();
-const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[m]));
 const money=v=>Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
 function cid(){try{return typeof companyId!=='undefined'&&companyId?companyId:null}catch{return null}}
 function rf(){try{return typeof rest==='function'?rest:(typeof window.v2Rest==='function'?window.v2Rest:null)}catch{return null}}
@@ -16,6 +16,15 @@ function notice(root,id,state='attention'){
  if(!root)return null;let el=document.getElementById(id);if(!el){el=document.createElement('div');el.id=id;el.className='c360-reconciliation-notice c360-integrity-notice';const hero=root.querySelector('.v2hero,.hero,.section-title,.toolbar');if(hero)hero.insertAdjacentElement('afterend',el);else root.prepend(el)}el.dataset.state=state;return el
 }
 function remove(id){document.getElementById(id)?.remove()}
+
+/* O handler legado da Apanha acessa estes campos sem null-check. O guard em capture garante
+   que eles existam antes de qualquer listener de clique antigo executar. */
+function ensureLegacyPoultryFields(){
+ const form=$('#poultryForm');if(!form)return;
+ if(!$('#poSavedAviary')){const input=document.createElement('input');input.type='hidden';input.id='poSavedAviary';form.appendChild(input)}
+ if(!$('#aviaryMsg')){const msg=document.createElement('div');msg.id='aviaryMsg';msg.className='muted hidden';form.appendChild(msg)}
+}
+document.addEventListener('click',e=>{if(e.target?.closest?.('#newPoultryOp'))ensureLegacyPoultryFields()},true);
 
 /* "Resultado" sem despesas conciliadas é apenas saldo dos lançamentos registrados. */
 function clarifyFinanceLabels(){
@@ -111,6 +120,7 @@ async function refreshFiscalState(){
 }
 
 function run(){
+ ensureLegacyPoultryFields();
  clarifyFinanceLabels();
  if(active()==='configuracoes')refreshPricing();
  if(active()==='funcionarios')refreshBiometrics();
