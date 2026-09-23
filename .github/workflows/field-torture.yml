@@ -1,0 +1,49 @@
+name: Comando 360 Field Torture
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  field-torture:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install browser test runtime
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+
+      - name: Start local production shell
+        run: |
+          python3 -m http.server 8080 --bind 127.0.0.1 > /tmp/c360-field-http.log 2>&1 &
+          for i in $(seq 1 20); do
+            curl -fsS http://127.0.0.1:8080/ >/dev/null && exit 0
+            sleep 1
+          done
+          cat /tmp/c360-field-http.log
+          exit 1
+
+      - name: Run field torture regression suite
+        run: node qa/field_torture.mjs
+
+      - name: Upload field QA evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: comando360-field-torture
+          path: qa-artifacts-r100/
+          if-no-files-found: warn
+          retention-days: 14
