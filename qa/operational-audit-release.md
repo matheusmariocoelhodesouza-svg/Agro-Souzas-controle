@@ -1,6 +1,6 @@
 # Correções da auditoria operacional — 23/09/2026
 
-Base revisada: main c9573c0. Build de recursos: 2026.09.23-audit1. Cache PWA: hotfix60.
+Base inicial: main c9573c0; integrada com main 58c77cf após atualização concorrente. Build de recursos: 2026.09.23-audit2. Cache PWA: hotfix61.
 
 ## Entregue
 
@@ -11,7 +11,7 @@ Base revisada: main c9573c0. Build de recursos: 2026.09.23-audit1. Cache PWA: ho
 - Carretinhas não aparecem como opção de combustível nem recebem indicador de tanque. Engates oferecem carretinhas identificadas, com validação adicional na interface.
 - Manutenção sem vencimento mostra “Sem programação”; KM ausente deixa de aparecer como zero.
 - Financeiro descreve competência e saldo parcial; não confunde vínculo de celular com presença online.
-- Visão financeira do banco exclui cancelados e mantém security_invoker. Migração aplicada; receita atual de 32.828,04 e oito registros preservados.
+- Visão financeira do banco exclui cancelados e mantém security_invoker. Migração aplicada; receita e contagem atuais preservadas.
 - Caminhão novo usa a data da operação; término deve ser posterior ao início e duração inferior a dois minutos pede conferência.
 - Salvamento de caminhão bloqueia requisições simultâneas, inclusive entre os dois botões; combustível e manutenção respeitam gravação em andamento.
 - Busca textual nas listas administrativas carregadas de funcionários, apanhas, combustível, manutenção e financeiro; data visível na apanha.
@@ -39,3 +39,21 @@ Avisos existentes no Supabase: 29 funções SECURITY DEFINER acessíveis a auten
 Referências: https://supabase.com/docs/guides/database/database-linter?lint=0029_authenticated_security_definer_function_executable e https://supabase.com/docs/guides/auth/password-security.
 
 PRs anteriores, incluindo R100 e Bluetooth Android, foram preservados sem merge automático.
+
+## Segunda rodada solicitada pelo usuário
+
+Quatro regressões novas foram reproduzidas na atualização concorrente antes de corrigir:
+
+1. Aviso de biometria fez 16 consultas em 750 ms numa tela parada; o próprio HTML disparava a próxima consulta. Aplicado intervalo de atualização por empresa/tela e atualização manual explícita.
+2. Falha de rede retornava array vazio e exibia 0/0 como se todos tivessem biometria. Agora informa indisponibilidade.
+3. Filtros de apanha reescreviam as opções e datas continuamente (18 mutações no teste parado). Só atualizam conteúdo quando muda.
+4. Conciliação buscava manutenção em tabela diferente da usada pelo formulário e podia aprovar conciliação apenas por igualdade de totais. Corrigidas a origem dos custos, exclusão de cancelados e mensagem de conferência por vínculo; falha de consulta deixa aviso visível.
+
+`qa/integrity_regressions.mjs`: 4 falhas reproduzidas antes; 4 casos aprovados depois. Testes de DOM com jsdom, sem dados reais, não substituem inspeção visual ou operação de campo.
+Filtros duplicados de RH/apanha removidos na integração. Rótulos acessíveis e área de toque dos filtros ajustados. Preservados os avisos de preços, biometria e fiscal adicionados pela versão concorrente; a verificação visual autenticada permanece pendente.
+
+### Inspeção autenticada retomada
+
+Login de administrador confirmado no navegador. No painel publicado, a superfície decorativa de KPI usava título quase branco e valor branco sobre fundo branco; o valor ultrapassava o fundo do cartão. A barra lateral tinha largura útil de 221 px e conteúdo com 263 px. Corrigidos a grade da superfície, contraste claro/escuro, tamanho dos valores e quebra da marca; gráficos decorativos sem dados foram removidos dos KPIs.
+
+O relatório de combustível ainda calculava distância por máximo menos mínimo, independentemente da ordem e das anomalias. Agora usa os mesmos intervalos validados da tela de combustível. O resumo de manutenção do painel também passa a distinguir ausência de programação. Sessão de campo real ainda não ativada.

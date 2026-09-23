@@ -26,6 +26,17 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
+      - name: Validate permanent tracker identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          FILE=android-tracker/app/build.gradle.kts
+          grep -q 'applicationId = "br.com.comando360.tracker"' "$FILE"
+          grep -q 'namespace = "br.com.comando360.tracker"' "$FILE"
+          grep -q 'keyAlias = System.getenv("C360_KEY_ALIAS") ?: "comando360"' "$FILE"
+          grep -q 'versionName = "1.0.4"' "$FILE"
+          echo 'Tracker identity/update contract: OK'
+
       - uses: actions/setup-java@v5
         with:
           distribution: temurin

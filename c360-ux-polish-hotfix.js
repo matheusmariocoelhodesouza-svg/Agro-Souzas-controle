@@ -1,7 +1,7 @@
 (()=>{
 'use strict';
 if(window.C360_UX_POLISH_VERSION)return;
-const VERSION='2026.09.22-ux1';
+const VERSION='2026.09.23-ux2';
 let toastOriginalParent=null,toastOriginalNext=null;
 const utilityOrigins=new Map();
 let observer=null,timer=null;
@@ -48,6 +48,19 @@ function ensureStyle(){
  html body.darkmode #financeiro .finance-kpi-value{color:#f8fafc!important;-webkit-text-fill-color:#f8fafc!important}
 
  .c360-list-search+div>[hidden]{display:none!important}
+ /* A camada decorativa antiga cortava valores e mantinha texto branco no tema claro. */
+ html body .c360-pro-metric.c360-exact-metric{min-height:126px!important;height:auto!important;padding:0!important}
+ html body .c360-exact-metric>:not(.c360-exact-surface){display:none!important}
+ html body .c360-exact-metric>.c360-exact-surface{position:relative!important;inset:auto!important;grid-template-columns:36px minmax(0,1fr)!important;grid-template-rows:auto auto!important;padding:16px!important;gap:10px!important;min-height:124px!important;box-sizing:border-box}
+ html body .c360-exact-metric .c360-exact-icon{width:36px!important;height:36px!important;border-radius:11px!important}
+ html body .c360-exact-metric .c360-exact-icon svg{width:23px!important;height:23px!important}
+ html body .c360-exact-metric .c360-exact-title{font-size:12px!important;line-height:1.4!important;overflow-wrap:anywhere}
+ html body .c360-exact-metric .c360-exact-value{font-size:clamp(21px,2vw,28px)!important;line-height:1.25!important;margin:0!important;letter-spacing:-.4px!important;text-shadow:none!important}
+ html body .c360-exact-metric :is(.c360-exact-chart,.c360-exact-bars){display:none!important}
+ html body:not(.darkmode) .c360-exact-metric .c360-exact-title{color:#475569!important;-webkit-text-fill-color:#475569!important}
+ html body:not(.darkmode) .c360-exact-metric .c360-exact-value{color:#0f172a!important;-webkit-text-fill-color:#0f172a!important}
+ html body.darkmode .c360-exact-metric .c360-exact-title{color:#cbd5e1!important;-webkit-text-fill-color:#cbd5e1!important}
+ html body.darkmode .c360-exact-metric .c360-exact-value{color:#f8fafc!important;-webkit-text-fill-color:#f8fafc!important}
  /* Indicadores: valores longos e contraste legível nos dois temas. */
  html body:not(.darkmode) :is(#combustivel,#manutencoes,#insumos,#relatorios) .v2kpi{
    background:#fff!important;color:#14213d!important;border-color:#d9e3ef!important;
@@ -61,6 +74,11 @@ function ensureStyle(){
  html body :is(.v2kpi,.finance-kpi){min-width:0!important;overflow:hidden}
  html body :is(.v2kpi strong,.v2kpi .v,.finance-kpi-value){font-size:clamp(16px,1.8vw,24px)!important;overflow-wrap:anywhere;line-height:1.25!important}
  html body .v2sidebar{overflow-x:hidden!important}
+ html body .v2sidebar .v2logo{min-width:0!important;max-width:100%!important;gap:8px!important}
+ html body .v2sidebar .v2logo>div{min-width:0!important;flex:1}
+ html body .v2sidebar .v2logo strong{font-size:15px!important;color:#f8fafc!important;white-space:normal!important}
+ html body .v2sidebar .v2logo small{white-space:normal!important;font-size:8px!important;letter-spacing:.5px!important;line-height:1.5!important}
+ html body .v2sidebar .v2brandicon{width:36px!important;height:36px!important;flex:0 0 36px!important}
  html body #configuracoes .row>div{min-width:0}
  html body #configuracoes :is(input,select,textarea){max-width:100%;box-sizing:border-box}
  /* Atalhos administrativos ficam dentro da barra lateral e deixam de cobrir listas/formulários. */
@@ -72,6 +90,10 @@ function ensureStyle(){
  #c360UtilityDock #c360ChatFab:hover{transform:none!important}
  .c360-plan-noise-hidden{display:none!important}
 
+ @media(max-width:899px){
+   html body:not(.device-mode) #c360ChatFab{position:fixed!important;left:auto!important;right:14px!important;top:auto!important;bottom:14px!important;transform:none!important;width:auto!important;max-width:calc(100vw - 28px)!important;z-index:9300!important}
+   html body:not(.device-mode) #c360NativeTrackerQuick{position:fixed!important;left:auto!important;right:14px!important;top:auto!important;bottom:76px!important;transform:none!important;width:auto!important;max-width:calc(100vw - 28px)!important;z-index:9299!important}
+ }
  @media(max-width:640px){
    html body.device-mode #c360LocationPermissionCard{padding:10px!important;margin-bottom:7px!important;border-radius:12px!important}
    html body.device-mode #c360LocationPermissionCard button,
@@ -100,15 +122,20 @@ function placeFieldToast(){
 
 function rememberOrigin(el){if(el&&!utilityOrigins.has(el))utilityOrigins.set(el,{parent:el.parentElement,next:el.nextSibling})}
 function restoreUtility(el){const o=utilityOrigins.get(el);if(!o)return;const parent=o.parent&&o.parent.isConnected?o.parent:document.body;if(o.next&&o.next.parentElement===parent)parent.insertBefore(el,o.next);else parent.appendChild(el)}
+function sidebarAvailable(sidebar){
+ if(!sidebar||innerWidth<900)return false;
+ try{const s=getComputedStyle(sidebar),r=sidebar.getBoundingClientRect();return s.display!=='none'&&s.visibility!=='hidden'&&r.width>100&&r.right>0&&r.left<innerWidth}catch{return false}
+}
 function placeAdminUtilities(){
  const tracker=document.getElementById('c360NativeTrackerQuick');const chat=document.getElementById('c360ChatFab');
  for(const el of [tracker,chat])rememberOrigin(el);
- if(isDevice()){
+ const sidebar=document.querySelector('.v2sidebar');
+ if(isDevice()||!sidebarAvailable(sidebar)){
    for(const el of [tracker,chat])if(el&&el.closest('#c360UtilityDock'))restoreUtility(el);
    document.getElementById('c360UtilityDock')?.remove();
    return;
  }
- const sidebar=document.querySelector('.v2sidebar');if(!sidebar||(!tracker&&!chat))return;
+ if(!tracker&&!chat)return;
  let dock=document.getElementById('c360UtilityDock');
  if(!dock){dock=document.createElement('div');dock.id='c360UtilityDock';dock.innerHTML='<div class="c360-utility-title">Atalhos</div>';sidebar.appendChild(dock)}
  for(const el of [tracker,chat])if(el&&el.parentElement!==dock)dock.appendChild(el);
@@ -130,7 +157,7 @@ function cleanPlanNoise(){
 function searchableText(value){return String(value||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase()}
 function installListSearch(){
  if(isDevice())return;
- const lists={employeesList:'Nome, matrícula, equipe ou situação',poultryList:'Integrado, equipe, data ou situação',fuelList:'Condução, placa, posto ou data',maintenanceList:'Serviço, condução, data ou situação',financeList:'Descrição, data ou favorecido'};
+ const lists={fuelList:'Condução, placa, posto ou data',maintenanceList:'Serviço, condução, data ou situação',financeList:'Descrição, data ou favorecido'};
  for(const [id,label] of Object.entries(lists)){
   const list=document.getElementById(id);if(!list)continue;
   let filter=document.getElementById(id+'Search');
@@ -162,6 +189,7 @@ function init(){
  document.addEventListener('c360:bootstrap-ready',schedule);
  window.addEventListener('online',()=>setTimeout(fix,0));
  window.addEventListener('offline',()=>setTimeout(fix,0));
+ window.addEventListener('resize',schedule);
  observer=new MutationObserver(schedule);observer.observe(document.documentElement,{subtree:true,childList:true,attributes:true,attributeFilter:['class','hidden','aria-pressed']});
  setTimeout(fix,250);setTimeout(fix,900);
 }

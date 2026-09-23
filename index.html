@@ -4096,6 +4096,7 @@ async function loadDashboard(){
    const byDate=p.next_due_at&&new Date(String(p.next_due_at).slice(0,10)+'T23:59:59').getTime()<now;
    return byKm||byDate;
   }).length;
+  const unscheduledMaintenance=maintenance.filter(p=>!p.next_due_at&&!Number(p.next_due_odometer_km)).length;
   const upcomingMaintenance=maintenance.filter(p=>{
    const v=vehicles.find(x=>x.id===p.vehicle_id),cur=poN(v?.current_odometer_km),due=poN(p.next_due_odometer_km);
    const kmLeft=due>0?due-cur:null;
@@ -4125,13 +4126,13 @@ async function loadDashboard(){
    ['Operação do dia',todayOps.length?opsCompletionPct+'% concluída':'Sem apanhas hoje',todayOps.length?(completedToday+' de '+todayOps.length+' concluídas'):'Nenhuma operação programada','operacoes',opsCompletionPct>=100?'ok':opsCompletionPct>0?'warn':'neutral'],
    ['Ponto hoje',pointPct+'%',pointedEmployees+' de '+employees.length+' funcionários','ponto',pointPct>=90?'ok':pointPct>0?'warn':'neutral'],
    ['Frota & CRLV',fleetAttention?fleetAttention+' atenção(ões)':'Tudo em dia',licensingDanger?licensingDanger+' crítica(s)':missingCrlv?missingCrlv+' sem CRLV':licensingWarn?licensingWarn+' pendente(s)':'Documentação confirmada','frota',licensingDanger?'danger':fleetAttention?'warn':'ok'],
-   ['Manutenção',overdueMaintenance?overdueMaintenance+' vencida(s)':upcomingMaintenance?upcomingMaintenance+' próxima(s)':'Em dia',overdueMaintenance?'Requer atenção':upcomingMaintenance?'Até 30 dias / 1.000 km':'Nenhuma pendência','manutencoes',overdueMaintenance?'danger':upcomingMaintenance?'warn':'ok'],
-   ['Equipes com aparelho',deviceCoveragePct+'%',devices.length+' aparelho(s) ativo(s)','equipes',deviceCoveragePct>=100?'ok':'warn']
+   ['Manutenção',overdueMaintenance?overdueMaintenance+' vencida(s)':upcomingMaintenance?upcomingMaintenance+' próxima(s)':unscheduledMaintenance?'Sem programação':'Em dia',overdueMaintenance?'Requer atenção':upcomingMaintenance?'Até 30 dias / 1.000 km':unscheduledMaintenance?unscheduledMaintenance+' sem próxima revisão':'Nenhuma pendência','manutencoes',overdueMaintenance?'danger':(upcomingMaintenance||unscheduledMaintenance)?'warn':'ok'],
+   ['Equipes com aparelho',deviceCoveragePct+'%',devices.length+' aparelho(s) vinculado(s)','equipes',deviceCoveragePct>=100?'ok':'warn']
   ].map(x=>'<button class="dash-health-card '+x[5]+'" data-jump="'+x[4]+'" type="button"><span class="dash-health-label">'+esc(x[0])+'</span><strong>'+esc(x[1])+'</strong><small>'+esc(x[2])+'</small><span class="dash-health-arrow">›</span></button>').join('');
 
   const cards=[
    ['FUNCIONÁRIOS',employees.length,'ativos','👥'],
-   ['EQUIPES',teams.length,devices.length+' celular(es) ativo(s)','📱'],
+   ['EQUIPES',teams.length,devices.length+' celular(es) vinculado(s)','📱'],
    ['CONDUÇÕES',vehicles.length,(fleetAttention?fleetAttention+' alerta(s) de documento':'documentos em dia'),'🚌'],
    ['APANHAS HOJE',todayOps.length,completedToday+' concluída(s)','🐔'],
    ['AVES HOJE',birdsToday.toLocaleString('pt-BR'),birdsMonth.toLocaleString('pt-BR')+' no mês','▣'],
@@ -5829,7 +5830,7 @@ async function loadPoultryOps(renderUi=true){
 
     return '<div class="item poultry-op-card '+(o.status==='completed'?'is-completed':'')+'">'+
       '<div class="toolbar" style="justify-content:space-between"><div><strong>'+esc(farm?.producer_name||o.customer_name||o.title)+'</strong><div class="muted">'+esc(farm?.city||o.metadata?.city||'')+' • '+esc(farm?.farm_name||'Granja não informada')+' • '+esc(team?.name||deviceTeam?.name||'Equipe')+'</div></div>'+
-      (pending?'<span class="pill warn">APANHA OFFLINE • PENDENTE</span>':'<span class="pill '+(o.status==='completed'?'ok':'')+'">'+esc(poSL(o.status))+'</span>')+' <span class="muted">'+(o.scheduled_start?esc(new Date(o.scheduled_start).toLocaleDateString('pt-BR',{timeZone:'America/Sao_Paulo'})):'Data não informada')+'</span></div>'+
+      (pending?'<span class="pill warn">APANHA OFFLINE • PENDENTE</span>':'<span class="pill '+(o.status==='completed'?'ok':'')+'">'+esc(poSL(o.status))+'</span>')+'</div>'+
       '<div class="site-memory po-site-card"><b>Tomada:</b> '+esc(farm?.metadata?.outlet_type||o.metadata?.outlet_type||'Não informada')+' &nbsp; • &nbsp; <b>Energia:</b> '+esc(farm?.metadata?.energy_type||o.metadata?.energy_type||'Não informada')+'</div>'+
       '<div class="po-detail"><div><span class="muted">Caminhões</span><br><b>'+opTrucks.length+'</b></div><div><span class="muted">Aves carregadas</span><br><b>'+totalBirds.toLocaleString('pt-BR')+'</b></div><div><span class="muted">Catas</span><br><b>'+opTrucks.filter(t=>t.is_cata).length+'</b></div><div><span class="muted">Início previsto</span><br><b>'+(o.scheduled_start?new Date(o.scheduled_start).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'—')+'</b></div></div>'+
       (!deviceMode&&o.status==='completed'?'<div class="site-memory po-revenue-card" style="margin-top:10px;background:#ecfdf5;border:1px solid #bbf7d0"><b>💰 Valor ganho: '+money(poN(o.actual_revenue))+'</b><div class="muted" style="margin-top:3px">'+revenueRule+' • lançado automaticamente no Financeiro</div></div>':'')+
@@ -9029,15 +9030,16 @@ function renderFuelReportByVehicle(fuels=[],filter='all'){
  if(!rows.length){host.innerHTML='<div class="v2-empty">Nenhum abastecimento registrado para esta condução no período.</div>';return}
  host.innerHTML=rows.map(g=>{
   const avg=g.liters?g.cost/g.liters:0;
-  const kms=g.entries.map(e=>Number(e.odometer_km||0)).filter(x=>x>0);
-  const minKm=kms.length?Math.min(...kms):0,maxKm=kms.length?Math.max(...kms):0,kmRange=(minKm&&maxKm&&maxKm>=minKm)?maxKm-minKm:0;
+  const chronological=[...g.entries].sort((a,b)=>Date.parse(a.fueled_at)-Date.parse(b.fueled_at));
+  const intervals=chronological.slice(1).map((row,i)=>fuelInterval(row,chronological[i]));
+  const kmRange=intervals.reduce((total,interval)=>total+interval.km,0),needsReview=intervals.some(interval=>interval.review);
   const details=g.entries.map(e=>{
    const date=e.fueled_at?new Date(e.fueled_at).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo',day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'}):'—';
    const liters=poN(e.liters),cost=poN(e.total_amount),price=liters?cost/liters:0,driver=e.metadata?.driver_name||e.metadata?.driver||'';
    return '<tr><td>'+esc(date)+'</td><td>'+esc(e.station_name||'—')+(driver?'<div class="muted">'+esc(driver)+'</div>':'')+'</td><td class="num">'+(e.odometer_km?Number(e.odometer_km).toLocaleString('pt-BR'):'—')+'</td><td class="num">'+liters.toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:2})+' L</td><td class="num">'+money(price)+'</td><td class="num"><b>'+money(cost)+'</b></td></tr>';
   }).join('');
   return '<div class="fuel-report-vehicle"><div class="fuel-report-head"><div><strong>'+esc(g.name)+'</strong>'+(g.plate?'<span class="plate">'+esc(g.plate)+'</span>':'')+'<div class="muted">'+g.logs+' abastecimento(s) no período</div></div><div><b>'+g.liters.toLocaleString('pt-BR',{maximumFractionDigits:2})+' L</b><div class="muted">'+money(g.cost)+'</div></div></div>'+
-   '<div class="fuel-report-totals"><div class="fuel-report-total"><span>TOTAL LITROS</span><b>'+g.liters.toLocaleString('pt-BR',{maximumFractionDigits:2})+' L</b></div><div class="fuel-report-total"><span>CUSTO TOTAL</span><b>'+money(g.cost)+'</b></div><div class="fuel-report-total"><span>MÉDIA R$/L</span><b>'+money(avg)+'</b></div><div class="fuel-report-total"><span>KM ENTRE REGISTROS</span><b>'+(kmRange?kmRange.toLocaleString('pt-BR')+' km':'—')+'</b></div></div>'+
+   '<div class="fuel-report-totals"><div class="fuel-report-total"><span>TOTAL LITROS</span><b>'+g.liters.toLocaleString('pt-BR',{maximumFractionDigits:2})+' L</b></div><div class="fuel-report-total"><span>CUSTO TOTAL</span><b>'+money(g.cost)+'</b></div><div class="fuel-report-total"><span>MÉDIA R$/L</span><b>'+money(avg)+'</b></div><div class="fuel-report-total"><span>KM SEM ANOMALIAS</span><b>'+(kmRange?kmRange.toLocaleString('pt-BR')+' km':'—')+'</b>'+(needsReview?'<small>Hodômetro pendente de revisão</small>':'')+'</div></div>'+
    '<div style="overflow:auto"><table class="fuel-report-table"><thead><tr><th>Data</th><th>Posto / motorista</th><th style="text-align:right">KM</th><th style="text-align:right">Litros</th><th style="text-align:right">R$/L</th><th style="text-align:right">Total</th></tr></thead><tbody>'+details+'</tbody></table></div></div>';
  }).join('');
 }

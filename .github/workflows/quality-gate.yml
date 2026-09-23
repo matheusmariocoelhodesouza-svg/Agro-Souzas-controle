@@ -53,30 +53,37 @@ jobs:
         run: |
           set -euo pipefail
           files=(
-            index.html cadastro.html dda.html reparar.html comando360.webmanifest sw-v7-02.js
+            index.html cadastro.html dda.html reparar.html comando360.webmanifest sw-v7-02.js sw-v7-02-core-hotfix61.js
             c360-autorecovery.js c360-platform.js c360-product-core.js c360-release-core.js
             c360-quality-hotfix.js c360-quality-core.js c360-field-offline-hotfix.js
             c360-team-chat.js c360-farm-cache-hotfix.js c360-consumable-edit.js
             c360-system-health.js c360-onboarding-entry.js c360-fiscal.js c360-native-tracker-admin.js c360-ux-polish-hotfix.js
+            c360-final-stabilization.js c360-final-stabilization.css c360-trailer-hitches.js
             c360-ui-polish.css c360-premium-ui.css c360-product-ui.css c360-release-core.css
             c360-system-health.css c360-fiscal.css qa/reference_audit.py qa/release_scorecard.py qa/performance_budget.mjs
-            qa/ux_polish.mjs qa/ux_polish_fixture.html
+            qa/ux_polish.mjs qa/ux_polish_fixture.html qa/field_torture.mjs
             supabase/migrations/20260913104500_add_device_health_heartbeat.sql
             supabase/migrations/20260913203000_self_service_onboarding_v1.sql
             supabase/migrations/20260920122000_explicit_internal_table_deny_policies.sql
             supabase/migrations/20260920122100_preserve_device_security_metadata.sql
             supabase/migrations/20260920140000_dedupe_legacy_employee_rls.sql
             supabase/migrations/20260920220000_native_tracker_live_status_v104.sql
+            supabase/migrations/20260922233000_r100_field_hot_path_indexes.sql
           )
           for f in "${files[@]}"; do test -s "$f" || { echo "Missing: $f"; exit 1; }; done
 
       - name: Operational audit regressions
         run: node qa/operational_audit.mjs
 
+      - name: Runtime integrity regressions
+        run: |
+          npm install --prefix /tmp/c360-audit --no-save jsdom@26.1.0
+          C360_JSDOM_PATH=/tmp/c360-audit/node_modules/jsdom node qa/integrity_regressions.mjs
+
       - name: Reference structural audit
         run: python qa/reference_audit.py
 
-      - name: Release 9.7 scorecard
+      - name: Release scorecard
         run: python qa/release_scorecard.py
 
       - name: Product architecture contract
@@ -86,13 +93,18 @@ jobs:
           grep -q 'c360-ui-polish.css' index.html
           ! grep -q '<script>window.onload' index.html
 
-          grep -q "BOOT_VERSION='2026.09.23-audit1'" c360-quality-hotfix.js
-          grep -q "const VERSION='2026.09.20-r97-1'" c360-release-core.js
+          grep -q "BOOT_VERSION='2026.09.23-audit2'" c360-quality-hotfix.js
+          grep -q "const VERSION='2026.09.22-r100-1'" c360-release-core.js
+          grep -q "VERSION='2026.09.23-v1-final1'" c360-final-stabilization.js
+          grep -q "const VERSION='2026.09.23-ux2'" c360-ux-polish-hotfix.js
+          grep -q "const VERSION='2026.09.23-hitch2'" c360-trailer-hitches.js
           grep -q 'c360-autorecovery.js' c360-quality-hotfix.js
           grep -q 'c360-platform.js' c360-quality-hotfix.js
           grep -q 'c360-product-core.js' c360-quality-hotfix.js
           grep -q 'c360-release-core.js' c360-quality-hotfix.js
+          grep -q 'c360-final-stabilization.js' c360-quality-hotfix.js
           grep -q 'c360-release-core.css' c360-quality-hotfix.js
+          grep -q 'c360-final-stabilization.css' c360-quality-hotfix.js
           grep -q 'Promise.allSettled' c360-quality-hotfix.js
           grep -q 'loadScriptsOrderedParallel' c360-quality-hotfix.js
           grep -q 'c360-quality-core.js' c360-quality-hotfix.js
@@ -101,10 +113,21 @@ jobs:
           grep -q 'c360-onboarding-entry.js' c360-quality-hotfix.js
           grep -q 'c360-native-tracker-admin.js' c360-quality-hotfix.js
           grep -q 'c360-ux-polish-hotfix.js' c360-quality-hotfix.js
-          grep -q "const VERSION='2026.09.22-ux1'" c360-ux-polish-hotfix.js
           grep -q 'c360FieldToastSlot' c360-ux-polish-hotfix.js
-          grep -q 'c360UtilityDock' c360-ux-polish-hotfix.js
+          grep -q 'sidebarAvailable' c360-ux-polish-hotfix.js
           grep -q 'finance-kpi-label' c360-ux-polish-hotfix.js
+
+          grep -q 'window.downloadText' c360-final-stabilization.js
+          grep -q 'poSavedAviary' c360-final-stabilization.js
+          grep -q 'ensureMonthlyEmployees' c360-final-stabilization.js
+          grep -q 'validateFuelBeforeSave' c360-final-stabilization.js
+          grep -q 'c360FinanceReconciliationNotice' c360-final-stabilization.js
+          grep -q 'c360PricingTraceabilityNotice' c360-final-stabilization.js
+          grep -q 'c360PoultryFilters' c360-final-stabilization.js
+          grep -q 'c360EmployeeFilters' c360-final-stabilization.js
+          grep -q 'c360FieldSyncStatus' c360-release-core.js
+          grep -q 'anti-duplo-salvamento' qa/field_torture.mjs
+          grep -q 'idx_v2_operations_created_by_r100' supabase/migrations/20260922233000_r100_field_hot_path_indexes.sql
 
           grep -q 'v2_device_location_current' c360-native-tracker-admin.js
           grep -q 'Rastreadores ao vivo' c360-native-tracker-admin.js
@@ -124,15 +147,19 @@ jobs:
           grep -q 'body.device-mode' c360-product-ui.css
 
           SW_CORE="$(grep -oE 'sw-v7-02-core-hotfix[0-9]+\.js' sw-v7-02.js | head -n1)"
-          test "$SW_CORE" = 'sw-v7-02-core-hotfix60.js'
+          test "$SW_CORE" = 'sw-v7-02-core-hotfix61.js'
           test -s "$SW_CORE"
           SW_CONTRACT="$(cat sw-v7-02.js "$SW_CORE")"
-          grep -q "comando360-v7-02-hotfix60" <<<"$SW_CONTRACT"
+          grep -q 'loader 7.15.0' sw-v7-02.js
+          grep -q 'sw-auth-refresh-guard.js' sw-v7-02.js
+          grep -q "comando360-v7-02-hotfix61" <<<"$SW_CONTRACT"
           grep -q 'comando360-stable-v1' <<<"$SW_CONTRACT"
           grep -q 'c360-platform.js' <<<"$SW_CONTRACT"
           grep -q 'c360-product-core.js' <<<"$SW_CONTRACT"
           grep -q './c360-release-core.js' "$SW_CORE"
           grep -q './c360-release-core.css' "$SW_CORE"
+          grep -q './c360-final-stabilization.js' "$SW_CORE"
+          grep -q './c360-final-stabilization.css' "$SW_CORE"
           grep -q './c360-native-tracker-admin.js' "$SW_CORE"
           grep -q './c360-ux-polish-hotfix.js' "$SW_CORE"
           ! grep -q 'CORE.push' sw-v7-02.js
