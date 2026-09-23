@@ -4,6 +4,11 @@ on:
   push:
     branches: [main]
     paths:
+      - 'index.html'
+      - 'c360-*.js'
+      - 'c360-*.css'
+      - 'sw-v7-02.js'
+      - 'sw-v7-02-core-*.js'
       - 'qa/user_stress_1000.mjs'
       - '.github/workflows/user-stress-1000.yml'
   pull_request:
