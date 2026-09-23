@@ -24,6 +24,7 @@
 .c360-integrity-examples{display:grid;gap:4px;margin:8px 0;padding:8px;border-radius:9px;background:rgba(255,255,255,.52)}
 .c360-integrity-examples span{display:block;padding-left:14px;position:relative}
 .c360-integrity-examples span::before{content:'•';position:absolute;left:2px;font-weight:900}
+#configuracoes:has(#c360BillingProvenance) #c360PricingTraceabilityNotice{display:none!important}
 html body.darkmode #c360EmployeeFilters,html body.darkmode #c360PoultryFilters{background:#102033;border-color:#2a3d55}
 html body.darkmode #c360EmployeeFilters input,html body.darkmode #c360EmployeeFilters select,
 html body.darkmode #c360PoultryFilters input,html body.darkmode #c360PoultryFilters select{background:#0d1b2d;color:#f8fafc;border-color:#3a4d65}
