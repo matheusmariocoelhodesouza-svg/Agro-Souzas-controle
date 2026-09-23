@@ -18,6 +18,7 @@ const essentialModules=[
  './c360-farm-cache-hotfix.js',
  './c360-field-offline-hotfix.js',
  './c360-field-stability.js',
+ './c360-runtime-compatibility.js',
  './c360-final-stabilization.js',
  './c360-data-integrity.js'
 ];
