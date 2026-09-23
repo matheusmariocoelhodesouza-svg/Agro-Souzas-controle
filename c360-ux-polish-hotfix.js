@@ -1,7 +1,7 @@
 (()=>{
 'use strict';
 if(window.C360_UX_POLISH_VERSION)return;
-const VERSION='2026.09.22-ux1';
+const VERSION='2026.09.23-ux2';
 let toastOriginalParent=null,toastOriginalNext=null;
 const utilityOrigins=new Map();
 let observer=null,timer=null;
@@ -47,7 +47,7 @@ function ensureStyle(){
  html body.darkmode #financeiro .finance-kpi-label{color:#b8c8da!important;-webkit-text-fill-color:#b8c8da!important}
  html body.darkmode #financeiro .finance-kpi-value{color:#f8fafc!important;-webkit-text-fill-color:#f8fafc!important}
 
- /* Atalhos administrativos ficam dentro da barra lateral e deixam de cobrir listas/formulários. */
+ /* Atalhos administrativos: sidebar apenas quando ela está realmente visível. */
  #c360UtilityDock{margin:14px 0 4px;padding:10px 8px 8px;border-top:1px solid rgba(255,255,255,.08);display:grid;gap:7px}
  #c360UtilityDock .c360-utility-title{font-size:9px;letter-spacing:1.2px;font-weight:900;color:#7187a6;padding:0 3px 2px;text-transform:uppercase}
  #c360UtilityDock #c360NativeTrackerQuick,
@@ -56,6 +56,10 @@ function ensureStyle(){
  #c360UtilityDock #c360ChatFab:hover{transform:none!important}
  .c360-plan-noise-hidden{display:none!important}
 
+ @media(max-width:899px){
+   html body:not(.device-mode) #c360ChatFab{position:fixed!important;left:auto!important;right:14px!important;top:auto!important;bottom:14px!important;transform:none!important;width:auto!important;max-width:calc(100vw - 28px)!important;z-index:9300!important}
+   html body:not(.device-mode) #c360NativeTrackerQuick{position:fixed!important;left:auto!important;right:14px!important;top:auto!important;bottom:76px!important;transform:none!important;width:auto!important;max-width:calc(100vw - 28px)!important;z-index:9299!important}
+ }
  @media(max-width:640px){
    html body.device-mode #c360LocationPermissionCard{padding:10px!important;margin-bottom:7px!important;border-radius:12px!important}
    html body.device-mode #c360LocationPermissionCard button,
@@ -84,15 +88,20 @@ function placeFieldToast(){
 
 function rememberOrigin(el){if(el&&!utilityOrigins.has(el))utilityOrigins.set(el,{parent:el.parentElement,next:el.nextSibling})}
 function restoreUtility(el){const o=utilityOrigins.get(el);if(!o)return;const parent=o.parent&&o.parent.isConnected?o.parent:document.body;if(o.next&&o.next.parentElement===parent)parent.insertBefore(el,o.next);else parent.appendChild(el)}
+function sidebarAvailable(sidebar){
+ if(!sidebar||innerWidth<900)return false;
+ try{const s=getComputedStyle(sidebar),r=sidebar.getBoundingClientRect();return s.display!=='none'&&s.visibility!=='hidden'&&r.width>100&&r.right>0&&r.left<innerWidth}catch{return false}
+}
 function placeAdminUtilities(){
  const tracker=document.getElementById('c360NativeTrackerQuick');const chat=document.getElementById('c360ChatFab');
  for(const el of [tracker,chat])rememberOrigin(el);
- if(isDevice()){
+ const sidebar=document.querySelector('.v2sidebar');
+ if(isDevice()||!sidebarAvailable(sidebar)){
    for(const el of [tracker,chat])if(el&&el.closest('#c360UtilityDock'))restoreUtility(el);
    document.getElementById('c360UtilityDock')?.remove();
    return;
  }
- const sidebar=document.querySelector('.v2sidebar');if(!sidebar||(!tracker&&!chat))return;
+ if(!tracker&&!chat)return;
  let dock=document.getElementById('c360UtilityDock');
  if(!dock){dock=document.createElement('div');dock.id='c360UtilityDock';dock.innerHTML='<div class="c360-utility-title">Atalhos</div>';sidebar.appendChild(dock)}
  for(const el of [tracker,chat])if(el&&el.parentElement!==dock)dock.appendChild(el);
@@ -120,6 +129,7 @@ function init(){
  document.addEventListener('c360:bootstrap-ready',schedule);
  window.addEventListener('online',()=>setTimeout(fix,0));
  window.addEventListener('offline',()=>setTimeout(fix,0));
+ window.addEventListener('resize',schedule);
  observer=new MutationObserver(schedule);observer.observe(document.documentElement,{subtree:true,childList:true,attributes:true,attributeFilter:['class','hidden','aria-pressed']});
  setTimeout(fix,250);setTimeout(fix,900);
 }
