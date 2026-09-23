@@ -7,14 +7,14 @@ const ok=(name,pass,detail='')=>{checks.push({name,pass,detail});if(!pass)failed
 try{
  const page=await browser.newPage({viewport:{width:390,height:844},isMobile:true,hasTouch:true});
  await page.goto(`${base}/qa/ux_polish_fixture.html`,{waitUntil:'domcontentloaded'});
- await page.waitForFunction(()=>window.C360_UX_POLISH_VERSION==='2026.09.22-ux1',{timeout:5000});
+ await page.waitForFunction(()=>window.C360_UX_POLISH_VERSION==='2026.09.23-ux2',{timeout:5000});
  await page.waitForTimeout(180);
  const field=await page.evaluate(()=>{
    const card=document.getElementById('c360LocationPermissionCard'),p=card.querySelector('p'),btn=card.querySelector('button'),toast=document.getElementById('c360ToastStack'),tile=document.getElementById('firstTile');
    const cs=getComputedStyle(card),ps=getComputedStyle(p),bs=getComputedStyle(btn),ts=getComputedStyle(toast),cr=card.getBoundingClientRect(),br=btn.getBoundingClientRect(),tr=toast.getBoundingClientRect(),fr=tile.getBoundingClientRect();
    return{version:window.C360_UX_POLISH_VERSION,position:cs.position,top:cs.top,maxHeight:cs.maxHeight,overflow:cs.overflow,pColor:ps.color,buttonWidth:br.width,cardWidth:cr.width,buttonInside:br.bottom<=cr.bottom+1,screenPad:getComputedStyle(document.getElementById('screenHost')).paddingTop,toastParent:toast.parentElement?.id,toastPosition:ts.position,noToastOverlap:tr.bottom<=fr.top+1};
  });
- ok('version',field.version==='2026.09.22-ux1',field.version);
+ ok('version',field.version==='2026.09.23-ux2',field.version);
  ok('location relative',field.position==='relative',field.position);
  ok('location top reset',field.top==='auto'||field.top==='0px',field.top);
  ok('location unclipped',field.maxHeight==='none'&&field.overflow==='visible',`${field.maxHeight}/${field.overflow}`);
