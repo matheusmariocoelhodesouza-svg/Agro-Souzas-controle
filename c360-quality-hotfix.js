@@ -18,7 +18,8 @@ const essentialModules=[
  './c360-farm-cache-hotfix.js',
  './c360-field-offline-hotfix.js',
  './c360-field-stability.js',
- './c360-final-stabilization.js'
+ './c360-final-stabilization.js',
+ './c360-data-integrity.js'
 ];
 const optionalModules=[
  './c360-report-share.js','./c360-report-stability.js','./c360-consumable-edit.js','./c360-consumable-action-bridge.js','./c360-consumable-mobile-actions.js',
