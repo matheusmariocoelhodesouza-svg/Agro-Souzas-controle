@@ -47,6 +47,22 @@ function ensureStyle(){
  html body.darkmode #financeiro .finance-kpi-label{color:#b8c8da!important;-webkit-text-fill-color:#b8c8da!important}
  html body.darkmode #financeiro .finance-kpi-value{color:#f8fafc!important;-webkit-text-fill-color:#f8fafc!important}
 
+ .c360-list-search+div>[hidden]{display:none!important}
+ /* Indicadores: valores longos e contraste legível nos dois temas. */
+ html body:not(.darkmode) :is(#combustivel,#manutencoes,#insumos,#relatorios) .v2kpi{
+   background:#fff!important;color:#14213d!important;border-color:#d9e3ef!important;
+ }
+ html body:not(.darkmode) :is(#combustivel,#manutencoes,#insumos,#relatorios) .v2kpi :is(strong,.v){
+   color:#14213d!important;-webkit-text-fill-color:#14213d!important;
+ }
+ html body:not(.darkmode) :is(#combustivel,#manutencoes,#insumos,#relatorios) .v2kpi :is(span,.t,.s){
+   color:#475569!important;-webkit-text-fill-color:#475569!important;
+ }
+ html body :is(.v2kpi,.finance-kpi){min-width:0!important;overflow:hidden}
+ html body :is(.v2kpi strong,.v2kpi .v,.finance-kpi-value){font-size:clamp(16px,1.8vw,24px)!important;overflow-wrap:anywhere;line-height:1.25!important}
+ html body .v2sidebar{overflow-x:hidden!important}
+ html body #configuracoes .row>div{min-width:0}
+ html body #configuracoes :is(input,select,textarea){max-width:100%;box-sizing:border-box}
  /* Atalhos administrativos ficam dentro da barra lateral e deixam de cobrir listas/formulários. */
  #c360UtilityDock{margin:14px 0 4px;padding:10px 8px 8px;border-top:1px solid rgba(255,255,255,.08);display:grid;gap:7px}
  #c360UtilityDock .c360-utility-title{font-size:9px;letter-spacing:1.2px;font-weight:900;color:#7187a6;padding:0 3px 2px;text-transform:uppercase}
@@ -111,7 +127,33 @@ function cleanPlanNoise(){
  }
 }
 
-function fix(){ensureStyle();placeFieldToast();placeAdminUtilities();cleanPlanNoise()}
+function searchableText(value){return String(value||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase()}
+function installListSearch(){
+ if(isDevice())return;
+ const lists={employeesList:'Nome, matrícula, equipe ou situação',poultryList:'Integrado, equipe, data ou situação',fuelList:'Condução, placa, posto ou data',maintenanceList:'Serviço, condução, data ou situação',financeList:'Descrição, data ou favorecido'};
+ for(const [id,label] of Object.entries(lists)){
+  const list=document.getElementById(id);if(!list)continue;
+  let filter=document.getElementById(id+'Search');
+  if(!filter){
+   const box=document.createElement('div');box.className='c360-list-search';box.style.cssText='display:grid;gap:5px;margin:12px 0';
+   const caption=document.createElement('label');caption.htmlFor=id+'Search';caption.textContent='Filtrar registros carregados';
+   filter=document.createElement('input');filter.id=id+'Search';filter.type='search';filter.placeholder=label;filter.style.cssText='width:100%;min-height:44px;box-sizing:border-box';
+   const status=document.createElement('span');status.id=id+'SearchStatus';status.className='muted';status.setAttribute('aria-live','polite');
+   box.append(caption,filter,status);list.before(box);filter.addEventListener('input',()=>applyListSearch(list,filter));
+  }
+  applyListSearch(list,filter);
+ }
+}
+function applyListSearch(list,filter){
+ const words=searchableText(filter.value).trim().split(/\s+/).filter(Boolean);
+ const rows=[...list.children].filter(el=>el.matches('.item,.poultry-op-card,.finance-entry-card'));
+ let count=0;
+ for(const row of rows){const match=words.every(word=>searchableText(row.textContent).includes(word));if(row.hidden===match)row.hidden=!match;if(match)count++}
+ const status=document.getElementById(list.id+'SearchStatus');
+ const message=words.length?(count+' de '+rows.length+' registros carregados'+(count?'':' — nenhum resultado')):'';
+ if(status&&status.textContent!==message)status.textContent=message;
+}
+function fix(){ensureStyle();placeFieldToast();placeAdminUtilities();cleanPlanNoise();installListSearch()}
 function schedule(){clearTimeout(timer);timer=setTimeout(fix,40)}
 function init(){
  ensureStyle();fix();

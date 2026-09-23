@@ -1,6 +1,6 @@
 (()=>{
 'use strict';
-const BOOT_VERSION='2026.09.22-r99-ux1';
+const BOOT_VERSION='2026.09.23-audit1';
 const recoveryModule='./c360-autorecovery.js';
 const styles=[
  './c360-premium-ui.css','./c360-product-ui.css','./c360-dashboard-dark-fix.css','./c360-enterprise-ui.css',

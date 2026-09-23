@@ -29,7 +29,7 @@ jobs:
           fetch "/c360-ux-polish-hotfix.js" /tmp/ux-polish.js
           SW_CORE="$(grep -oE 'sw-v7-02-core-hotfix[0-9]+\.js' /tmp/sw.js | head -n1 || true)"
           test -n "$SW_CORE"
-          test "$SW_CORE" = "sw-v7-02-core-hotfix59.js"
+          test "$SW_CORE" = "sw-v7-02-core-hotfix60.js"
           fetch "/$SW_CORE" /tmp/sw-core.js
           fetch "/reparar.html" /tmp/repair.html
           fetch "/dda.html" /tmp/dda.html
@@ -72,7 +72,7 @@ jobs:
           grep -q '2026.09.13-platform1' /tmp/platform.js
           grep -q 'window.C360Platform' /tmp/platform.js
           grep -q '2026.09.20-r97-1' /tmp/release-core.js
-          grep -q "BOOT_VERSION='2026.09.22-r99-ux1'" /tmp/bootstrap.js
+          grep -q "BOOT_VERSION='2026.09.23-audit1'" /tmp/bootstrap.js
           grep -q "const VERSION='2026.09.22-ux1'" /tmp/ux-polish.js
           grep -q 'c360FieldToastSlot' /tmp/ux-polish.js
           grep -q 'c360UtilityDock' /tmp/ux-polish.js
@@ -98,7 +98,7 @@ jobs:
           grep -q '__c360ReportsStable' /tmp/report-stability.js
           grep -q 'c360:reports-error' /tmp/report-stability.js
           ! grep -q 'CORE.push' /tmp/sw.js
-          grep -q "const CACHE='comando360-v7-02-hotfix59'" /tmp/sw-core.js
+          grep -q "const CACHE='comando360-v7-02-hotfix60'" /tmp/sw-core.js
           grep -q './c360-release-core.js' /tmp/sw-core.js
           grep -q './c360-release-core.css' /tmp/sw-core.js
           grep -q './c360-native-tracker-admin.js' /tmp/sw-core.js

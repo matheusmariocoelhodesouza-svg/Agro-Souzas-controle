@@ -53,12 +53,10 @@ function bindPanel(){
 }
 function renderSelectors(){
  const sel=$('#c360HitchTrailer');if(!sel)return;
- const trailers=detectedTrailers();const known=new Set(trailers.map(v=>v.id));
- const others=data.vehicles.filter(v=>!known.has(v.id)).sort((a,b)=>vehicleName(a).localeCompare(vehicleName(b),'pt-BR'));
+ const trailers=detectedTrailers().filter(isTrailer);
  const current=sel.value;
  sel.innerHTML='<option value="">Selecione a carretinha</option>'+
-  (trailers.length?'<optgroup label="Carretinhas">'+trailers.map(v=>`<option value="${v.id}">${esc(vehicleName(v))} • ${esc(v.plate||'sem placa')}</option>`).join('')+'</optgroup>':'')+
-  '<optgroup label="Outros veículos (se necessário)">'+others.map(v=>`<option value="${v.id}">${esc(vehicleName(v))} • ${esc(v.plate||'sem placa')}</option>`).join('')+'</optgroup>';
+  (trailers.length?'<optgroup label="Carretinhas">'+trailers.map(v=>`<option value="${v.id}">${esc(vehicleName(v))} • ${esc(v.plate||'sem placa')}</option>`).join('')+'</optgroup>':'');
  if([...sel.options].some(o=>o.value===current))sel.value=current;
  renderTowOptions();
 }
@@ -113,6 +111,7 @@ async function saveHitch(){
  const company=cid(),rp=rpcFn(),trailer=$('#c360HitchTrailer')?.value,tow=$('#c360HitchTow')?.value,note=$('#c360HitchNote')?.value?.trim()||null;
  if(!company||!rp)return showMsg('Sessão da frota ainda não está pronta.','error');
  if(!trailer||!tow)return showMsg('Selecione a carretinha e a condução.','error');
+ if(!isTrailer(byId(trailer))||isTrailer(byId(tow))||trailer===tow)return showMsg('Selecione uma carretinha e uma condução motorizada.','error');
  const t=byId(trailer),v=byId(tow),old=activeForTrailer(trailer),occupied=activeForTow(tow);
  let msg=`Engatar ${vehicleName(t)} em ${vehicleName(v)}?`;
  if(old&&old.tow_vehicle_id!==tow)msg+=' O engate atual desta carretinha será encerrado automaticamente.';
