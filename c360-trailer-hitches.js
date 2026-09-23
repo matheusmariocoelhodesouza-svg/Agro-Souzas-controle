@@ -1,6 +1,6 @@
 (()=>{
 'use strict';
-const VERSION='2026.09.13-hitch1';
+const VERSION='2026.09.23-hitch2';
 let busy=false,lastLoad=0,data={vehicles:[],hitches:[],tracking:[]};
 const $=s=>document.querySelector(s);
 const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
@@ -53,12 +53,8 @@ function bindPanel(){
 }
 function renderSelectors(){
  const sel=$('#c360HitchTrailer');if(!sel)return;
- const trailers=detectedTrailers();const known=new Set(trailers.map(v=>v.id));
- const others=data.vehicles.filter(v=>!known.has(v.id)).sort((a,b)=>vehicleName(a).localeCompare(vehicleName(b),'pt-BR'));
- const current=sel.value;
- sel.innerHTML='<option value="">Selecione a carretinha</option>'+
-  (trailers.length?'<optgroup label="Carretinhas">'+trailers.map(v=>`<option value="${v.id}">${esc(vehicleName(v))} • ${esc(v.plate||'sem placa')}</option>`).join('')+'</optgroup>':'')+
-  '<optgroup label="Outros veículos (se necessário)">'+others.map(v=>`<option value="${v.id}">${esc(vehicleName(v))} • ${esc(v.plate||'sem placa')}</option>`).join('')+'</optgroup>';
+ const trailers=detectedTrailers();const current=sel.value;
+ sel.innerHTML='<option value="">Selecione a carretinha</option>'+trailers.map(v=>`<option value="${v.id}">${esc(vehicleName(v))} • ${esc(v.plate||'sem placa')}</option>`).join('');
  if([...sel.options].some(o=>o.value===current))sel.value=current;
  renderTowOptions();
 }
@@ -76,7 +72,7 @@ function renderKpis(){
 }
 function renderList(){
  const el=$('#c360HitchList');if(!el)return;const trailers=detectedTrailers();
- if(!trailers.length){el.innerHTML='<div class="c360-hitch-empty">Nenhuma carretinha foi identificada. Cadastre a carreta na Frota com nome ou modelo contendo “Carretinha” ou “Reboque”.</div>';return}
+ if(!trailers.length){el.innerHTML='<div class="c360-hitch-empty">Nenhuma carretinha foi identificada. Cadastre a carreta na Frota com nome, modelo ou tipo contendo “Carretinha” ou “Reboque”.</div>';return}
  el.innerHTML=trailers.map(t=>{
   const h=activeForTrailer(t.id),tow=h?byId(h.tow_vehicle_id):null;
   const total=Number(t.current_odometer_km||0),period=Number(h?.distance_km||0);
@@ -114,6 +110,8 @@ async function saveHitch(){
  if(!company||!rp)return showMsg('Sessão da frota ainda não está pronta.','error');
  if(!trailer||!tow)return showMsg('Selecione a carretinha e a condução.','error');
  const t=byId(trailer),v=byId(tow),old=activeForTrailer(trailer),occupied=activeForTow(tow);
+ if(!t||!isTrailer(t))return showMsg('O item selecionado não está cadastrado como carretinha ou reboque. Corrija o tipo na Frota antes de engatar.','error');
+ if(!v||isTrailer(v))return showMsg('Selecione uma condução motorizada para puxar a carretinha.','error');
  let msg=`Engatar ${vehicleName(t)} em ${vehicleName(v)}?`;
  if(old&&old.tow_vehicle_id!==tow)msg+=' O engate atual desta carretinha será encerrado automaticamente.';
  if(occupied&&occupied.trailer_vehicle_id!==trailer)msg+=' A carretinha que está nesse ônibus será desengatada automaticamente.';
