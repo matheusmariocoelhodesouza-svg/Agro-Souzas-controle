@@ -1,0 +1,32 @@
+/* Comando 360 — fechamento v1 / 2026-09-23
+   Estados de confiabilidade, filtros e alertas sem esconder dados originais. */
+#c360EmployeeFilters,#c360PoultryFilters{
+  display:grid;grid-template-columns:minmax(220px,1fr) 180px;gap:8px;align-items:center;
+  margin:0 0 12px;padding:10px;background:#fff;border:1px solid #e2e8f0;border-radius:14px;
+}
+#c360PoultryFilters{grid-template-columns:160px 190px 170px minmax(220px,1fr)}
+#c360EmployeeFilters input,#c360EmployeeFilters select,#c360PoultryFilters input,#c360PoultryFilters select{
+  width:100%;min-height:42px;margin:0;padding:9px 11px;border:1px solid #cbd5e1;border-radius:10px;background:#fff;color:#0f172a;
+}
+.c360-op-context{font-size:11px;font-weight:800;color:#51647b;margin:0 0 7px;padding:0 0 7px;border-bottom:1px dashed #e2e8f0}
+.c360-anomaly-pill{display:inline-flex!important;align-items:center!important;background:#fff7ed!important;color:#9a3412!important;border:1px solid #fdba74!important;border-radius:999px!important;padding:3px 7px!important;font-size:10px!important;font-weight:900!important}
+.c360-data-warning{color:#9a3412!important;background:#fff7ed!important;border:1px solid #fed7aa!important;border-radius:10px!important;padding:8px 10px!important;font-weight:750!important}
+.c360-reconciliation-notice{
+  margin:12px 0;padding:12px 14px;border-radius:14px;border:1px solid #bbf7d0;background:#f0fdf4;color:#14532d;
+  font-size:12px;line-height:1.45;
+}
+.c360-reconciliation-notice[data-state="attention"]{border-color:#fed7aa;background:#fff7ed;color:#7c2d12}
+.c360-reconciliation-notice strong{display:block;font-size:13px;margin-bottom:4px}
+.c360-reconciliation-notice small{display:block;margin-top:5px;opacity:.82}
+html body.darkmode #c360EmployeeFilters,html body.darkmode #c360PoultryFilters{background:#102033;border-color:#2a3d55}
+html body.darkmode #c360EmployeeFilters input,html body.darkmode #c360EmployeeFilters select,
+html body.darkmode #c360PoultryFilters input,html body.darkmode #c360PoultryFilters select{background:#0d1b2d;color:#f8fafc;border-color:#3a4d65}
+html body.darkmode .c360-op-context{color:#aebed1;border-color:#2a3d55}
+html body.darkmode .c360-reconciliation-notice{background:#0d2b21;border-color:#1f6b50;color:#b7f7d7}
+html body.darkmode .c360-reconciliation-notice[data-state="attention"]{background:#30220f;border-color:#8b6827;color:#ffe0a3}
+@media(max-width:900px){
+  #c360PoultryFilters{grid-template-columns:1fr 1fr}
+}
+@media(max-width:640px){
+  #c360EmployeeFilters,#c360PoultryFilters{grid-template-columns:1fr;padding:9px}
+}
