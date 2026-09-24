@@ -1,13 +1,29 @@
 (()=>{
 'use strict';
-const VERSION='2026.09.24-o2';
-function installMobileRescue(){
- if(document.getElementById('c360MobileRescueCss'))return;
- const link=document.createElement('link');
- link.id='c360MobileRescueCss';
- link.rel='stylesheet';
- link.href='./c360-mobile-rescue.css?v=20260924-2';
- (document.head||document.documentElement).appendChild(link);
+const VERSION='2026.09.24-o3';
+function installStyles(){
+ if(!document.getElementById('c360MobileRescueCss')){
+  const link=document.createElement('link');
+  link.id='c360MobileRescueCss';
+  link.rel='stylesheet';
+  link.href='./c360-mobile-rescue.css?v=20260924-2';
+  (document.head||document.documentElement).appendChild(link);
+ }
+ if(!document.getElementById('c360SignatureUiCss')){
+  const link=document.createElement('link');
+  link.id='c360SignatureUiCss';
+  link.rel='stylesheet';
+  link.href='./c360-signature-ui.css?v=20260924-1';
+  (document.head||document.documentElement).appendChild(link);
+ }
+}
+function installSignatureScript(){
+ if(document.getElementById('c360SignatureUiJs')||window.__c360SignatureUi)return;
+ const script=document.createElement('script');
+ script.id='c360SignatureUiJs';
+ script.src='./c360-signature-ui.js?v=20260924-1';
+ script.async=true;
+ (document.head||document.documentElement).appendChild(script);
 }
 function installEntry(){
  const login=document.getElementById('login');
@@ -19,8 +35,9 @@ function installEntry(){
  wrap.innerHTML='<div style="font-size:12px;color:#64748b;margin-bottom:8px">Sua empresa ainda não usa o Comando 360?</div><a href="./cadastro.html" style="display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:0 15px;border-radius:11px;background:#eef5fd;color:#185bac;font-size:12px;font-weight:900;text-decoration:none">+ CRIAR NOVA EMPRESA</a>';
  host.appendChild(wrap);
 }
-installMobileRescue();
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>{installMobileRescue();installEntry()},{once:true});else installEntry();
-document.addEventListener('c360:bootstrap-ready',()=>{installMobileRescue();installEntry()});
+function boot(){installStyles();installSignatureScript();installEntry()}
+installStyles();installSignatureScript();
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
+document.addEventListener('c360:bootstrap-ready',boot);
 window.__c360OnboardingEntryVersion=VERSION;
 })();
