@@ -1,0 +1,365 @@
+/* Comando 360 — Signature UI 2026-09-24
+   Camada visual premium, responsiva e prática.
+   Não altera regras de negócio nem dados persistidos. */
+
+:root{
+  --c360-bg:#061321;
+  --c360-bg-2:#081a2b;
+  --c360-surface:#0c1d30;
+  --c360-surface-2:#10243a;
+  --c360-surface-3:#132a43;
+  --c360-line:#284662;
+  --c360-line-soft:rgba(130,168,205,.18);
+  --c360-text:#f5f9ff;
+  --c360-muted:#9bb0c7;
+  --c360-blue:#2f9cff;
+  --c360-blue-2:#67c8ff;
+  --c360-cyan:#42d2ff;
+  --c360-green:#27d19b;
+  --c360-amber:#ffbf4a;
+  --c360-red:#ff6f83;
+  --c360-radius:18px;
+  --c360-radius-sm:14px;
+  --c360-shadow:0 18px 46px rgba(0,0,0,.24);
+}
+
+/* Base: aparência consistente e acabamento de produto. */
+html body.darkmode.app-ready:not(.device-mode){
+  background:
+    radial-gradient(circle at 88% 0%,rgba(36,137,222,.10),transparent 34rem),
+    linear-gradient(180deg,#071522 0%,#061321 42%,#071521 100%)!important;
+  color:var(--c360-text)!important;
+}
+html body.darkmode.app-ready:not(.device-mode) #screenHost>.section{
+  color:var(--c360-text)!important;
+}
+html body.darkmode.app-ready:not(.device-mode) #screenHost :where(.card,.v2panel,.fleet-controls,.field-section,.maintenance-card,.rh-tool-card){
+  background:linear-gradient(180deg,rgba(14,31,50,.98),rgba(10,25,42,.98))!important;
+  border:1px solid var(--c360-line-soft)!important;
+  box-shadow:0 10px 28px rgba(0,0,0,.14)!important;
+}
+html body.darkmode.app-ready:not(.device-mode) :where(input,select,textarea){
+  accent-color:var(--c360-blue)!important;
+}
+html body.darkmode.app-ready:not(.device-mode) :where(input,select,textarea):focus{
+  outline:none!important;
+  border-color:#388ed9!important;
+  box-shadow:0 0 0 3px rgba(47,156,255,.13)!important;
+}
+
+/* Cabeçalho — limpo, forte e sem sobreposição de informação. */
+html body.darkmode.app-ready:not(.device-mode) header{
+  background:rgba(5,17,30,.94)!important;
+  border-bottom:1px solid rgba(86,139,183,.24)!important;
+  box-shadow:0 8px 28px rgba(0,0,0,.18)!important;
+  backdrop-filter:blur(18px) saturate(130%)!important;
+  -webkit-backdrop-filter:blur(18px) saturate(130%)!important;
+}
+html body.darkmode.app-ready:not(.device-mode) header .brand b{
+  color:#f8fbff!important;
+  letter-spacing:-.25px!important;
+}
+html body.darkmode.app-ready:not(.device-mode) header .brand b :where(span,strong){
+  color:inherit!important;
+}
+
+/* Heróis das telas. */
+html body.darkmode.app-ready:not(.device-mode) .v2hero,
+html body.darkmode.app-ready:not(.device-mode) #frota .fleet-hero{
+  position:relative!important;
+  border-bottom:1px solid rgba(112,157,198,.12)!important;
+}
+html body.darkmode.app-ready:not(.device-mode) .v2hero h1,
+html body.darkmode.app-ready:not(.device-mode) #frota .fleet-hero h1{
+  color:#fff!important;
+  font-weight:950!important;
+  letter-spacing:-.8px!important;
+}
+html body.darkmode.app-ready:not(.device-mode) .v2hero p,
+html body.darkmode.app-ready:not(.device-mode) #frota .fleet-hero p{
+  color:#a6bad0!important;
+}
+
+/* Botões: hierarquia de ação nítida. */
+html body .btn,
+html body .v2new{
+  transition:transform .12s ease,border-color .12s ease,background .12s ease,box-shadow .12s ease!important;
+}
+html body .btn:active,
+html body .v2new:active{transform:translateY(1px) scale(.995)!important}
+html body.darkmode .btn.primary,
+html body.darkmode .v2new{
+  color:#fff!important;
+  background:linear-gradient(135deg,#43b4ff 0%,#218ef3 56%,#1773df 100%)!important;
+  border:1px solid rgba(110,203,255,.55)!important;
+  box-shadow:0 10px 26px rgba(25,128,235,.22),inset 0 1px 0 rgba(255,255,255,.17)!important;
+}
+html body.darkmode .btn.soft{
+  color:#dceaff!important;
+  background:#0d2136!important;
+  border:1px solid #2b4f70!important;
+}
+
+/* ========= FROTA ========= */
+html body.darkmode #frota .fleet-title-icon{
+  background:linear-gradient(145deg,#10335a,#0d2847)!important;
+  border-color:#285b87!important;
+  color:#7dc7ff!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.07)!important;
+}
+html body.darkmode #frota .fleet-subnav{
+  background:rgba(6,20,34,.55)!important;
+  border:1px solid rgba(78,126,167,.28)!important;
+  box-shadow:none!important;
+}
+html body.darkmode #frota .fleet-subnav button{
+  color:#adbed0!important;
+}
+html body.darkmode #frota .fleet-subnav button.active{
+  color:#9ed6ff!important;
+  background:linear-gradient(180deg,#153f66,#123453)!important;
+  border-color:#276ea8!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.06)!important;
+}
+
+/* KPIs de frota: menos decoração, mais leitura. */
+html body #frota .fleet-kpi{
+  cursor:pointer!important;
+  user-select:none!important;
+  -webkit-tap-highlight-color:transparent!important;
+  transition:transform .14s ease,border-color .14s ease,background .14s ease,box-shadow .14s ease!important;
+}
+html body #frota .fleet-kpi:active{transform:scale(.985)!important}
+html body.darkmode #frota .fleet-kpi{
+  background:linear-gradient(145deg,#102337,#0c1c2e)!important;
+  border:1px solid rgba(103,151,190,.25)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.035)!important;
+}
+html body.darkmode #frota .fleet-kpi.c360-filter-active{
+  border-color:rgba(69,175,255,.72)!important;
+  box-shadow:0 0 0 1px rgba(47,156,255,.12),0 10px 28px rgba(15,107,192,.14)!important;
+  background:linear-gradient(145deg,#123152,#0d233b)!important;
+}
+html body.darkmode #frota .fleet-kpi-icon{
+  border:1px solid rgba(255,255,255,.055)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.05)!important;
+}
+html body.darkmode #frota .fleet-kpi b{
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+  letter-spacing:-.75px!important;
+}
+html body.darkmode #frota .fleet-kpi span{
+  color:#aabdd1!important;
+  -webkit-text-fill-color:#aabdd1!important;
+  text-transform:uppercase!important;
+  letter-spacing:.35px!important;
+  font-weight:850!important;
+}
+
+html body.darkmode #frota .fleet-controls{
+  background:linear-gradient(180deg,#0d2034,#0a1a2b)!important;
+  border-color:rgba(97,145,185,.24)!important;
+  box-shadow:0 10px 26px rgba(0,0,0,.13)!important;
+}
+html body.darkmode #frota .fleet-search input,
+html body.darkmode #frota .fleet-controls select{
+  color:#eaf3ff!important;
+  -webkit-text-fill-color:#eaf3ff!important;
+  background:#081827!important;
+  border-color:#2b4a65!important;
+}
+html body.darkmode #frota .fleet-search input::placeholder{color:#849bb3!important;-webkit-text-fill-color:#849bb3!important;opacity:1!important}
+html body #frota .fleet-search{position:relative!important}
+html body #frota .c360-search-clear{
+  display:none;
+  position:absolute;right:8px;top:50%;transform:translateY(-50%);
+  width:30px;height:30px;border:0;border-radius:9px;
+  background:transparent;color:#8fa8c1;font-size:19px;line-height:1;cursor:pointer;z-index:3;
+}
+html body #frota .c360-search-clear.show{display:grid;place-items:center}
+html body #frota .c360-search-clear:hover{background:rgba(108,159,204,.10);color:#fff}
+html body #frota .fleet-search:has(.c360-search-clear.show) input{padding-right:42px!important}
+
+/* ========= APANHAS ========= */
+/* Neutraliza o antigo KPI decorativo nesta tela. */
+html body #operacoes #poultryKpis .v2kpi.c360-exact-metric{
+  position:relative!important;
+  min-height:92px!important;
+  height:auto!important;
+  padding:13px 14px!important;
+  overflow:hidden!important;
+  border-radius:16px!important;
+  isolation:auto!important;
+  box-shadow:none!important;
+}
+html body #operacoes #poultryKpis .v2kpi.c360-exact-metric>.c360-exact-surface{
+  display:none!important;visibility:hidden!important;pointer-events:none!important;
+}
+html body #operacoes #poultryKpis .v2kpi.c360-exact-metric>:not(.c360-exact-surface){
+  visibility:visible!important;opacity:1!important;pointer-events:auto!important;
+}
+html body #operacoes #poultryKpis .v2kpi{
+  display:flex!important;
+  flex-direction:column!important;
+  justify-content:center!important;
+  min-width:0!important;
+  background:linear-gradient(145deg,#102337,#0c1c2e)!important;
+  border:1px solid rgba(103,151,190,.25)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.035)!important;
+}
+html body #operacoes #poultryKpis .v2kpi .t{
+  display:block!important;position:static!important;visibility:visible!important;opacity:1!important;
+  color:#a8bad0!important;-webkit-text-fill-color:#a8bad0!important;
+  font-size:9px!important;line-height:1.2!important;font-weight:900!important;letter-spacing:.65px!important;
+  white-space:normal!important;overflow:visible!important;text-transform:uppercase!important;
+}
+html body #operacoes #poultryKpis .v2kpi .v{
+  display:block!important;position:static!important;visibility:visible!important;opacity:1!important;
+  color:#fff!important;-webkit-text-fill-color:#fff!important;
+  margin-top:7px!important;font-size:28px!important;line-height:1!important;font-weight:950!important;letter-spacing:-1px!important;
+  white-space:normal!important;overflow:visible!important;
+}
+html body #operacoes .v2panel{
+  border-radius:18px!important;
+}
+html body #operacoes .v2panelhead h3{
+  font-weight:900!important;
+  letter-spacing:-.25px!important;
+}
+
+/* Conferência de dados: informativa sem dominar a tela. */
+html body #c360PoultryIntegrity{
+  position:relative!important;
+  overflow:hidden!important;
+  background:linear-gradient(145deg,#281e0d,#20180c)!important;
+  border:1px solid rgba(255,189,66,.38)!important;
+  color:#f7ddb0!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.035)!important;
+}
+html body #c360PoultryIntegrity strong{
+  color:#ffe9bd!important;
+  font-weight:900!important;
+}
+html body #c360PoultryIntegrity .c360-integrity-examples{
+  background:rgba(0,0,0,.18)!important;
+  border:1px solid rgba(255,203,111,.08)!important;
+}
+html body #c360PoultryIntegrity .c360-integrity-toggle{
+  width:100%;min-height:38px;margin:8px 0 0;padding:0 11px;
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  border:1px solid rgba(255,199,91,.22);border-radius:11px;
+  background:rgba(255,190,64,.075);color:#ffe4ad;font:inherit;font-size:10.5px;font-weight:900;cursor:pointer;
+}
+html body #c360PoultryIntegrity .c360-integrity-toggle::after{content:'›';font-size:20px;line-height:1;transform:rotate(90deg);transition:transform .15s ease}
+html body #c360PoultryIntegrity.c360-integrity-collapsed .c360-integrity-toggle::after{transform:rotate(0)}
+html body #c360PoultryIntegrity.c360-integrity-collapsed .c360-integrity-examples,
+html body #c360PoultryIntegrity.c360-integrity-collapsed small{display:none!important}
+
+/* ========= NAVEGAÇÃO / CHAT ========= */
+@media(max-width:900px){
+  html body.app-ready:not(.device-mode) .wrap{
+    padding-left:14px!important;
+    padding-right:14px!important;
+    padding-bottom:116px!important;
+  }
+  html body.app-ready:not(.device-mode) #screenHost>.section{
+    padding-bottom:calc(132px + env(safe-area-inset-bottom))!important;
+  }
+
+  html body.darkmode.app-ready:not(.device-mode) .mobile-bottom-nav{
+    left:12px!important;right:12px!important;
+    bottom:calc(8px + env(safe-area-inset-bottom))!important;
+    min-height:76px!important;padding:5px 6px!important;
+    border-radius:24px!important;
+    background:rgba(7,20,34,.965)!important;
+    border:1px solid rgba(92,139,179,.35)!important;
+    box-shadow:0 18px 44px rgba(0,0,0,.40),inset 0 1px 0 rgba(255,255,255,.035)!important;
+    backdrop-filter:blur(20px) saturate(130%)!important;
+    -webkit-backdrop-filter:blur(20px) saturate(130%)!important;
+  }
+  html body.darkmode.app-ready:not(.device-mode) .mobile-bottom-nav button{
+    position:relative!important;
+    min-height:64px!important;
+    border:1px solid transparent!important;
+    border-radius:18px!important;
+    color:#9db0c4!important;
+    gap:4px!important;
+    padding:6px 3px!important;
+  }
+  html body.darkmode.app-ready:not(.device-mode) .mobile-bottom-nav button span{
+    width:30px!important;height:30px!important;display:grid!important;place-items:center!important;
+    font-size:22px!important;color:inherit!important;
+  }
+  html body.darkmode.app-ready:not(.device-mode) .mobile-bottom-nav button small{
+    font-size:10px!important;line-height:1!important;font-weight:850!important;color:inherit!important;
+  }
+  html body.darkmode.app-ready:not(.device-mode) .mobile-bottom-nav button.active{
+    color:#69c4ff!important;
+    background:linear-gradient(180deg,rgba(24,78,122,.78),rgba(13,51,83,.88))!important;
+    border-color:rgba(54,155,231,.52)!important;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.055)!important;
+  }
+  html body.darkmode.app-ready:not(.device-mode) .mobile-bottom-nav button.active::after{
+    content:'';position:absolute;top:5px;left:35%;right:35%;height:2px;border-radius:99px;background:#61d0ff;box-shadow:0 0 9px rgba(52,188,255,.65);
+  }
+
+  html body:not(.device-mode) #c360ChatFab#c360ChatFab{
+    right:15px!important;
+    bottom:calc(98px + env(safe-area-inset-bottom))!important;
+    width:48px!important;min-width:48px!important;max-width:48px!important;height:48px!important;min-height:48px!important;
+    border-radius:16px!important;
+    background:linear-gradient(145deg,#259af3,#1472d7)!important;
+    border:1px solid rgba(127,211,255,.48)!important;
+    box-shadow:0 12px 28px rgba(12,88,165,.34),inset 0 1px 0 rgba(255,255,255,.16)!important;
+  }
+
+  html body #frota .fleet-hero,
+  html body .v2hero{
+    padding-bottom:14px!important;
+    margin-bottom:14px!important;
+  }
+  html body .v2hero{gap:11px!important}
+  html body .v2hero h1,
+  html body #frota .fleet-hero h1{font-size:29px!important;line-height:1.06!important}
+  html body .v2hero p,
+  html body #frota .fleet-hero p{font-size:12px!important;line-height:1.45!important}
+
+  html body #operacoes #poultryKpis{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    gap:9px!important;
+    margin-bottom:12px!important;
+  }
+}
+
+@media(max-width:640px){
+  html body.app-ready:not(.device-mode) .wrap{padding-left:12px!important;padding-right:12px!important}
+  html body #frota .fleet-title-icon{width:44px!important;height:44px!important;border-radius:13px!important;font-size:21px!important}
+  html body #frota .fleet-kpi{min-height:86px!important;padding:10px!important}
+  html body #frota .fleet-kpi b{font-size:23px!important}
+  html body #frota .fleet-kpi span{font-size:9px!important;line-height:1.25!important}
+  html body #frota .fleet-controls{padding:9px!important;gap:8px!important}
+  html body #frota .fleet-search input,
+  html body #frota .fleet-controls select{height:44px!important;font-size:12px!important}
+
+  html body #operacoes #poultryKpis .v2kpi{min-height:84px!important;padding:11px 12px!important}
+  html body #operacoes #poultryKpis .v2kpi .v{font-size:25px!important}
+  html body #c360PoultryIntegrity{margin:9px 0 12px!important;padding:11px 12px!important;border-radius:15px!important;font-size:10.5px!important;line-height:1.4!important}
+  html body #c360PoultryIntegrity strong{font-size:12px!important}
+  html body #c360PoultryIntegrity .c360-integrity-examples{max-height:none!important;overflow:visible!important}
+}
+
+@media(max-width:370px){
+  html body #operacoes #poultryKpis,
+  html body #frota .fleet-kpis{grid-template-columns:1fr!important}
+}
+
+/* Estados de foco visíveis para teclado/acessibilidade. */
+html body :where(button,[role='button'],a,input,select,textarea):focus-visible{
+  outline:2px solid #58baff!important;
+  outline-offset:2px!important;
+}
+
+@media(prefers-reduced-motion:reduce){
+  html body *,html body *::before,html body *::after{transition-duration:.01ms!important;animation-duration:.01ms!important}
+}
