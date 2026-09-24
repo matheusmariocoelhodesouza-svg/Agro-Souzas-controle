@@ -6234,13 +6234,13 @@ if($('#newPoultryOp'))$('#newPoultryOp').addEventListener('click',async()=>{
    await loadPoultrySelectors();
  }
  applyPoultryRoleUI();
- $('#poSavedAviary').value='';
- $('#poIntegratedName').value='';
- $('#poCity').value='';
- $('#poFarmName').value='';
- $('#poOutletType').value='';
+ // Field layouts can remove optional farm inputs while context is loading.
+ for(const id of ['poSavedAviary','poIntegratedName','poCity','poFarmName','poOutletType']){
+   const input=document.getElementById(id);if(input)input.value='';
+ }
  setPoultryEnergy('');
- $('#aviaryMsg').textContent='✓ Sem botão de cadastro: a granja será salva automaticamente.';
+ const aviaryMsg=$('#aviaryMsg');
+ if(aviaryMsg)aviaryMsg.textContent='✓ Sem botão de cadastro: a granja será salva automaticamente.';
 });
 if($('#closePoultryForm'))$('#closePoultryForm').addEventListener('click',()=>$('#poultryForm').classList.add('hidden'));
 if($('#savePoultryOp'))$('#savePoultryOp').addEventListener('click',savePoultryOperation);

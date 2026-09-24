@@ -30,4 +30,16 @@ await test('Finance uses actual maintenance records and does not equate equal to
  w.rest=async table=>{tables.push(table);if(table==='v2_fuel_logs')return[{total_amount:100}];if(table==='v2_financial_entries')return[{entry_type:'expense',amount:100}];return[]};
  try{w.eval(fs.readFileSync('c360-final-stabilization.js','utf8'));await delay(200);assert.ok(tables.includes('v2_maintenance_plans'));assert.doesNotMatch(w.document.body.textContent,/✓ Custos operacionais conciliados/)}finally{w.close()}
 });
+await test('New field operation tolerates optional inputs removed during async loading',async()=>{
+ const html=fs.readFileSync('index.html','utf8');
+ const start=html.indexOf("if($('#newPoultryOp'))$('#newPoultryOp').addEventListener");
+ const end=html.indexOf("if($('#closePoultryForm'))",start);
+ const dom=fixture('operacoes','<button id="newPoultryOp"></button><div id="poultryForm" class="hidden"><input id="poStart"><input id="poEnd"><input id="poNotes"><span id="poMsg"></span><input id="poIntegratedName"></div>'),w=dom.window;
+ let handler,energy=false;
+ w.$=selector=>w.document.querySelector(selector);w.$('#newPoultryOp').addEventListener=(event,fn)=>{handler=fn};
+ w.deviceMode=true;w.deviceAccess=null;w.poLocalInputDate=()=> '2026-09-24T12:00';
+ w.loadDevicePoultryContext=async()=>{await Promise.resolve();w.$('#poIntegratedName').remove()};
+ w.applyPoultryRoleUI=()=>{};w.setPoultryEnergy=()=>{energy=true};
+ try{w.eval(html.slice(start,end));await handler();assert.equal(energy,true);assert.equal(w.$('#poultryForm').classList.contains('hidden'),false)}finally{w.close()}
+});
 console.log(`${checks} checks, ${failures} failures`);if(failures)process.exitCode=1;

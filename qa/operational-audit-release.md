@@ -57,3 +57,9 @@ Filtros duplicados de RH/apanha removidos na integração. Rótulos acessíveis 
 Login de administrador confirmado no navegador. No painel publicado, a superfície decorativa de KPI usava título quase branco e valor branco sobre fundo branco; o valor ultrapassava o fundo do cartão. A barra lateral tinha largura útil de 221 px e conteúdo com 263 px. Corrigidos a grade da superfície, contraste claro/escuro, tamanho dos valores e quebra da marca; gráficos decorativos sem dados foram removidos dos KPIs.
 
 O relatório de combustível ainda calculava distância por máximo menos mínimo, independentemente da ordem e das anomalias. Agora usa os mesmos intervalos validados da tela de combustível. O resumo de manutenção do painel também passa a distinguir ausência de programação. Sessão de campo real ainda não ativada.
+
+### Retomada em 24/09: erro intermitente no campo
+
+A execução de 1.000 jornadas completou todas as jornadas, mas identificou um TypeError ao abrir nova apanha no perfil de campo: o formulário removia campos opcionais durante o carregamento assíncrono e o manipulador acessava `value` em um elemento ausente. O reset agora verifica a presença dos campos opcionais. A regressão reproduz a remoção durante a espera. Também foi corrigida a cor de preenchimento do texto da marca no menu lateral.
+
+Resultados anteriores a esta correção: Quality Gate, Security Contract, Field Torture (30 verificações), Reference Browser QA e Profile Stress 3000 aprovados. User Stress 1000 reprovado por esse único erro de JavaScript; requer nova execução antes da publicação.

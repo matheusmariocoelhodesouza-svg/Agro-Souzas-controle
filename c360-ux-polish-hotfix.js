@@ -76,7 +76,7 @@ function ensureStyle(){
  html body .v2sidebar{overflow-x:hidden!important}
  html body .v2sidebar .v2logo{min-width:0!important;max-width:100%!important;gap:8px!important}
  html body .v2sidebar .v2logo>div{min-width:0!important;flex:1}
- html body .v2sidebar .v2logo strong{font-size:15px!important;color:#f8fafc!important;white-space:normal!important}
+ html body .v2sidebar .v2logo strong{font-size:15px!important;color:#f8fafc!important;-webkit-text-fill-color:#f8fafc!important;white-space:normal!important}
  html body .v2sidebar .v2logo small{white-space:normal!important;font-size:8px!important;letter-spacing:.5px!important;line-height:1.5!important}
  html body .v2sidebar .v2brandicon{width:36px!important;height:36px!important;flex:0 0 36px!important}
  html body #configuracoes .row>div{min-width:0}
