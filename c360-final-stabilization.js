@@ -49,7 +49,12 @@ function hardenVehicleEditor(){
  const wrapped=async function(...args){
   const card=$('#vehicleEditCard');
   if(!card){toast('Edição indisponível','Seu perfil não possui o formulário de edição de veículo nesta tela.','error');return false}
-  try{return await original.apply(this,args)}catch(e){console.error('Comando 360 edição de veículo',e);toast('Não foi possível abrir o veículo','Atualize a tela e tente novamente.','error');return false}
+  try{return await original.apply(this,args)}catch(e){
+   /* Em perfis restritos o formulário pode ser removido durante o await de documentos.
+      Isso é uma transição válida de perfil, não um erro de runtime. */
+   if(!$('#vehicleEditCard'))return false;
+   console.error('Comando 360 edição de veículo',e);toast('Não foi possível abrir o veículo','Atualize a tela e tente novamente.','error');return false
+  }
  };
  wrapped.__c360FinalWrapped=true;wrapped.__c360Original=original;window.openVehicleEdit=wrapped;
 }
