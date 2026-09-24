@@ -1,0 +1,11 @@
+/* Comando 360 — ícones e navegação vetoriais da Signature UI */
+.c360-header-svg{display:grid;place-items:center;width:24px;height:24px;color:inherit}
+.c360-header-svg svg{width:22px;height:22px;display:block}
+header .header-icon-btn{display:grid!important;place-items:center!important}
+header .header-icon-btn .c360-header-svg+span{position:absolute!important;right:-5px!important;top:-5px!important}
+.v2navbtn{display:flex!important;align-items:center!important;gap:11px!important}
+.c360-side-icon{width:22px;height:22px;display:grid;place-items:center;flex:0 0 22px;color:inherit}
+.c360-side-icon svg{width:21px;height:21px;display:block}
+.c360-side-label{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.v2navbtn.active .c360-side-icon,.v2navbtn:hover .c360-side-icon{filter:drop-shadow(0 0 8px rgba(88,186,255,.22))}
+@media(max-width:900px){.v2sidebar .c360-side-icon{width:24px;height:24px;flex-basis:24px}.v2sidebar .c360-side-icon svg{width:23px;height:23px}}
