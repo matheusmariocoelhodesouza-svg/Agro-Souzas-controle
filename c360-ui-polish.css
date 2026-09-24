@@ -171,3 +171,478 @@ body.device-mode #poTruckCard input[type='datetime-local']{
     padding:11px 12px!important;
   }
 }
+
+/* =========================================================
+   7.05 — MOBILE RELEASE POLISH
+   Frota, manutenção, ativação e navegação inferior.
+   ========================================================= */
+
+/* Conteúdo nunca pode ficar escondido sob a navegação fixa. */
+@media(max-width:900px){
+  body.app-ready:not(.device-mode) #screenHost>.section{
+    padding-bottom:calc(112px + env(safe-area-inset-bottom))!important;
+  }
+
+  body.app-ready:not(.device-mode) .mobile-bottom-nav{
+    left:10px!important;
+    right:10px!important;
+    bottom:max(8px,env(safe-area-inset-bottom))!important;
+    min-height:64px!important;
+    padding:6px!important;
+    border-radius:18px!important;
+  }
+  body.app-ready:not(.device-mode) .mobile-bottom-nav button{
+    min-width:0!important;
+    min-height:52px!important;
+    padding:5px 2px!important;
+  }
+  body.app-ready:not(.device-mode) .mobile-bottom-nav button span{
+    font-size:19px!important;
+    line-height:1!important;
+  }
+  body.app-ready:not(.device-mode) .mobile-bottom-nav button small{
+    display:block!important;
+    font-size:9px!important;
+    line-height:1.15!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+    max-width:100%!important;
+  }
+
+  /* Atalhos flutuantes: lado a lado e acima da barra inferior. */
+  body.app-ready:not(.device-mode) #c360NativeTrackerQuick{
+    right:82px!important;
+    bottom:calc(84px + env(safe-area-inset-bottom))!important;
+    max-width:calc(100vw - 172px)!important;
+    min-height:48px!important;
+    padding:9px 12px!important;
+    font-size:11px!important;
+    line-height:1.15!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+    z-index:155!important;
+  }
+  body.app-ready:not(.device-mode) .c360-chat-fab{
+    right:12px!important;
+    bottom:calc(84px + env(safe-area-inset-bottom))!important;
+    width:56px!important;
+    min-width:56px!important;
+    height:56px!important;
+    padding:0!important;
+    z-index:156!important;
+  }
+  body.app-ready:not(.device-mode) .c360-chat-fab span{
+    display:none!important;
+  }
+}
+
+/* Frota — KPIs compactos, legíveis e sem ícones cortados. */
+#frota .fleet-kpi{
+  position:relative!important;
+  height:auto!important;
+  min-height:82px!important;
+  overflow:hidden!important;
+}
+#frota .fleet-kpi .fleet-kpi-icon{
+  position:static!important;
+  inset:auto!important;
+  transform:none!important;
+  margin:0!important;
+  flex:0 0 auto!important;
+  visibility:visible!important;
+  opacity:1!important;
+}
+#frota .fleet-kpi>div:last-child{
+  display:block!important;
+  position:static!important;
+  min-width:0!important;
+  visibility:visible!important;
+  opacity:1!important;
+  transform:none!important;
+}
+#frota .fleet-kpi b,
+#frota .fleet-kpi span{
+  display:block!important;
+  position:static!important;
+  visibility:visible!important;
+  opacity:1!important;
+  transform:none!important;
+  max-width:100%!important;
+}
+body.darkmode #frota .fleet-kpi{
+  background:#101c2e!important;
+  border-color:#2b4058!important;
+  box-shadow:none!important;
+}
+body.darkmode #frota .fleet-kpi b{
+  color:#f7fbff!important;
+  -webkit-text-fill-color:#f7fbff!important;
+}
+body.darkmode #frota .fleet-kpi span{
+  color:#aebfd3!important;
+  -webkit-text-fill-color:#aebfd3!important;
+}
+body.darkmode #frota .fleet-kpi-icon.blue{background:#12365d!important;color:#7bb9ff!important}
+body.darkmode #frota .fleet-kpi-icon.green{background:#103426!important;color:#72d7a0!important}
+body.darkmode #frota .fleet-kpi-icon.amber{background:#3a2d12!important;color:#f2c661!important}
+body.darkmode #frota .fleet-kpi-icon.red{background:#3b1e24!important;color:#ff8d97!important}
+
+@media(max-width:760px){
+  #frota .fleet-page{
+    width:100%!important;
+    max-width:100%!important;
+    overflow:visible!important;
+  }
+  #frota .fleet-hero{
+    margin:0 0 14px!important;
+    gap:12px!important;
+  }
+  #frota .fleet-title-icon{
+    width:48px!important;
+    height:48px!important;
+    border-radius:14px!important;
+    font-size:23px!important;
+  }
+  #frota .fleet-hero h1{
+    font-size:27px!important;
+    line-height:1.05!important;
+  }
+  #frota .fleet-hero p{
+    font-size:12px!important;
+    line-height:1.45!important;
+  }
+  #frota .fleet-hero-actions{
+    display:grid!important;
+    grid-template-columns:1fr 1fr!important;
+    width:100%!important;
+    gap:9px!important;
+  }
+  #frota .fleet-hero-actions .btn{
+    width:100%!important;
+    min-width:0!important;
+    min-height:48px!important;
+    padding:10px 9px!important;
+    font-size:11px!important;
+    white-space:normal!important;
+    line-height:1.2!important;
+  }
+  #frota .fleet-subnav{
+    margin-bottom:14px!important;
+  }
+  #frota .fleet-kpis{
+    display:grid!important;
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    gap:9px!important;
+    margin-bottom:14px!important;
+  }
+  #frota .fleet-kpi{
+    display:grid!important;
+    grid-template-columns:40px minmax(0,1fr)!important;
+    align-items:center!important;
+    gap:10px!important;
+    min-width:0!important;
+    min-height:92px!important;
+    padding:12px!important;
+    border-radius:15px!important;
+  }
+  #frota .fleet-kpi .fleet-kpi-icon{
+    width:40px!important;
+    height:40px!important;
+    min-width:40px!important;
+    border-radius:12px!important;
+  }
+  #frota .fleet-kpi b{
+    font-size:24px!important;
+    line-height:1!important;
+  }
+  #frota .fleet-kpi span{
+    margin-top:5px!important;
+    font-size:10px!important;
+    line-height:1.25!important;
+    white-space:normal!important;
+    overflow:visible!important;
+    text-overflow:clip!important;
+  }
+  #frota .fleet-controls{
+    display:grid!important;
+    grid-template-columns:1fr!important;
+    gap:9px!important;
+    padding:10px!important;
+    border-radius:15px!important;
+  }
+  #frota .fleet-search,
+  #frota .fleet-search input,
+  #frota .fleet-controls select{
+    min-width:0!important;
+    max-width:100%!important;
+  }
+  #frota .fleet-search input,
+  #frota .fleet-controls select{
+    height:46px!important;
+    font-size:12px!important;
+  }
+}
+
+/* Manutenção — remove cartões gigantes e devolve os textos dos KPIs. */
+#maintenanceKpis{
+  align-items:stretch!important;
+}
+#maintenanceKpis .maintenance-kpi{
+  position:relative!important;
+  height:auto!important;
+  min-height:96px!important;
+  overflow:hidden!important;
+  padding:13px 14px!important;
+}
+#maintenanceKpis .maintenance-kpi::before,
+#maintenanceKpis .maintenance-kpi::after{
+  pointer-events:none!important;
+}
+#maintenanceKpis .maintenance-kpi .t,
+#maintenanceKpis .maintenance-kpi .v,
+#maintenanceKpis .maintenance-kpi .s{
+  display:block!important;
+  position:static!important;
+  visibility:visible!important;
+  opacity:1!important;
+  transform:none!important;
+  max-width:100%!important;
+}
+#maintenanceKpis .maintenance-kpi .t{
+  font-size:9.5px!important;
+  line-height:1.2!important;
+  letter-spacing:.5px!important;
+}
+#maintenanceKpis .maintenance-kpi .v{
+  margin-top:8px!important;
+  font-size:28px!important;
+  line-height:1!important;
+}
+#maintenanceKpis .maintenance-kpi .s{
+  margin-top:6px!important;
+  font-size:10px!important;
+  line-height:1.3!important;
+}
+body.darkmode #maintenanceKpis .maintenance-kpi{
+  background:#101c2e!important;
+  border-color:#2b4058!important;
+  box-shadow:none!important;
+}
+body.darkmode #maintenanceKpis .maintenance-kpi .t{
+  color:#9fb4cb!important;
+  -webkit-text-fill-color:#9fb4cb!important;
+}
+body.darkmode #maintenanceKpis .maintenance-kpi .v{
+  color:#f8fbff!important;
+  -webkit-text-fill-color:#f8fbff!important;
+}
+body.darkmode #maintenanceKpis .maintenance-kpi .s{
+  color:#aebfd3!important;
+  -webkit-text-fill-color:#aebfd3!important;
+}
+
+@media(max-width:720px){
+  #manutencoes>.card:first-child{
+    padding:14px!important;
+  }
+  #manutencoes>.card:first-child>.toolbar{
+    display:grid!important;
+    grid-template-columns:1fr!important;
+    gap:12px!important;
+    align-items:start!important;
+  }
+  #manutencoes>.card:first-child>.toolbar>div{
+    min-width:0!important;
+  }
+  #manutencoes>.card:first-child>.toolbar h3{
+    font-size:20px!important;
+    line-height:1.15!important;
+  }
+  #manutencoes>.card:first-child>.toolbar .muted{
+    font-size:11px!important;
+    line-height:1.45!important;
+  }
+  #newMaintenanceBtn{
+    width:100%!important;
+    min-width:0!important;
+    min-height:48px!important;
+    margin:0!important;
+    padding:11px 12px!important;
+    font-size:11px!important;
+    line-height:1.2!important;
+    white-space:normal!important;
+  }
+  #maintenanceKpis{
+    display:grid!important;
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    gap:9px!important;
+    margin-top:12px!important;
+  }
+  #maintenanceKpis .maintenance-kpi{
+    min-width:0!important;
+    min-height:98px!important;
+    padding:12px!important;
+    border-radius:15px!important;
+  }
+  #maintenanceList{
+    margin-top:10px!important;
+  }
+}
+
+/* Tela inicial de ativação — cabeçalho limpo e contraste correto no tema escuro. */
+body:not(.app-ready) #deviceSetupCard{
+  overflow:hidden!important;
+}
+body:not(.app-ready) #deviceSetupTitle{
+  line-height:1.12!important;
+}
+body.darkmode:not(.app-ready) #deviceSetupCard{
+  background:#101c2e!important;
+  border-color:#334b66!important;
+  box-shadow:0 18px 48px rgba(0,0,0,.22)!important;
+}
+body.darkmode:not(.app-ready) #deviceSetupTitle{
+  color:#f6f9ff!important;
+  -webkit-text-fill-color:#f6f9ff!important;
+}
+body.darkmode:not(.app-ready) #deviceSetupSubtitle{
+  color:#b5c6d9!important;
+  -webkit-text-fill-color:#b5c6d9!important;
+  opacity:1!important;
+}
+body.darkmode:not(.app-ready) #deviceSetupCard>label{
+  color:#dfe9f5!important;
+  -webkit-text-fill-color:#dfe9f5!important;
+}
+body.darkmode:not(.app-ready) #deviceCode{
+  background:#122238!important;
+  border-color:#3c5b7b!important;
+  color:#f7fbff!important;
+  -webkit-text-fill-color:#f7fbff!important;
+  box-shadow:none!important;
+}
+body.darkmode:not(.app-ready) #deviceCode::placeholder{
+  color:#a9b9cc!important;
+  -webkit-text-fill-color:#a9b9cc!important;
+  opacity:1!important;
+}
+body.darkmode:not(.app-ready) #showAdminLogin{
+  background:#12253d!important;
+  border:1px solid #34506d!important;
+  color:#e5eef9!important;
+  -webkit-text-fill-color:#e5eef9!important;
+}
+
+@media(max-width:760px){
+  body:not(.app-ready) header{
+    margin-left:0!important;
+    width:100%!important;
+    min-height:70px!important;
+    padding:10px 16px!important;
+    justify-content:flex-start!important;
+    gap:10px!important;
+  }
+  body:not(.app-ready) header .header-module,
+  body:not(.app-ready) header .v2topmeta{
+    display:none!important;
+  }
+  body:not(.app-ready) header .brand{
+    min-width:0!important;
+    gap:10px!important;
+  }
+  body:not(.app-ready) header .brand small{
+    display:none!important;
+  }
+  body:not(.app-ready) header .brand b{
+    display:block!important;
+    font-size:18px!important;
+    line-height:1.1!important;
+    white-space:nowrap!important;
+  }
+  body:not(.app-ready) .wrap{
+    padding:18px 14px 32px!important;
+  }
+  body:not(.app-ready) .team-entry{
+    width:100%!important;
+    max-width:520px!important;
+    margin:24px auto!important;
+  }
+  body:not(.app-ready) .team-entry .card{
+    padding:22px 18px!important;
+    border-radius:22px!important;
+  }
+  body:not(.app-ready) .login-brand-icon{
+    width:64px!important;
+    height:64px!important;
+    border-radius:18px!important;
+    margin-bottom:14px!important;
+  }
+  body:not(.app-ready) .team-entry-title{
+    margin-bottom:18px!important;
+  }
+  body:not(.app-ready) #deviceSetupTitle{
+    margin:0 0 10px!important;
+    font-size:24px!important;
+    text-align:center!important;
+  }
+  body:not(.app-ready) #deviceSetupSubtitle{
+    font-size:12px!important;
+    line-height:1.45!important;
+    text-align:center!important;
+  }
+  body:not(.app-ready) #deviceCode{
+    height:56px!important;
+    margin:10px 0 12px!important;
+    padding:12px!important;
+    font-size:20px!important;
+    letter-spacing:3px!important;
+  }
+  body:not(.app-ready) #deviceActivateBtn,
+  body:not(.app-ready) #showAdminLogin{
+    min-height:52px!important;
+    border-radius:13px!important;
+  }
+}
+
+/* Telas muito estreitas: preserva 2x2 sem cortar texto. */
+@media(max-width:390px){
+  #frota .fleet-kpis,
+  #maintenanceKpis{
+    gap:8px!important;
+  }
+  #frota .fleet-kpi{
+    grid-template-columns:36px minmax(0,1fr)!important;
+    min-height:88px!important;
+    padding:10px!important;
+    gap:8px!important;
+  }
+  #frota .fleet-kpi .fleet-kpi-icon{
+    width:36px!important;
+    height:36px!important;
+    min-width:36px!important;
+    font-size:17px!important;
+  }
+  #frota .fleet-kpi b{
+    font-size:22px!important;
+  }
+  #maintenanceKpis .maintenance-kpi{
+    min-height:94px!important;
+    padding:10px!important;
+  }
+  #maintenanceKpis .maintenance-kpi .v{
+    font-size:25px!important;
+  }
+  body.app-ready:not(.device-mode) #c360NativeTrackerQuick{
+    right:76px!important;
+    max-width:calc(100vw - 160px)!important;
+    font-size:10px!important;
+  }
+  body.app-ready:not(.device-mode) .c360-chat-fab{
+    right:10px!important;
+    width:54px!important;
+    min-width:54px!important;
+    height:54px!important;
+  }
+}
