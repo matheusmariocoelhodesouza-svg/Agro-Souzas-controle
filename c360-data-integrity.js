@@ -11,7 +11,8 @@ function cid(){try{return typeof companyId!=='undefined'&&companyId?companyId:nu
 function rf(){try{return typeof rest==='function'?rest:(typeof window.v2Rest==='function'?window.v2Rest:null)}catch{return null}}
 function device(){return document.body?.classList.contains('device-mode')||false}
 function active(){return document.querySelector('#screenHost .section.active')?.id||document.querySelector('.section.active')?.id||''}
-async function safe(p){try{return await p}catch(e){console.warn('Comando 360 integridade',e);return[]}}
+async function safe(p){return await p}
+function unavailable(screen,id){const el=notice($('#'+screen),id,'attention');if(el)el.textContent='Não foi possível conferir os dados. Verifique a conexão e atualize esta tela.'}
 function notice(root,id,state='attention'){
  if(!root)return null;let el=document.getElementById(id);if(!el){el=document.createElement('div');el.id=id;el.className='c360-reconciliation-notice c360-integrity-notice';const hero=root.querySelector('.v2hero,.hero,.section-title,.toolbar');if(hero)hero.insertAdjacentElement('afterend',el);else root.prepend(el)}el.dataset.state=state;return el
 }
@@ -65,7 +66,7 @@ async function refreshPricing(){
   const teamHtml=rules.length?'<div class="c360-integrity-list">'+rules.map(x=>`<div><b>${esc(x.name)}</b><span>${esc(x.rule)}</span><small>Origem: configuração da equipe</small></div>`).join('')+'</div>':'<div>Nenhuma tarifa ativa foi encontrada na configuração das equipes.</div>';
   const contractText=(contracts||[]).length?`${contracts.length} contrato(s) ativo(s) cadastrado(s).`:'Nenhum contrato ativo cadastrado. As operações atuais podem continuar usando a tarifa histórica/configuração da equipe; isso deve permanecer rastreável e não altera receitas já geradas.';
   el.innerHTML='<strong>💰 Origem das tarifas em uso</strong>'+teamHtml+`<small>${esc(contractText)}</small>`;
- }finally{busy.pricing=false}
+ }catch(e){console.warn('Comando 360 integridade',e);unavailable('configuracoes','c360BillingProvenance')}finally{busy.pricing=false}
 }
 
 async function refreshBiometrics(){
@@ -79,7 +80,7 @@ async function refreshBiometrics(){
   const el=notice($('#funcionarios'),'c360BiometricCoverage',pending?'attention':'ok');if(!el)return;
   const pct=total?Math.round(done*100/total):0;
   el.innerHTML=`<strong>${pending?'⚠':'✓'} Cobertura de reconhecimento facial: ${done}/${total} (${pct}%)</strong><div>${pending?`${pending} funcionário(s) ativo(s) ainda precisam de cadastro biométrico.`:'Todos os funcionários ativos retornados nesta sessão possuem biometria ativa.'}</div><small>O sistema não cria biometria fictícia; pendências precisam ser cadastradas com a pessoa presente.</small>`;
- }finally{busy.biometric=false}
+ }catch(e){console.warn('Comando 360 integridade',e);unavailable('funcionarios','c360BiometricCoverage')}finally{busy.biometric=false}
 }
 
 function minutesBetween(a,b){if(!a||!b)return null;const d=(new Date(b)-new Date(a))/60000;return Number.isFinite(d)?d:null}
@@ -102,7 +103,7 @@ async function refreshPoultryIntegrity(){
   timing.slice(0,2).forEach(x=>examples.push(`Caminhão ${x.t.truck_sequence||'—'}: duração ${Math.round(x.dur)} min`));
   small.slice(0,2).forEach(x=>examples.push(`Caminhão ${x.t.truck_sequence||'—'}: ${x.birds.toLocaleString('pt-BR')} aves para ${x.boxes.toLocaleString('pt-BR')} caixas`));
   el.innerHTML=`<strong>⚠ Conferência de dados da apanha</strong><div>${quantity.length} divergência(s) entre o total informado e o cálculo simples caixas × aves/caixa; ${timing.length} horário(s) de 0–1 minuto; ${small.length} quantidade(s) muito pequena(s) para centenas de caixas.</div>${examples.length?'<div class="c360-integrity-examples">'+examples.map(x=>`<span>${esc(x)}</span>`).join('')+'</div>':''}<small>Nenhum valor foi alterado automaticamente. Caixas vazias, cata e ajustes manuais podem explicar diferenças; a correção deve preservar o registro original e o motivo.</small>`;
- }finally{busy.poultry=false}
+ }catch(e){console.warn('Comando 360 integridade',e);unavailable('operacoes','c360PoultryIntegrity')}finally{busy.poultry=false}
 }
 
 async function refreshFiscalState(){
@@ -116,19 +117,24 @@ async function refreshFiscalState(){
   if(configured){remove('c360FiscalCoverage');return}
   const el=notice($('#fiscal'),'c360FiscalCoverage','attention');if(!el)return;
   el.innerHTML=`<strong>⚠ Fiscal ainda não integrado</strong><div>${(guides||[]).length} guia(s) estão visíveis nesta consulta, mas a integração fiscal não está ativa.</div><small>“0 guias” deve ser lido como “não apurado/não integrado” até a competência e a integração estarem configuradas; não significa ausência de obrigação.</small>`;
- }finally{busy.fiscal=false}
+ }catch(e){console.warn('Comando 360 integridade',e);unavailable('fiscal','c360FiscalCoverage')}finally{busy.fiscal=false}
 }
 
-function run(){
+let lastCheckKey='',lastCheckAt=0;
+function run(force=false){
  ensureLegacyPoultryFields();
  clarifyFinanceLabels();
+ const key=String(cid()||'')+':'+active();
+ if(device()||!cid()||!rf())return;
+ if(!force&&key===lastCheckKey&&Date.now()-lastCheckAt<60000)return;
+ lastCheckKey=key;lastCheckAt=Date.now();
  if(active()==='configuracoes')refreshPricing();
  if(active()==='funcionarios')refreshBiometrics();
  if(active()==='operacoes')refreshPoultryIntegrity();
  if(active()==='fiscal')refreshFiscalState();
 }
 function schedule(){clearTimeout(timer);timer=setTimeout(run,100)}
-function init(){run();document.addEventListener('c360:screen-changed',schedule);document.addEventListener('c360:bootstrap-ready',schedule);new MutationObserver(schedule).observe(document.documentElement,{subtree:true,childList:true,attributes:true,attributeFilter:['class','hidden']});setTimeout(run,500);setTimeout(run,1600)}
+function init(){run();document.addEventListener('c360:screen-changed',schedule);document.addEventListener('c360:bootstrap-ready',schedule);new MutationObserver(schedule).observe(document.documentElement,{subtree:true,childList:true,attributes:true,attributeFilter:['class','hidden']});setTimeout(()=>run(),500);setTimeout(()=>run(),1600)}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
-window.C360_DATA_INTEGRITY_VERSION=VERSION;window.C360DataIntegrity={version:VERSION,refresh:run};
+window.C360_DATA_INTEGRITY_VERSION=VERSION;window.C360DataIntegrity={version:VERSION,refresh:()=>run(true)};
 })();

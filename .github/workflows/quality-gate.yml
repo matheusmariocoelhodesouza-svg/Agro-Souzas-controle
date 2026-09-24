@@ -53,7 +53,7 @@ jobs:
         run: |
           set -euo pipefail
           files=(
-            index.html cadastro.html dda.html reparar.html comando360.webmanifest sw-v7-02.js sw-v7-02-core-hotfix60.js
+            index.html cadastro.html dda.html reparar.html comando360.webmanifest sw-v7-02.js sw-v7-02-core-hotfix61.js
             c360-autorecovery.js c360-platform.js c360-product-core.js c360-release-core.js
             c360-quality-hotfix.js c360-quality-core.js c360-field-offline-hotfix.js
             c360-team-chat.js c360-farm-cache-hotfix.js c360-consumable-edit.js
@@ -72,6 +72,14 @@ jobs:
           )
           for f in "${files[@]}"; do test -s "$f" || { echo "Missing: $f"; exit 1; }; done
 
+      - name: Operational audit regressions
+        run: node qa/operational_audit.mjs
+
+      - name: Runtime integrity regressions
+        run: |
+          npm install --prefix /tmp/c360-audit --no-save jsdom@26.1.0
+          C360_JSDOM_PATH=/tmp/c360-audit/node_modules/jsdom node qa/integrity_regressions.mjs
+
       - name: Reference structural audit
         run: python qa/reference_audit.py
 
@@ -85,7 +93,7 @@ jobs:
           grep -q 'c360-ui-polish.css' index.html
           ! grep -q '<script>window.onload' index.html
 
-          grep -q "BOOT_VERSION='2026.09.23-v1-final1'" c360-quality-hotfix.js
+          grep -q "BOOT_VERSION='2026.09.23-audit2'" c360-quality-hotfix.js
           grep -q "const VERSION='2026.09.22-r100-1'" c360-release-core.js
           grep -q "VERSION='2026.09.23-v1-final1'" c360-final-stabilization.js
           grep -q "const VERSION='2026.09.23-ux2'" c360-ux-polish-hotfix.js
@@ -139,12 +147,12 @@ jobs:
           grep -q 'body.device-mode' c360-product-ui.css
 
           SW_CORE="$(grep -oE 'sw-v7-02-core-hotfix[0-9]+\.js' sw-v7-02.js | head -n1)"
-          test "$SW_CORE" = 'sw-v7-02-core-hotfix60.js'
+          test "$SW_CORE" = 'sw-v7-02-core-hotfix61.js'
           test -s "$SW_CORE"
           SW_CONTRACT="$(cat sw-v7-02.js "$SW_CORE")"
           grep -q 'loader 7.15.0' sw-v7-02.js
           grep -q 'sw-auth-refresh-guard.js' sw-v7-02.js
-          grep -q "comando360-v7-02-hotfix60" <<<"$SW_CONTRACT"
+          grep -q "comando360-v7-02-hotfix61" <<<"$SW_CONTRACT"
           grep -q 'comando360-stable-v1' <<<"$SW_CONTRACT"
           grep -q 'c360-platform.js' <<<"$SW_CONTRACT"
           grep -q 'c360-product-core.js' <<<"$SW_CONTRACT"

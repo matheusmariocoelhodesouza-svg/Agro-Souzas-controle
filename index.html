@@ -2647,7 +2647,7 @@ body.darkmode #financeiro .finance-privacy-btn{background:#17283d;border-color:#
 <div class="row" style="margin-top:12px"><div><label>Veículo</label><select id="kmVehicle"></select></div><div><label>Data e hora</label><input id="kmDate" type="datetime-local"/></div><div><label>KM do hodômetro</label><input id="kmValue" type="number" min="0" step="1"/></div></div>
 <div><label>Motivo / rota</label><input id="kmNotes" placeholder="Ex.: retorno da equipe / conferência do painel"/></div>
 <div class="toolbar" style="margin-top:12px"><button class="btn primary" id="saveKmBtn" type="button">SALVAR KM</button></div><div class="muted" id="kmMsg" style="margin-top:8px"></div></div>
-<div class="card"><div class="toolbar" style="justify-content:space-between"><div><h3 style="margin:0">Histórico de abastecimentos</h3><div class="muted" id="fuelHistorySubtitle">Consumo é calculado entre abastecimentos consecutivos do mesmo veículo.</div></div><button class="btn soft" id="refreshFuelBtn" type="button">Atualizar</button></div><div class="list" id="fuelList" style="margin-top:12px"></div></div>
+<div class="card"><div class="toolbar" style="justify-content:space-between"><div><h3 style="margin:0">Histórico de abastecimentos</h3><div class="muted" id="fuelHistorySubtitle">Estimativa entre registros do mesmo veículo (até 200 lançamentos). Abastecimentos parciais afetam a média; anomalias exigem revisão.</div></div><button class="btn soft" id="refreshFuelBtn" type="button">Atualizar</button></div><div class="list" id="fuelList" style="margin-top:12px"></div></div>
 </div>
 <div class="section" data-screen="documentosrh" hidden="" id="documentosrh">
 <div class="card"><div class="toolbar" style="justify-content:space-between"><div><h3 style="margin:0">📁 Documentos dos Funcionários</h3><div class="muted">CNH, ASO, treinamentos, certificados e documentos com vencimento.</div></div><button class="btn primary" id="newEmpDocBtn" type="button">+ NOVO DOCUMENTO</button></div><div class="v2-kpis" id="empDocKpis" style="margin-top:14px"></div></div>
@@ -2711,7 +2711,7 @@ body.darkmode #financeiro .finance-privacy-btn{background:#17283d;border-color:#
 </div>
 
 <div class="section" data-screen="financeiro" hidden="" id="financeiro">
-<div class="card finance-overview-card"><div class="finance-head"><div><h3 style="margin:0">💰 Financeiro</h3><div class="muted">Entradas, saídas e resultado mensal.</div></div><div class="toolbar finance-head-actions"><button class="btn soft finance-privacy-btn" id="toggleFinancePrivacy" type="button" aria-pressed="false">👁 Ocultar valores</button><button class="btn primary" id="newFinEntryBtn" type="button">+ NOVO LANÇAMENTO</button></div></div><div class="v2-kpis finance-kpis" id="financeKpis" style="margin-top:14px"></div></div>
+<div class="card finance-overview-card"><div class="finance-head"><div><h3 style="margin:0">💰 Financeiro</h3><div class="muted">Receitas e despesas pela data de competência, incluindo valores a receber e a pagar. Saldo parcial: custos operacionais sem lançamento financeiro não estão incluídos.</div></div><div class="toolbar finance-head-actions"><button class="btn soft finance-privacy-btn" id="toggleFinancePrivacy" type="button" aria-pressed="false">👁 Ocultar valores</button><button class="btn primary" id="newFinEntryBtn" type="button">+ NOVO LANÇAMENTO</button></div></div><div class="v2-kpis finance-kpis" id="financeKpis" style="margin-top:14px"></div></div>
 <div class="card" id="finEditCard" style="display:none"><div class="toolbar" style="justify-content:space-between"><h3 style="margin:0">Novo lançamento</h3><button class="btn soft" id="cancelFinEntry" type="button">Cancelar</button></div>
 <div class="row" style="margin-top:12px"><div><label>Tipo</label><select id="finType"><option value="income">Entrada</option><option value="expense">Saída</option></select></div><div><label>Descrição</label><input id="finDescription"/></div><div><label>Valor (R$)</label><input id="finAmount" type="number" min="0" step="0.01"/></div></div>
 <div class="row"><div><label>Data</label><input id="finIssueDate" type="date"/></div><div><label>Vencimento</label><input id="finDueDate" type="date"/></div><div><label>Cliente / fornecedor</label><input id="finCounterparty"/></div></div>
@@ -3998,8 +3998,8 @@ $('#loginBtn').addEventListener('click',async()=>{
     setMsg('Login confirmado. Carregando painel...','okmsg');
     await enterApp(data&&data.user ? data.user : null);
   }catch(e){
-    setMsg(e.message||String(e),'error');
-    debug('Se continuar, me envie esta mensagem.');
+    setMsg(/invalid login credentials/i.test(e.message||'')?'E-mail ou senha incorretos. Confira e tente novamente.':e.message||String(e),'error');
+    debug('Se o erro persistir, informe esta mensagem ao suporte.');
   }finally{
     btn.disabled=false;
   }
@@ -4096,6 +4096,7 @@ async function loadDashboard(){
    const byDate=p.next_due_at&&new Date(String(p.next_due_at).slice(0,10)+'T23:59:59').getTime()<now;
    return byKm||byDate;
   }).length;
+  const unscheduledMaintenance=maintenance.filter(p=>!p.next_due_at&&!Number(p.next_due_odometer_km)).length;
   const upcomingMaintenance=maintenance.filter(p=>{
    const v=vehicles.find(x=>x.id===p.vehicle_id),cur=poN(v?.current_odometer_km),due=poN(p.next_due_odometer_km);
    const kmLeft=due>0?due-cur:null;
@@ -4125,13 +4126,13 @@ async function loadDashboard(){
    ['Operação do dia',todayOps.length?opsCompletionPct+'% concluída':'Sem apanhas hoje',todayOps.length?(completedToday+' de '+todayOps.length+' concluídas'):'Nenhuma operação programada','operacoes',opsCompletionPct>=100?'ok':opsCompletionPct>0?'warn':'neutral'],
    ['Ponto hoje',pointPct+'%',pointedEmployees+' de '+employees.length+' funcionários','ponto',pointPct>=90?'ok':pointPct>0?'warn':'neutral'],
    ['Frota & CRLV',fleetAttention?fleetAttention+' atenção(ões)':'Tudo em dia',licensingDanger?licensingDanger+' crítica(s)':missingCrlv?missingCrlv+' sem CRLV':licensingWarn?licensingWarn+' pendente(s)':'Documentação confirmada','frota',licensingDanger?'danger':fleetAttention?'warn':'ok'],
-   ['Manutenção',overdueMaintenance?overdueMaintenance+' vencida(s)':upcomingMaintenance?upcomingMaintenance+' próxima(s)':'Em dia',overdueMaintenance?'Requer atenção':upcomingMaintenance?'Até 30 dias / 1.000 km':'Nenhuma pendência','manutencoes',overdueMaintenance?'danger':upcomingMaintenance?'warn':'ok'],
-   ['Equipes com aparelho',deviceCoveragePct+'%',devices.length+' aparelho(s) ativo(s)','equipes',deviceCoveragePct>=100?'ok':'warn']
+   ['Manutenção',overdueMaintenance?overdueMaintenance+' vencida(s)':upcomingMaintenance?upcomingMaintenance+' próxima(s)':unscheduledMaintenance?'Sem programação':'Em dia',overdueMaintenance?'Requer atenção':upcomingMaintenance?'Até 30 dias / 1.000 km':unscheduledMaintenance?unscheduledMaintenance+' sem próxima revisão':'Nenhuma pendência','manutencoes',overdueMaintenance?'danger':(upcomingMaintenance||unscheduledMaintenance)?'warn':'ok'],
+   ['Equipes com aparelho',deviceCoveragePct+'%',devices.length+' aparelho(s) vinculado(s)','equipes',deviceCoveragePct>=100?'ok':'warn']
   ].map(x=>'<button class="dash-health-card '+x[5]+'" data-jump="'+x[4]+'" type="button"><span class="dash-health-label">'+esc(x[0])+'</span><strong>'+esc(x[1])+'</strong><small>'+esc(x[2])+'</small><span class="dash-health-arrow">›</span></button>').join('');
 
   const cards=[
    ['FUNCIONÁRIOS',employees.length,'ativos','👥'],
-   ['EQUIPES',teams.length,devices.length+' celular(es) ativo(s)','📱'],
+   ['EQUIPES',teams.length,devices.length+' celular(es) vinculado(s)','📱'],
    ['CONDUÇÕES',vehicles.length,(fleetAttention?fleetAttention+' alerta(s) de documento':'documentos em dia'),'🚌'],
    ['APANHAS HOJE',todayOps.length,completedToday+' concluída(s)','🐔'],
    ['AVES HOJE',birdsToday.toLocaleString('pt-BR'),birdsMonth.toLocaleString('pt-BR')+' no mês','▣'],
@@ -4204,7 +4205,7 @@ async function loadDashboard(){
    const supervisor=employees.find(e=>e.id===t.supervisor_employee_id);
    const last=dev?.last_seen_at?new Date(dev.last_seen_at).toLocaleString('pt-BR'):'—';
    const initials=String(t.name||'E').split(/\s+/).slice(0,2).map(x=>x[0]||'').join('').toUpperCase();
-   return '<div class="dash-team-card"><div class="dash-team-avatar">'+esc(initials)+'</div><div class="dash-team-main"><div class="dash-team-head"><strong>'+esc(t.name)+'</strong><span class="pill '+(dev?'ok':'warn')+'">'+(dev?'CELULAR ATIVO':'SEM CELULAR')+'</span></div><div class="dash-team-meta"><span>👥 '+members+' funcionários</span><span>👤 '+esc(supervisor?.full_name||'Encarregado não informado')+'</span><span>🚌 '+esc(v?(v.description||v.model||'Condução')+(v.plate?' • '+v.plate:''):'Sem condução vinculada')+'</span></div>'+(dev?'<div class="dash-team-last">Último acesso: '+esc(last)+'</div>':'')+'</div></div>';
+   return '<div class="dash-team-card"><div class="dash-team-avatar">'+esc(initials)+'</div><div class="dash-team-main"><div class="dash-team-head"><strong>'+esc(t.name)+'</strong><span class="pill '+(dev?'ok':'warn')+'">'+(dev?'CELULAR VINCULADO':'SEM CELULAR')+'</span></div><div class="dash-team-meta"><span>👥 '+members+' funcionários</span><span>👤 '+esc(supervisor?.full_name||'Encarregado não informado')+'</span><span>🚌 '+esc(v?(v.description||v.model||'Condução')+(v.plate?' • '+v.plate:''):'Sem condução vinculada')+'</span></div>'+(dev?'<div class="dash-team-last">Último acesso: '+esc(last)+'</div>':'')+'</div></div>';
   }).join(''):'<div class="v2-empty">Nenhuma equipe ativa cadastrada.</div>';
 
   const clientName=cleanCompanyName(companyProfile.trade_name||companyProfile.legal_name);
@@ -4320,7 +4321,7 @@ async function uploadEmployeeProfilePhoto(file,employeeId){
 function employeeInitials(name){return String(name||'?').trim().split(/\s+/).slice(0,2).map(x=>x[0]||'').join('').toUpperCase()||'?'}
 function employeePlaceholder(name){const initials=employeeInitials(name);return 'data:image/svg+xml;charset=UTF-8,'+encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160"><rect width="100%" height="100%" fill="#e2e8f0"/><text x="50%" y="54%" text-anchor="middle" dominant-baseline="middle" font-family="Arial" font-size="52" font-weight="700" fill="#475569">${initials}</text></svg>`)}
 async function hydrateEmployeePhotos(){for(const e of (window.__rhEmployees||[])){const img=document.querySelector(`[data-employee-photo="${e.id}"]`);if(!img)continue;img.src=employeePlaceholder(e.full_name);if(e.photo_path){const u=await employeePhotoObjectUrl(e.photo_path);if(u)img.src=u}}}
-async function loadEmployees(){try{const r=await rest('v2_employees','select=id,employee_number,full_name,cpf,rg,birth_date,phone,address,photo_path,primary_team,status,job_title,admission_date&company_id=eq.'+companyId+'&order=full_name.asc');window.__rhEmployees=r;let en=[];try{en=await rest('v2_employee_face_enrollments','select=employee_id,status&company_id=eq.'+companyId)}catch{}const set=new Set(en.filter(x=>x.status==='active').map(x=>x.employee_id));const list=$('#employeesList');if(list)list.innerHTML=r.map(x=>`<div class="item"><div class="toolbar" style="justify-content:space-between;gap:10px"><div style="display:flex;align-items:center;gap:12px"><img data-employee-photo="${x.id}" alt="Foto" style="width:52px;height:52px;object-fit:cover;border-radius:14px;border:1px solid #cbd5e1;background:#f8fafc"/><div><strong>${esc(x.full_name)}</strong> <span class="pill ${x.status==='active'?'ok':'warn'}">${x.status==='active'?'Ativo':'Arquivado'}</span> <span class="pill ${set.has(x.id)?'ok':'warn'}">${set.has(x.id)?'Biometria cadastrada':'Sem biometria'}</span><div class="muted">Matrícula ${esc(x.employee_number)} • ${esc(x.job_title||'Cargo não informado')} • ${esc(x.primary_team||'Sem equipe')}</div></div></div><button class="btn soft" type="button" onclick="openEmployeeEdit('${x.id}')">Editar</button></div></div>`).join('');hydrateEmployeePhotos();const active=r.filter(x=>x.status==='active');if($('#faceEmployee'))$('#faceEmployee').innerHTML='<option value="">Selecione...</option>'+active.map(x=>`<option value="${x.id}">${esc(x.full_name)} • ${esc(x.employee_number)}</option>`).join('');if($('#scheduleEmployee'))$('#scheduleEmployee').innerHTML='<option value="">Selecione...</option>'+active.map(x=>`<option value="${x.id}">${esc(x.full_name)} • ${esc(x.employee_number)}</option>`).join('');if($('#monthlyEmployee'))$('#monthlyEmployee').innerHTML='<option value="">Selecione...</option>'+active.map(x=>`<option value="${x.id}">${esc(x.full_name)} • ${esc(x.employee_number)}</option>`).join('');if($('#monthlyMonth')&&!$('#monthlyMonth').value)$('#monthlyMonth').value=localDateBR().slice(0,7);if($('#faceEnrollmentList'))$('#faceEnrollmentList').innerHTML=active.filter(x=>set.has(x.id)).map(x=>`<div class="item"><strong>${esc(x.full_name)}</strong><span class="pill ok">Biometria cadastrada ✓</span></div>`).join('')||'<div class="muted">Nenhuma biometria cadastrada.</div>'}catch(e){if($('#employeesList'))$('#employeesList').innerHTML='<div class="error">'+esc(e.message)+'</div>'}}
+async function loadEmployees(){try{const r=await rest('v2_employees','select=id,employee_number,full_name,cpf,rg,birth_date,phone,address,photo_path,primary_team,status,job_title,admission_date&company_id=eq.'+companyId+'&order=full_name.asc');window.__rhEmployees=r;let en=[];try{en=await rest('v2_employee_face_enrollments','select=employee_id,status&company_id=eq.'+companyId)}catch{}const set=new Set(en.filter(x=>x.status==='active').map(x=>x.employee_id));const list=$('#employeesList');if(list)list.innerHTML=r.map(x=>`<div class="item"><div class="toolbar" style="justify-content:space-between;gap:10px"><div style="display:flex;align-items:center;gap:12px"><img data-employee-photo="${x.id}" alt="Foto" style="width:52px;height:52px;object-fit:cover;border-radius:14px;border:1px solid #cbd5e1;background:#f8fafc"/><div><strong>${esc(x.full_name)}</strong> <span class="pill ${x.status==='active'?'ok':'warn'}">${x.status==='active'?'Ativo':'Arquivado'}</span> <span class="pill ${set.has(x.id)?'ok':'warn'}">${set.has(x.id)?'Biometria cadastrada':'Sem biometria'}</span><div class="muted">Matrícula ${esc(x.employee_number)} • ${esc(x.job_title||'Cargo não informado')} • ${esc(x.primary_team||'Sem equipe')}</div></div></div><button class="btn soft" type="button" onclick="openEmployeeEdit('${x.id}')">Editar</button></div></div>`).join('');hydrateEmployeePhotos();const active=r.filter(x=>x.status==='active');if($('#faceEmployee'))$('#faceEmployee').innerHTML='<option value="">Selecione...</option>'+active.map(x=>`<option value="${x.id}">${esc(x.full_name)} • ${esc(x.employee_number)}</option>`).join('');if($('#scheduleEmployee'))$('#scheduleEmployee').innerHTML='<option value="">Selecione...</option>'+active.map(x=>`<option value="${x.id}">${esc(x.full_name)} • ${esc(x.employee_number)}</option>`).join('');if($('#monthlyEmployee')){const previous=$('#monthlyEmployee').value;$('#monthlyEmployee').innerHTML='<option value="">Selecione...</option>'+r.map(x=>`<option value="${x.id}">${esc(x.full_name)} • ${esc(x.employee_number)}${x.status==='active'?'':' • Arquivado'}</option>`).join('');if(r.some(x=>x.id===previous))$('#monthlyEmployee').value=previous;}if($('#monthlyMonth')&&!$('#monthlyMonth').value)$('#monthlyMonth').value=localDateBR().slice(0,7);if($('#faceEnrollmentList'))$('#faceEnrollmentList').innerHTML=active.filter(x=>set.has(x.id)).map(x=>`<div class="item"><strong>${esc(x.full_name)}</strong><span class="pill ok">Biometria cadastrada ✓</span></div>`).join('')||'<div class="muted">Nenhuma biometria cadastrada.</div>'}catch(e){if($('#employeesList'))$('#employeesList').innerHTML='<div class="error">'+esc(e.message)+'</div>'}}
 function employeeAddressText(a){if(!a)return'';if(typeof a==='string')return a;if(a.formatted)return a.formatted;return [a.street||a.address||a.logradouro,a.number||a.numero,a.neighborhood||a.bairro,a.city||a.municipio,a.state||a.uf,a.zip||a.cep].filter(Boolean).join(', ')}
 window.openEmployeeEdit=function(id){const e=(window.__rhEmployees||[]).find(x=>x.id===id);if(!e)return;$('#editEmployeeId').value=e.id;$('#editEmployeeName').value=e.full_name||'';$('#editEmployeeNumber').value=e.employee_number||'';$('#editEmployeeCpf').value=e.cpf||'';$('#editEmployeeRg').value=e.rg||'';$('#editEmployeeBirth').value=e.birth_date||'';$('#editEmployeePhone').value=e.phone||'';$('#editEmployeeJob').value=e.job_title||'';$('#editEmployeeTeam').value=e.primary_team||'';$('#editEmployeeAdmission').value=e.admission_date||'';$('#editEmployeeAddress').value=employeeAddressText(e.address);window.__employeePhotoFile=null;window.__removeEmployeePhoto=false;const pp=$('#editEmployeePhotoPreview');pp.src=employeePlaceholder(e.full_name);if(e.photo_path)employeePhotoObjectUrl(e.photo_path).then(u=>{if(u&&$('#editEmployeeId').value===e.id)pp.src=u});$('#employeeEditMsg').textContent='';$('#employeeEditCard').style.display='block';$('#employeeEditCard').scrollIntoView({behavior:'smooth',block:'start'})}
 
@@ -4514,6 +4515,7 @@ function fleetDistanceHtml(v){
 }
 
 function fleetFuelHtml(v,tracking){
+ if(isTrailerVehicle(v))return '';
  const f=vehicleFuelLevelEstimate(v,tracking);
  if(f.state==='missing_capacity'){
   return '<div class="fleet-fuel"><div class="fleet-fuel-box muted"><div class="fleet-fuel-head"><strong>⛽ Combustível estimado</strong><b>Configurar</b></div><div class="fleet-fuel-detail">Cadastre a capacidade do tanque em Editar veículo.</div></div></div>';
@@ -6075,7 +6077,7 @@ function openNextTruckForm({operationId,loadingId,farmId,name,sequence}){
  $('#poTruckCity').value=farm?.city||op?.metadata?.city||'';
  $('#poTruckDate').value=(op?.scheduled_start||new Date().toISOString()).slice(0,10);
  $('#poTruckCata').checked=false;toggleTruckCataAviaries();$('#poTruckNotes').value='';
- $('#poTruckStart').value=poLocalInputDate();$('#poTruckEnd').value='';
+ $('#poTruckStart').value=$('#poTruckDate').value+'T'+poLocalInputDate().slice(11);$('#poTruckEnd').value='';
  const sf=$('#poTruckSheetFile');if(sf)sf.value='';
  $('#poTruckSheetPreviewWrap').classList.add('hidden');$('#poTruckSheetPreview').removeAttribute('src');$('#poTruckSheetFileName').textContent='';
  calcTruckSheetTotalHint();
@@ -6089,7 +6091,15 @@ function openNextTruckForm({operationId,loadingId,farmId,name,sequence}){
  },50);
 }
 
+let truckSavePending=false;
 async function saveTruckLoad(closeAfter=false){
+ if(truckSavePending)return;
+ truckSavePending=true;
+ const buttons=[$('#poTruckSave'),$('#poTruckSaveClose')].filter(Boolean);
+ buttons.forEach(b=>b.disabled=true);
+ try{return await saveTruckLoadImpl(closeAfter)}finally{truckSavePending=false;buttons.forEach(b=>b.disabled=false)}
+}
+async function saveTruckLoadImpl(closeAfter=false){
  const operationId=$('#poTruckOperationId').value,
        loadingId=$('#poTruckLoadingId').value,
        driver=$('#poTruckDriver').value.trim(),
@@ -6102,6 +6112,8 @@ async function saveTruckLoad(closeAfter=false){
        sheetFile=$('#poTruckSheetFile')?.files?.[0]||null;
 
  if(!operationId||!loadingId||!driver||!plate||!birds||!start||!end)return $('#poTruckMsg').textContent='Preencha motorista, placa, total de aves, aviário, início e término.';
+ if(!Number.isFinite(Date.parse(start))||!Number.isFinite(Date.parse(end))||Date.parse(end)<=Date.parse(start))return $('#poTruckMsg').textContent='O término deve ser posterior ao início do carregamento.';
+ if(Date.parse(end)-Date.parse(start)<120000&&!confirm('Carregamento com menos de 2 minutos. Os horários foram conferidos?'))return;
  if(!isCata&&barnBreakdown.length!==1)return $('#poTruckMsg').textContent='Informe o número do aviário deste caminhão.';
  if(isCata&&barnBreakdown.length<2)return $('#poTruckMsg').textContent='Para CATA, informe pelo menos 2 aviários.';
  if(isCata&&barnBreakdown.some(x=>!x.barn_number||poN(x.birds)<=0))return $('#poTruckMsg').textContent='Informe o número e a quantidade de aves de cada aviário da CATA.';
@@ -6222,13 +6234,13 @@ if($('#newPoultryOp'))$('#newPoultryOp').addEventListener('click',async()=>{
    await loadPoultrySelectors();
  }
  applyPoultryRoleUI();
- $('#poSavedAviary').value='';
- $('#poIntegratedName').value='';
- $('#poCity').value='';
- $('#poFarmName').value='';
- $('#poOutletType').value='';
+ // Field layouts can remove optional farm inputs while context is loading.
+ for(const id of ['poSavedAviary','poIntegratedName','poCity','poFarmName','poOutletType']){
+   const input=document.getElementById(id);if(input)input.value='';
+ }
  setPoultryEnergy('');
- $('#aviaryMsg').textContent='✓ Sem botão de cadastro: a granja será salva automaticamente.';
+ const aviaryMsg=$('#aviaryMsg');
+ if(aviaryMsg)aviaryMsg.textContent='✓ Sem botão de cadastro: a granja será salva automaticamente.';
 });
 if($('#closePoultryForm'))$('#closePoultryForm').addEventListener('click',()=>$('#poultryForm').classList.add('hidden'));
 if($('#savePoultryOp'))$('#savePoultryOp').addEventListener('click',savePoultryOperation);
@@ -6644,7 +6656,7 @@ document.addEventListener('click',async function(e){
 });
 
 let maintenanceCache=[];
-function maintenanceStatus(p,vehicle){const km=Number(vehicle?.current_odometer_km||0),dueKm=Number(p.next_due_odometer_km||0);const today=new Date();today.setHours(0,0,0,0);const dueDate=p.next_due_at?new Date(p.next_due_at+'T00:00:00'):null;if((dueKm&&km>=dueKm)||(dueDate&&dueDate<today))return ['Vencida','error'];if((dueKm&&dueKm-km<=1000)||(dueDate&&((dueDate-today)/86400000)<=30))return ['Próxima','warn'];return ['Em dia','ok']}
+function maintenanceStatus(p,vehicle){if(!p.next_due_at&&!Number(p.next_due_odometer_km))return ['Sem programação','muted'];const km=Number(vehicle?.current_odometer_km||0),dueKm=Number(p.next_due_odometer_km||0);const today=new Date();today.setHours(0,0,0,0);const dueDate=p.next_due_at?new Date(p.next_due_at+'T00:00:00'):null;if((dueKm&&km>=dueKm)||(dueDate&&dueDate<today))return ['Vencida','error'];if((dueKm&&dueKm-km<=1000)||(dueDate&&((dueDate-today)/86400000)<=30))return ['Próxima','warn'];return ['Em dia','ok']}
 const MAINTENANCE_RECEIPT_BUCKET='v2-maintenance-receipts';
 const MAINTENANCE_STANDARD_TYPES=['Troca de óleo e filtros','Freios','Pneus','Elétrica','Suspensão','Motor','Câmbio','Revisão preventiva','Manutenção corretiva'];
 
@@ -6951,11 +6963,11 @@ async function loadMaintenances(){
  const list=$('#maintenanceList'),sel=$('#maintenanceVehicle');
  if(sel)sel.innerHTML='<option value="">Selecione...</option>'+vehicles.map(v=>'<option value="'+v.id+'">🚐 '+esc(v.description||v.model||v.plate)+' • '+esc(v.plate||'sem placa')+'</option>').join('')+'<option value="__other__">⚙️ Outro equipamento / item</option>';
 
- let counts={ok:0,warn:0,error:0};
+ let counts={ok:0,warn:0,error:0,muted:0};
  plans.forEach(p=>counts[maintenanceStatus(p,vehicles.find(v=>v.id===p.vehicle_id))[1]]++);
  const k=$('#maintenanceKpis');
  if(k)k.innerHTML='<div class="v2kpi maintenance-kpi"><div class="t">REGISTROS ATIVOS</div><div class="v">'+plans.length+'</div><div class="s">serviços e manutenções</div></div>'+
-  '<div class="v2kpi maintenance-kpi"><div class="t">EM DIA</div><div class="v">'+counts.ok+'</div><div class="s">sem pendências</div></div>'+
+  '<div class="v2kpi maintenance-kpi"><div class="t">EM DIA</div><div class="v">'+counts.ok+'</div><div class="s">'+counts.muted+' sem programação preventiva</div></div>'+
   '<div class="v2kpi maintenance-kpi"><div class="t">PRÓXIMAS</div><div class="v">'+counts.warn+'</div><div class="s">por data ou quilometragem</div></div>'+
   '<div class="v2kpi maintenance-kpi"><div class="t">VENCIDAS</div><div class="v">'+counts.error+'</div><div class="s">requer atenção</div></div>';
 
@@ -6964,7 +6976,7 @@ async function loadMaintenances(){
   const isOther=p.asset_type==='other'||!p.vehicle_id;
   const assetLabel=isOther?(p.asset_name||m.asset_name||'Outro equipamento / item'):(v?.description||v?.model||'Veículo');
   const assetMeta=isOther?'Equipamento / item':(v?.plate||'sem placa');
-  const serviceMeter=isOther?'':(' • '+Number(p.last_done_odometer_km||0).toLocaleString('pt-BR')+' km');
+  const serviceMeter=isOther?'':(' • '+(p.last_done_odometer_km==null?'KM não informado':Number(p.last_done_odometer_km).toLocaleString('pt-BR')+' km'));
   const nextMeter=isOther?'':(' • '+(p.next_due_odometer_km?Number(p.next_due_odometer_km).toLocaleString('pt-BR')+' km':'—'));
   const total=Number(m.parts_cost||0)+Number(m.labor_cost||0);
   const receipts=maintenanceReceiptHistory(m),latest=receipts[receipts.length-1];
@@ -7030,6 +7042,7 @@ function openMaintenanceEdit(id=''){
 window.openMaintenanceEdit=openMaintenanceEdit;
 
 async function saveMaintenance(addAnother=false){
+ if($('#saveMaintenanceEdit')?.disabled||$('#saveMaintenanceAndAnother')?.disabled)return;
  const currentId=$('#editMaintenanceId').value;
  const assetSelection=$('#maintenanceVehicle').value;
  const isOther=assetSelection==='__other__';
@@ -7133,6 +7146,17 @@ async function saveMaintenance(addAnother=false){
 }
 
 
+function isTrailerVehicle(v){
+ return /(carret|reboq|trailer)/i.test([v?.description,v?.model,v?.make,v?.metadata?.crlv?.species_type,v?.metadata?.vehicle_kind].filter(Boolean).join(' '));
+}
+function fuelInterval(current,previous){
+ if(!previous||!(Number(current.odometer_km)>0)||!(Number(previous.odometer_km)>0))return {km:0,rate:0,review:false};
+ const km=Number(current.odometer_km)-Number(previous.odometer_km);
+ const hours=(Date.parse(current.fueled_at)-Date.parse(previous.fueled_at))/3600000;
+ const rate=km/Number(current.liters);
+ const review=km<0||hours<=0||km/hours>130||!Number.isFinite(rate)||rate>20;
+ return {km:review?0:km,rate:!review&&fuelPlausibleKmL(rate)?rate:0,review};
+}
 let fuelCache=[],fuelVehicles=[];
 const FUEL_RECEIPT_BUCKET='v2-fuel-receipts';
 async function uploadFuelReceipt(file,vehicleId){
@@ -7337,7 +7361,7 @@ async function loadFuel(){
  }
  fuelCache=logs||[];fuelVehicles=vehicles||[];
  const primaryFuelVehicleId=deviceMode?(deviceVehicleInfo?.id||deviceTeam?.metadata?.primary_vehicle_id||null):null;
- const orderedFuelVehicles=[...fuelVehicles].sort((a,b)=>{
+ const orderedFuelVehicles=fuelVehicles.filter(v=>!isTrailerVehicle(v)&&v.status!=='inactive'&&v.status!=='archived').sort((a,b)=>{
   if(primaryFuelVehicleId&&a.id===primaryFuelVehicleId)return -1;
   if(primaryFuelVehicleId&&b.id===primaryFuelVehicleId)return 1;
   return String(a.description||a.model||a.plate||'').localeCompare(String(b.description||b.model||b.plate||''),'pt-BR');
@@ -7357,7 +7381,7 @@ async function loadFuel(){
  const ml=fuelCache.filter(x=>String(x.fueled_at||'').slice(0,7)===month);
  const liters=ml.reduce((a,x)=>a+Number(x.liters||0),0),cost=ml.reduce((a,x)=>a+Number(x.total_amount||0),0);
  let kmDriven=0;
- fuelVehicles.forEach(v=>{const a=fuelCache.filter(x=>x.vehicle_id===v.id&&Number(x.odometer_km)>0).sort((x,y)=>Number(x.odometer_km)-Number(y.odometer_km));if(a.length>1)kmDriven+=Math.max(0,Number(a[a.length-1].odometer_km)-Number(a[0].odometer_km))});
+ fuelVehicles.forEach(v=>{const a=fuelCache.filter(x=>x.vehicle_id===v.id).sort((x,y)=>Date.parse(x.fueled_at)-Date.parse(y.fueled_at));for(let i=1;i<a.length;i++)kmDriven+=fuelInterval(a[i],a[i-1]).km});
  const k=document.getElementById('fuelKpis');
  const title=document.getElementById('fuelScreenTitle'),sub=document.getElementById('fuelScreenSubtitle'),histSub=document.getElementById('fuelHistorySubtitle');
  const kmBtn=document.getElementById('newKmBtn'),kmCard=document.getElementById('kmEditCard');
@@ -7371,25 +7395,25 @@ async function loadFuel(){
  }else{
   if(title)title.textContent='⛽ Combustível & KM';
   if(sub)sub.textContent='Abastecimentos, quilometragem, consumo e custo da frota.';
-  if(histSub)histSub.textContent='Consumo é calculado entre abastecimentos consecutivos do mesmo veículo.';
+  if(histSub)histSub.textContent='Estimativa entre registros do mesmo veículo (até 200 lançamentos). Abastecimentos parciais afetam a média; anomalias exigem revisão.';
   if(k){k.style.display='grid';k.innerHTML=
    '<div class="v2kpi"><span>Gasto no mês</span><strong>'+money(cost)+'</strong></div>'+
    '<div class="v2kpi"><span>Litros no mês</span><strong>'+liters.toLocaleString('pt-BR',{maximumFractionDigits:1})+' L</strong></div>'+
    '<div class="v2kpi"><span>Preço médio</span><strong>'+(liters?money(cost/liters):'R$ 0,00')+'/L</strong></div>'+
-   '<div class="v2kpi"><span>KM entre abastecimentos</span><strong>'+kmDriven.toLocaleString('pt-BR')+' km</strong></div>';}
+   '<div class="v2kpi"><span>KM do histórico sem anomalias</span><strong>'+kmDriven.toLocaleString('pt-BR')+' km</strong></div>';}
   if(kmBtn)kmBtn.style.display='';
  }
  const list=document.getElementById('fuelList');if(!list)return;
  list.innerHTML=fuelCache.map(x=>{
   const v=fuelVehicles.find(z=>z.id===x.vehicle_id);
   const same=fuelCache.filter(z=>z.vehicle_id===x.vehicle_id&&new Date(z.fueled_at)<new Date(x.fueled_at)).sort((a,b)=>new Date(b.fueled_at)-new Date(a.fueled_at))[0];
-  const dist=same&&x.odometer_km&&same.odometer_km?Number(x.odometer_km)-Number(same.odometer_km):0;
-  const cons=dist>0&&Number(x.liters)>0?dist/Number(x.liters):0;
+  const interval=fuelInterval(x,same),dist=interval.km,cons=interval.rate;
   const cpk=dist>0?Number(x.total_amount||0)/dist:0;
   let badges='';
   if(!deviceMode){
    badges='<span class="pill">'+(Number(x.liters)>0?money(Number(x.total_amount||0)/Number(x.liters)):'R$ 0,00')+'/L</span>';
-   if(cons)badges+=' <span class="pill ok">'+cons.toLocaleString('pt-BR',{maximumFractionDigits:2})+' km/L</span> <span class="pill">'+money(cpk)+'/km</span>';
+   if(interval.review)badges+=' <span class="pill warn">Revisar hodômetro / abastecimento</span>';
+   if(cons)badges+=' <span class="pill ok">'+cons.toLocaleString('pt-BR',{maximumFractionDigits:2})+' km/L (estimativa)</span> <span class="pill">'+money(cpk)+'/km</span>';
   }
   if(x.station_name)badges+=(badges?' ':'')+'<span class="pill">⛽ '+esc(x.station_name)+'</span>';
   if(x.metadata&&x.metadata.driver)badges+=(badges?' ':'')+'<span class="pill">👤 '+esc(x.metadata.driver)+'</span>';
@@ -7405,6 +7429,7 @@ async function loadFuel(){
  }).join('')||'<div class="muted">Nenhum abastecimento registrado.</div>';
 }
 async function saveFuel(){
+ if(document.getElementById('saveFuelBtn')?.disabled)return;
  const m=document.getElementById('fuelMsg'),
        editId=document.getElementById('fuelEditId')?.value||'',
        vehicle_id=document.getElementById('fuelVehicle').value,
@@ -7415,7 +7440,11 @@ async function saveFuel(){
        receipt=document.getElementById('fuelReceiptFile').files?.[0]||null,
        existing=editId?fuelCache.find(x=>x.id===editId):null;
  if(!vehicle_id){m.textContent='Selecione a condução.';return}
- if(liters<=0){m.textContent='Informe a quantidade de litros.';return}
+ if(isTrailerVehicle(fuelVehicles.find(v=>v.id===vehicle_id))){m.textContent='Carretinhas não recebem abastecimento. Selecione a condução.';return}
+ if(!Number.isFinite(liters)||liters<=0){m.textContent='Informe a quantidade de litros.';return}
+ if(!Number.isFinite(total)||total<=0||!Number.isFinite(km)||km<0){m.textContent='Informe valor positivo e hodômetro válido.';return}
+ const previous=fuelCache.filter(x=>x.id!==editId&&x.vehicle_id===vehicle_id&&Date.parse(x.fueled_at)<Date.parse(document.getElementById('fuelDate').value)).sort((a,b)=>Date.parse(b.fueled_at)-Date.parse(a.fueled_at))[0];
+ if(fuelInterval({odometer_km:km,liters,fueled_at:document.getElementById('fuelDate').value},previous).review&&!confirm('O hodômetro difere muito do histórico ou indica consumo fora da faixa. Confira o painel e a nota. Salvar mesmo assim para revisão?'))return;
  const btn=document.getElementById('saveFuelBtn');
  try{
   if(btn)btn.disabled=true;
@@ -8946,9 +8975,9 @@ function renderFinanceView(){
  const income=Number(financeViewState.income||0),expense=Number(financeViewState.expense||0);
  const k=document.getElementById('financeKpis');
  if(k)k.innerHTML=
-  '<div class="finance-kpi"><span class="finance-kpi-label">ENTRADAS DO MÊS</span><strong class="finance-kpi-value">'+financeDisplayMoney(income)+'</strong></div>'+
-  '<div class="finance-kpi"><span class="finance-kpi-label">SAÍDAS DO MÊS</span><strong class="finance-kpi-value">'+financeDisplayMoney(expense)+'</strong></div>'+
-  '<div class="finance-kpi"><span class="finance-kpi-label">RESULTADO</span><strong class="finance-kpi-value">'+financeDisplayMoney(income-expense)+'</strong></div>'+
+  '<div class="finance-kpi"><span class="finance-kpi-label">RECEITAS POR COMPETÊNCIA</span><strong class="finance-kpi-value">'+financeDisplayMoney(income)+'</strong></div>'+
+  '<div class="finance-kpi"><span class="finance-kpi-label">DESPESAS POR COMPETÊNCIA</span><strong class="finance-kpi-value">'+financeDisplayMoney(expense)+'</strong></div>'+
+  '<div class="finance-kpi"><span class="finance-kpi-label">SALDO LANÇADO (PARCIAL)</span><strong class="finance-kpi-value">'+financeDisplayMoney(income-expense)+'</strong></div>'+
   '<div class="finance-kpi"><span class="finance-kpi-label">LANÇAMENTOS</span><strong class="finance-kpi-value count">'+financeCache.length+'</strong></div>';
 
  const l=document.getElementById('financeList');
@@ -8974,8 +9003,8 @@ async function loadFinance(){
  ]);
  financeCache=entries||[];
  const month=new Date().toISOString().slice(0,7),r=(rep||[]).find(x=>String(x.reference_month||'').slice(0,7)===month);
- const income=Number(r?.income||financeCache.filter(x=>String(x.issue_date||'').slice(0,7)===month&&x.entry_type==='income'&&x.status!=='cancelled').reduce((a,x)=>a+Number(x.amount||0),0));
- const expense=Number(r?.expense||financeCache.filter(x=>String(x.issue_date||'').slice(0,7)===month&&x.entry_type==='expense'&&x.status!=='cancelled').reduce((a,x)=>a+Number(x.amount||0),0));
+ const income=Number(r?.income??financeCache.filter(x=>String(x.competence_date||x.issue_date||'').slice(0,7)===month&&x.entry_type==='income'&&x.status!=='cancelled').reduce((a,x)=>a+Number(x.amount||0),0));
+ const expense=Number(r?.expense??financeCache.filter(x=>String(x.competence_date||x.issue_date||'').slice(0,7)===month&&x.entry_type==='expense'&&x.status!=='cancelled').reduce((a,x)=>a+Number(x.amount||0),0));
  financeViewState={income,expense};
  renderFinanceView();
 }
@@ -9001,15 +9030,16 @@ function renderFuelReportByVehicle(fuels=[],filter='all'){
  if(!rows.length){host.innerHTML='<div class="v2-empty">Nenhum abastecimento registrado para esta condução no período.</div>';return}
  host.innerHTML=rows.map(g=>{
   const avg=g.liters?g.cost/g.liters:0;
-  const kms=g.entries.map(e=>Number(e.odometer_km||0)).filter(x=>x>0);
-  const minKm=kms.length?Math.min(...kms):0,maxKm=kms.length?Math.max(...kms):0,kmRange=(minKm&&maxKm&&maxKm>=minKm)?maxKm-minKm:0;
+  const chronological=[...g.entries].sort((a,b)=>Date.parse(a.fueled_at)-Date.parse(b.fueled_at));
+  const intervals=chronological.slice(1).map((row,i)=>fuelInterval(row,chronological[i]));
+  const kmRange=intervals.reduce((total,interval)=>total+interval.km,0),needsReview=intervals.some(interval=>interval.review);
   const details=g.entries.map(e=>{
    const date=e.fueled_at?new Date(e.fueled_at).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo',day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'}):'—';
    const liters=poN(e.liters),cost=poN(e.total_amount),price=liters?cost/liters:0,driver=e.metadata?.driver_name||e.metadata?.driver||'';
    return '<tr><td>'+esc(date)+'</td><td>'+esc(e.station_name||'—')+(driver?'<div class="muted">'+esc(driver)+'</div>':'')+'</td><td class="num">'+(e.odometer_km?Number(e.odometer_km).toLocaleString('pt-BR'):'—')+'</td><td class="num">'+liters.toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:2})+' L</td><td class="num">'+money(price)+'</td><td class="num"><b>'+money(cost)+'</b></td></tr>';
   }).join('');
   return '<div class="fuel-report-vehicle"><div class="fuel-report-head"><div><strong>'+esc(g.name)+'</strong>'+(g.plate?'<span class="plate">'+esc(g.plate)+'</span>':'')+'<div class="muted">'+g.logs+' abastecimento(s) no período</div></div><div><b>'+g.liters.toLocaleString('pt-BR',{maximumFractionDigits:2})+' L</b><div class="muted">'+money(g.cost)+'</div></div></div>'+
-   '<div class="fuel-report-totals"><div class="fuel-report-total"><span>TOTAL LITROS</span><b>'+g.liters.toLocaleString('pt-BR',{maximumFractionDigits:2})+' L</b></div><div class="fuel-report-total"><span>CUSTO TOTAL</span><b>'+money(g.cost)+'</b></div><div class="fuel-report-total"><span>MÉDIA R$/L</span><b>'+money(avg)+'</b></div><div class="fuel-report-total"><span>KM ENTRE REGISTROS</span><b>'+(kmRange?kmRange.toLocaleString('pt-BR')+' km':'—')+'</b></div></div>'+
+   '<div class="fuel-report-totals"><div class="fuel-report-total"><span>TOTAL LITROS</span><b>'+g.liters.toLocaleString('pt-BR',{maximumFractionDigits:2})+' L</b></div><div class="fuel-report-total"><span>CUSTO TOTAL</span><b>'+money(g.cost)+'</b></div><div class="fuel-report-total"><span>MÉDIA R$/L</span><b>'+money(avg)+'</b></div><div class="fuel-report-total"><span>KM SEM ANOMALIAS</span><b>'+(kmRange?kmRange.toLocaleString('pt-BR')+' km':'—')+'</b>'+(needsReview?'<small>Hodômetro pendente de revisão</small>':'')+'</div></div>'+
    '<div style="overflow:auto"><table class="fuel-report-table"><thead><tr><th>Data</th><th>Posto / motorista</th><th style="text-align:right">KM</th><th style="text-align:right">Litros</th><th style="text-align:right">R$/L</th><th style="text-align:right">Total</th></tr></thead><tbody>'+details+'</tbody></table></div></div>';
  }).join('');
 }
@@ -9084,13 +9114,25 @@ async function loadReports(){
  adminReportCache={month,label:reportMonthLabel(month),company:cleanCompanyName(companyProfile.trade_name||companyProfile.legal_name),birds,revenue,cost,result,loadings,trucks:truckCount,avgTruck,byTeam,byCustomer,fuels,attendance:a,financial:f,generatedAt:new Date().toISOString()};
  if($('#reportsGeneratedAt'))$('#reportsGeneratedAt').textContent='Gerado em '+new Date().toLocaleString('pt-BR')+' • '+adminReportCache.company;
 }
+function downloadText(filename,text,mime='text/plain;charset=utf-8'){
+ const blob=new Blob([text],{type:mime});
+ const url=URL.createObjectURL(blob),a=document.createElement('a');
+ a.href=url;a.download=filename;a.style.display='none';document.body.appendChild(a);
+ try{a.click()}finally{a.remove();setTimeout(()=>URL.revokeObjectURL(url),30000)}
+}
+function csvCell(value){
+ let text=String(value??'');
+ // Spreadsheet formulas in names/descriptions must remain plain text.
+ if(typeof value==='string'&&/^[\s]*[=+@-]/.test(text))text="'"+text;
+ return '"'+text.replaceAll('"','""')+'"';
+}
 function exportAdminReportsCsv(){
  const r=adminReportCache;if(!r)return alert('Gere o relatório primeiro.');
  const lines=[['Relatório Comando 360',r.label],['Empresa',r.company],[],['Indicador','Valor'],['Aves',r.birds],['Apanhas',r.loadings],['Caminhões',r.trucks],['Faturamento',r.revenue],['Custos',r.cost],['Resultado',r.result],[],['Produção por equipe','Aves']];
  r.byTeam.forEach(x=>lines.push([x.name,x.birds]));
  lines.push([],['Produção por integrado','Aves']);r.byCustomer.forEach(x=>lines.push([x.name,x.birds]));
  lines.push([],['ABASTECIMENTOS POR CONDUÇÃO']);r.fuels.forEach(g=>{lines.push([],['Condução',g.name],['Placa',g.plate||''],['Abastecimentos',g.logs],['Litros',g.liters],['Custo total',g.cost],['Média R$/L',g.liters?g.cost/g.liters:0],['Data','Posto','KM','Litros','R$/L','Total']);g.entries.forEach(e=>{const l=poN(e.liters),c=poN(e.total_amount);lines.push([e.fueled_at?new Date(e.fueled_at).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo'}):'',e.station_name||'',e.odometer_km||'',l,l?c/l:0,c])})});
- const csv='\ufeff'+lines.map(row=>row.map(v=>'"'+String(v??'').replaceAll('"','""')+'"').join(';')).join('\n');
+ const csv='\ufeff'+lines.map(row=>row.map(csvCell).join(';')).join('\n');
  downloadText('Comando_360_Relatorio_'+r.month+'.csv',csv,'text/csv;charset=utf-8');
 }
 function printAdminReports(){
@@ -9208,7 +9250,7 @@ async function v2Go(tab){
    else if(tab==='configuracoes') await loadSettings();
    else if(tab==='alertas') await loadSmartAlerts();
    else if(tab==='integracoes') await loadIntegrations();
-   else if(tab==='ponto'){await loadSchedules();if(deviceMode)await loadTeamPoint();else await loadRHPoint();}
+   else if(tab==='ponto'){await loadSchedules();if(deviceMode)await loadTeamPoint();else{await loadEmployees();await loadRHPoint();}}
  }catch(e){
    console.warn('Falha ao carregar tela',tab,e);
    c360Toast('Não foi possível carregar '+(C360_MODULES[tab]?.[0]||'a tela'),e?.message||'Tente novamente.','error',5000);
@@ -9236,7 +9278,7 @@ document.addEventListener('change',function(e){
  if(e.target?.id==='fuelVehicle'){
   const v=fuelVehicles.find(x=>x.id===e.target.value);
   const km=document.getElementById('fuelKm');
-  if(km)km.value=v?.current_odometer_km||'';
+  if(km){km.value='';km.placeholder='Informe o hodômetro do painel';}
   const hint=document.getElementById('fuelVehicleHint');
   if(hint&&deviceMode){
    const primaryId=deviceVehicleInfo?.id||deviceTeam?.metadata?.primary_vehicle_id||null;
@@ -9255,6 +9297,7 @@ document.addEventListener('click',async function(e){
    document.getElementById('fuelEditCard').style.display='block';
    document.getElementById('fuelDate').value=localDateTimeInput();
    document.getElementById('fuelMsg').textContent='';
+   document.getElementById('fuelKm').value='';
    document.getElementById('fuelLiters').value='';
    document.getElementById('fuelTotal').value='';
    document.getElementById('fuelStation').value='';
@@ -9266,7 +9309,7 @@ document.addEventListener('click',async function(e){
     const primaryId=deviceVehicleInfo?.id||deviceTeam?.metadata?.primary_vehicle_id||null;
     const selected=fuelVehicles.find(v=>v.id===primaryId)||fuelVehicles[0];
     document.getElementById('fuelVehicle').value=selected.id;
-    document.getElementById('fuelKm').value=selected.current_odometer_km||'';
+    document.getElementById('fuelKm').value='';
     const hint=document.getElementById('fuelVehicleHint');
     if(hint)hint.textContent=selected.id===primaryId?'Condução principal da equipe selecionada. Você pode trocar abaixo.':'Selecione a condução que está sendo usada hoje.';
    }

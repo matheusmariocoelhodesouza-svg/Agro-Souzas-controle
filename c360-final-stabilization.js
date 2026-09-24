@@ -3,7 +3,7 @@
 if(window.C360_FINAL_STABILIZATION_VERSION)return;
 const VERSION='2026.09.23-v1-final1';
 const state={version:VERSION,monthlyLoads:0,fuelWarnings:0,lastFinanceCheck:0};
-let observer=null,timer=null,monthlyBusy=false,financeBusy=false,pricingBusy=false;
+let observer=null,timer=null,monthlyBusy=false,financeBusy=false,pricingBusy=false,lastPricingCheck=0;
 
 const $=s=>document.querySelector(s);
 const $$=s=>[...document.querySelectorAll(s)];
@@ -103,7 +103,7 @@ function reconcileFuelAutofill(){
  if(v&&isTrailerVehicle(v)){sel.value='';km.value='';if(msg){msg.className='error';msg.textContent='Carretinhas/reboques não podem receber abastecimento direto.'}return}
  const last=latestFuelLog(sel.value);const current=Number(v?.current_odometer_km||km.value||0),lastKm=Number(last?.odometer_km||0);
  if(severeOdometerDivergence(current,lastKm)){
-  km.value=lastKm||'';km.dataset.c360Reconciled='1';
+  km.dataset.c360Reconciled='1';
   if(msg){msg.className='c360-data-warning';msg.textContent=`KM do cadastro diverge muito do último abastecimento (${lastKm.toLocaleString('pt-BR')} km). Confirme o hodômetro real antes de salvar.`}
  }
 }
@@ -154,7 +154,7 @@ function ensureEmployeeFilters(){
  let bar=$('#c360EmployeeFilters');
  if(!bar){
   bar=document.createElement('div');bar.id='c360EmployeeFilters';bar.className='c360-filterbar';
-  bar.innerHTML='<input id="c360EmployeeSearch" type="search" placeholder="Buscar nome, matrícula, cargo ou equipe"><select id="c360EmployeeStatus"><option value="active">Ativos</option><option value="all">Todos</option><option value="archived">Arquivados</option></select>';
+  bar.innerHTML='<input id="c360EmployeeSearch" aria-label="Buscar funcionários" type="search" placeholder="Buscar nome, matrícula, cargo ou equipe"><select id="c360EmployeeStatus" aria-label="Situação do funcionário"><option value="active">Ativos</option><option value="all">Todos</option><option value="archived">Arquivados</option></select>';
   list.parentElement?.insertBefore(bar,list);
   bar.addEventListener('input',applyEmployeeFilters);bar.addEventListener('change',applyEmployeeFilters);
  }
@@ -176,7 +176,7 @@ function ensurePoultryFilters(){
  let bar=$('#c360PoultryFilters');
  if(!bar){
   bar=document.createElement('div');bar.id='c360PoultryFilters';bar.className='c360-filterbar c360-poultry-filters';
-  bar.innerHTML='<input id="c360PoultryDate" type="date" aria-label="Filtrar apanhas por data"><select id="c360PoultryTeam"><option value="all">Todas as equipes</option></select><select id="c360PoultryStatus"><option value="all">Todos os status</option><option value="planned">Programadas</option><option value="in_progress">Em andamento</option><option value="completed">Concluídas</option><option value="cancelled">Canceladas</option></select><input id="c360PoultrySearch" type="search" placeholder="Buscar granja, produtor, caminhão…">';
+  bar.innerHTML='<input id="c360PoultryDate" type="date" aria-label="Filtrar apanhas por data"><select id="c360PoultryTeam" aria-label="Equipe da apanha"><option value="all">Todas as equipes</option></select><select id="c360PoultryStatus" aria-label="Situação da apanha"><option value="all">Todos os status</option><option value="planned">Programadas</option><option value="in_progress">Em andamento</option><option value="completed">Concluídas</option><option value="cancelled">Canceladas</option></select><input id="c360PoultrySearch" aria-label="Buscar apanhas" type="search" placeholder="Buscar granja, produtor, caminhão…">';
   list.parentElement?.insertBefore(bar,list);
   bar.addEventListener('input',applyPoultryFilters);bar.addEventListener('change',applyPoultryFilters);
  }
@@ -188,7 +188,8 @@ function annotatePoultryItems(){
  const ops=getPoultryOps(),teams=getPoultryTeams();
  const teamSel=$('#c360PoultryTeam');if(teamSel){
   const current=teamSel.value||'all';const active=teams.filter(t=>t.status!=='inactive');
-  teamSel.innerHTML='<option value="all">Todas as equipes</option>'+active.map(t=>`<option value="${esc(t.id)}">${esc(t.name)}</option>`).join('');
+  const options='<option value="all">Todas as equipes</option>'+active.map(t=>`<option value="${esc(t.id)}">${esc(t.name)}</option>`).join('');
+  if(teamSel.innerHTML!==options)teamSel.innerHTML=options;
   if([...teamSel.options].some(o=>o.value===current))teamSel.value=current;
  }
  [...list.children].forEach((item,i)=>{
@@ -197,7 +198,8 @@ function annotatePoultryItems(){
   item.dataset.c360Date=day;item.dataset.c360Team=op.team_id||'';item.dataset.c360Status=op.status||'';
   let meta=item.querySelector(':scope > .c360-op-context');if(!meta){meta=document.createElement('div');meta.className='c360-op-context';item.prepend(meta)}
   const dateLabel=day?new Date(day+'T12:00:00-03:00').toLocaleDateString('pt-BR'):'Data não informada';
-  meta.textContent=`📅 ${dateLabel}${team?.name?' • 👥 '+team.name:''}`;
+  const label=`📅 ${dateLabel}${team?.name?' • 👥 '+team.name:''}`;
+  if(meta.textContent!==label)meta.textContent=label;
  });
 }
 function applyPoultryFilters(){
@@ -237,15 +239,15 @@ async function refreshFinanceReconciliation(){
  const rf=restFn(),cid=company();if(!rf||!cid)return;
  financeBusy=true;state.lastFinanceCheck=Date.now();
  try{
-  const w=monthWindow(),safe=p=>Promise.resolve(p).catch(()=>[]);
+  const w=monthWindow(),safe=p=>Promise.resolve(p);
   const [fuel,maintenance,inventory,financial]=await Promise.all([
    safe(rf('v2_fuel_logs','select=id,total_amount&company_id=eq.'+cid+'&fueled_at=gte.'+encodeURIComponent(w.start)+'&fueled_at=lt.'+encodeURIComponent(w.end))),
-   safe(rf('v2_work_orders','select=id,total_amount,status,created_at&company_id=eq.'+cid+'&created_at=gte.'+encodeURIComponent(w.start)+'&created_at=lt.'+encodeURIComponent(w.end))),
+   safe(rf('v2_maintenance_plans','select=id,metadata,last_done_at&company_id=eq.'+cid+'&active=eq.true&last_done_at=gte.'+w.startDate+'&last_done_at=lt.'+w.endDate)),
    safe(rf('v2_inventory_movements','select=id,movement_type,quantity,unit_cost,occurred_at&company_id=eq.'+cid+'&movement_type=eq.in&occurred_at=gte.'+encodeURIComponent(w.start)+'&occurred_at=lt.'+encodeURIComponent(w.end))),
-   safe(rf('v2_financial_entries','select=id,entry_type,amount,source_type,source_id,issue_date&company_id=eq.'+cid+'&issue_date=gte.'+w.startDate+'&issue_date=lt.'+w.endDate))
+   safe(rf('v2_financial_entries','select=id,entry_type,amount,source_type,source_id,issue_date,status&status=neq.cancelled&company_id=eq.'+cid+'&issue_date=gte.'+w.startDate+'&issue_date=lt.'+w.endDate))
   ]);
   const fuelTotal=(fuel||[]).reduce((a,x)=>a+Number(x.total_amount||0),0);
-  const maintTotal=(maintenance||[]).reduce((a,x)=>a+Number(x.total_amount||0),0);
+  const maintTotal=(maintenance||[]).reduce((a,x)=>a+Number(x.metadata?.parts_cost||0)+Number(x.metadata?.labor_cost||0),0);
   const inventoryTotal=(inventory||[]).reduce((a,x)=>a+Number(x.quantity||0)*Number(x.unit_cost||0),0);
   const financeExpense=(financial||[]).filter(x=>x.entry_type==='expense').reduce((a,x)=>a+Number(x.amount||0),0);
   const operational=fuelTotal+maintTotal+inventoryTotal;
@@ -253,14 +255,14 @@ async function refreshFinanceReconciliation(){
   if(!(operational>0)){el?.remove();return}
   if(!el){el=document.createElement('div');el.id='c360FinanceReconciliationNotice';el.className='c360-reconciliation-notice';const section=$('#financeiro');const anchor=section?.querySelector('.v2-kpis,.finance-kpis,.grid');if(anchor)anchor.insertAdjacentElement('afterend',el);else section?.prepend(el)}
   const mismatch=Math.abs(operational-financeExpense)>1;
-  el.dataset.state=mismatch?'attention':'ok';
-  el.innerHTML='<strong>'+(mismatch?'⚠ Conciliação financeira pendente':'✓ Custos operacionais conciliados')+'</strong><div>Combustível: <b>'+money(fuelTotal)+'</b> • Manutenção: <b>'+money(maintTotal)+'</b> • Entradas de estoque: <b>'+money(inventoryTotal)+'</b> • Despesas no Financeiro: <b>'+money(financeExpense)+'</b></div>'+(mismatch?'<small>Não trate o “resultado” como lucro líquido enquanto esses módulos não estiverem conciliados. Os registros originais foram preservados.</small>':'');
- }catch(e){console.warn('Comando 360 conciliação financeira',e)}finally{financeBusy=false}
+  el.dataset.state='attention';
+  el.innerHTML='<strong>'+(mismatch?'⚠ Conciliação financeira pendente':'Conferir vínculos dos custos operacionais')+'</strong><div>Combustível: <b>'+money(fuelTotal)+'</b> • Manutenção: <b>'+money(maintTotal)+'</b> • Entradas de estoque: <b>'+money(inventoryTotal)+'</b> • Despesas no Financeiro: <b>'+money(financeExpense)+'</b></div>'+(mismatch?'<small>Não trate o “resultado” como lucro líquido enquanto esses módulos não estiverem conciliados. Os registros originais foram preservados.</small>':'<small>Totais semelhantes não comprovam conciliação. Confira os vínculos dos lançamentos por origem antes de apurar o resultado.</small>');
+ }catch(e){console.warn('Comando 360 conciliação financeira',e);let el=$('#c360FinanceReconciliationNotice');if(!el){el=document.createElement('div');el.id='c360FinanceReconciliationNotice';el.className='c360-reconciliation-notice';$('#financeiro')?.prepend(el)}el.dataset.state='attention';el.textContent='Não foi possível conferir todos os custos operacionais. O saldo financeiro permanece parcial.'}finally{financeBusy=false}
 }
 
 async function refreshPricingTraceability(){
- if(isDevice()||activeScreen()!=='configuracoes'||pricingBusy)return;
- const rf=restFn(),cid=company();if(!rf||!cid)return;pricingBusy=true;
+ if(isDevice()||activeScreen()!=='configuracoes'||pricingBusy||Date.now()-lastPricingCheck<60000)return;
+ const rf=restFn(),cid=company();if(!rf||!cid)return;pricingBusy=true;lastPricingCheck=Date.now();
  try{
   const safe=p=>Promise.resolve(p).catch(()=>[]),w=monthWindow();
   const [contracts,ops]=await Promise.all([
@@ -284,7 +286,7 @@ function runUiPass(){
 function schedule(){clearTimeout(timer);timer=setTimeout(runUiPass,60)}
 function init(){
  runUiPass();
- document.addEventListener('c360:screen-changed',schedule);
+ document.addEventListener('c360:screen-changed',()=>{lastPricingCheck=0;state.lastFinanceCheck=0;schedule()});
  document.addEventListener('c360:bootstrap-ready',schedule);
  document.addEventListener('focusin',e=>{if(e.target?.id==='monthlyEmployee')ensureMonthlyEmployees()});
  document.addEventListener('change',e=>{if(e.target?.id==='fuelVehicle')setTimeout(()=>{sanitizeFuelSelectors();reconcileFuelAutofill()},0)});

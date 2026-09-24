@@ -1,12 +1,12 @@
 /* Comando 360 — fechamento v1 / 2026-09-23
    Estados de confiabilidade, filtros e alertas sem esconder dados originais. */
 #c360EmployeeFilters,#c360PoultryFilters{
-  display:grid;grid-template-columns:minmax(220px,1fr) 180px;gap:8px;align-items:center;
+  display:grid;grid-template-columns:minmax(0,1fr) 180px;gap:8px;align-items:center;
   margin:0 0 12px;padding:10px;background:#fff;border:1px solid #e2e8f0;border-radius:14px;
 }
 #c360PoultryFilters{grid-template-columns:160px 190px 170px minmax(220px,1fr)}
 #c360EmployeeFilters input,#c360EmployeeFilters select,#c360PoultryFilters input,#c360PoultryFilters select{
-  width:100%;min-height:42px;margin:0;padding:9px 11px;border:1px solid #cbd5e1;border-radius:10px;background:#fff;color:#0f172a;
+  min-width:0;width:100%;min-height:44px;margin:0;padding:9px 11px;border:1px solid #cbd5e1;border-radius:10px;background:#fff;color:#0f172a;
 }
 .c360-op-context{font-size:11px;font-weight:800;color:#51647b;margin:0 0 7px;padding:0 0 7px;border-bottom:1px dashed #e2e8f0}
 .c360-anomaly-pill{display:inline-flex!important;align-items:center!important;background:#fff7ed!important;color:#9a3412!important;border:1px solid #fdba74!important;border-radius:999px!important;padding:3px 7px!important;font-size:10px!important;font-weight:900!important}
