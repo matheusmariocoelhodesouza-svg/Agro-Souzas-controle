@@ -1,6 +1,6 @@
 (()=>{
 'use strict';
-const VERSION='2026.09.24-o3';
+const VERSION='2026.09.24-o4';
 function installStyles(){
  if(!document.getElementById('c360MobileRescueCss')){
   const link=document.createElement('link');
@@ -16,12 +16,19 @@ function installStyles(){
   link.href='./c360-signature-ui.css?v=20260924-1';
   (document.head||document.documentElement).appendChild(link);
  }
+ if(!document.getElementById('c360SignatureIconsCss')){
+  const link=document.createElement('link');
+  link.id='c360SignatureIconsCss';
+  link.rel='stylesheet';
+  link.href='./c360-signature-icons.css?v=20260924-1';
+  (document.head||document.documentElement).appendChild(link);
+ }
 }
 function installSignatureScript(){
  if(document.getElementById('c360SignatureUiJs')||window.__c360SignatureUi)return;
  const script=document.createElement('script');
  script.id='c360SignatureUiJs';
- script.src='./c360-signature-ui.js?v=20260924-1';
+ script.src='./c360-signature-ui.js?v=20260924-2';
  script.async=true;
  (document.head||document.documentElement).appendChild(script);
 }
