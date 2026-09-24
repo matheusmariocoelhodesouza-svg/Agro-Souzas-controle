@@ -40,3 +40,107 @@ html body.darkmode .c360-integrity-list>div,html body.darkmode .c360-integrity-e
   .c360-integrity-list>div{grid-template-columns:1fr}
   .c360-integrity-list>div small{grid-column:auto}
 }
+
+/* 2026-09-24 — fallback crítico em arquivo CORE.
+   Garante correção mesmo quando camadas visuais novas ainda estiverem presas no cache do PWA. */
+#combustivel #fuelKpis{
+  display:grid!important;
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  gap:10px!important;
+}
+#combustivel #fuelKpis .v2kpi{
+  position:relative!important;
+  display:flex!important;
+  flex-direction:column!important;
+  justify-content:center!important;
+  align-items:flex-start!important;
+  min-width:0!important;
+  min-height:112px!important;
+  height:auto!important;
+  padding:14px!important;
+  overflow:hidden!important;
+  border-radius:16px!important;
+  isolation:auto!important;
+}
+#combustivel #fuelKpis .c360-exact-surface{
+  display:none!important;
+  visibility:hidden!important;
+  opacity:0!important;
+  pointer-events:none!important;
+}
+#combustivel #fuelKpis .v2kpi > :not(.c360-exact-surface){
+  visibility:visible!important;
+  opacity:1!important;
+  transform:none!important;
+  position:static!important;
+}
+#combustivel #fuelKpis .v2kpi > span,
+#combustivel #fuelKpis .v2kpi > strong{
+  display:block!important;
+  width:auto!important;
+  max-width:100%!important;
+  min-width:0!important;
+  white-space:normal!important;
+  overflow:visible!important;
+  text-overflow:clip!important;
+  overflow-wrap:anywhere!important;
+}
+#combustivel #fuelKpis .v2kpi > span{
+  order:1!important;
+  margin:0 0 8px!important;
+  font-size:9.5px!important;
+  line-height:1.25!important;
+  font-weight:900!important;
+  letter-spacing:.45px!important;
+  text-transform:uppercase!important;
+}
+#combustivel #fuelKpis .v2kpi > strong{
+  order:2!important;
+  margin:0!important;
+  font-size:23px!important;
+  line-height:1.12!important;
+  font-weight:950!important;
+  letter-spacing:-.6px!important;
+}
+html body.darkmode #combustivel #fuelKpis .v2kpi{
+  background:linear-gradient(145deg,#102337,#0c1c2e)!important;
+  border:1px solid rgba(103,151,190,.25)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.035)!important;
+}
+html body.darkmode #combustivel #fuelKpis .v2kpi > span{
+  color:#a8bbd0!important;
+  -webkit-text-fill-color:#a8bbd0!important;
+}
+html body.darkmode #combustivel #fuelKpis .v2kpi > strong{
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+}
+@media(max-width:900px){
+  #combustivel #fuelKpis{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    gap:9px!important;
+  }
+  #combustivel #fuelKpis .v2kpi{
+    min-height:102px!important;
+    padding:13px!important;
+  }
+  #combustivel #fuelKpis .v2kpi > strong{font-size:20px!important}
+
+  /* O botão flutuante cobre conteúdo em telas reais; chat segue disponível pelo menu/IA. */
+  html body:not(.device-mode) .c360-chat-fab,
+  html body:not(.device-mode) #c360ChatFab{
+    display:none!important;
+    visibility:hidden!important;
+    pointer-events:none!important;
+  }
+
+  html body.app-ready:not(.device-mode) .wrap{
+    padding-bottom:calc(126px + env(safe-area-inset-bottom))!important;
+  }
+  html body.app-ready:not(.device-mode) #screenHost>.section{
+    padding-bottom:calc(156px + env(safe-area-inset-bottom))!important;
+  }
+}
+@media(max-width:360px){
+  #combustivel #fuelKpis{grid-template-columns:1fr!important}
+}
