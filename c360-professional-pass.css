@@ -1,0 +1,270 @@
+/* Comando 360 — Professional Pass 2026-09-24
+   Correções finais observadas em Android + acabamento visual consistente. */
+
+:root{
+  --c360-pro-bg:#071522;
+  --c360-pro-panel:#0d1d30;
+  --c360-pro-panel-2:#10243a;
+  --c360-pro-line:rgba(104,151,191,.24);
+  --c360-pro-text:#f7fbff;
+  --c360-pro-muted:#9fb2c7;
+  --c360-pro-blue:#2d9cff;
+  --c360-pro-green:#2fd2a0;
+  --c360-pro-amber:#ffc45b;
+  --c360-pro-red:#ff7385;
+}
+
+/* ---------- Navegação e cabeçalho ---------- */
+.v2navbtn .c360-pro-nav-icon,
+.header-icon-btn .c360-pro-header-icon,
+.fleet-subnav .c360-pro-inline-icon,
+.c360-pro-title-icon{
+  display:inline-grid!important;
+  place-items:center!important;
+  flex:0 0 auto!important;
+}
+.v2navbtn .c360-pro-nav-icon{width:24px;height:24px;color:#a7bad0}
+.v2navbtn .c360-pro-nav-icon svg{width:20px;height:20px;display:block}
+.v2navbtn .c360-pro-nav-label{min-width:0}
+.v2navbtn.active .c360-pro-nav-icon{color:#fff}
+
+.header-icon-btn .c360-pro-header-icon{width:22px;height:22px}
+.header-icon-btn .c360-pro-header-icon svg{width:21px;height:21px;display:block}
+
+.fleet-subnav button{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:8px!important;
+}
+.fleet-subnav .c360-pro-inline-icon{width:19px;height:19px}
+.fleet-subnav .c360-pro-inline-icon svg{width:18px;height:18px;display:block}
+
+#frota .fleet-hero-actions .btn,
+#combustivel>.card:first-child>.toolbar .btn,
+#manutencoes>.card:first-child>.toolbar .btn{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:8px!important;
+}
+.c360-pro-title-icon{width:27px;height:27px;margin-right:8px;vertical-align:-6px;color:#74c7ff}
+.c360-pro-title-icon svg{width:27px;height:27px;display:block}
+.c360-pro-button-icon{width:20px;height:20px;display:inline-grid;place-items:center;flex:0 0 20px}
+.c360-pro-button-icon svg{width:19px;height:19px;display:block}
+
+/* ---------- Frota ---------- */
+#frota .fleet-search>span{
+  display:none!important;
+}
+#frota .fleet-search input{
+  padding-left:14px!important;
+}
+#frota .fleet-controls{
+  overflow:hidden!important;
+}
+#frota .fleet-kpi{
+  min-width:0!important;
+}
+#frota .fleet-kpi b,#frota .fleet-kpi span{
+  min-width:0!important;
+}
+
+/* ---------- Combustível: corrige cards ainda afetados pelo Showcase Exact ---------- */
+#combustivel #fuelKpis{
+  display:grid!important;
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  gap:10px!important;
+  align-items:stretch!important;
+}
+#combustivel #fuelKpis .v2kpi,
+#combustivel #fuelKpis .v2kpi.c360-pro-metric.c360-exact-metric{
+  position:relative!important;
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:flex-start!important;
+  justify-content:center!important;
+  min-width:0!important;
+  min-height:116px!important;
+  height:auto!important;
+  padding:15px!important;
+  overflow:hidden!important;
+  border-radius:17px!important;
+  background:linear-gradient(145deg,#102337,#0c1c2e)!important;
+  border:1px solid var(--c360-pro-line)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.035)!important;
+  isolation:auto!important;
+}
+#combustivel #fuelKpis .v2kpi.c360-exact-metric>.c360-exact-surface{
+  display:none!important;
+  visibility:hidden!important;
+  pointer-events:none!important;
+}
+#combustivel #fuelKpis .v2kpi.c360-exact-metric>:not(.c360-exact-surface){
+  visibility:visible!important;
+  opacity:1!important;
+  pointer-events:auto!important;
+}
+#combustivel #fuelKpis .v2kpi>span:not(.c360-fuel-kpi-icon),
+#combustivel #fuelKpis .v2kpi>strong{
+  display:block!important;
+  position:static!important;
+  transform:none!important;
+  width:auto!important;
+  max-width:100%!important;
+  visibility:visible!important;
+  opacity:1!important;
+  white-space:normal!important;
+  overflow:visible!important;
+  text-overflow:clip!important;
+  word-break:normal!important;
+}
+#combustivel #fuelKpis .v2kpi>span:not(.c360-fuel-kpi-icon){
+  color:#a8bbd0!important;
+  -webkit-text-fill-color:#a8bbd0!important;
+  font-size:9.5px!important;
+  line-height:1.25!important;
+  font-weight:900!important;
+  letter-spacing:.5px!important;
+  text-transform:uppercase!important;
+  margin-top:8px!important;
+}
+#combustivel #fuelKpis .v2kpi>strong{
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+  font-size:24px!important;
+  line-height:1.12!important;
+  font-weight:950!important;
+  letter-spacing:-.65px!important;
+  margin-top:7px!important;
+  overflow-wrap:anywhere!important;
+}
+#combustivel #fuelKpis .c360-fuel-kpi-icon{
+  width:38px!important;
+  height:38px!important;
+  border-radius:12px!important;
+  display:grid!important;
+  place-items:center!important;
+  margin:0!important;
+  color:#70c7ff!important;
+  background:#113451!important;
+  border:1px solid rgba(69,162,232,.30)!important;
+}
+#combustivel #fuelKpis .v2kpi:nth-child(2) .c360-fuel-kpi-icon{color:#55e0ba!important;background:#0d3a31!important;border-color:rgba(57,209,166,.25)!important}
+#combustivel #fuelKpis .v2kpi:nth-child(3) .c360-fuel-kpi-icon{color:#ffd172!important;background:#3b2c10!important;border-color:rgba(240,182,57,.24)!important}
+#combustivel #fuelKpis .v2kpi:nth-child(4) .c360-fuel-kpi-icon{color:#b5a2ff!important;background:#292453!important;border-color:rgba(135,111,242,.28)!important}
+#combustivel #fuelKpis .c360-fuel-kpi-icon svg{width:22px;height:22px;display:block}
+
+#combustivel>.card:first-child{
+  border-radius:20px!important;
+}
+#combustivel>.card:first-child>.toolbar:first-child{
+  align-items:flex-start!important;
+  gap:14px!important;
+}
+#combustivel #fuelScreenTitle{
+  display:flex!important;
+  align-items:center!important;
+  gap:0!important;
+  color:#fff!important;
+  font-weight:950!important;
+  letter-spacing:-.4px!important;
+}
+#combustivel #fuelScreenSubtitle{color:#a5b8cc!important}
+
+/* ---------- Manutenção ---------- */
+#manutencoes .maintenance-kpi,
+#maintenanceKpis .maintenance-kpi{
+  border-radius:17px!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.03)!important;
+}
+#manutencoes .item,
+#maintenanceList .item{
+  border-radius:16px!important;
+  border-color:rgba(102,149,190,.22)!important;
+  background:linear-gradient(180deg,#0e2136,#0b1b2d)!important;
+  box-shadow:0 8px 22px rgba(0,0,0,.10)!important;
+}
+#maintenanceList .item strong{color:#f6faff!important}
+#maintenanceList .item .muted{color:#9eb2c8!important}
+
+/* ---------- Ações móveis: nada deve cobrir conteúdo ---------- */
+@media(max-width:900px){
+  /* IA continua disponível em Mais > Assistente IA; o FAB não deve tapar formulários/listas. */
+  html body.app-ready:not(.device-mode) #c360ChatFab#c360ChatFab{
+    display:none!important;
+  }
+
+  html body.app-ready:not(.device-mode) .wrap{
+    padding-bottom:calc(124px + env(safe-area-inset-bottom))!important;
+  }
+  html body.app-ready:not(.device-mode) #screenHost>.section{
+    padding-bottom:calc(154px + env(safe-area-inset-bottom))!important;
+  }
+
+  #combustivel #fuelKpis{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    gap:9px!important;
+  }
+  #combustivel #fuelKpis .v2kpi,
+  #combustivel #fuelKpis .v2kpi.c360-pro-metric.c360-exact-metric{
+    min-height:108px!important;
+    padding:13px!important;
+  }
+  #combustivel #fuelKpis .v2kpi>strong{
+    font-size:22px!important;
+  }
+  #combustivel>.card:first-child>.toolbar:first-child{
+    display:grid!important;
+    grid-template-columns:1fr!important;
+  }
+  #combustivel>.card:first-child>.toolbar:first-child>.toolbar{
+    display:grid!important;
+    grid-template-columns:1fr 1fr!important;
+    width:100%!important;
+    gap:9px!important;
+  }
+  #combustivel>.card:first-child>.toolbar:first-child>.toolbar .btn{
+    width:100%!important;
+    min-width:0!important;
+    min-height:50px!important;
+    white-space:normal!important;
+    line-height:1.15!important;
+  }
+
+  #frota .fleet-hero-actions .btn{
+    min-height:50px!important;
+  }
+  #frota .fleet-subnav button{
+    min-height:58px!important;
+  }
+
+  .mobile-bottom-nav{
+    z-index:9800!important;
+  }
+  .mobile-bottom-nav button{
+    -webkit-tap-highlight-color:transparent!important;
+  }
+}
+
+@media(max-width:520px){
+  .v2sidebar{
+    width:min(86vw,360px)!important;
+  }
+  .v2sidebar .v2logo{
+    padding-top:8px!important;
+  }
+  .v2sidebar .v2navbtn{
+    min-height:54px!important;
+    display:flex!important;
+    align-items:center!important;
+    gap:12px!important;
+    font-size:15px!important;
+  }
+  #combustivel #fuelKpis .v2kpi>strong{font-size:20px!important}
+  #combustivel #fuelKpis .v2kpi>span:not(.c360-fuel-kpi-icon){font-size:9px!important}
+}
+
+@media(max-width:360px){
+  #combustivel #fuelKpis{grid-template-columns:1fr!important}
+}
