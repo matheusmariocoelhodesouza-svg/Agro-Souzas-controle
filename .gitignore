@@ -1,0 +1,7 @@
+node_modules/
+qa-artifacts/
+qa-artifacts-r100/
+qa-stress-artifacts/
+qa-profile-stress-artifacts/
+playwright-report/
+test-results/

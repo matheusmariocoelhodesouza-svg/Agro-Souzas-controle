@@ -145,17 +145,15 @@ html body.darkmode #combustivel #fuelKpis .v2kpi > strong{
   #combustivel #fuelKpis{grid-template-columns:1fr!important}
 }
 
-/* 2026-09-24 — Apanhas / admin mobile.
-   Corrige sino invisível, densidade dos KPIs e área segura acima da navegação fixa. */
+/* 2026-09-25 — Apanhas / admin mobile.
+   Mantém os ícones vetoriais visíveis, KPIs densos e área segura acima da navegação fixa. */
 @media(max-width:767px){
   html body.app-ready:not(.device-mode) .v2topmeta .header-icon-btn[data-jump="alertas"]{
-    font-size:0!important;
+    font-size:inherit!important;
   }
   html body.app-ready:not(.device-mode) .v2topmeta .header-icon-btn[data-jump="alertas"]::before{
-    content:'🔔';
-    display:block;
-    font-size:18px!important;
-    line-height:1!important;
+    content:none!important;
+    display:none!important;
   }
   html body.app-ready:not(.device-mode) .v2topmeta .header-icon-btn[data-jump="alertas"] #headerAlertsCount{
     font-size:10px!important;

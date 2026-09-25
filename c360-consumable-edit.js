@@ -1,6 +1,6 @@
 (()=>{
 'use strict';
-const VERSION='2026.09.13-e3';
+const VERSION='2026.09.25-e4';
 const state={items:[],loadedAt:0,decorating:false,timer:null,retryTimer:null,busyDelete:new Set()};
 
 function q(sel,root=document){return root.querySelector(sel)}
@@ -12,7 +12,7 @@ function ensureStyles(){
  if(q('#c360ConsumableEditStyles'))return;
  const s=document.createElement('style');s.id='c360ConsumableEditStyles';s.textContent=`
  #insumos .c360-consumable-actions{display:flex;align-items:center;justify-content:flex-end;gap:6px;flex-wrap:wrap}
- #insumos .c360-consumable-edit-btn,#insumos .c360-consumable-delete-btn{border:1px solid #cbd5e1;background:#fff;color:#17324f;border-radius:9px;padding:7px 10px;font:inherit;font-size:11px;font-weight:850;cursor:pointer;white-space:nowrap;min-height:34px}
+ #insumos .c360-consumable-edit-btn,#insumos .c360-consumable-delete-btn{border:1px solid #cbd5e1;background:#fff;color:#17324f;border-radius:10px;padding:9px 11px;font:inherit;font-size:11px;font-weight:850;cursor:pointer;white-space:nowrap;min-height:44px}
  #insumos .c360-consumable-edit-btn:hover{background:#eef5ff;border-color:#9ebfe7}
  #insumos .c360-consumable-delete-btn{border-color:#fecaca;color:#b42318;background:#fff8f8}
  #insumos .c360-consumable-delete-btn:hover{background:#fee2e2;border-color:#fca5a5}
@@ -26,7 +26,7 @@ function ensureStyles(){
  .darkmode #insumos .c360-consumable-actions-head,.darkmode #insumos .c360-consumable-actions-cell{background:#102034}
  @media(max-width:700px){
   #insumos .c360-consumable-actions-head,#insumos .c360-consumable-actions-cell{min-width:142px}
-  #insumos .c360-consumable-edit-btn,#insumos .c360-consumable-delete-btn{padding:7px 8px;font-size:10px}
+  #insumos .c360-consumable-edit-btn,#insumos .c360-consumable-delete-btn{padding:9px 8px;font-size:10px}
  }
  `;document.head.appendChild(s);
 }

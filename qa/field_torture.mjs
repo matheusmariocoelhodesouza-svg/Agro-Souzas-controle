@@ -28,6 +28,7 @@ function mockRows(table){
  return[];
 }
 async function installApiMock(page){
+ await page.route('https://cdn.jsdelivr.net/**',route=>route.fulfill({status:200,contentType:'application/javascript; charset=utf-8',body:'/* Dependência externa isolada no teste de campo. */'}));
  await page.route('https://aycbrqziusxtxhsdfqjk.supabase.co/**',async route=>{
   const req=route.request(),url=new URL(req.url()),method=req.method().toUpperCase();let body='[]',status=200;
   if(url.pathname.includes('/auth/v1/user'))body=JSON.stringify({id:sample.user,aud:'authenticated',role:'authenticated',user_metadata:{name:'QA Campo'}});
@@ -50,8 +51,8 @@ async function prepareField(page){
 }
 async function runViewport(browser,{name,width,height}){
  const context=await browser.newContext({viewport:{width,height},isMobile:true,hasTouch:true,serviceWorkers:'block'});const page=await context.newPage();
- page.on('pageerror',e=>report.pageErrors.push({name,message:String(e?.stack||e)}));page.on('console',m=>{if(m.type()==='error'&&!/404|foto indisponível|not authenticated|favicon/i.test(m.text()))report.consoleErrors.push({name,text:m.text()})});
- await installApiMock(page);await page.goto(`${base}/?qa_v1=1`,{waitUntil:'domcontentloaded',timeout:30000});await page.waitForFunction(()=>typeof window.v2Go==='function'&&typeof window.initScreenRouter==='function',{timeout:15000});await prepareField(page);
+ page.on('pageerror',e=>report.pageErrors.push({name,message:String(e?.stack||e)}));page.on('console',m=>{if(m.type()==='error'&&!/404|foto indisponível|not authenticated|favicon/i.test(m.text()))report.consoleErrors.push({name,text:m.text(),url:m.location()?.url||''})});
+ await installApiMock(page);await page.goto(`${base}/?qa_v1=1`,{waitUntil:'domcontentloaded',timeout:30000});await page.waitForFunction(()=>typeof window.v2Go==='function'&&typeof window.initScreenRouter==='function',{timeout:15000});await prepareField(page);await page.waitForLoadState('networkidle',{timeout:8000}).catch(()=>{});
  assert(`${name}:final-layer`,await page.evaluate(()=>!!window.C360_FINAL_STABILIZATION_VERSION),await page.evaluate(()=>window.C360_FINAL_STABILIZATION_VERSION||''));
  assert(`${name}:download-helper`,await page.evaluate(()=>typeof window.downloadText==='function'));
  assert(`${name}:apanha-compatibilidade`,await page.evaluate(()=>!!document.getElementById('poSavedAviary')));

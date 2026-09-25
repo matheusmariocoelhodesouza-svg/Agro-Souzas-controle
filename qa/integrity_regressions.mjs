@@ -42,4 +42,43 @@ await test('New field operation tolerates optional inputs removed during async l
  w.applyPoultryRoleUI=()=>{};w.setPoultryEnergy=()=>{energy=true};
  try{w.eval(html.slice(start,end));await handler();assert.equal(energy,true);assert.equal(w.$('#poultryForm').classList.contains('hidden'),false)}finally{w.close()}
 });
+await test('Poultry refresh exits cleanly when its screen is unavailable after async loading',async()=>{
+ const html=fs.readFileSync('index.html','utf8');
+ const start=html.indexOf('async function loadPoultryOps(renderUi=true){');
+ const end=html.indexOf('\nasync function refreshOperationBirdTotals',start);
+ const dom=fixture('inicio'),w=dom.window;let calls=0;
+ w.$=selector=>w.document.querySelector(selector);w.deviceMode=false;w.companyId='fixture';
+ w.poultryOpsCache=[];w.poultryLoadings=[];w.poultryTruckLoads=[];
+ w.rest=async()=>{calls++;await delay(5);return[]};
+ try{w.eval(html.slice(start,end));const result=await w.loadPoultryOps();assert.equal(calls,3);assert.deepEqual(JSON.parse(JSON.stringify(result)),{ops:[],loadings:[],trucks:[]})}finally{w.close()}
+});
+await test('Device administration prioritizes active phones and collapses history',async()=>{
+ const html=fs.readFileSync('index.html','utf8');
+ const start=html.indexOf('function deviceTimeLabel(v){');
+ const end=html.indexOf('\nasync function revokeTeamDevice',start);
+ const dom=fixture('equipes','<div id="teamDevicesList"></div>'),w=dom.window;
+ w.$=selector=>w.document.querySelector(selector);w.esc=v=>String(v??'').replace(/[&<>"']/g,'');
+ const devices=[
+  {id:'old-1',team_id:'t1',active:false,device_name:'Antigo 1',paired_at:'2026-01-01T00:00:00Z'},
+  {id:'live-1',team_id:'t1',active:true,device_name:'Moto G15',paired_at:'2026-09-20T00:00:00Z',last_seen_at:'2026-09-25T12:00:00Z'},
+  {id:'old-2',team_id:'t1',active:false,device_name:'Antigo 2',paired_at:'2026-02-01T00:00:00Z'}
+ ];
+ try{
+  w.eval(html.slice(start,end));w.renderTeamDevices(devices,[{id:'t1',name:'Equipe 1'}]);
+  const list=w.document.getElementById('teamDevicesList'),history=list.querySelector('.c360-device-history');
+  assert.equal(list.querySelector(':scope > .device-admin-card')?.dataset.deviceId,'live-1');
+  assert.equal(history?.open,false);assert.equal(history?.querySelectorAll('.device-admin-card').length,2);
+  assert.deepEqual([...list.querySelectorAll('.device-admin-card')].map(x=>x.dataset.deviceId).sort(),['live-1','old-1','old-2']);
+  assert.match(fs.readFileSync('c360-device-control.js','utf8'),/cardsById\.get\(String\(d\.id/);
+ }finally{w.close()}
+});
+await test('Field point method survives session refresh while its screen is detached',async()=>{
+ const html=fs.readFileSync('index.html','utf8');
+ const start=html.indexOf("window.pointMethod='employee_number';");
+ const end=html.indexOf("$('#methodMatricula').addEventListener",start);
+ const dom=fixture('inicio'),w=dom.window;
+ const point=w.document.createElement('section');point.id='ponto';point.innerHTML='<div id="matriculaMode"></div><div id="faceMode" class="hidden"></div><div id="cameraChoice" class="hidden"></div><button id="methodMatricula"></button><button id="methodFace"></button><span id="nextPointLabel"></span><span id="pointMsg"></span><button id="registerPoint"></button>';
+ w.$=selector=>w.document.querySelector(selector);w.v2ScreenStore={ponto:point};
+ try{w.eval(html.slice(start,end));w.setPointMethod('face');assert.equal(point.querySelector('#faceMode').classList.contains('hidden'),false);assert.equal(point.querySelector('#matriculaMode').classList.contains('hidden'),true);assert.equal(point.querySelector('#registerPoint').disabled,true)}finally{w.close()}
+});
 console.log(`${checks} checks, ${failures} failures`);if(failures)process.exitCode=1;

@@ -126,7 +126,7 @@ async function testAdminForms(page){
  await route(page,'insumos','admin:insumos:rota');
  try{await page.evaluate(async()=>{if(typeof loadConsumables==='function')await loadConsumables()});await page.waitForTimeout(450);pass('admin:insumos:carregar')}catch(e){fail('admin:insumos:carregar',e)}
  if(await click(page,'#newConsumableItemBtn','admin:insumos:novo')){const open=await page.locator('#consumableItemForm').evaluate(e=>e.classList.contains('open'));if(!open)fail('admin:insumos:form','form não abriu');else pass('admin:insumos:form');await click(page,'#cancelConsumableItem','admin:insumos:cancelar')}
- const edit=page.locator('.c360-consumable-edit-btn');if(await edit.count()){await edit.first().click();await page.waitForTimeout(150);const st=await page.evaluate(()=>({id:document.getElementById('consumableItemForm')?.dataset.editId,name:document.getElementById('consumableName')?.value,cost:document.getElementById('consumableAvgCost')?.value}));if(st.id!==sample.item||st.name!=='Óleo QA')fail('admin:insumos:editar',JSON.stringify(st));else pass('admin:insumos:editar');await click(page,'#cancelConsumableItem','admin:insumos:editar-cancelar')}else fail('admin:insumos:editar','botão Editar não foi injetado');
+ const edit=page.locator('.c360-consumable-edit-btn');if(await edit.count()){const h=await edit.first().evaluate(e=>e.getBoundingClientRect().height);if(h<43.5)fail('admin:insumos:alvo-de-toque',String(h));else pass('admin:insumos:alvo-de-toque',String(h));await edit.first().click();await page.waitForTimeout(150);const st=await page.evaluate(()=>({id:document.getElementById('consumableItemForm')?.dataset.editId,name:document.getElementById('consumableName')?.value,cost:document.getElementById('consumableAvgCost')?.value}));if(st.id!==sample.item||st.name!=='Óleo QA')fail('admin:insumos:editar',JSON.stringify(st));else pass('admin:insumos:editar');await click(page,'#cancelConsumableItem','admin:insumos:editar-cancelar')}else fail('admin:insumos:editar','botão Editar não foi injetado');
  await route(page,'financeiro','admin:financeiro:rota');if(await click(page,'#newFinEntryBtn','admin:financeiro:novo')){await expectVisible(page,'#finEditCard','admin:financeiro:form',true);await click(page,'#saveFinEntry','admin:financeiro:validar-vazio');const msg=await page.locator('#finMsg').textContent();if(!msg?.trim())fail('admin:financeiro:validação','form vazio não mostrou validação');else pass('admin:financeiro:validação',msg.trim());await click(page,'#cancelFinEntry','admin:financeiro:cancelar')}
  const privacy=page.locator('#toggleFinancePrivacy');if(await privacy.count()){const before=await privacy.textContent();await privacy.click();const after=await privacy.textContent();if(before===after)fail('admin:financeiro:privacidade','botão não alterou estado');else pass('admin:financeiro:privacidade')}
 }
@@ -135,12 +135,22 @@ async function testAdminChat(page){
 }
 async function adminFlow(browser){
  const{context,page}=await openShell(browser,'admin',{width:1440,height:1000});await prepareMode(page,'admin');
+ try{
+  await page.waitForFunction(()=>document.documentElement.dataset.c360ProfessionalPass==='2026.09.25-pro2',{timeout:5000});
+  const icons=await page.evaluate(()=>[...document.querySelectorAll('header .header-icon-btn')].map(btn=>{const mark=btn.querySelector('.c360-pro-header-icon,.c360-header-svg'),style=mark?getComputedStyle(mark):null;return{hasSvg:!!mark?.querySelector('svg'),position:style?.position,background:style?.backgroundColor,width:mark?.getBoundingClientRect().width||0}}));
+  if(icons.length<3||icons.some(x=>!x.hasSvg||x.position!=='static'||x.width<18||x.background!=='rgba(0, 0, 0, 0)'))fail('admin:cabeçalho:ícones-vetoriais',JSON.stringify(icons));else pass('admin:cabeçalho:ícones-vetoriais');
+ }catch(e){fail('admin:cabeçalho:ícones-vetoriais',e)}
+ try{
+  const account=page.locator('#c360AccountBtn');
+  if(await account.count()){await account.click();await page.keyboard.press('Escape');const hidden=await page.locator('#c360AccountMenu').evaluate(e=>e.classList.contains('hidden'));if(!hidden)fail('admin:conta:escape','menu permaneceu aberto');else pass('admin:conta:escape')}
+ }catch(e){fail('admin:conta:escape',e)}
  for(const id of adminScreens)await route(page,id,`admin:tela:${id}`);
  await testPoint(page,'admin');await testPoultry(page,'admin','admin');await testAdminForms(page);await testAdminChat(page);await shot(page,'admin-final');await context.close();
 }
 async function fieldFlow(browser){
  const{context,page}=await openShell(browser,'campo',{width:390,height:844},true);await prepareMode(page,'field');await route(page,'equipehome','campo:início');
  try{await page.waitForSelector('#c360TeamChatTile',{timeout:5000})}catch{}
+ try{await page.waitForFunction(()=>document.querySelectorAll('#equipehome .team-tile .c360-field-vector-icon svg').length>=5,{timeout:5000});const vectors=await page.locator('#equipehome .team-tile .c360-field-vector-icon svg').count(),vehicle=await page.locator('#equipehome .team-home-head .c360-field-vehicle-icon svg').count();if(vectors<5||vehicle!==1)fail('campo:ícones-vetoriais',`${vectors} atalhos / ${vehicle} veículo`);else pass('campo:ícones-vetoriais')}catch(e){fail('campo:ícones-vetoriais',e)}
  const tiles=await page.evaluate(()=>[...document.querySelectorAll('#equipehome .team-tile')].map(x=>x.textContent.replace(/\s+/g,' ').trim()));
  for(const name of ['Apanha','Ponto','Abastecimento','Relatório','Mensagens']){if(!tiles.some(x=>x.includes(name)))fail(`campo:atalho:${name}`,tiles.join(' | '));else pass(`campo:atalho:${name}`)}
  for(const id of fieldScreens.slice(1))await route(page,id,`campo:tela:${id}`);
@@ -166,7 +176,7 @@ async function pwaOfflineFlow(browser){
  const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,serviceWorkers:'allow'});const page=await context.newPage();attachRuntime(page,'pwa');await installApiMock(page);
  await page.goto(`${base}/?qa_pwa=1`,{waitUntil:'domcontentloaded',timeout:30000});await waitRuntime(page);
  try{await page.evaluate(async()=>{await Promise.race([navigator.serviceWorker.ready,new Promise(r=>setTimeout(r,6000))])});await page.reload({waitUntil:'domcontentloaded'});await page.waitForTimeout(400);const controlled=await page.evaluate(()=>!!navigator.serviceWorker.controller);if(!controlled)fail('pwa:service-worker','página não ficou controlada');else pass('pwa:service-worker');
-  const cacheState=await page.evaluate(async()=>{const names=await caches.keys();const urls=['./c360-team-chat.js','./c360-farm-cache-hotfix.js','./c360-field-offline-hotfix.js','./c360-consumable-edit.js'];const hits={};for(const u of urls){let found=false;for(const n of names){const c=await caches.open(n);if(await c.match(u)){found=true;break}}hits[u]=found}return{names,hits}});for(const [u,ok] of Object.entries(cacheState.hits)){if(!ok)fail(`pwa:cache:${u}`,'asset não encontrado no cache');else pass(`pwa:cache:${u}`)}
+  const cacheState=await page.evaluate(async()=>{const names=await caches.keys();const urls=['./c360-team-chat.js','./c360-farm-cache-hotfix.js','./c360-field-offline-hotfix.js','./c360-consumable-edit.js','./c360-professional-pass.js','./c360-professional-pass.css','./c360-signature-ui.js'];const hits={};for(const u of urls){let found=false;for(const n of names){const c=await caches.open(n);if(await c.match(u)){found=true;break}}hits[u]=found}return{names,hits}});for(const [u,ok] of Object.entries(cacheState.hits)){if(!ok)fail(`pwa:cache:${u}`,'asset não encontrado no cache');else pass(`pwa:cache:${u}`)}
   await context.setOffline(true);await page.reload({waitUntil:'domcontentloaded',timeout:15000});await page.waitForTimeout(400);if(!await page.locator('#login').count())fail('pwa:offline-shell','shell não abriu offline');else pass('pwa:offline-shell');await audit(page,'pwa:offline');await context.setOffline(false);
  }catch(e){await context.setOffline(false);fail('pwa:offline',e)}await context.close();
 }

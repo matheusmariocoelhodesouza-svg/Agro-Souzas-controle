@@ -136,7 +136,7 @@ async function adminMicroActions(page,i){
  if(i%6===0){await route(page,'combustivel',`admin-${i}:fuel`);if(await clickIf(page,'#newFuelBtn',`admin-${i}:fuel-abrir`,'#fuelEditCard'))await clickIf(page,'#cancelFuelEdit',`admin-${i}:fuel-fechar`)}
  if(i%7===0){await route(page,'insumos',`admin-${i}:insumos`);try{await page.evaluate(async()=>{if(typeof loadConsumables==='function')await loadConsumables()});await page.waitForTimeout(25)}catch(e){record('flowErrors',{label:`admin-${i}:insumos-load`,message:errText(e)})}if(await clickIf(page,'#newConsumableItemBtn',`admin-${i}:insumo-abrir`,'#consumableItemForm'))await clickIf(page,'#cancelConsumableItem',`admin-${i}:insumo-fechar`)}
  if(i%8===0){await route(page,'financeiro',`admin-${i}:fin`);if(await clickIf(page,'#newFinEntryBtn',`admin-${i}:fin-abrir`,'#finEditCard'))await clickIf(page,'#cancelFinEntry',`admin-${i}:fin-fechar`);await clickIf(page,'#toggleFinancePrivacy',`admin-${i}:privacidade`)}
- if(i%9===0)await clickIf(page,'#themeToggle',`admin-${i}:tema`);
+ if(i%9===0&&await page.locator('#themeToggle').isVisible().catch(()=>false))await clickIf(page,'#themeToggle',`admin-${i}:tema`);
  if(i%10===0&&await page.locator('#c360ChatFab').count()){await clickIf(page,'#c360ChatFab',`admin-${i}:chat`,'#c360ChatOverlay');await clickIf(page,'#c360ChatClose',`admin-${i}:chat-fechar`)}
  if(i%11===0&&await page.locator('#c360AccountBtn').count()){await clickIf(page,'#c360AccountBtn',`admin-${i}:conta`);await page.keyboard.press('Escape').catch(()=>{})}
 }

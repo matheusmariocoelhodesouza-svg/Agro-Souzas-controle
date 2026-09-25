@@ -1,6 +1,6 @@
 (()=>{
 'use strict';
-const VERSION='2026.09.24-o5';
+const VERSION='2026.09.25-o6';
 function addCss(id,href){
  if(document.getElementById(id))return;
  const link=document.createElement('link');
@@ -18,11 +18,11 @@ function installStyles(){
  addCss('c360SignatureUiCss','./c360-signature-ui.css?v=20260924-2');
  addCss('c360SignatureIconsCss','./c360-signature-icons.css?v=20260924-1');
  /* Carregado por último para resolver os conflitos vistos nos aparelhos reais. */
- addCss('c360ProfessionalPassCss','./c360-professional-pass.css?v=20260924-1');
+ addCss('c360ProfessionalPassCss','./c360-professional-pass.css?v=20260925-1');
 }
 function installScripts(){
  addJs('c360SignatureUiJs','./c360-signature-ui.js?v=20260924-2','__c360SignatureUi');
- addJs('c360ProfessionalPassJs','./c360-professional-pass.js?v=20260924-1','__c360ProfessionalPass');
+ addJs('c360ProfessionalPassJs','./c360-professional-pass.js?v=20260925-1','__c360ProfessionalPass');
 }
 function installEntry(){
  const login=document.getElementById('login');

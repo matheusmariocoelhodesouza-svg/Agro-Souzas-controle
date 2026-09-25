@@ -1,4 +1,4 @@
-/* Comando 360 — Professional Pass 2026-09-24
+/* Comando 360 — Professional Pass 2026-09-25
    Correções finais observadas em Android + acabamento visual consistente. */
 
 :root{
@@ -30,6 +30,22 @@
 
 .header-icon-btn .c360-pro-header-icon{width:22px;height:22px}
 .header-icon-btn .c360-pro-header-icon svg{width:21px;height:21px;display:block}
+header .header-icon-btn>.c360-pro-header-icon,
+header .header-icon-btn>.c360-header-svg{
+  position:static!important;
+  inset:auto!important;
+  min-width:0!important;
+  width:22px!important;
+  height:22px!important;
+  padding:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  color:inherit!important;
+  font-size:inherit!important;
+  line-height:1!important;
+}
+header .header-icon-btn>.c360-pro-header-icon svg,
+header .header-icon-btn>.c360-header-svg svg{width:21px!important;height:21px!important;color:inherit!important;display:block!important}
 
 .fleet-subnav button{
   display:flex!important;
@@ -52,6 +68,12 @@
 .c360-pro-title-icon svg{width:27px;height:27px;display:block}
 .c360-pro-button-icon{width:20px;height:20px;display:inline-grid;place-items:center;flex:0 0 20px}
 .c360-pro-button-icon svg{width:19px;height:19px;display:block}
+.c360-pro-heading{display:flex!important;align-items:center!important;gap:8px!important;flex-wrap:wrap!important}
+.c360-pro-heading-icon{width:24px;height:24px;display:inline-grid;place-items:center;flex:0 0 24px;color:#238cf0}
+.c360-pro-heading-icon svg{width:23px;height:23px;display:block}
+#c360NativeTrackerQuick,#c360ChatFab{align-items:center!important;gap:8px!important}
+#c360UtilityDock :is(#c360NativeTrackerQuick,#c360ChatFab) .c360-pro-button-icon{width:17px;height:17px;flex-basis:17px}
+#c360UtilityDock :is(#c360NativeTrackerQuick,#c360ChatFab) .c360-pro-button-icon svg{width:16px;height:16px}
 
 /* ---------- Frota ---------- */
 #frota .fleet-search>span{
@@ -188,6 +210,68 @@
 #maintenanceList .item strong{color:#f6faff!important}
 #maintenanceList .item .muted{color:#9eb2c8!important}
 
+/* ---------- Campo: pictogramas vetoriais consistentes em todo Android ---------- */
+body.device-mode .team-home-head::after{content:none!important;display:none!important}
+body.device-mode .team-home-head>.c360-field-vehicle-icon{
+  position:absolute!important;
+  right:24px!important;
+  top:50%!important;
+  transform:translateY(-50%)!important;
+  display:grid!important;
+  place-items:center!important;
+  width:54px!important;
+  height:54px!important;
+  color:rgba(255,255,255,.42)!important;
+}
+body.device-mode .team-home-head>.c360-field-vehicle-icon svg{width:50px!important;height:50px!important;display:block!important}
+body.device-mode .team-tile .ico.c360-field-vector-icon::before{content:none!important;display:none!important}
+body.device-mode .team-tile .ico.c360-field-vector-icon{color:#1676d2!important}
+body.device-mode .team-tile .ico.c360-field-vector-icon svg{width:39px!important;height:39px!important;display:block!important;stroke-width:1.8}
+body.device-mode .team-home-grid>.team-tile:nth-child(2) .ico.c360-field-vector-icon{color:#148452!important}
+body.device-mode .team-home-grid>.team-tile:nth-child(3) .ico.c360-field-vector-icon{color:#bc6b08!important}
+body.device-mode .team-home-grid>.team-tile:nth-child(4) .ico.c360-field-vector-icon{color:#7357c9!important}
+body.device-mode #c360TeamChatTile .ico.c360-field-vector-icon{color:#087d91!important}
+body.device-mode .field-section-title>.c360-field-section-icon{
+  display:grid!important;
+  place-items:center!important;
+  color:#238cf0!important;
+  font-size:0!important;
+}
+body.device-mode .field-section-title>.c360-field-section-icon svg{width:23px!important;height:23px!important;display:block!important}
+
+/* ---------- Equipes e ações: hierarquia e alvos de toque ---------- */
+.c360-device-history{
+  margin-top:12px;
+  border:1px solid #dce6f0;
+  border-radius:15px;
+  background:#f8fafc;
+  overflow:hidden;
+}
+.c360-device-history>summary{
+  min-height:58px;
+  padding:12px 14px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:14px;
+  cursor:pointer;
+  list-style:none;
+  color:#173451;
+}
+.c360-device-history>summary::-webkit-details-marker{display:none}
+.c360-device-history>summary span:first-child{display:grid;gap:3px}
+.c360-device-history>summary strong{font-size:13px}
+.c360-device-history>summary small{color:#64748b;font-size:11px;line-height:1.35}
+.c360-device-history[open]>summary{border-bottom:1px solid #dce6f0}
+.c360-device-history-list{padding:12px}
+.c360-device-history-list .device-admin-card:last-child{margin-bottom:0}
+.darkmode .c360-device-history{background:#0b1727;border-color:#26384e}
+.darkmode .c360-device-history>summary{color:#e7eef9}
+.darkmode .c360-device-history>summary small{color:#9eb0c6}
+.darkmode .c360-device-history[open]>summary{border-color:#26384e}
+#insumos :is(.c360-consumable-edit-btn,.c360-consumable-delete-btn),
+.c360-device-actions .btn{min-height:44px!important}
+
 /* ---------- Ações móveis: nada deve cobrir conteúdo ---------- */
 @media(max-width:900px){
   /* IA continua disponível em Mais > Assistente IA; o FAB não deve tapar formulários/listas. */
@@ -263,6 +347,9 @@
   }
   #combustivel #fuelKpis .v2kpi>strong{font-size:20px!important}
   #combustivel #fuelKpis .v2kpi>span:not(.c360-fuel-kpi-icon){font-size:9px!important}
+  body.device-mode .team-home-head>.c360-field-vehicle-icon{right:17px!important;width:45px!important;height:45px!important}
+  body.device-mode .team-home-head>.c360-field-vehicle-icon svg{width:41px!important;height:41px!important}
+  body.device-mode .team-tile .ico.c360-field-vector-icon svg{width:34px!important;height:34px!important}
 }
 
 @media(max-width:360px){

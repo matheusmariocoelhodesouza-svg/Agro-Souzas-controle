@@ -1,6 +1,6 @@
 (()=>{
 'use strict';
-const VERSION='2026.09.13-mobile3';
+const VERSION='2026.09.25-mobile4';
 let timer=null,busy=false,cache=[],cacheAt=0,lastStockSig='',lastHistorySig='';
 function q(s,r=document){return r.querySelector(s)}
 function norm(v){return String(v??'').trim().toLocaleLowerCase('pt-BR')}
@@ -40,7 +40,7 @@ function ensureStyles(){
   #insumos .c360-mobile-metric span{display:block;font-size:9px;line-height:1.2;text-transform:uppercase;letter-spacing:.55px;color:var(--muted,#64748b);font-weight:800;margin-bottom:3px}
   #insumos .c360-mobile-metric b{display:block;font-size:14px;line-height:1.25;color:var(--ink,#0f172a);overflow-wrap:anywhere}
   #insumos .c360-mobile-product-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:11px;padding-top:11px;border-top:1px solid var(--line,#e2e8f0)}
-  #insumos .c360-mobile-product-actions .c360-consumable-edit-btn,#insumos .c360-mobile-product-actions .c360-consumable-delete-btn{width:100%!important;min-height:39px!important;border-radius:11px!important;font-size:11px!important;padding:7px 9px!important}
+  #insumos .c360-mobile-product-actions .c360-consumable-edit-btn,#insumos .c360-mobile-product-actions .c360-consumable-delete-btn{width:100%!important;min-height:46px!important;border-radius:11px!important;font-size:11px!important;padding:9px!important}
   #insumos .c360-mobile-history-card{background:var(--card,#fff);color:var(--ink,#0f172a);border:1px solid var(--line,#e2e8f0);border-radius:15px;padding:12px 13px;min-width:0}
   #insumos .c360-mobile-history-top{display:flex;align-items:center;justify-content:space-between;gap:9px;margin-bottom:9px}
   #insumos .c360-mobile-history-date{font-size:11px;color:var(--muted,#64748b);font-weight:750;line-height:1.25}

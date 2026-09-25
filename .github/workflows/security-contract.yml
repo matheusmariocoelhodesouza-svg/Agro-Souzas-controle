@@ -38,7 +38,10 @@ jobs:
           grep -qi "revoke truncate, references, trigger on all tables in schema public from anon, authenticated" "$MIG"
           grep -qi "v2_has_permission(company_id,'settings.manage')" "$MIG"
           grep -qi "v2_is_company_member(((storage.foldername(name))\[1\])::uuid)" "$MIG"
-          ! grep -Ei "profiles.+role.+admin" "$MIG"
+          if grep -Ev '^[[:space:]]*--' "$MIG" | grep -Eqi "profiles.+role.+admin"; then
+            echo "Legacy profiles.role=admin bypass found in executable SQL"
+            exit 1
+          fi
           for t in movit_configuration v2_attendance_audit_log v2_integration_credentials v2_integration_oauth_states v2_native_tracker_pairing_codes; do grep -q "$t" "$DENY"; done
           grep -q "as restrictive for all to anon, authenticated" "$DENY"
           grep -q "using (false) with check (false)" "$DENY"
@@ -62,7 +65,10 @@ jobs:
           grep -q "v2_alerts" "$PATCH"
           grep -q "v2_legal_acceptances_user_idx" "$IDX"
           grep -q "v2_platform_incidents_resolved_by_idx" "$IDX"
-          ! grep -Eqi "(secret[_-]?key|service[_-]?role)[[:space:]]*[:=][[:space:]]*['\"][A-Za-z0-9_-]{20,}" c360-saas-readiness.js legal.html
+          if grep -Eqi "(secret[_-]?key|service[_-]?role)[[:space:]]*[:=][[:space:]]*['\"][A-Za-z0-9_-]{20,}" c360-saas-readiness.js legal.html; then
+            echo "Privileged credential pattern found in browser-facing files"
+            exit 1
+          fi
       - name: Validate safe device activation ordering
         run: |
           python - <<'PY'
