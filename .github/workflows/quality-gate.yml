@@ -53,11 +53,12 @@ jobs:
         run: |
           set -euo pipefail
           files=(
-            index.html cadastro.html dda.html reparar.html comando360.webmanifest sw-v7-02.js sw-v7-02-core-hotfix61.js
+            index.html cadastro.html dda.html reparar.html comando360.webmanifest sw-v7-02.js sw-v7-02-core-hotfix62.js
             c360-autorecovery.js c360-platform.js c360-product-core.js c360-release-core.js
             c360-quality-hotfix.js c360-quality-core.js c360-field-offline-hotfix.js
             c360-team-chat.js c360-farm-cache-hotfix.js c360-consumable-edit.js
             c360-system-health.js c360-onboarding-entry.js c360-fiscal.js c360-native-tracker-admin.js c360-ux-polish-hotfix.js
+            c360-professional-pass.js c360-professional-pass.css c360-signature-ui.js c360-signature-ui.css c360-signature-icons.css
             c360-final-stabilization.js c360-final-stabilization.css c360-trailer-hitches.js
             c360-ui-polish.css c360-premium-ui.css c360-product-ui.css c360-release-core.css
             c360-system-health.css c360-fiscal.css qa/reference_audit.py qa/release_scorecard.py qa/performance_budget.mjs
@@ -91,7 +92,7 @@ jobs:
           set -euo pipefail
           grep -q 'c360-quality-hotfix.js' index.html
           grep -q 'c360-ui-polish.css' index.html
-          ! grep -q '<script>window.onload' index.html
+          if grep -q '<script>window.onload' index.html; then echo 'Unsafe inline window.onload found'; exit 1; fi
 
           grep -q "BOOT_VERSION='2026.09.23-audit2'" c360-quality-hotfix.js
           grep -q "const VERSION='2026.09.22-r100-1'" c360-release-core.js
@@ -147,12 +148,12 @@ jobs:
           grep -q 'body.device-mode' c360-product-ui.css
 
           SW_CORE="$(grep -oE 'sw-v7-02-core-hotfix[0-9]+\.js' sw-v7-02.js | head -n1)"
-          test "$SW_CORE" = 'sw-v7-02-core-hotfix61.js'
+          test "$SW_CORE" = 'sw-v7-02-core-hotfix62.js'
           test -s "$SW_CORE"
           SW_CONTRACT="$(cat sw-v7-02.js "$SW_CORE")"
-          grep -q 'loader 7.15.0' sw-v7-02.js
+          grep -q 'loader 7.16.0' sw-v7-02.js
           grep -q 'sw-auth-refresh-guard.js' sw-v7-02.js
-          grep -q "comando360-v7-02-hotfix61" <<<"$SW_CONTRACT"
+          grep -q "comando360-v7-02-hotfix62" <<<"$SW_CONTRACT"
           grep -q 'comando360-stable-v1' <<<"$SW_CONTRACT"
           grep -q 'c360-platform.js' <<<"$SW_CONTRACT"
           grep -q 'c360-product-core.js' <<<"$SW_CONTRACT"
@@ -162,12 +163,15 @@ jobs:
           grep -q './c360-final-stabilization.css' "$SW_CORE"
           grep -q './c360-native-tracker-admin.js' "$SW_CORE"
           grep -q './c360-ux-polish-hotfix.js' "$SW_CORE"
-          ! grep -q 'CORE.push' sw-v7-02.js
-          ! grep -q '?' sw-v7-02.js
+          grep -q './c360-professional-pass.js' "$SW_CORE"
+          grep -q './c360-professional-pass.css' "$SW_CORE"
+          grep -q './c360-signature-ui.js' "$SW_CORE"
+          if grep -q 'CORE.push' sw-v7-02.js; then echo 'Runtime service-worker cache mutation found'; exit 1; fi
+          if grep -q '?' sw-v7-02.js; then echo 'Version query found in service-worker loader'; exit 1; fi
           grep -q 'C360_ROLLBACK_TO_STABLE' <<<"$SW_CONTRACT"
           grep -q 'C360_MARK_HEALTHY' <<<"$SW_CONTRACT"
-          ! grep -q 'patchAppHtml' <<<"$SW_CONTRACT"
-          ! grep -q 'repairLegacyAppHtml' <<<"$SW_CONTRACT"
+          if grep -q 'patchAppHtml' <<<"$SW_CONTRACT"; then echo 'Legacy HTML patching found'; exit 1; fi
+          if grep -q 'repairLegacyAppHtml' <<<"$SW_CONTRACT"; then echo 'Legacy HTML repair found'; exit 1; fi
 
           grep -q 'interactiveWall>1500' qa/performance_budget.mjs
           grep -q 'completeWall>2500' qa/performance_budget.mjs

@@ -1,6 +1,6 @@
 (()=>{
 'use strict';
-const VERSION='2026.09.17-device-control3';
+const VERSION='2026.09.25-device-control4';
 const DEFAULT_PERMISSIONS={ponto:true,apanha:true,abastecimento:true,relatorio:true,impressao:true,manutencao:false,insumos:false,frota:false};
 const PERMISSION_LABELS={
   ponto:'Ponto e reconhecimento facial',
@@ -93,8 +93,9 @@ async function decorateAdminCards(){
    const state=await fetchAdminDeviceState();
    const locMap=new Map(state.locations.map(x=>[x.device_access_id,x]));
    const cards=[...list.querySelectorAll('.device-admin-card')];
+   const cardsById=new Map(cards.map(card=>[String(card.dataset.deviceId||''),card]));
    state.devices.forEach((d,i)=>{
-     const card=cards[i];if(!card||card.querySelector('[data-c360-device-controls]'))return;
+     const card=cardsById.get(String(d.id||''))||cards[i];if(!card||card.querySelector('[data-c360-device-controls]'))return;
      const nativeManaged=!!d.device_info?.native_managed;
      const loc=locMap.get(d.id);
      const box=document.createElement('div');box.dataset.c360DeviceControls=d.id;

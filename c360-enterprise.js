@@ -1,6 +1,6 @@
 (()=>{
 'use strict';
-const VERSION='2026.09.13-e1';
+const VERSION='2026.09.25-e2';
 const q=(s,r=document)=>r.querySelector(s);
 const qq=(s,r=document)=>[...r.querySelectorAll(s)];
 const safe=v=>typeof esc==='function'?esc(String(v??'')):String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -111,9 +111,10 @@ function bind(){
   if(e.target.closest('[data-enterprise-logout]')){e.preventDefault();logout();return}
   if(e.target.closest('[data-launch-dismiss]')){e.preventDefault();localStorage.setItem(storageKey,'1');q('#c360Launchpad')?.remove();return}
  });
+ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeAccount()});
  window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installPrompt=e;renderAccount()});
  window.addEventListener('appinstalled',()=>{installPrompt=null;renderAccount();toast('Comando 360 instalado','O aplicativo foi adicionado ao aparelho.','success')});
- document.addEventListener('c360:screen-changed',e=>{fixA11y();if(e.detail?.id==='inicio')setTimeout(renderLaunchpad,120)});
+ document.addEventListener('c360:screen-changed',e=>{closeAccount();fixA11y();if(e.detail?.id==='inicio')setTimeout(renderLaunchpad,120)});
 }
 function observe(){if(observer)return;observer=new MutationObserver(()=>{if(document.body.classList.contains('app-ready')){enhanceEmptyStates();fixA11y();if(q('#inicio')&&!q('#c360Launchpad')&&localStorage.getItem(storageKey)!=='1')setTimeout(renderLaunchpad,100)}});observer.observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:['class','hidden']})}
 function init(){bind();observe();const timer=setInterval(()=>{if(document.body.classList.contains('app-ready')&&cid()){clearInterval(timer);refreshShell()}},350);setTimeout(()=>clearInterval(timer),15000)}
