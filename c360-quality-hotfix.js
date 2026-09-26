@@ -3,11 +3,7 @@
 const BOOT_VERSION='2026.09.25-audit3';
 const recoveryModule='./c360-autorecovery.js';
 
-/*
- * Runtime enxuto: somente o que afeta todas as telas entra no primeiro paint.
- * Estilos de admin/campo e recursos de módulos pesados são carregados quando
- * o modo/tela correspondente realmente é usado.
- */
+/* Runtime enxuto: só recursos globais entram no primeiro paint. */
 const commonStyles=[
  './c360-premium-ui.css','./c360-product-ui.css','./c360-visual-system.css','./c360-contrast-fix.css',
  './c360-premium-theme-v2.css','./c360-showcase-theme.css','./c360-showcase-exact.css','./c360-visual-final.css',
@@ -28,25 +24,10 @@ const routeStyles={
 };
 
 const essentialModules=[
- './c360-platform.js',
- './c360-product-core.js',
- './c360-release-core.js',
- './c360-quality-core.js',
- './c360-farm-cache-hotfix.js',
- './c360-field-offline-hotfix.js',
- './c360-field-stability.js',
- './c360-runtime-compatibility.js',
- './c360-final-stabilization.js',
- './c360-data-integrity.js',
- './c360-field-route-guard.js',
- './c360-ux-polish-hotfix.js',
- './c360-onboarding-entry.js',
- './c360-team-chat.js',
- './c360-enterprise.js',
- './c360-commercial.js',
- './c360-saas-readiness.js',
- './c360-rpc-bridge.js',
- './c360-showcase-exact.js'
+ './c360-platform.js','./c360-product-core.js','./c360-release-core.js','./c360-quality-core.js','./c360-farm-cache-hotfix.js',
+ './c360-field-offline-hotfix.js','./c360-field-stability.js','./c360-runtime-compatibility.js','./c360-final-stabilization.js','./c360-data-integrity.js',
+ './c360-field-route-guard.js','./c360-ux-polish-hotfix.js','./c360-onboarding-entry.js','./c360-team-chat.js','./c360-enterprise.js',
+ './c360-commercial.js','./c360-saas-readiness.js','./c360-rpc-bridge.js','./c360-showcase-exact.js'
 ];
 const routeModules={
  relatorios:['./c360-report-share.js','./c360-report-stability.js'],
@@ -61,10 +42,8 @@ const routeModules={
  saudesistema:['./c360-system-health.js']
 };
 
-const loadedStyles=new Set();
-const loadedModules=new Set();
-const loadingStyles=new Map();
-const loadingModules=new Map();
+const loadedStyles=new Set(),loadedModules=new Set();
+const loadingStyles=new Map(),loadingModules=new Map();
 const lazyErrors=[];
 let modeObserver=null;
 
@@ -75,7 +54,7 @@ function mark(name){try{performance.mark(name)}catch(_){}}
 function emit(name,detail){document.dispatchEvent(new CustomEvent(name,{detail}))}
 function isDevice(){return !!document.body?.classList.contains('device-mode')}
 function isAppReady(){return !!document.body?.classList.contains('app-ready')}
-function isMobileAdmin(){return !isDevice()&&matchMedia?.('(max-width:900px)')?.matches}
+function isMobileAdmin(){return !isDevice()&&!!(window.matchMedia&&window.matchMedia('(max-width:900px)').matches)}
 function activeScreen(){return document.querySelector('#screenHost .section.active')?.id||document.querySelector('#screenHost [data-screen]:not([hidden])')?.id||document.querySelector('.section.active')?.id||''}
 
 function preconnect(href){
@@ -88,8 +67,7 @@ function existingScript(src){return[...document.scripts].find(s=>{try{return s.s
 function appendStyle(href){
  const key=baseName(href);if(loadedStyles.has(key))return Promise.resolve({ok:true,src:href,reused:true});
  if(loadingStyles.has(key))return loadingStyles.get(key);
- const found=existingStyle(href);
- if(found){loadedStyles.add(key);return Promise.resolve({ok:true,src:href,reused:true})}
+ const found=existingStyle(href);if(found){loadedStyles.add(key);return Promise.resolve({ok:true,src:href,reused:true})}
  const job=new Promise(resolve=>{const l=document.createElement('link');l.rel='stylesheet';l.href=resourceUrl(href);l.dataset.c360Style=key;l.onload=()=>{loadedStyles.add(key);loadingStyles.delete(key);resolve({ok:true,src:href})};l.onerror=()=>{loadingStyles.delete(key);resolve({ok:false,src:href,error:'Falha ao carregar '+key})};document.head.appendChild(l)});
  loadingStyles.set(key,job);return job;
 }
@@ -108,84 +86,52 @@ async function loadStyles(list){
  return results.map(r=>r.status==='fulfilled'?r.value:{ok:false,error:r.reason?.message||String(r.reason)});
 }
 async function loadScripts(list){
- const results=[];
- /* A ordem de inicialização continua determinística, mas cada arquivo só é buscado uma vez. */
- for(const src of [...new Set(list)]){
-  try{results.push(await appendScript(src))}catch(e){results.push({ok:false,src,error:e?.message||String(e)})}
- }
- return results;
+ /* async=false preserva ordem de execução e o map inicia os downloads em paralelo. */
+ const results=await Promise.allSettled([...new Set(list)].map(appendScript));
+ return results.map(r=>r.status==='fulfilled'?r.value:{ok:false,error:r.reason?.message||String(r.reason)});
 }
 function errorsFrom(results){return results.filter(x=>!x?.ok).map(x=>x?.error||('Falha em '+(x?.src||'recurso')))}
 
 async function loadModeStyles(){
  if(!isAppReady())return [];
- let list=[];
- if(isDevice())list=fieldStyles;
- else list=[...adminStyles,...(isMobileAdmin()?mobileAdminStyles:[])];
+ const list=isDevice()?fieldStyles:[...adminStyles,...(isMobileAdmin()?mobileAdminStyles:[])];
  const results=await loadStyles(list);lazyErrors.push(...errorsFrom(results));return results;
 }
 function normalizeScreen(value){return String(value||'').trim().toLowerCase().replace(/^#/, '')}
-function modulesForScreen(screen){
- const s=normalizeScreen(screen);const out=[];
- for(const [key,list] of Object.entries(routeModules)){
-  if(s===key||s.includes(key))out.push(...list);
- }
- return out;
-}
-function stylesForScreen(screen){
- const s=normalizeScreen(screen);const out=[];
- for(const [key,list] of Object.entries(routeStyles)){
-  if(s===key||s.includes(key))out.push(...list);
- }
+function resourcesForScreen(screen,map){
+ const s=normalizeScreen(screen),out=[];
+ for(const [key,list] of Object.entries(map))if(s===key||s.includes(key))out.push(...list);
  return out;
 }
 async function loadScreenFeatures(screen){
  const s=normalizeScreen(screen);if(!s)return;
- const [styleResults,moduleResults]=await Promise.all([loadStyles(stylesForScreen(s)),loadScripts(modulesForScreen(s))]);
+ const [styleResults,moduleResults]=await Promise.all([loadStyles(resourcesForScreen(s,routeStyles)),loadScripts(resourcesForScreen(s,routeModules))]);
  lazyErrors.push(...errorsFrom(styleResults),...errorsFrom(moduleResults));
  emit('c360:lazy-feature-ready',{version:BOOT_VERSION,screen:s,styles:styleResults,modules:moduleResults,errors:[...lazyErrors]});
 }
 function installRuntimeTriggers(){
  const sync=()=>{loadModeStyles();loadScreenFeatures(activeScreen())};
- if(document.body&&!modeObserver){
-  modeObserver=new MutationObserver(sync);
-  modeObserver.observe(document.body,{attributes:true,attributeFilter:['class']});
- }
+ if(document.body&&!modeObserver){modeObserver=new MutationObserver(sync);modeObserver.observe(document.body,{attributes:true,attributeFilter:['class']})}
  document.addEventListener('c360:screen-changed',e=>loadScreenFeatures(e?.detail?.screen||e?.detail?.id||activeScreen()));
  document.addEventListener('click',e=>{
   const target=e.target.closest('[data-jump],[data-v2tab],[data-screen]');if(!target)return;
-  const screen=target.dataset.jump||target.dataset.v2tab||target.dataset.screen||'';
-  if(screen)loadScreenFeatures(screen);
+  const screen=target.dataset.jump||target.dataset.v2tab||target.dataset.screen||'';if(screen)loadScreenFeatures(screen);
  },true);
  window.addEventListener('resize',()=>{if(isAppReady())loadModeStyles()},{passive:true});
  sync();
 }
 
 async function boot(){
- mark('c360:boot:start');
- preconnect('https://aycbrqziusxtxhsdfqjk.supabase.co');
- preconnect('https://cdn.jsdelivr.net');
- const errors=[];
- const recovery=await appendScript(recoveryModule);if(!recovery.ok)errors.push(recovery.error);
- const safeMode=!!window.__c360SafeMode;
- mark('c360:boot:recovery-ready');
- const stylePromise=safeMode?Promise.resolve([]):loadStyles(commonStyles);
- const essentialPromise=loadScripts(essentialModules);
- const [styleResults,essentialResults]=await Promise.all([stylePromise,essentialPromise]);
- errors.push(...errorsFrom(styleResults),...errorsFrom(essentialResults));
- mark('c360:boot:interactive');
- installRuntimeTriggers();
- if(!safeMode){await loadModeStyles();await loadScreenFeatures(activeScreen())}
+ mark('c360:boot:start');preconnect('https://aycbrqziusxtxhsdfqjk.supabase.co');preconnect('https://cdn.jsdelivr.net');
+ const errors=[];const recovery=await appendScript(recoveryModule);if(!recovery.ok)errors.push(recovery.error);
+ const safeMode=!!window.__c360SafeMode;mark('c360:boot:recovery-ready');
+ const [styleResults,essentialResults]=await Promise.all([safeMode?Promise.resolve([]):loadStyles(commonStyles),loadScripts(essentialModules)]);
+ errors.push(...errorsFrom(styleResults),...errorsFrom(essentialResults));mark('c360:boot:interactive');
+ installRuntimeTriggers();if(!safeMode){await loadModeStyles();await loadScreenFeatures(activeScreen())}
  mark('c360:boot:complete');
  try{performance.measure('c360:boot:interactive-ms','c360:boot:start','c360:boot:interactive');performance.measure('c360:boot:total-ms','c360:boot:start','c360:boot:complete')}catch(_){}
- const state={
-  version:BOOT_VERSION,recovery:window.__c360RecoveryVersion||null,safeMode,
-  styles:[...loadedStyles],modules:[...loadedModules],errors,ready:errors.length===0,featuresReady:true,
-  lazy:true,lazyErrors:[...lazyErrors]
- };
- window.__c360Bootstrap=state;
- if(errors.length)console.error('Comando 360: recursos não carregados:',errors.join(' | '));
- emit('c360:interactive-ready',state);emit('c360:bootstrap-ready',state);
+ const state={version:BOOT_VERSION,recovery:window.__c360RecoveryVersion||null,safeMode,styles:[...loadedStyles],modules:[...loadedModules],errors,ready:errors.length===0,featuresReady:true,lazy:true,lazyErrors:[...lazyErrors]};
+ window.__c360Bootstrap=state;if(errors.length)console.error('Comando 360: recursos não carregados:',errors.join(' | '));emit('c360:interactive-ready',state);emit('c360:bootstrap-ready',state);
 }
 boot().catch(e=>{
  const detail={version:BOOT_VERSION,recovery:window.__c360RecoveryVersion||null,safeMode:!!window.__c360SafeMode,styles:[...loadedStyles],modules:[...loadedModules],errors:[e?.message||String(e)],ready:false,featuresReady:false,lazy:true,lazyErrors:[...lazyErrors]};
