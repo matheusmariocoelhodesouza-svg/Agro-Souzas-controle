@@ -55,7 +55,9 @@ if(metrics.bootstrapErrors.length)failures.push('bootstrap errors: '+metrics.boo
 if(pageErrors.length)failures.push('page errors: '+pageErrors.join(' | '));
 if(interactiveWall>1500)failures.push(`interactive bootstrap ${interactiveWall}ms > 1500ms budget`);
 if(completeWall>2500)failures.push(`complete bootstrap ${completeWall}ms > 2500ms budget`);
-if(metrics.resources>90)failures.push(`resource count ${metrics.resources} > 90 budget`);
+if(metrics.resources>80)failures.push(`resource count ${metrics.resources} > 80 budget`);
+if(metrics.scripts>45)failures.push(`script count ${metrics.scripts} > 45 budget`);
+if(metrics.styles>35)failures.push(`stylesheet count ${metrics.styles} > 35 budget`);
 if(!metrics.releaseHealth?.enhanced)failures.push('release runtime did not complete DOM enhancement');
 if((metrics.releaseHealth?.runtimeErrors??0)!==0)failures.push(`runtime errors: ${metrics.releaseHealth.runtimeErrors}`);
 if((metrics.releaseHealth?.unhandledRejections??0)!==0)failures.push(`unhandled rejections: ${metrics.releaseHealth.unhandledRejections}`);
