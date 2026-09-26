@@ -1,7 +1,7 @@
 (()=>{
 'use strict';
 const VERSION='2026.09.25-pro2';
-let timer=0;
+let timer=0,raf=0,observer=null;
 const $=(s,r=document)=>r.querySelector(s);
 const $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const clean=s=>String(s||'').replace(/\s+/g,' ').trim();
@@ -187,11 +187,28 @@ function run(){
  try{enhanceFieldHome()}catch(e){console.warn('c360 pro field home',e)}
  document.documentElement.dataset.c360ProfessionalPass=VERSION;
 }
-function schedule(){clearTimeout(timer);timer=setTimeout(run,80)}
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run,{once:true});else run();
+function schedule(){
+ clearTimeout(timer);
+ timer=setTimeout(()=>{
+   if(raf)cancelAnimationFrame(raf);
+   raf=requestAnimationFrame(run);
+ },60);
+}
+function observeApp(){
+ if(observer)return;
+ const root=document.getElementById('screenHost')||document.body||document.documentElement;
+ observer=new MutationObserver(records=>{
+   if(records.some(r=>r.addedNodes.length||r.removedNodes.length))schedule();
+ });
+ observer.observe(root,{subtree:true,childList:true});
+}
+function boot(){run();observeApp()}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 document.addEventListener('c360:bootstrap-ready',schedule);
 document.addEventListener('c360:screen-changed',schedule);
-document.addEventListener('click',schedule,true);
-new MutationObserver(schedule).observe(document.documentElement,{subtree:true,childList:true,characterData:true});
+document.addEventListener('c360:interactive-ready',schedule);
+document.addEventListener('click',e=>{
+ if(e.target.closest('#toggleFinancePrivacy,.v2navbtn,[data-jump],[data-v2tab],#newFuelBtn,#newKmBtn,#newMaintenanceBtn,#importCrlvBtn,#newVehicleBtn'))schedule();
+},true);
 window.__c360ProfessionalPass={version:VERSION,refresh:run};
 })();

@@ -4,7 +4,7 @@ if(window.C360_UX_POLISH_VERSION)return;
 const VERSION='2026.09.23-ux2';
 let toastOriginalParent=null,toastOriginalNext=null;
 const utilityOrigins=new Map();
-let observer=null,timer=null;
+let observer=null,timer=null,raf=0;
 
 function isDevice(){return document.body?.classList.contains('device-mode')||false}
 function activeScreen(){return document.querySelector('#screenHost .section.active')?.id||document.querySelector('.section.active')?.id||''}
@@ -14,31 +14,33 @@ function ensureStyle(){
  if(document.getElementById('c360UxPolishHotfixStyle'))return;
  const s=document.createElement('style');s.id='c360UxPolishHotfixStyle';
  s.textContent=`
- /* Campo: o aviso de localização participa do fluxo da página, sem recorte nem texto invisível. */
+ /* Campo: avisos importantes participam do fluxo, mas ocupam o mínimo possível. */
  html body.device-mode #c360LocationPermissionCard{
    position:relative!important;inset:auto!important;top:auto!important;right:auto!important;bottom:auto!important;left:auto!important;
    transform:none!important;width:100%!important;max-width:none!important;max-height:none!important;min-height:0!important;
-   overflow:visible!important;margin:0 0 8px!important;padding:11px 12px!important;border-radius:14px!important;
-   background:#fff!important;color:#14213d!important;border:1px solid #d9e3ef!important;box-shadow:0 5px 18px rgba(2,18,38,.13)!important;
+   overflow:visible!important;margin:0 0 6px!important;padding:8px 9px!important;border-radius:11px!important;
+   background:#fff!important;color:#14213d!important;border:1px solid #d9e3ef!important;box-shadow:0 3px 12px rgba(2,18,38,.09)!important;
    box-sizing:border-box!important;z-index:1!important;
  }
- html body.device-mode #c360LocationPermissionCard :is(h1,h2,h3,strong){color:#17233c!important;-webkit-text-fill-color:#17233c!important;opacity:1!important;text-shadow:none!important}
+ html body.device-mode #c360LocationPermissionCard :is(h1,h2,h3,strong){color:#17233c!important;-webkit-text-fill-color:#17233c!important;opacity:1!important;text-shadow:none!important;font-size:12.5px!important;line-height:1.2!important}
  html body.device-mode #c360LocationPermissionCard p,
  html body.device-mode #c360LocationPermissionCard .muted{color:#526985!important;-webkit-text-fill-color:#526985!important;opacity:1!important;text-shadow:none!important}
- html body.device-mode #c360LocationPermissionCard p{font-size:12px!important;line-height:1.35!important;margin:2px 0 6px!important}
- html body.device-mode #c360LocationPermissionCard .muted{font-size:10.5px!important;line-height:1.3!important;margin:0 0 7px!important}
+ html body.device-mode #c360LocationPermissionCard p{font-size:10.8px!important;line-height:1.3!important;margin:1px 0 5px!important}
+ html body.device-mode #c360LocationPermissionCard .muted{font-size:10px!important;line-height:1.25!important;margin:0 0 5px!important}
  html body.device-mode #c360LocationPermissionCard .toolbar{display:flex!important;align-items:stretch!important;gap:6px!important;flex-wrap:wrap!important}
  html body.device-mode #c360LocationPermissionCard button,
- html body.device-mode #c360LocationPermissionCard .btn{display:flex!important;align-items:center!important;justify-content:center!important;width:100%!important;max-width:100%!important;min-height:42px!important;margin:2px 0 0!important;padding:9px 12px!important;border-radius:11px!important;white-space:normal!important;overflow:visible!important;font-size:11px!important;line-height:1.2!important;box-sizing:border-box!important}
+ html body.device-mode #c360LocationPermissionCard .btn{display:flex!important;align-items:center!important;justify-content:center!important;width:100%!important;max-width:100%!important;min-height:40px!important;margin:1px 0 0!important;padding:8px 10px!important;border-radius:10px!important;white-space:normal!important;overflow:visible!important;font-size:10.8px!important;line-height:1.2!important;box-sizing:border-box!important}
  html body.device-mode #c360FieldLocationSlot{width:100%!important;margin:0!important;padding:0!important}
  @supports selector(body:has(*)){
    html body.device-mode:has(#c360LocationPermissionCard:not(.hidden):not([hidden])) #screenHost{padding-top:0!important}
  }
 
- /* Toasts do campo entram no layout da tela inicial: nenhuma mensagem cobre Apanha/Ponto. */
- html body.device-mode #c360FieldToastSlot{width:100%;margin:0 0 8px;padding:0;order:-90}
+ /* Toasts do campo entram no layout e ficam compactos para as ações aparecerem primeiro. */
+ html body.device-mode #c360FieldToastSlot{width:100%;margin:0 0 6px;padding:0;order:-90}
  html body.device-mode #c360FieldToastSlot #c360ToastStack{position:relative!important;inset:auto!important;top:auto!important;right:auto!important;bottom:auto!important;left:auto!important;width:100%!important;max-width:none!important;margin:0!important;padding:0!important;z-index:2!important;pointer-events:none!important;transform:none!important}
- html body.device-mode #c360FieldToastSlot #c360ToastStack .c360-toast{width:100%!important;max-width:none!important;margin:0!important;box-sizing:border-box!important;box-shadow:0 4px 14px rgba(2,18,38,.11)!important}
+ html body.device-mode #c360FieldToastSlot #c360ToastStack .c360-toast{width:100%!important;max-width:none!important;margin:0 0 5px!important;padding:9px 10px!important;border-radius:12px!important;box-sizing:border-box!important;box-shadow:0 3px 11px rgba(2,18,38,.09)!important;font-size:11px!important;line-height:1.3!important}
+ html body.device-mode #c360FieldToastSlot #c360ToastStack .c360-toast:last-child{margin-bottom:0!important}
+ html body.device-mode #c360FieldToastSlot #c360ToastStack .c360-toast.c360-field-transient{transition:opacity .18s ease,max-height .18s ease,margin .18s ease,padding .18s ease!important}
 
  /* Financeiro: ocultar números não pode apagar os rótulos nem reduzir contraste do card. */
  html body #financeiro .finance-kpi{opacity:1!important;filter:none!important;mix-blend-mode:normal!important}
@@ -95,9 +97,8 @@ function ensureStyle(){
    html body:not(.device-mode) #c360NativeTrackerQuick{position:fixed!important;left:auto!important;right:14px!important;top:auto!important;bottom:76px!important;transform:none!important;width:auto!important;max-width:calc(100vw - 28px)!important;z-index:9299!important}
  }
  @media(max-width:640px){
-   html body.device-mode #c360LocationPermissionCard{padding:10px!important;margin-bottom:7px!important;border-radius:12px!important}
-   html body.device-mode #c360LocationPermissionCard button,
-   html body.device-mode #c360LocationPermissionCard .btn{min-height:42px!important}
+   html body.device-mode #c360LocationPermissionCard p{display:-webkit-box!important;-webkit-line-clamp:2!important;-webkit-box-orient:vertical!important;overflow:hidden!important}
+   html body.device-mode #c360LocationPermissionCard .muted{display:none!important}
  }
  `;
  (document.head||document.documentElement).appendChild(s);
@@ -118,6 +119,21 @@ function placeFieldToast(){
    if(toastOriginalNext&&toastOriginalNext.parentElement===parent)parent.insertBefore(stack,toastOriginalNext);else parent.appendChild(stack);
    document.getElementById('c360FieldToastSlot')?.remove();
  }
+}
+function compactFieldToasts(){
+ if(!isDevice()||activeScreen()!=='equipehome')return;
+ const stack=document.getElementById('c360ToastStack');if(!stack)return;
+ [...stack.querySelectorAll('.c360-toast')].forEach(toast=>{
+   const text=norm(toast.textContent);
+   const transient=text.includes('conexão restabelecida')||text.includes('conexao restabelecida')||text.includes('sincronização concluída')||text.includes('sincronizacao concluida');
+   if(!transient||toast.dataset.c360Transient==='1')return;
+   toast.dataset.c360Transient='1';toast.classList.add('c360-field-transient');
+   setTimeout(()=>{
+     if(!toast.isConnected)return;
+     toast.style.opacity='0';toast.style.maxHeight='0';toast.style.margin='0';toast.style.paddingTop='0';toast.style.paddingBottom='0';
+     setTimeout(()=>toast.remove(),220);
+   },2400);
+ });
 }
 
 function rememberOrigin(el){if(el&&!utilityOrigins.has(el))utilityOrigins.set(el,{parent:el.parentElement,next:el.nextSibling})}
@@ -180,17 +196,31 @@ function applyListSearch(list,filter){
  const message=words.length?(count+' de '+rows.length+' registros carregados'+(count?'':' — nenhum resultado')):'';
  if(status&&status.textContent!==message)status.textContent=message;
 }
-function fix(){ensureStyle();placeFieldToast();placeAdminUtilities();cleanPlanNoise();installListSearch()}
-function schedule(){clearTimeout(timer);timer=setTimeout(fix,40)}
+function fix(){ensureStyle();placeFieldToast();compactFieldToasts();placeAdminUtilities();cleanPlanNoise();installListSearch()}
+function schedule(){
+ clearTimeout(timer);
+ timer=setTimeout(()=>{
+   if(raf)cancelAnimationFrame(raf);
+   raf=requestAnimationFrame(fix);
+ },60);
+}
+function observeApp(){
+ if(observer)return;
+ const root=document.getElementById('app')||document.body||document.documentElement;
+ observer=new MutationObserver(records=>{
+   if(records.some(r=>r.addedNodes.length||r.removedNodes.length))schedule();
+ });
+ observer.observe(root,{subtree:true,childList:true});
+}
 function init(){
- ensureStyle();fix();
+ ensureStyle();fix();observeApp();
  document.addEventListener('c360:screen-changed',schedule);
  document.addEventListener('c360:interactive-ready',schedule);
  document.addEventListener('c360:bootstrap-ready',schedule);
  window.addEventListener('online',()=>setTimeout(fix,0));
  window.addEventListener('offline',()=>setTimeout(fix,0));
  window.addEventListener('resize',schedule);
- observer=new MutationObserver(schedule);observer.observe(document.documentElement,{subtree:true,childList:true,attributes:true,attributeFilter:['class','hidden','aria-pressed']});
+ document.addEventListener('visibilitychange',()=>{if(!document.hidden)schedule()});
  setTimeout(fix,250);setTimeout(fix,900);
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
