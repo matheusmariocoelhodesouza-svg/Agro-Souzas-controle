@@ -79,7 +79,7 @@ async function prepare(page,mode){
 
 async function route(page,id){
  await page.evaluate(async id=>{await v2Go(id)},id);
- await page.waitForFunction(id=>{const s=document.querySelector(`.section[data-screen="${id}"]`);return !!s&&s.classList.contains('active')&&!s.hidden},id,{timeout:5000}).catch(()=>{});
+ await page.waitForFunction(id=>{const s=document.getElementById(id);return !!s&&s.classList.contains('active')&&!s.hidden},id,{timeout:5000}).catch(()=>{});
  await page.waitForTimeout(260);
 }
 async function screenshot(page,name){const file=`commercial-${safe(name)}.png`;await page.screenshot({path:path.join(out,file),fullPage:true});report.screenshots.push(file)}
@@ -118,11 +118,16 @@ async function inspectFieldOperationContrast(page){
 }
 
 async function verifyScreenInventory(page){
- const ids=await page.evaluate(()=>[...document.querySelectorAll('.section[data-screen]')].map(e=>e.dataset.screen).filter(Boolean));
- const missing=ADMIN_SCREENS.filter(x=>!ids.includes(x));
- if(missing.length)bad('inventory:telas-administrativas',JSON.stringify(missing));else ok('inventory:telas-administrativas',`${ADMIN_SCREENS.length}/${ADMIN_SCREENS.length}`);
- for(const id of FIELD_SCREENS){if(!ids.includes(id))bad(`inventory:campo:${id}`,'ausente')}
- report.coverage.domScreens=[...new Set(ids)].sort();
+ const inventory=await page.evaluate(()=>({
+  sectionIds:[...document.querySelectorAll('.section[id]')].map(e=>e.id).filter(Boolean),
+  allIds:[...document.querySelectorAll('[id]')].map(e=>e.id).filter(Boolean)
+ }));
+ const ids=[...new Set(inventory.allIds)];
+ const missingAdmin=ADMIN_SCREENS.filter(id=>!ids.includes(id));
+ const missingField=FIELD_SCREENS.filter(id=>!ids.includes(id));
+ if(missingAdmin.length)bad('inventory:telas-administrativas',JSON.stringify(missingAdmin));else ok('inventory:telas-administrativas',`${ADMIN_SCREENS.length}/${ADMIN_SCREENS.length}`);
+ if(missingField.length)bad('inventory:telas-campo',JSON.stringify(missingField));else ok('inventory:telas-campo',`${FIELD_SCREENS.length}/${FIELD_SCREENS.length}`);
+ report.coverage.domScreens=[...new Set(inventory.sectionIds)].sort();
 }
 
 async function captureAdmin(browser,viewport,isMobile,screens,prefix){
