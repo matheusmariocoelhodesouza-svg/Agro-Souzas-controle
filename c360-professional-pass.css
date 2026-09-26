@@ -377,14 +377,14 @@ body.app-ready:not(.device-mode) #screenHost>.section.active :where(.toolbar,.v2
   gap:10px;
 }
 body.app-ready:not(.device-mode) #screenHost>.section.active :where(.btn,button:not(.v2navbtn):not(.mobile-bottom-nav button)){
-  min-height:var(--c360-pro-touch-height);
+  min-height:var(--c360-pro-touch-height)!important;
 }
 body.app-ready:not(.device-mode) #screenHost>.section.active :where(input:not([type="checkbox"]):not([type="radio"]),select){
-  min-height:var(--c360-pro-control-height);
+  min-height:var(--c360-pro-control-height)!important;
   border-radius:var(--c360-pro-control-radius)!important;
 }
 body.app-ready:not(.device-mode) #screenHost>.section.active textarea{
-  min-height:96px;
+  min-height:96px!important;
   border-radius:var(--c360-pro-control-radius)!important;
   resize:vertical;
 }
@@ -455,9 +455,9 @@ body.app-ready:not(.device-mode) #screenHost>.section.active :where(.btn,button)
 
 /* campo: apenas ergonomia/touch; regras e composição permanecem intactas */
 body.device-mode :where(.btn,button,input:not([type="checkbox"]):not([type="radio"]),select){
-  min-height:48px;
+  min-height:48px!important;
 }
-body.device-mode textarea{min-height:104px;resize:vertical}
+body.device-mode textarea{min-height:104px!important;resize:vertical}
 body.device-mode :where(.team-tile,.field-section,.card){min-width:0}
 body.device-mode :where(.team-tile,.btn,button){-webkit-tap-highlight-color:transparent}
 
