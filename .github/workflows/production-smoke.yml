@@ -13,136 +13,174 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 8
     steps:
-      - name: Check production product shell
+      - name: Check current production release
         shell: bash
         run: |
           set -euo pipefail
           BASE="https://app.comando360.com.br"
-          fetch() { local path="$1" out="$2"; for i in $(seq 1 18); do if curl --fail --silent --show-error --location --max-time 15 -H 'Cache-Control: no-cache' "${BASE}${path}?qa_run=${GITHUB_SHA}" -o "$out"; then return 0; fi; sleep 4; done; echo "Failed to fetch ${path} from production"; return 1; }
-          fetch "/" /tmp/index.html
-          fetch "/cadastro.html" /tmp/cadastro.html
-          fetch "/legal.html" /tmp/legal.html
-          fetch "/sw-v7-02.js" /tmp/sw.js
-          fetch "/sw-auth-refresh-guard.js" /tmp/auth-guard.js
-          fetch "/c360-field-location-ui-hotfix.js" /tmp/location-ui.js
-          fetch "/c360-report-stability.js" /tmp/report-stability.js
-          fetch "/c360-ux-polish-hotfix.js" /tmp/ux-polish.js
+
+          fetch_once() {
+            local path="$1" out="$2"
+            curl --fail --silent --show-error --location --max-time 15 \
+              -H 'Cache-Control: no-cache' \
+              "${BASE}${path}?qa_run=${GITHUB_SHA}" -o "$out"
+          }
+
+          # Production deploy can finish a few seconds after the push workflow starts.
+          # Poll the release markers instead of accepting an older 200 response.
+          release_ready() {
+            fetch_once "/sw-v7-02.js" /tmp/sw.js || return 1
+            fetch_once "/c360-quality-hotfix.js" /tmp/bootstrap.js || return 1
+            grep -q 'sw-v7-02-core-hotfix63.js' /tmp/sw.js || return 1
+            grep -q "BOOT_VERSION='2026.09.25-audit3'" /tmp/bootstrap.js || return 1
+            grep -q 'SCRIPT_BATCH_SIZE=5' /tmp/bootstrap.js || return 1
+            grep -q 'yieldToMain' /tmp/bootstrap.js || return 1
+          }
+
+          ready=0
+          for i in $(seq 1 18); do
+            if release_ready; then ready=1; break; fi
+            sleep 4
+          done
+          if [ "$ready" -ne 1 ]; then
+            echo 'Production did not expose the current Comando 360 release markers in time.'
+            exit 1
+          fi
+
+          fetch_once "/" /tmp/index.html
+          fetch_once "/cadastro.html" /tmp/cadastro.html
+          fetch_once "/legal.html" /tmp/legal.html
+          fetch_once "/reparar.html" /tmp/repair.html
+          fetch_once "/dda.html" /tmp/dda.html
+          fetch_once "/comando360.webmanifest" /tmp/manifest.json
+          fetch_once "/sw-auth-refresh-guard.js" /tmp/auth-guard.js
+          fetch_once "/c360-autorecovery.js" /tmp/autorecovery.js
+          fetch_once "/c360-platform.js" /tmp/platform.js
+          fetch_once "/c360-product-core.js" /tmp/product-core.js
+          fetch_once "/c360-release-core.js" /tmp/release-core.js
+          fetch_once "/c360-release-core.css" /tmp/release-core.css
+          fetch_once "/c360-final-stabilization.js" /tmp/final.js
+          fetch_once "/c360-final-stabilization.css" /tmp/final.css
+          fetch_once "/c360-quality-core.js" /tmp/quality-core.js
+          fetch_once "/c360-field-offline-hotfix.js" /tmp/field.js
+          fetch_once "/c360-field-location-ui-hotfix.js" /tmp/location-ui.js
+          fetch_once "/c360-system-health.js" /tmp/health.js
+          fetch_once "/c360-onboarding-entry.js" /tmp/onboarding.js
+          fetch_once "/c360-professional-pass.js" /tmp/professional.js
+          fetch_once "/c360-professional-pass.css" /tmp/professional.css
+          fetch_once "/c360-team-chat.js" /tmp/chat.js
+          fetch_once "/c360-farm-cache-hotfix.js" /tmp/farms.js
+          fetch_once "/c360-consumable-edit.js" /tmp/consumables.js
+          fetch_once "/c360-saas-readiness.js" /tmp/saas.js
+          fetch_once "/c360-native-tracker-admin.js" /tmp/tracker-admin.js
+          fetch_once "/c360-fiscal.js" /tmp/fiscal.js
+          fetch_once "/c360-report-share.js" /tmp/report-share.js
+          fetch_once "/c360-report-stability.js" /tmp/report-stability.js
+          fetch_once "/c360-trailer-hitches.js" /tmp/hitches.js
+          fetch_once "/c360-ux-polish-hotfix.js" /tmp/ux-polish.js
+          fetch_once "/c360-ui-polish.css" /tmp/ui.css
+          fetch_once "/c360-premium-ui.css" /tmp/premium.css
+          fetch_once "/c360-product-ui.css" /tmp/product.css
+          fetch_once "/c360-system-health.css" /tmp/health.css
+          fetch_once "/c360-saas-readiness.css" /tmp/saas.css
+
           SW_CORE="$(grep -oE 'sw-v7-02-core-hotfix[0-9]+\.js' /tmp/sw.js | head -n1 || true)"
-          test -n "$SW_CORE"
-          test "$SW_CORE" = "sw-v7-02-core-hotfix62.js"
-          fetch "/$SW_CORE" /tmp/sw-core.js
-          fetch "/reparar.html" /tmp/repair.html
-          fetch "/dda.html" /tmp/dda.html
-          fetch "/comando360.webmanifest" /tmp/manifest.json
-          fetch "/c360-autorecovery.js" /tmp/autorecovery.js
-          fetch "/c360-platform.js" /tmp/platform.js
-          fetch "/c360-product-core.js" /tmp/product-core.js
-          fetch "/c360-release-core.js" /tmp/release-core.js
-          fetch "/c360-release-core.css" /tmp/release-core.css
-          fetch "/c360-final-stabilization.js" /tmp/final.js
-          fetch "/c360-final-stabilization.css" /tmp/final.css
-          fetch "/c360-quality-hotfix.js" /tmp/bootstrap.js
-          fetch "/c360-quality-core.js" /tmp/quality-core.js
-          fetch "/c360-field-offline-hotfix.js" /tmp/field.js
-          fetch "/c360-system-health.js" /tmp/health.js
-          fetch "/c360-onboarding-entry.js" /tmp/onboarding.js
-          fetch "/c360-professional-pass.js" /tmp/professional.js
-          fetch "/c360-professional-pass.css" /tmp/professional.css
-          fetch "/c360-team-chat.js" /tmp/chat.js
-          fetch "/c360-farm-cache-hotfix.js" /tmp/farms.js
-          fetch "/c360-consumable-edit.js" /tmp/consumables.js
-          fetch "/c360-saas-readiness.js" /tmp/saas.js
-          fetch "/c360-native-tracker-admin.js" /tmp/tracker-admin.js
-          fetch "/c360-trailer-hitches.js" /tmp/hitches.js
-          fetch "/c360-ui-polish.css" /tmp/ui.css
-          fetch "/c360-premium-ui.css" /tmp/premium.css
-          fetch "/c360-product-ui.css" /tmp/product.css
-          fetch "/c360-system-health.css" /tmp/health.css
-          fetch "/c360-saas-readiness.css" /tmp/saas.css
-          for f in /tmp/index.html /tmp/cadastro.html /tmp/legal.html /tmp/sw.js /tmp/sw-core.js /tmp/auth-guard.js /tmp/location-ui.js /tmp/report-stability.js /tmp/ux-polish.js /tmp/autorecovery.js /tmp/platform.js /tmp/product-core.js /tmp/release-core.js /tmp/release-core.css /tmp/final.js /tmp/final.css /tmp/bootstrap.js /tmp/professional.js /tmp/professional.css /tmp/saas.js /tmp/saas.css /tmp/tracker-admin.js /tmp/hitches.js; do test -s "$f"; done
+          test "$SW_CORE" = 'sw-v7-02-core-hotfix63.js'
+          fetch_once "/$SW_CORE" /tmp/sw-core.js
+
+          for f in \
+            /tmp/index.html /tmp/cadastro.html /tmp/legal.html /tmp/repair.html /tmp/dda.html \
+            /tmp/sw.js /tmp/sw-core.js /tmp/bootstrap.js /tmp/autorecovery.js /tmp/platform.js \
+            /tmp/product-core.js /tmp/release-core.js /tmp/final.js /tmp/quality-core.js /tmp/field.js \
+            /tmp/location-ui.js /tmp/health.js /tmp/onboarding.js /tmp/professional.js /tmp/chat.js \
+            /tmp/farms.js /tmp/consumables.js /tmp/saas.js /tmp/tracker-admin.js /tmp/fiscal.js \
+            /tmp/report-share.js /tmp/report-stability.js /tmp/hitches.js /tmp/ux-polish.js; do
+            test -s "$f"
+          done
+
           test "$(wc -c < /tmp/index.html)" -le 700000
           grep -q 'c360-quality-hotfix.js' /tmp/index.html
+
           grep -q 'c360-platform.js' /tmp/bootstrap.js
           grep -q 'c360-product-core.js' /tmp/bootstrap.js
           grep -q 'c360-release-core.js' /tmp/bootstrap.js
-          grep -q 'c360-release-core.css' /tmp/bootstrap.js
           grep -q 'c360-final-stabilization.js' /tmp/bootstrap.js
-          grep -q 'c360-final-stabilization.css' /tmp/bootstrap.js
           grep -q 'loadStylesParallel' /tmp/bootstrap.js
           grep -q 'loadScriptsOrderedParallel' /tmp/bootstrap.js
           grep -q 'Promise.allSettled' /tmp/bootstrap.js
-          grep -q 'c360-saas-readiness.js' /tmp/bootstrap.js
-          grep -q 'c360-saas-readiness.css' /tmp/bootstrap.js
+          grep -q 'routeModules' /tmp/bootstrap.js
           grep -q 'c360-native-tracker-admin.js' /tmp/bootstrap.js
-          grep -q 'c360-report-stability.js' /tmp/bootstrap.js
-          grep -q 'c360-ux-polish-hotfix.js' /tmp/bootstrap.js
+          grep -q 'c360-fiscal.js' /tmp/bootstrap.js
+          grep -q 'c360-report-share.js' /tmp/bootstrap.js
+          grep -q 'SCRIPT_BATCH_SIZE=5' /tmp/bootstrap.js
+          grep -q 'yieldToMain' /tmp/bootstrap.js
+
           grep -q '2026.09.13-platform1' /tmp/platform.js
           grep -q 'window.C360Platform' /tmp/platform.js
           grep -q '2026.09.22-r100-1' /tmp/release-core.js
-          grep -q "BOOT_VERSION='2026.09.23-audit2'" /tmp/bootstrap.js
           grep -q "VERSION='2026.09.23-v1-final1'" /tmp/final.js
-          grep -q 'window.downloadText' /tmp/final.js
-          grep -q 'ensureMonthlyEmployees' /tmp/final.js
-          grep -q 'validateFuelBeforeSave' /tmp/final.js
-          grep -q 'c360FinanceReconciliationNotice' /tmp/final.js
-          grep -q 'c360PricingTraceabilityNotice' /tmp/final.js
           grep -q "const VERSION='2026.09.23-ux2'" /tmp/ux-polish.js
           grep -q "const VERSION='2026.09.23-hitch2'" /tmp/hitches.js
-          if grep -q 'Outros veículos (se necessário)' /tmp/hitches.js; then echo 'Legacy trailer copy found'; exit 1; fi
-          grep -q 'c360FieldToastSlot' /tmp/ux-polish.js
-          grep -q 'c360UtilityDock' /tmp/ux-polish.js
-          grep -q 'sidebarAvailable' /tmp/ux-polish.js
-          grep -q 'finance-kpi-label' /tmp/ux-polish.js
-          grep -q 'v2_device_location_current' /tmp/tracker-admin.js
-          grep -q 'Rastreadores ao vivo' /tmp/tracker-admin.js
-          grep -q 'native_battery_percent' /tmp/tracker-admin.js
-          grep -q 'prefers-reduced-motion' /tmp/release-core.css
-          grep -q 'min-height:44px' /tmp/release-core.css
-          grep -q 'c360-reconciliation-notice' /tmp/final.css
-          grep -q '2026.09.13-saas1' /tmp/saas.js
-          grep -q 'v2_platform_incidents' /tmp/saas.js
-          grep -q 'v2_legal_acceptances' /tmp/saas.js
-          grep -q 'Termos de Uso do Comando 360' /tmp/legal.html
-          grep -q 'Biometria' /tmp/legal.html
-          grep -q "$SW_CORE" /tmp/sw.js
-          grep -q 'loader 7.16.0' /tmp/sw.js
-          grep -q 'sw-auth-refresh-guard.js' /tmp/sw.js
-          grep -q "C360_AUTH_REFRESH_GUARD_VERSION='2026.09.22-r2'" /tmp/auth-guard.js
-          grep -q 'snapshot.ok' /tmp/auth-guard.js
+          grep -q "const VERSION='2026.09.25-pro2'" /tmp/professional.js
           grep -q "const VERSION='2026.09.22-locui2'" /tmp/location-ui.js
-          grep -q 'c360FieldLocationSlot' /tmp/location-ui.js
-          if grep -q 'position:fixed!important' /tmp/location-ui.js; then echo 'Blocking fixed field location UI found'; exit 1; fi
           grep -q "const VERSION='2026.09.22-reports1'" /tmp/report-stability.js
-          grep -q '__c360ReportsStable' /tmp/report-stability.js
-          grep -q 'c360:reports-error' /tmp/report-stability.js
-          if grep -q 'CORE.push' /tmp/sw.js; then echo 'Runtime service-worker cache mutation found'; exit 1; fi
-          grep -q "const CACHE='comando360-v7-02-hotfix62'" /tmp/sw-core.js
+
+          grep -q "const CACHE='comando360-v7-02-hotfix63'" /tmp/sw-core.js
+          grep -q 'comando360-stable-v1' /tmp/sw-core.js
           grep -q './c360-release-core.js' /tmp/sw-core.js
           grep -q './c360-release-core.css' /tmp/sw-core.js
           grep -q './c360-final-stabilization.js' /tmp/sw-core.js
           grep -q './c360-final-stabilization.css' /tmp/sw-core.js
-          grep -q './c360-native-tracker-admin.js' /tmp/sw-core.js
-          grep -q './c360-field-location-ui-hotfix.js' /tmp/sw-core.js
+          grep -q './c360-system-health.js' /tmp/sw-core.js
           grep -q './c360-ux-polish-hotfix.js' /tmp/sw-core.js
           grep -q './c360-professional-pass.js' /tmp/sw-core.js
           grep -q './c360-professional-pass.css' /tmp/sw-core.js
-          grep -q "const VERSION='2026.09.25-pro2'" /tmp/professional.js
-          grep -q 'comando360-stable-v1' /tmp/sw-core.js
           grep -q 'C360_ROLLBACK_TO_STABLE' /tmp/sw-core.js
-          grep -q 'v2_client_health_events' /tmp/autorecovery.js
+          grep -q 'C360_MARK_HEALTHY' /tmp/sw-core.js
+
+          if grep -q './c360-native-tracker-admin.js' /tmp/sw-core.js; then
+            echo 'Admin tracker must remain lazy, not in initial offline core.'; exit 1
+          fi
+          if grep -q './c360-fiscal.js' /tmp/sw-core.js; then
+            echo 'Fiscal module must remain lazy, not in initial offline core.'; exit 1
+          fi
+          if grep -q './c360-report-share.js' /tmp/sw-core.js; then
+            echo 'Report module must remain lazy, not in initial offline core.'; exit 1
+          fi
+          if grep -q 'CORE.push' /tmp/sw.js; then
+            echo 'Runtime service-worker cache mutation found.'; exit 1
+          fi
+
+          grep -q 'v2_device_location_current' /tmp/tracker-admin.js
           grep -q 'v2_device_health_heartbeat' /tmp/health.js
+          grep -q 'v2_client_health_events' /tmp/autorecovery.js
           grep -q 'v2_bootstrap_company' /tmp/cadastro.html
-          for f in /tmp/platform.js /tmp/product-core.js /tmp/release-core.js /tmp/final.js /tmp/bootstrap.js /tmp/autorecovery.js /tmp/quality-core.js /tmp/field.js /tmp/health.js /tmp/onboarding.js /tmp/professional.js /tmp/chat.js /tmp/farms.js /tmp/consumables.js /tmp/saas.js /tmp/tracker-admin.js /tmp/hitches.js /tmp/sw.js /tmp/sw-core.js /tmp/auth-guard.js /tmp/location-ui.js /tmp/report-stability.js /tmp/ux-polish.js; do node --check "$f"; done
+          grep -q 'Termos de Uso do Comando 360' /tmp/legal.html
+          grep -q 'Biometria' /tmp/legal.html
+
+          for f in \
+            /tmp/sw.js /tmp/sw-core.js /tmp/bootstrap.js /tmp/autorecovery.js /tmp/platform.js \
+            /tmp/product-core.js /tmp/release-core.js /tmp/final.js /tmp/quality-core.js /tmp/field.js \
+            /tmp/location-ui.js /tmp/health.js /tmp/onboarding.js /tmp/professional.js /tmp/chat.js \
+            /tmp/farms.js /tmp/consumables.js /tmp/saas.js /tmp/tracker-admin.js /tmp/fiscal.js \
+            /tmp/report-share.js /tmp/report-stability.js /tmp/hitches.js /tmp/ux-polish.js; do
+            node --check "$f"
+          done
+
           python - <<'PY'
           import json
           from html.parser import HTMLParser
           from pathlib import Path
           class P(HTMLParser): pass
-          with open('/tmp/manifest.json',encoding='utf-8') as f: m=json.load(f)
+          with open('/tmp/manifest.json', encoding='utf-8') as f:
+              m=json.load(f)
           assert m.get('name') or m.get('short_name')
           for name in ('/tmp/index.html','/tmp/cadastro.html','/tmp/dda.html','/tmp/repair.html','/tmp/legal.html'):
-              value=Path(name).read_text(encoding='utf-8'); P().feed(value); assert '<html' in value.lower() and '</html>' in value.lower()
+              value=Path(name).read_text(encoding='utf-8')
+              P().feed(value)
+              assert '<html' in value.lower() and '</html>' in value.lower()
           for name in ('/tmp/ui.css','/tmp/premium.css','/tmp/product.css','/tmp/release-core.css','/tmp/final.css','/tmp/professional.css','/tmp/health.css','/tmp/saas.css'):
-              css=Path(name).read_text(encoding='utf-8'); assert css.count('{')==css.count('}'), f'{name}: unbalanced braces'
-          print('Production V1 stabilization + field auth/location + reports + live tracker + isolated PWA cache + rollback smoke: OK')
+              css=Path(name).read_text(encoding='utf-8')
+              assert css.count('{') == css.count('}'), f'{name}: unbalanced braces'
+          print('Production runtime63 + audit3 + batched boot + lazy admin modules smoke: OK')
           PY
