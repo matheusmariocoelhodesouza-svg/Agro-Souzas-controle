@@ -38,6 +38,7 @@ const routeModules={
 const loadedStyles=new Set(),loadedModules=new Set();
 const loadingStyles=new Map(),loadingModules=new Map();
 const lazyErrors=[];
+const SCRIPT_BATCH_SIZE=5;
 let modeObserver=null;
 
 const resourceUrl=src=>src+(src.includes('?')?'&':'?')+'v='+encodeURIComponent(BOOT_VERSION);
@@ -78,10 +79,22 @@ async function loadStylesParallel(list){
  const results=await Promise.allSettled([...new Set(list)].map(appendStyle));
  return results.map(r=>r.status==='fulfilled'?r.value:{ok:false,error:r.reason?.message||String(r.reason)});
 }
+function yieldToMain(){
+ return new Promise(resolve=>{
+  if(typeof requestAnimationFrame==='function')requestAnimationFrame(()=>setTimeout(resolve,0));
+  else setTimeout(resolve,0);
+ });
+}
 async function loadScriptsOrderedParallel(list){
- /* async=false preserva ordem de execução e o map inicia os downloads em paralelo. */
- const results=await Promise.allSettled([...new Set(list)].map(appendScript));
- return results.map(r=>r.status==='fulfilled'?r.value:{ok:false,error:r.reason?.message||String(r.reason)});
+ /* Mantém a ordem, mas devolve o controle ao navegador entre pequenos lotes para evitar long tasks no boot. */
+ const unique=[...new Set(list)],out=[];
+ for(let i=0;i<unique.length;i+=SCRIPT_BATCH_SIZE){
+  const batch=unique.slice(i,i+SCRIPT_BATCH_SIZE);
+  const results=await Promise.allSettled(batch.map(appendScript));
+  out.push(...results.map(r=>r.status==='fulfilled'?r.value:{ok:false,error:r.reason?.message||String(r.reason)}));
+  if(i+SCRIPT_BATCH_SIZE<unique.length)await yieldToMain();
+ }
+ return out;
 }
 const loadStyles=loadStylesParallel;
 const loadScripts=loadScriptsOrderedParallel;
