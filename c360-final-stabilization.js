@@ -3,7 +3,9 @@
 if(window.C360_FINAL_STABILIZATION_VERSION)return;
 const VERSION='2026.09.23-v1-final1';
 const state={version:VERSION,monthlyLoads:0,fuelWarnings:0,lastFinanceCheck:0};
-let observer=null,timer=null,monthlyBusy=false,financeBusy=false,pricingBusy=false,lastPricingCheck=0;
+let observer=null,timer=null,frame=null,monthlyBusy=false,financeBusy=false,pricingBusy=false,lastPricingCheck=0;
+const pendingTasks=new Set(),messageRoots=new Set();
+const TASKS_PER_FRAME=3;
 
 const $=s=>document.querySelector(s);
 const $$=s=>[...document.querySelectorAll(s)];
@@ -227,7 +229,10 @@ function normalizeMaintenanceLabels(){
 
 /* Erros conhecidos devem aparecer em português e com ação útil. */
 function normalizeUserFacingMessages(root=document){
- root.querySelectorAll?.('.error,.muted,.okmsg,[role="alert"]').forEach(el=>{
+ const selector='.error,.muted,.okmsg,[role="alert"]',nodes=[];
+ if(root?.nodeType===1&&root.matches?.(selector))nodes.push(root);
+ root.querySelectorAll?.(selector).forEach(el=>nodes.push(el));
+ nodes.forEach(el=>{
   const t=String(el.textContent||'').trim();
   if(t==='Invalid login credentials')el.textContent='E-mail ou senha inválidos. Confira os dados e tente novamente.';
   if(/Failed to fetch/i.test(t))el.textContent='Não foi possível conectar ao servidor. Confira a internet e tente novamente.';
@@ -282,22 +287,88 @@ async function refreshPricingTraceability(){
  }catch(e){console.warn('Comando 360 rastreabilidade de tarifa',e)}finally{pricingBusy=false}
 }
 
+function inActiveSection(selector){const el=$(selector);return !!(el&&(el.matches?.('.section.active')||el.closest?.('.section.active')))}
+function touches(node,selector){
+ const el=node?.nodeType===1?node:node?.parentElement;if(!el)return false;
+ try{return !!(el.matches?.(selector)||el.closest?.(selector)||el.querySelector?.(selector))}catch{return false}
+}
+function queueTask(name){pendingTasks.add(name);scheduleDrain()}
+function queueMessages(root){if(root?.nodeType===1)messageRoots.add(root);scheduleDrain()}
+function scheduleDrain(){
+ if(frame!==null)return;
+ const fire=()=>{frame=requestAnimationFrame(drainTasks)};
+ if(typeof requestAnimationFrame==='function')fire();else frame=setTimeout(drainTasks,16);
+}
+function runTask(name){
+ if(name==='guards'){hardenVehicleEditor();hardenFuelSave();return}
+ if(name==='poultry'){ensurePoultryCompatibilityFields();ensurePoultryFilters();return}
+ if(name==='fuel'){sanitizeFuelSelectors();flagFuelOutliers();return}
+ if(name==='employees'){ensureEmployeeFilters();return}
+ if(name==='maintenance'){normalizeMaintenanceLabels();return}
+ if(name==='point'){ensureMonthlyEmployees();return}
+ if(name==='finance'){if(Date.now()-state.lastFinanceCheck>5000)refreshFinanceReconciliation();return}
+ if(name==='pricing'){refreshPricingTraceability()}
+}
+function drainTasks(){
+ frame=null;
+ hardenVehicleEditor();hardenFuelSave();
+ let count=0;
+ while(pendingTasks.size&&count<TASKS_PER_FRAME){const name=pendingTasks.values().next().value;pendingTasks.delete(name);runTask(name);count++}
+ let roots=0;
+ for(const root of [...messageRoots]){messageRoots.delete(root);normalizeUserFacingMessages(root);if(++roots>=TASKS_PER_FRAME)break}
+ if(pendingTasks.size||messageRoots.size)scheduleDrain();
+}
+function queueActiveScreen(){
+ queueTask('guards');
+ if(inActiveSection('#poultryForm')||inActiveSection('#poultryList'))queueTask('poultry');
+ if(inActiveSection('#fuelList')||inActiveSection('#fuelVehicle')||inActiveSection('#kmVehicle'))queueTask('fuel');
+ if(inActiveSection('#employeesList'))queueTask('employees');
+ if(inActiveSection('#manutencoes'))queueTask('maintenance');
+ const screen=activeScreen();
+ if(screen==='ponto')queueTask('point');
+ if(screen==='financeiro')queueTask('finance');
+ if(screen==='configuracoes')queueTask('pricing');
+ const active=$('#screenHost .section.active')||$('.section.active');if(active)queueMessages(active);
+}
+function queueMutation(node){
+ if(!node)return;
+ if(touches(node,'#poultryForm,#newPoultryOp,#poultryList'))queueTask('poultry');
+ if(touches(node,'#fuelList,#fuelVehicle,#kmVehicle,#fuelForm'))queueTask('fuel');
+ if(touches(node,'#employeesList'))queueTask('employees');
+ if(touches(node,'#manutencoes'))queueTask('maintenance');
+ if(touches(node,'.error,.muted,.okmsg,[role="alert"]'))queueMessages(node.nodeType===1?node:node.parentElement);
+}
 function runUiPass(){
- ensurePoultryCompatibilityFields();hardenVehicleEditor();hardenFuelSave();sanitizeFuelSelectors();flagFuelOutliers();ensureEmployeeFilters();ensurePoultryFilters();normalizeMaintenanceLabels();normalizeUserFacingMessages(document);
+ hardenVehicleEditor();hardenFuelSave();
+ if($('#poultryForm')?.closest('.section.active')||$('#poultryList')?.closest('.section.active')){ensurePoultryCompatibilityFields();ensurePoultryFilters()}
+ if($('#fuelList')?.closest('.section.active')||$('#fuelVehicle')?.closest('.section.active')||$('#kmVehicle')?.closest('.section.active')){sanitizeFuelSelectors();flagFuelOutliers()}
+ if($('#employeesList')?.closest('.section.active'))ensureEmployeeFilters();
+ if($('#manutencoes')?.matches('.section.active')||$('#manutencoes')?.closest('.section.active'))normalizeMaintenanceLabels();
+ const active=$('#screenHost .section.active')||$('.section.active');if(active)normalizeUserFacingMessages(active);
  if(activeScreen()==='ponto')ensureMonthlyEmployees();
  if(activeScreen()==='financeiro'&&Date.now()-state.lastFinanceCheck>5000)refreshFinanceReconciliation();
  if(activeScreen()==='configuracoes')refreshPricingTraceability();
 }
-function schedule(){clearTimeout(timer);timer=setTimeout(runUiPass,60)}
+function schedule(){clearTimeout(timer);timer=setTimeout(queueActiveScreen,45)}
 function init(){
  runUiPass();
  document.addEventListener('c360:screen-changed',()=>{lastPricingCheck=0;state.lastFinanceCheck=0;schedule()});
  document.addEventListener('c360:bootstrap-ready',schedule);
  document.addEventListener('focusin',e=>{if(e.target?.id==='monthlyEmployee')ensureMonthlyEmployees()});
  document.addEventListener('change',e=>{if(e.target?.id==='fuelVehicle')setTimeout(()=>{sanitizeFuelSelectors();reconcileFuelAutofill()},0)});
- window.addEventListener('online',schedule);window.addEventListener('resize',schedule);
- observer=new MutationObserver(schedule);observer.observe(document.documentElement,{subtree:true,childList:true,attributes:true,attributeFilter:['class','hidden']});
- setTimeout(runUiPass,300);setTimeout(runUiPass,1200);
+ window.addEventListener('online',schedule);
+ const observerRoot=document.body||$('#screenHost')||document.documentElement;
+ observer=new MutationObserver(mutations=>{
+  let structural=false;
+  for(const mutation of mutations){
+   if(!mutation.addedNodes.length&&!mutation.removedNodes.length)continue;
+   structural=true;queueMutation(mutation.target);
+   mutation.addedNodes.forEach(queueMutation);
+  }
+  if(structural)queueTask('guards');
+ });
+ observer.observe(observerRoot,{subtree:true,childList:true});
+ setTimeout(queueActiveScreen,300);setTimeout(queueActiveScreen,1200);
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 window.C360_FINAL_STABILIZATION_VERSION=VERSION;
