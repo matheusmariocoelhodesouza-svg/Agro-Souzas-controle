@@ -6,7 +6,7 @@ const base=process.env.C360_BASE_URL||'http://127.0.0.1:8080';
 const out=path.resolve('qa-artifacts');
 await fs.mkdir(out,{recursive:true});
 const sample={company:'00000000-0000-0000-0000-00000000c361',team:'00000000-0000-0000-0000-00000000c362',user:'00000000-0000-0000-0000-00000000c360'};
-const report={version:'2026.09.26-commercial1',checks:[],screenshots:[],errors:[]};
+const report={version:'2026.09.26-commercial2',checks:[],screenshots:[],errors:[]};
 const ok=(name,detail='')=>report.checks.push({name,ok:true,detail});
 const bad=(name,detail)=>{report.checks.push({name,ok:false,detail:String(detail)});report.errors.push({name,detail:String(detail)})};
 const safe=s=>String(s).replace(/[^a-z0-9_-]+/gi,'-').toLowerCase();
@@ -72,7 +72,7 @@ async function inspect(page,label,mobile=false){
  const r=await page.evaluate(({mobile})=>{
   const root=document.documentElement,section=document.querySelector('#screenHost .section.active')||document.querySelector('.section.active');
   const visible=e=>{const s=getComputedStyle(e),b=e.getBoundingClientRect();return s.display!=='none'&&s.visibility!=='hidden'&&b.width>0&&b.height>0};
-  const controls=[...(section?.querySelectorAll('button,.btn,input:not([type="hidden"]),select,textarea')||[])].filter(visible).slice(0,60).map(e=>({tag:e.tagName,id:e.id||'',h:e.getBoundingClientRect().height}));
+  const controls=[...(section?.querySelectorAll('button,.btn,input:not([type="hidden"]),select,textarea')||[])].filter(visible).slice(0,60).map(e=>({tag:e.tagName,id:e.id||'',cls:String(e.className||'').slice(0,100),text:String(e.textContent||e.value||'').trim().slice(0,50),h:e.getBoundingClientRect().height}));
   const tooSmall=controls.filter(x=>x.h<(mobile?43.5:39.5));
   const style=getComputedStyle(root);
   return{
@@ -91,6 +91,14 @@ async function inspect(page,label,mobile=false){
  if(r.h1.some(n=>n>42))bad(`${label}:hierarquia-titulo`,JSON.stringify(r.h1));else ok(`${label}:hierarquia-titulo`,JSON.stringify(r.h1));
 }
 
+async function inspectFieldOperationContrast(page){
+ const headings=await page.evaluate(()=>[...document.querySelectorAll('#operacoes>.v2hero h1,#operacoes>.v2panel>.v2panelhead h3')].filter(e=>{const s=getComputedStyle(e),b=e.getBoundingClientRect();return s.display!=='none'&&s.visibility!=='hidden'&&b.width>0&&b.height>0}).map(e=>({text:String(e.textContent||'').trim(),color:getComputedStyle(e).color})));
+ const dark=headings.filter(x=>{const rgb=(x.color.match(/[\d.]+/g)||[]).slice(0,3).map(Number);return rgb.length===3&&(rgb[0]+rgb[1]+rgb[2])/3<150});
+ if(!headings.length)bad('field:operacoes:contraste-titulos','Nenhum título-alvo visível');
+ else if(dark.length)bad('field:operacoes:contraste-titulos',JSON.stringify(dark));
+ else ok('field:operacoes:contraste-titulos',JSON.stringify(headings));
+}
+
 async function captureAdmin(browser,viewport,isMobile,screens,prefix){
  const{context,page}=await openShell(browser,prefix,viewport,isMobile);await prepare(page,'admin');
  for(const id of screens){await route(page,id);await inspect(page,`${prefix}:${id}`,isMobile);await screenshot(page,`${prefix}-${id}`)}
@@ -98,7 +106,7 @@ async function captureAdmin(browser,viewport,isMobile,screens,prefix){
 }
 async function captureField(browser){
  const{context,page}=await openShell(browser,'field-commercial',{width:390,height:844},true);await prepare(page,'field');
- for(const id of ['equipehome','operacoes']){await route(page,id);await inspect(page,`field:${id}`,true);await screenshot(page,`field-${id}`)}
+ for(const id of ['equipehome','operacoes']){await route(page,id);await inspect(page,`field:${id}`,true);if(id==='operacoes')await inspectFieldOperationContrast(page);await screenshot(page,`field-${id}`)}
  await context.close();
 }
 
