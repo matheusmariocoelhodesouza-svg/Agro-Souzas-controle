@@ -23,7 +23,7 @@ const routeStyles={fiscal:['./c360-fiscal.css'],frota:['./c360-trailer-hitches.c
 const essentialModules=[
  './c360-platform.js','./c360-product-core.js','./c360-release-core.js','./c360-quality-core.js','./c360-farm-cache-hotfix.js',
  './c360-field-offline-hotfix.js','./c360-field-stability.js','./c360-runtime-compatibility.js','./c360-final-stabilization.js','./c360-data-integrity.js',
- './c360-field-route-guard.js','./c360-ux-polish-hotfix.js','./c360-onboarding-entry.js','./c360-team-chat.js','./c360-enterprise.js',
+ './c360-field-route-guard.js','./c360-ux-polish-hotfix.js','./c360-onboarding-entry.js','./c360-team-chat.js','./c360-system-health.js','./c360-enterprise.js',
  './c360-commercial.js','./c360-saas-readiness.js','./c360-rpc-bridge.js','./c360-showcase-exact.js'
 ];
 const routeModules={
@@ -32,8 +32,7 @@ const routeModules={
  fiscal:['./c360-fiscal.js','./c360-fiscal-issuance.js'],
  frota:['./c360-trailer-hitches.js','./c360-native-tracker-admin.js'],
  rastreamento:['./c360-native-tracker-admin.js'],
- combustivel:['./c360-fuel-type.js'],abastecimento:['./c360-fuel-type.js'],
- systemhealth:['./c360-system-health.js'],saude:['./c360-system-health.js'],saudesistema:['./c360-system-health.js']
+ combustivel:['./c360-fuel-type.js'],abastecimento:['./c360-fuel-type.js']
 };
 
 const loadedStyles=new Set(),loadedModules=new Set();
