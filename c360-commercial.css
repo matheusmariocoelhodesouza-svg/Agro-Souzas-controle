@@ -22,4 +22,22 @@ body.app-ready:not(.device-mode) #integracoes details>summary{
   body.app-ready:not(.device-mode) #integracoes details>summary{min-height:48px!important}
 }
 
+/* Indicadores de integrações: superfície e texto são definidos juntos para evitar contraste quebrado por temas antigos. */
+body.app-ready:not(.device-mode) #integracoes .integration-stat{
+  background-color:#0c1c2e!important;
+  background-image:linear-gradient(145deg,#102337,#0c1c2e)!important;
+  border-color:rgba(104,151,191,.28)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.035)!important;
+}
+body.app-ready:not(.device-mode) #integracoes .integration-stat span{
+  color:#a8bbd0!important;
+  -webkit-text-fill-color:#a8bbd0!important;
+  opacity:1!important;
+}
+body.app-ready:not(.device-mode) #integracoes .integration-stat strong{
+  color:#f7fbff!important;
+  -webkit-text-fill-color:#f7fbff!important;
+  opacity:1!important;
+}
+
 @media(max-width:600px){.c360-commercial-plan-grid{grid-template-columns:1fr}.c360-commercial-plan-top{align-items:stretch;flex-direction:column}.c360-commercial-status{width:max-content}}
