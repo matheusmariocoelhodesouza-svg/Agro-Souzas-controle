@@ -6,7 +6,7 @@ const base=process.env.C360_BASE_URL||'http://127.0.0.1:8080';
 const out=path.resolve('qa-artifacts');
 await fs.mkdir(out,{recursive:true});
 const sample={company:'00000000-0000-0000-0000-00000000c361',team:'00000000-0000-0000-0000-00000000c362',user:'00000000-0000-0000-0000-00000000c360'};
-const report={version:'2026.09.26-commercial3',checks:[],screenshots:[],errors:[],coverage:{}};
+const report={version:'2026.09.26-commercial4',checks:[],screenshots:[],errors:[],coverage:{}};
 const ok=(name,detail='')=>report.checks.push({name,ok:true,detail});
 const bad=(name,detail)=>{report.checks.push({name,ok:false,detail:String(detail)});report.errors.push({name,detail:String(detail)})};
 const safe=s=>String(s).replace(/[^a-z0-9_-]+/gi,'-').toLowerCase();
@@ -16,20 +16,23 @@ const TABLET_SCREENS=['inicio','equipes','funcionarios','frota','manutencoes','i
 const FIELD_SCREENS=['equipehome','operacoes','ponto','combustivel','equipereport'];
 
 function mockRows(table){
- if(table==='v2_teams')return[{id:sample.team,company_id:sample.company,name:'Equipe QA',code:'QA-01',status:'active',metadata:{contractor_name:'Cliente QA'}}];
- if(table==='v2_employees')return[{id:'emp-qa',company_id:sample.company,employee_number:'99',full_name:'Funcionário QA',primary_team:'Equipe QA',status:'active',job_title:'Cargueiro'}];
- if(table==='v2_vehicles')return[{id:'veh-qa',company_id:sample.company,plate:'QAQ1A23',name:'Micro-ônibus QA',description:'Micro-ônibus QA',model:'Sprinter',make:'Mercedes-Benz',year:2018,status:'active',current_km:123456,current_odometer_km:123456,team_id:sample.team,metadata:{}}];
- if(table==='v2_poultry_integrators')return[{id:'int-qa',company_id:sample.company,name:'Cliente QA',status:'active'}];
- if(table==='v2_poultry_farms')return[{id:'farm-qa',company_id:sample.company,integrator_id:'int-qa',producer_name:'Produtor QA',farm_name:'Granja QA',city:'Laranjal Paulista',status:'active',address:{city:'Laranjal Paulista'}}];
- if(table==='v2_inventory_items')return[{id:'item-qa',company_id:sample.company,name:'Óleo QA',unit:'L',category:'insumo',status:'active',minimum_stock:5,current_stock:20,current_avg_cost:12.5,metadata:{}}];
- if(table==='v2_operations')return[{id:'op-qa',company_id:sample.company,team_id:sample.team,operation_type:'poultry_catching',title:'Apanha QA',customer_name:'Cliente QA',location_name:'Granja QA',scheduled_start:new Date().toISOString(),status:'planned',planned_birds:6000,actual_birds:0,actual_revenue:0,actual_cost:0}];
- if(table==='v2_fuel_logs')return[{id:'fuel-qa',company_id:sample.company,vehicle_id:'veh-qa',fueled_at:new Date().toISOString(),liters:35,total_amount:225.75,odometer_km:123456,station_name:'Posto QA'}];
- if(table==='v2_financial_entries')return[{id:'fin-qa',company_id:sample.company,entry_type:'income',description:'Receita QA',amount:5720,status:'open',competence_date:new Date().toISOString().slice(0,10)}];
- if(table==='v2_maintenance_plans')return[{id:'maint-qa',company_id:sample.company,vehicle_id:'veh-qa',name:'Troca de óleo',active:true,next_due_odometer_km:125000}];
- if(table==='v2_vehicle_documents')return[{id:'doc-qa',company_id:sample.company,vehicle_id:'veh-qa',document_type:'CRLV',status:'active',expires_at:'2027-01-01'}];
- if(table==='v2_device_access')return[{id:'dev-qa',company_id:sample.company,team_id:sample.team,device_name:'Galaxy QA',active:true,last_seen_at:new Date().toISOString()}];
- if(table==='v2_attendance_events')return[{id:'att-qa',company_id:sample.company,employee_id:'emp-qa',event_type:'clock_in',occurred_at:new Date().toISOString()}];
- return[];
+ const now=new Date().toISOString(),today=now.slice(0,10);
+ const rows={
+  v2_teams:[{id:sample.team,company_id:sample.company,name:'Equipe QA',code:'QA-01',status:'active',metadata:{contractor_name:'Cliente QA'}}],
+  v2_employees:[{id:'emp-qa',company_id:sample.company,employee_number:'99',full_name:'Funcionário QA',primary_team:'Equipe QA',status:'active',job_title:'Cargueiro'}],
+  v2_vehicles:[{id:'veh-qa',company_id:sample.company,plate:'QAQ1A23',name:'Micro-ônibus QA',description:'Micro-ônibus QA',model:'Sprinter',make:'Mercedes-Benz',year:2018,status:'active',current_km:123456,current_odometer_km:123456,team_id:sample.team,metadata:{}}],
+  v2_poultry_integrators:[{id:'int-qa',company_id:sample.company,name:'Cliente QA',status:'active'}],
+  v2_poultry_farms:[{id:'farm-qa',company_id:sample.company,integrator_id:'int-qa',producer_name:'Produtor QA',farm_name:'Granja QA',city:'Laranjal Paulista',status:'active',address:{city:'Laranjal Paulista'}}],
+  v2_inventory_items:[{id:'item-qa',company_id:sample.company,name:'Óleo QA',unit:'L',category:'insumo',status:'active',minimum_stock:5,current_stock:20,current_avg_cost:12.5,metadata:{}}],
+  v2_operations:[{id:'op-qa',company_id:sample.company,team_id:sample.team,operation_type:'poultry_catching',title:'Apanha QA',customer_name:'Cliente QA',location_name:'Granja QA',scheduled_start:now,status:'planned',planned_birds:6000,actual_birds:0,actual_revenue:0,actual_cost:0}],
+  v2_fuel_logs:[{id:'fuel-qa',company_id:sample.company,vehicle_id:'veh-qa',fueled_at:now,liters:35,total_amount:225.75,odometer_km:123456,station_name:'Posto QA'}],
+  v2_financial_entries:[{id:'fin-qa',company_id:sample.company,entry_type:'income',description:'Receita QA',amount:5720,status:'open',competence_date:today}],
+  v2_maintenance_plans:[{id:'maint-qa',company_id:sample.company,vehicle_id:'veh-qa',name:'Troca de óleo',active:true,next_due_odometer_km:125000}],
+  v2_vehicle_documents:[{id:'doc-qa',company_id:sample.company,vehicle_id:'veh-qa',document_type:'CRLV',status:'active',expires_at:'2027-01-01'}],
+  v2_device_access:[{id:'dev-qa',company_id:sample.company,team_id:sample.team,device_name:'Galaxy QA',active:true,last_seen_at:now}],
+  v2_attendance_events:[{id:'att-qa',company_id:sample.company,employee_id:'emp-qa',event_type:'clock_in',occurred_at:now}]
+ };
+ return rows[table]||[];
 }
 
 async function installApiMock(page){
@@ -92,13 +95,7 @@ async function inspect(page,label,expected,mobile=false){
   const tooSmall=controls.filter(x=>x.h<(mobile?43.5:37.5));
   const style=getComputedStyle(root),vw=root.clientWidth;
   const escaped=[...(section?.querySelectorAll('.card,.v2panel,.v2hero,.fleet-card,.tracking-card,.item,.row')||[])].filter(visible).map(e=>{const b=e.getBoundingClientRect();return{id:e.id||'',cls:String(e.className||'').slice(0,80),left:Math.round(b.left),right:Math.round(b.right),width:Math.round(b.width)}}).filter(x=>x.left<-2||x.right>vw+2).slice(0,8);
-  return{
-   overflow:Math.max(root.scrollWidth-root.clientWidth,document.body.scrollWidth-root.clientWidth),
-   pro:root.dataset.c360ProfessionalPass||'',radius:style.getPropertyValue('--c360-pro-card-radius').trim(),controlHeight:style.getPropertyValue('--c360-pro-control-height').trim(),
-   active:section?.id||'',tooSmall,escaped,
-   h1:[...(section?.querySelectorAll('h1')||[])].filter(visible).map(e=>parseFloat(getComputedStyle(e).fontSize)||0),
-   visibleControls:controls.length
-  };
+  return{overflow:Math.max(root.scrollWidth-root.clientWidth,document.body.scrollWidth-root.clientWidth),pro:root.dataset.c360ProfessionalPass||'',radius:style.getPropertyValue('--c360-pro-card-radius').trim(),active:section?.id||'',tooSmall,escaped,h1:[...(section?.querySelectorAll('h1')||[])].filter(visible).map(e=>parseFloat(getComputedStyle(e).fontSize)||0),visibleControls:controls.length};
  },{mobile});
  if(r.active!==expected)bad(`${label}:rota-ativa`,`${r.active||'nenhuma'} != ${expected}`);else ok(`${label}:rota-ativa`,r.active);
  if(r.overflow>2)bad(`${label}:overflow`,JSON.stringify(r));else ok(`${label}:overflow`,String(r.overflow));
@@ -117,22 +114,8 @@ async function inspectFieldOperationContrast(page){
  else ok('field:operacoes:contraste-titulos',JSON.stringify(headings));
 }
 
-async function verifyScreenInventory(page){
- const inventory=await page.evaluate(()=>({
-  sectionIds:[...document.querySelectorAll('.section[id]')].map(e=>e.id).filter(Boolean),
-  allIds:[...document.querySelectorAll('[id]')].map(e=>e.id).filter(Boolean)
- }));
- const ids=[...new Set(inventory.allIds)];
- const missingAdmin=ADMIN_SCREENS.filter(id=>!ids.includes(id));
- const missingField=FIELD_SCREENS.filter(id=>!ids.includes(id));
- if(missingAdmin.length)bad('inventory:telas-administrativas',JSON.stringify(missingAdmin));else ok('inventory:telas-administrativas',`${ADMIN_SCREENS.length}/${ADMIN_SCREENS.length}`);
- if(missingField.length)bad('inventory:telas-campo',JSON.stringify(missingField));else ok('inventory:telas-campo',`${FIELD_SCREENS.length}/${FIELD_SCREENS.length}`);
- report.coverage.domScreens=[...new Set(inventory.sectionIds)].sort();
-}
-
 async function captureAdmin(browser,viewport,isMobile,screens,prefix){
  const{context,page}=await openShell(browser,prefix,viewport,isMobile);await prepare(page,'admin');
- if(prefix==='desktop')await verifyScreenInventory(page);
  for(const id of screens){await route(page,id);await inspect(page,`${prefix}:${id}`,id,isMobile);await screenshot(page,`${prefix}-${id}`)}
  await context.close();
 }
@@ -140,6 +123,12 @@ async function captureField(browser){
  const{context,page}=await openShell(browser,'field-commercial',{width:390,height:844},true);await prepare(page,'field');
  for(const id of FIELD_SCREENS){await route(page,id);await inspect(page,`field:${id}`,id,true);if(id==='operacoes')await inspectFieldOperationContrast(page);await screenshot(page,`field-${id}`)}
  await context.close();
+}
+function verifyRouteCoverage(){
+ const passed=new Set(report.checks.filter(x=>x.ok&&x.name.endsWith(':rota-ativa')).map(x=>x.name));
+ const expected=[...ADMIN_SCREENS.map(id=>`desktop:${id}:rota-ativa`),...TABLET_SCREENS.map(id=>`tablet:${id}:rota-ativa`),...ADMIN_SCREENS.map(id=>`mobile-admin:${id}:rota-ativa`),...FIELD_SCREENS.map(id=>`field:${id}:rota-ativa`)];
+ const missing=expected.filter(x=>!passed.has(x));
+ if(missing.length)bad('inventory:rotas-validadas',JSON.stringify(missing));else ok('inventory:rotas-validadas',`${expected.length}/${expected.length}`);
 }
 
 const browser=await chromium.launch({headless:true});
@@ -150,7 +139,8 @@ try{
  await captureField(browser);
 }finally{await browser.close()}
 
-report.coverage={...report.coverage,adminDesktop:ADMIN_SCREENS,adminTablet:TABLET_SCREENS,adminMobile:ADMIN_SCREENS,field:FIELD_SCREENS};
+verifyRouteCoverage();
+report.coverage={adminDesktop:ADMIN_SCREENS,adminTablet:TABLET_SCREENS,adminMobile:ADMIN_SCREENS,field:FIELD_SCREENS};
 await fs.writeFile(path.join(out,'commercial-polish-report.json'),JSON.stringify(report,null,2));
 const summary={version:report.version,checks:report.checks.length,failed:report.checks.filter(x=>!x.ok).length,screenshots:report.screenshots.length,errors:report.errors.length,coverage:{desktop:ADMIN_SCREENS.length,tablet:TABLET_SCREENS.length,mobile:ADMIN_SCREENS.length,field:FIELD_SCREENS.length}};
 console.log(JSON.stringify(summary,null,2));
