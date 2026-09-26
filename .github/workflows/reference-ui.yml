@@ -10,6 +10,7 @@ on:
       - '*.js'
       - 'comando360.webmanifest'
       - 'qa/reference_ui.mjs'
+      - 'qa/commercial_polish.mjs'
       - 'qa/performance_budget.mjs'
       - 'qa/field_stability.mjs'
       - 'qa/field_stability_fixture.html'
@@ -48,6 +49,8 @@ jobs:
           exit 1
       - name: Run customer and owner UI audit
         run: node qa/reference_ui.mjs
+      - name: Run commercial visual consistency audit
+        run: node qa/commercial_polish.mjs
       - name: Run field mobile stability regression
         run: node qa/field_stability.mjs
       - name: Run report rejection regression

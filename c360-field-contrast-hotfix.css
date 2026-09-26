@@ -107,3 +107,17 @@ body.darkmode.device-mode #operacoes .po-detail>div{
 }
 body.darkmode.device-mode #operacoes .po-detail>div .muted{color:#475569!important}
 body.darkmode.device-mode #operacoes .po-detail>div b{color:#0f172a!important}
+
+/* Cabeçalhos da tela de Apanhas ficam sobre superfície escura no modo campo. */
+body.device-mode #operacoes>.v2hero h1,
+body.device-mode #operacoes>.v2panel>.v2panelhead h3{
+  color:#f8fbff!important;
+  -webkit-text-fill-color:#f8fbff!important;
+  opacity:1!important;
+}
+body.device-mode #operacoes>.v2hero p,
+body.device-mode #operacoes>.v2panel>.v2panelhead .muted{
+  color:#b8cbe0!important;
+  -webkit-text-fill-color:#b8cbe0!important;
+  opacity:1!important;
+}
