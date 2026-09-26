@@ -355,3 +355,112 @@ body.device-mode .field-section-title>.c360-field-section-icon svg{width:23px!im
 @media(max-width:360px){
   #combustivel #fuelKpis{grid-template-columns:1fr!important}
 }
+
+/* ---------- Commercial readiness: consistência transversal ---------- */
+:root{
+  --c360-pro-card-radius:16px;
+  --c360-pro-control-radius:11px;
+  --c360-pro-control-height:44px;
+  --c360-pro-touch-height:44px;
+  --c360-pro-section-gap:14px;
+}
+
+body.app-ready:not(.device-mode) #screenHost>.section.active{
+  width:100%;
+  max-width:1600px;
+  margin-inline:auto;
+}
+body.app-ready:not(.device-mode) #screenHost>.section.active :where(.card,.v2panel,.item,.fleet-card,.finance-overview-card,.finance-entry-card,.rh-list-card,.rh-tool-card,.poultry-op-card){
+  border-radius:var(--c360-pro-card-radius)!important;
+}
+body.app-ready:not(.device-mode) #screenHost>.section.active :where(.toolbar,.v2panelhead,.fleet-hero-actions){
+  gap:10px;
+}
+body.app-ready:not(.device-mode) #screenHost>.section.active :where(.btn,button:not(.v2navbtn):not(.mobile-bottom-nav button)){
+  min-height:var(--c360-pro-touch-height);
+}
+body.app-ready:not(.device-mode) #screenHost>.section.active :where(input:not([type="checkbox"]):not([type="radio"]),select){
+  min-height:var(--c360-pro-control-height);
+  border-radius:var(--c360-pro-control-radius)!important;
+}
+body.app-ready:not(.device-mode) #screenHost>.section.active textarea{
+  min-height:96px;
+  border-radius:var(--c360-pro-control-radius)!important;
+  resize:vertical;
+}
+body.app-ready:not(.device-mode) #screenHost>.section.active :where(h1,h2,h3){
+  text-wrap:balance;
+  line-height:1.18;
+}
+body.app-ready:not(.device-mode) #screenHost>.section.active :where(.v2hero,.fleet-hero){
+  margin-bottom:18px;
+}
+body.app-ready:not(.device-mode) #screenHost>.section.active :where(.v2-empty,.empty-state,[data-empty]){
+  min-height:82px;
+  display:grid;
+  align-content:center;
+  border:1px dashed var(--c360-border,#d8e2ed);
+  border-radius:14px;
+  padding:18px;
+  background:color-mix(in srgb,var(--c360-surface,#fff) 88%,var(--c360-bg,#f3f6fa));
+}
+body.app-ready:not(.device-mode) #screenHost>.section.active :where(.pill,.v2status,.badge){
+  line-height:1.2;
+  max-width:100%;
+}
+body.app-ready:not(.device-mode) #screenHost>.section.active :where(.list,.fleet-list,#maintenanceList,#employeesList,#poultryList){
+  min-width:0;
+}
+body.app-ready:not(.device-mode) #screenHost>.section.active :where(.card,.v2panel,.item,.fleet-card){
+  min-width:0;
+}
+body.app-ready:not(.device-mode) #screenHost>.section.active :where(input,select,textarea,.btn,button){
+  transition:border-color .14s ease,box-shadow .14s ease,background-color .14s ease,transform .14s ease;
+}
+body.app-ready:not(.device-mode) #screenHost>.section.active :where(.btn,button):active:not(:disabled){
+  transform:translateY(1px);
+}
+
+/* cabeçalhos e ações mantêm hierarquia em telas intermediárias */
+@media(max-width:1100px){
+  body.app-ready:not(.device-mode) #screenHost>.section.active :where(.v2hero,.fleet-hero){
+    align-items:flex-start!important;
+    flex-wrap:wrap;
+  }
+  body.app-ready:not(.device-mode) #screenHost>.section.active :where(.v2hero>*,.fleet-hero>*){
+    min-width:0;
+  }
+}
+
+@media(max-width:900px){
+  :root{--c360-pro-control-height:48px;--c360-pro-touch-height:48px}
+  body.app-ready:not(.device-mode) #screenHost>.section.active{
+    overflow-x:clip;
+  }
+  body.app-ready:not(.device-mode) #screenHost>.section.active :where(.v2hero,.fleet-hero){
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr)!important;
+    gap:12px!important;
+  }
+  body.app-ready:not(.device-mode) #screenHost>.section.active :where(.v2hero .toolbar,.fleet-hero-actions){
+    width:100%;
+  }
+  body.app-ready:not(.device-mode) #screenHost>.section.active :where(.v2hero .toolbar .btn,.fleet-hero-actions .btn){
+    flex:1 1 180px;
+  }
+  body.app-ready:not(.device-mode) #screenHost>.section.active table{
+    max-width:100%;
+  }
+}
+
+/* campo: apenas ergonomia/touch; regras e composição permanecem intactas */
+body.device-mode :where(.btn,button,input:not([type="checkbox"]):not([type="radio"]),select){
+  min-height:48px;
+}
+body.device-mode textarea{min-height:104px;resize:vertical}
+body.device-mode :where(.team-tile,.field-section,.card){min-width:0}
+body.device-mode :where(.team-tile,.btn,button){-webkit-tap-highlight-color:transparent}
+
+@media(prefers-reduced-motion:reduce){
+  body.app-ready :where(.btn,button,input,select,textarea){transition:none!important}
+}
