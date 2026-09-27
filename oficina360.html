@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b1424">
+<title>Oficina 360</title>
+<link rel="icon" type="image/svg+xml" href="./comando360-icon.svg">
+<link rel="stylesheet" href="./oficina360.css">
+</head>
+<body>
+<div id="sessionGate" class="session-gate hidden">
+  <div class="gate-card">
+    <div class="gate-mark">O360</div>
+    <h1>Oficina 360</h1>
+    <p>Abra o Oficina 360 a partir do Comando 360 para usar a mesma sessão e a mesma frota.</p>
+    <a class="btn primary" href="./index.html#frota">Abrir Comando 360</a>
+  </div>
+</div>
+
+<div id="appShell" class="app-shell hidden">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">O360</div>
+      <div><strong>Oficina 360</strong><small>Inteligência técnica da frota</small></div>
+    </div>
+
+    <div class="vehicle-picker-wrap">
+      <label for="vehiclePicker">Condução</label>
+      <select id="vehiclePicker"></select>
+      <span id="vehicleIdentityBadge" class="identity-badge">Carregando...</span>
+    </div>
+
+    <nav class="side-nav" aria-label="Módulos do Oficina 360">
+      <button class="active" data-tab="overview" type="button"><span>⌂</span> Visão geral</button>
+      <button data-tab="catalog" type="button"><span>⚙</span> Catálogo de peças</button>
+      <button data-tab="exploded" type="button"><span>◫</span> Vistas explodidas</button>
+      <button data-tab="maintenance" type="button"><span>🔧</span> Manutenção</button>
+      <button data-tab="orders" type="button"><span>📋</span> Ordens de serviço</button>
+      <button data-tab="diagnostics" type="button"><span>⌁</span> Scanner & falhas</button>
+    </nav>
+
+    <div class="sidebar-bottom">
+      <a href="./index.html#frota">← Voltar ao Comando 360</a>
+      <small>Mesmo veículo • mesmo histórico • banco compartilhado</small>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div>
+        <span class="eyebrow">OFICINA 360</span>
+        <h1 id="pageTitle">Visão geral</h1>
+      </div>
+      <div class="top-actions">
+        <span id="syncState" class="sync-state">● Sincronizado</span>
+        <button id="refreshBtn" class="btn soft" type="button">↻ Atualizar</button>
+        <a class="btn primary" href="./index.html#frota">Comando 360</a>
+      </div>
+    </header>
+
+    <div class="content">
+      <section id="tab-overview" class="tab active">
+        <div id="vehicleHero" class="vehicle-hero loading-block">Carregando condução...</div>
+        <div id="overviewKpis" class="kpi-grid"></div>
+        <div class="two-col">
+          <article class="panel">
+            <div class="panel-head"><div><span class="eyebrow">IDENTIDADE</span><h2>Ficha técnica</h2></div><span id="profileStatusChip" class="chip neutral">—</span></div>
+            <div id="technicalProfile" class="detail-grid"></div>
+          </article>
+          <article class="panel">
+            <div class="panel-head"><div><span class="eyebrow">ATENÇÃO</span><h2>Próximas ações</h2></div></div>
+            <div id="attentionList" class="stack"></div>
+          </article>
+        </div>
+        <article class="panel">
+          <div class="panel-head"><div><span class="eyebrow">HISTÓRICO</span><h2>Últimos serviços e ocorrências</h2></div></div>
+          <div id="recentHistory" class="stack"></div>
+        </article>
+      </section>
+
+      <section id="tab-catalog" class="tab">
+        <div class="section-head">
+          <div><span class="eyebrow">PEÇA POR PEÇA</span><h2>Catálogo técnico</h2><p>Códigos OEM, aplicação, localização, sintomas e ferramentas.</p></div>
+          <div class="search-box"><span>⌕</span><input id="catalogSearch" type="search" placeholder="Buscar peça, sensor, código OEM, turbo, rail..."></div>
+        </div>
+        <div id="catalogNotice" class="notice"></div>
+        <div id="catalogGroups" class="catalog-groups"></div>
+      </section>
+
+      <section id="tab-exploded" class="tab">
+        <div class="section-head">
+          <div><span class="eyebrow">MONTAGEM</span><h2>Vistas explodidas</h2><p>Conjuntos técnicos ligados à configuração exata da condução.</p></div>
+        </div>
+        <div id="explodedViews" class="view-grid"></div>
+      </section>
+
+      <section id="tab-maintenance" class="tab">
+        <div class="section-head">
+          <div><span class="eyebrow">PREVENTIVA + HISTÓRICO</span><h2>Manutenção</h2><p>O hodômetro vem do Comando 360 e alimenta os vencimentos do Oficina.</p></div>
+        </div>
+        <div id="maintenanceSummary" class="kpi-grid compact"></div>
+        <div id="maintenanceList" class="stack"></div>
+      </section>
+
+      <section id="tab-orders" class="tab">
+        <div class="section-head">
+          <div><span class="eyebrow">EXECUÇÃO</span><h2>Ordens de serviço</h2><p>Diagnóstico e serviço feitos aqui ficam disponíveis no histórico da frota.</p></div>
+        </div>
+        <div id="workOrders" class="stack"></div>
+      </section>
+
+      <section id="tab-diagnostics" class="tab">
+        <div class="section-head">
+          <div><span class="eyebrow">DIAGNÓSTICO</span><h2>Scanner & falhas</h2><p>Base preparada para receber códigos do scanner e cruzar com histórico e catálogo.</p></div>
+        </div>
+        <div id="faultsList" class="stack"></div>
+      </section>
+    </div>
+  </main>
+</div>
+
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="./config.js"></script>
+<script src="./oficina360.js"></script>
+</body>
+</html>
