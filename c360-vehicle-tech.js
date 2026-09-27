@@ -1,18 +1,20 @@
 (function(){
  'use strict';
- const VERSION='2026.09.26-v1';
+ const VERSION='2026.09.26-v2';
  let modal=null;
  let currentVehicleId=null;
- let catalogCache=new Map();
+ const catalogCache=new Map();
 
  function h(value){
-  if(typeof window.esc==='function')return window.esc(value==null?'':String(value));
+  try{if(typeof esc==='function')return esc(value==null?'':String(value))}catch(_){}
   return String(value==null?'':value).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
  }
  function fmt(value,fallback='—'){return value===null||value===undefined||value===''?fallback:String(value)}
  function statusLabel(value){return value==='verified'?'Confirmado':value==='not_applicable'?'Não aplicável':'A confirmar'}
  function componentStatus(c){return c?.data_status==='verified'?'Confirmado':c?.oem_part_number?'Referência cadastrada':'OEM pendente'}
- function canUse(){return typeof window.rest==='function'&&window.companyId}
+ function activeCompanyId(){try{return typeof companyId!=='undefined'?companyId:null}catch(_){return null}}
+ function restApi(){try{return typeof rest==='function'?rest:null}catch(_){return null}}
+ function canUse(){return !!activeCompanyId()&&!!restApi()}
 
  function installStyle(){
   if(document.getElementById('c360VehicleTechStyle'))return;
@@ -21,6 +23,7 @@
   style.textContent=`
    .fleet-tech-btn{background:#e9f7ef!important;color:#17653f!important;border:1px solid #cfead9!important}
    .c360-tech-backdrop{position:fixed;inset:0;background:rgba(9,19,35,.58);z-index:2147483000;display:flex;align-items:stretch;justify-content:flex-end;backdrop-filter:blur(3px)}
+   .c360-tech-backdrop[hidden]{display:none!important}
    .c360-tech-drawer{width:min(920px,96vw);height:100%;background:#f5f7fb;box-shadow:-24px 0 60px rgba(8,25,47,.22);overflow:auto;color:#172033}
    .c360-tech-head{position:sticky;top:0;z-index:4;background:#fff;border-bottom:1px solid #e4eaf2;padding:16px 18px;display:flex;gap:14px;align-items:center;justify-content:space-between}
    .c360-tech-title{min-width:0}.c360-tech-title h2{font-size:20px;margin:0;color:#10233f}.c360-tech-title p{font-size:12px;color:#6b7d95;margin:4px 0 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -57,18 +60,19 @@
  async function loadCatalog(vehicleId,force=false){
   if(!canUse())throw new Error('Sessão administrativa ainda não está pronta.');
   if(!force&&catalogCache.has(vehicleId))return catalogCache.get(vehicleId);
-  const cid=encodeURIComponent(window.companyId);
+  const api=restApi();
+  const cid=encodeURIComponent(activeCompanyId());
   const vid=encodeURIComponent(vehicleId);
   const [profiles,links,groups]=await Promise.all([
-   window.rest('v2_vehicle_technical_profiles','select=*&company_id=eq.'+cid+'&vehicle_id=eq.'+vid+'&limit=1'),
-   window.rest('v2_vehicle_component_links','select=id,component_id,fitment_status,installed_part_number,installed_brand,installed_at,notes&company_id=eq.'+cid+'&vehicle_id=eq.'+vid+'&order=created_at.asc'),
-   window.rest('v2_vehicle_component_groups','select=code,name,parent_code,sort_order&order=sort_order.asc')
+   api('v2_vehicle_technical_profiles','select=*&company_id=eq.'+cid+'&vehicle_id=eq.'+vid+'&limit=1'),
+   api('v2_vehicle_component_links','select=id,component_id,fitment_status,installed_part_number,installed_brand,installed_at,notes&company_id=eq.'+cid+'&vehicle_id=eq.'+vid+'&order=created_at.asc'),
+   api('v2_vehicle_component_groups','select=code,name,parent_code,sort_order&order=sort_order.asc')
   ]);
   const ids=[...new Set((links||[]).map(x=>x.component_id).filter(Boolean))];
   let components=[];
   if(ids.length){
    const encoded='('+ids.join(',')+')';
-   components=await window.rest('v2_vehicle_components','select=*&id=in.'+encodeURIComponent(encoded));
+   components=await api('v2_vehicle_components','select=*&id=in.'+encodeURIComponent(encoded));
   }
   const map=new Map((components||[]).map(c=>[c.id,c]));
   const data={profile:profiles?.[0]||null,links:links||[],groups:groups||[],components:map};
