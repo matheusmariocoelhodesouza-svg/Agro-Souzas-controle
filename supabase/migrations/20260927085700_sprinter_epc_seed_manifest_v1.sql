@@ -1,0 +1,15 @@
+-- Dados EPC microdetalhados foram carregados no projeto Supabase através do helper
+-- c360_seed_epc_view em lotes controlados, mantendo a fonte e o status de exatidão.
+--
+-- Seeds aplicados:
+-- sprinter_w903_epc_micro_engine_v1
+-- sprinter_w903_epc_micro_fuel_front_brake_v1
+-- sprinter_w903_epc_micro_rear_diff_v1
+-- sprinter_w903_epc_micro_axle_steering_v1
+-- sprinter_w903_epc_micro_engine_systems_v2
+--
+-- Cobertura desta etapa: 18 vistas / 271 posições individualizadas.
+-- O conteúdo linha-a-linha permanece no banco com source_metadata contendo
+-- view_key, item_number, quantity e source_url; docs/sprinter-313-epc-microcatalog.md
+-- descreve a cobertura e as regras de precisão.
+select 1;
