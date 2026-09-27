@@ -1,5 +1,6 @@
--- Comando 360: catalogo tecnico de veiculos e perfil da Sprinter
--- Estrutura multi-tenant para organizar sistemas, componentes, codigos OEM e aplicabilidade por veiculo.
+-- Comando 360: catalogo tecnico de veiculos.
+-- Estrutura multi-tenant para sistemas, componentes, codigos OEM e aplicabilidade por veiculo.
+-- As politicas de acesso sao aplicadas na migration imediatamente seguinte.
 
 create table if not exists public.v2_vehicle_technical_profiles (
   id uuid primary key default gen_random_uuid(),
@@ -106,82 +107,6 @@ alter table public.v2_vehicle_component_groups enable row level security;
 alter table public.v2_vehicle_components enable row level security;
 alter table public.v2_vehicle_component_applications enable row level security;
 alter table public.v2_vehicle_component_links enable row level security;
-
--- Dados globais de catalogo podem ser lidos por usuarios autenticados; escrita fica restrita a backend/service role.
-drop policy if exists "authenticated can read vehicle component groups" on public.v2_vehicle_component_groups;
-create policy "authenticated can read vehicle component groups"
-  on public.v2_vehicle_component_groups for select
-  to authenticated
-  using (true);
-
-drop policy if exists "authenticated can read vehicle components" on public.v2_vehicle_components;
-create policy "authenticated can read vehicle components"
-  on public.v2_vehicle_components for select
-  to authenticated
-  using (true);
-
-drop policy if exists "authenticated can read vehicle applications" on public.v2_vehicle_component_applications;
-create policy "authenticated can read vehicle applications"
-  on public.v2_vehicle_component_applications for select
-  to authenticated
-  using (true);
-
--- Perfil e vinculos respeitam o tenant do usuario logado.
-drop policy if exists "company members can read technical profiles" on public.v2_vehicle_technical_profiles;
-create policy "company members can read technical profiles"
-  on public.v2_vehicle_technical_profiles for select
-  to authenticated
-  using (exists (
-    select 1 from public.v2_company_members m
-    where m.company_id = v2_vehicle_technical_profiles.company_id
-      and m.user_id = auth.uid()
-      and m.status = 'active'
-  ));
-
-drop policy if exists "company members can manage technical profiles" on public.v2_vehicle_technical_profiles;
-create policy "company members can manage technical profiles"
-  on public.v2_vehicle_technical_profiles for all
-  to authenticated
-  using (exists (
-    select 1 from public.v2_company_members m
-    where m.company_id = v2_vehicle_technical_profiles.company_id
-      and m.user_id = auth.uid()
-      and m.status = 'active'
-  ))
-  with check (exists (
-    select 1 from public.v2_company_members m
-    where m.company_id = v2_vehicle_technical_profiles.company_id
-      and m.user_id = auth.uid()
-      and m.status = 'active'
-  ));
-
-drop policy if exists "company members can read vehicle component links" on public.v2_vehicle_component_links;
-create policy "company members can read vehicle component links"
-  on public.v2_vehicle_component_links for select
-  to authenticated
-  using (exists (
-    select 1 from public.v2_company_members m
-    where m.company_id = v2_vehicle_component_links.company_id
-      and m.user_id = auth.uid()
-      and m.status = 'active'
-  ));
-
-drop policy if exists "company members can manage vehicle component links" on public.v2_vehicle_component_links;
-create policy "company members can manage vehicle component links"
-  on public.v2_vehicle_component_links for all
-  to authenticated
-  using (exists (
-    select 1 from public.v2_company_members m
-    where m.company_id = v2_vehicle_component_links.company_id
-      and m.user_id = auth.uid()
-      and m.status = 'active'
-  ))
-  with check (exists (
-    select 1 from public.v2_company_members m
-    where m.company_id = v2_vehicle_component_links.company_id
-      and m.user_id = auth.uid()
-      and m.status = 'active'
-  ));
 
 insert into public.v2_vehicle_component_groups(code,name,parent_code,sort_order) values
  ('engine','Motor',null,10),
