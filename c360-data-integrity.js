@@ -1,7 +1,7 @@
 (()=>{
 'use strict';
 if(window.C360_DATA_INTEGRITY_VERSION)return;
-const VERSION='2026.09.23-integrity2';
+const VERSION='2026.09.27-integrity3';
 let timer=null,busy={pricing:false,biometric:false,poultry:false,fiscal:false};
 const $=s=>document.querySelector(s);
 const norm=v=>String(v??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/\s+/g,' ').trim();
@@ -88,21 +88,23 @@ async function refreshPoultryIntegrity(){
  if(device()||busy.poultry||active()!=='operacoes')return;const restFn=rf(),company=cid();if(!restFn||!company)return;busy.poultry=true;
  try{
   const rows=await safe(restFn('v2_poultry_truck_loads','select=id,loading_id,truck_sequence,truck_plate,driver_name,birds,started_at,completed_at,is_cata,metadata,created_at&company_id=eq.'+company+'&order=created_at.desc&limit=300'));
-  const quantity=[],timing=[],small=[];
+  const invalidQuantity=[],invertedTiming=[];
   for(const t of rows||[]){
-   const m=t.metadata||{},boxes=Number(m.boxes_count||0),per=Number(m.birds_per_box||0),birds=Number(t.birds||0),simple=boxes*per,dur=minutesBetween(t.started_at,t.completed_at);
-   if(!t.is_cata&&boxes>0&&per>0&&birds>0&&Math.abs(simple-birds)>=Math.max(per,20))quantity.push({t,simple,boxes,per,birds});
-   if(dur!==null&&dur>=0&&dur<=1)timing.push({t,dur});
-   if(!t.is_cata&&boxes>=100&&birds>0&&birds<100)small.push({t,birds,boxes});
+   const m=t.metadata||{},boxes=Number(m.boxes_count||0),per=Number(m.birds_per_box||0),birds=Number(t.birds||0),dur=minutesBetween(t.started_at,t.completed_at);
+   /* Não usar caixas × aves/caixa como igualdade obrigatória.
+      birds_per_box é a referência principal do carregamento, mas no mesmo caminhão pode haver
+      caixas com 7 e 8 aves; totais menores também podem ser explicados por caixas vazias.
+      Esses cenários são normais da operação e não devem aparecer como divergência. */
+   if(boxes<0||per<0||birds<0)invalidQuantity.push({t,boxes,per,birds});
+   if(dur!==null&&dur<-1)invertedTiming.push({t,dur});
   }
-  const total=quantity.length+timing.length+small.length;
+  const total=invalidQuantity.length+invertedTiming.length;
   if(!total){remove('c360PoultryIntegrity');return}
   const el=notice($('#operacoes'),'c360PoultryIntegrity','attention');if(!el)return;
   const examples=[];
-  quantity.slice(0,3).forEach(x=>examples.push(`Caminhão ${x.t.truck_sequence||'—'}: ${x.boxes.toLocaleString('pt-BR')} caixas × ${x.per.toLocaleString('pt-BR')} = ${x.simple.toLocaleString('pt-BR')}, informado ${x.birds.toLocaleString('pt-BR')} aves`));
-  timing.slice(0,2).forEach(x=>examples.push(`Caminhão ${x.t.truck_sequence||'—'}: duração ${Math.round(x.dur)} min`));
-  small.slice(0,2).forEach(x=>examples.push(`Caminhão ${x.t.truck_sequence||'—'}: ${x.birds.toLocaleString('pt-BR')} aves para ${x.boxes.toLocaleString('pt-BR')} caixas`));
-  el.innerHTML=`<strong>⚠ Conferência de dados da apanha</strong><div>${quantity.length} divergência(s) entre o total informado e o cálculo simples caixas × aves/caixa; ${timing.length} horário(s) de 0–1 minuto; ${small.length} quantidade(s) muito pequena(s) para centenas de caixas.</div>${examples.length?'<div class="c360-integrity-examples">'+examples.map(x=>`<span>${esc(x)}</span>`).join('')+'</div>':''}<small>Nenhum valor foi alterado automaticamente. Caixas vazias, cata e ajustes manuais podem explicar diferenças; a correção deve preservar o registro original e o motivo.</small>`;
+  invalidQuantity.slice(0,3).forEach(x=>examples.push(`Caminhão ${x.t.truck_sequence||'—'}: quantidade negativa encontrada (caixas ${x.boxes.toLocaleString('pt-BR')}, aves/caixa ${x.per.toLocaleString('pt-BR')}, aves ${x.birds.toLocaleString('pt-BR')})`));
+  invertedTiming.slice(0,2).forEach(x=>examples.push(`Caminhão ${x.t.truck_sequence||'—'}: horário final anterior ao inicial em ${Math.abs(Math.round(x.dur))} min`));
+  el.innerHTML=`<strong>⚠ Conferência de dados da apanha</strong><div>${invalidQuantity.length} quantidade(s) inválida(s); ${invertedTiming.length} horário(s) invertido(s).</div>${examples.length?'<div class="c360-integrity-examples">'+examples.map(x=>`<span>${esc(x)}</span>`).join('')+'</div>':''}<small>Variações entre caixas e total de aves são esperadas quando há caixas com quantidades diferentes ou caixas vazias. Tempos de 0–1 minuto também não são tratados como erro.</small>`;
  }catch(e){console.warn('Comando 360 integridade',e);unavailable('operacoes','c360PoultryIntegrity')}finally{busy.poultry=false}
 }
 

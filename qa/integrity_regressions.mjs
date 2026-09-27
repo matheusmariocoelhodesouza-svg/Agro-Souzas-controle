@@ -19,6 +19,16 @@ await test('Failed biometrics request reports unavailable, not full coverage',as
  const dom=fixture('funcionarios'),w=dom.window;w.rest=async()=>{throw Error('Network failure')};
  try{w.eval(fs.readFileSync('c360-data-integrity.js','utf8'));await delay(200);const text=w.document.body.textContent;assert.match(text,/Não foi possível/);assert.doesNotMatch(text,/Todos os funcionários/)}finally{w.close()}
 });
+await test('Poultry integrity accepts mixed birds per box, empty boxes and 0-1 minute times',async()=>{
+ const dom=fixture('operacoes'),w=dom.window;
+ const rows=[
+  {id:'t7',truck_sequence:7,birds:4330,started_at:'2026-09-27T05:00:00-03:00',completed_at:'2026-09-27T05:00:00-03:00',is_cata:false,metadata:{boxes_count:600,birds_per_box:7}},
+  {id:'t4',truck_sequence:4,birds:3150,started_at:'2026-09-27T05:00:00-03:00',completed_at:'2026-09-27T05:01:00-03:00',is_cata:false,metadata:{boxes_count:600,birds_per_box:7}},
+  {id:'t3',truck_sequence:3,birds:2100,started_at:'2026-09-27T05:00:00-03:00',completed_at:'2026-09-27T05:00:00-03:00',is_cata:false,metadata:{boxes_count:600,birds_per_box:7}}
+ ];
+ w.rest=async table=>table==='v2_poultry_truck_loads'?rows:[];
+ try{w.eval(fs.readFileSync('c360-data-integrity.js','utf8'));await delay(250);assert.equal(w.document.getElementById('c360PoultryIntegrity'),null);assert.equal(w.C360_DATA_INTEGRITY_VERSION,'2026.09.27-integrity3')}finally{w.close()}
+});
 await test('Operation filters settle instead of rewriting the DOM endlessly',async()=>{
  const dom=fixture('operacoes','<div id="poultryList"><div class="item">Granja</div></div>'),w=dom.window;let mutations=0;
  w.poultryOpsCache=[{id:'o',team_id:'t',scheduled_start:'2026-09-23T10:00:00Z',status:'completed'}];w.poultryTeams=[{id:'t',name:'Equipe 1',status:'active'}];
