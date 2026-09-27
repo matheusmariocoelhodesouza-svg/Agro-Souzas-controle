@@ -2,5 +2,6 @@
 /* 2026-09-25 — cache offline completo para UI vetorial e correções de corrida. */
 /* 2026-09-25 — runtime consolidation: shell/campo no precache e módulos administrativos sob demanda. */
 /* 2026-09-27 — atualiza regra de conferência da Apanha para caixas mistas, caixas vazias e tempos curtos válidos. */
+/* 2026-09-27 — força refresh do cache após correção da ponte Oficina 360. */
 importScripts('./sw-v7-02-core-hotfix63.js');
 importScripts('./sw-auth-refresh-guard.js');
