@@ -1,0 +1,15 @@
+{
+  "vehicle_family": "Mercedes-Benz Sprinter W903",
+  "chassis_variant": "903.662",
+  "engine": "OM611.981",
+  "micro_catalog": {
+    "exploded_views": 18,
+    "items": 271,
+    "items_with_symptoms": 271,
+    "items_with_suggested_tests": 271,
+    "items_with_required_tools": 271,
+    "items_with_location": 271
+  },
+  "image_policy": "reference_only unless licensed/generated/public_domain",
+  "completion": "in_progress_until_every_applicable_EPC_view_and_body-conversion_component_is_identified"
+}
