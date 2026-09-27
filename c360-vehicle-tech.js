@@ -1,6 +1,6 @@
 (function(){
  'use strict';
- const VERSION='2026.09.27-oficina360-bridge-v1';
+ const VERSION='2026.09.27-oficina360-bridge-v2';
 
  function officeUrl(vehicleId){
   const url=new URL('./oficina360.html',window.location.href);
@@ -46,6 +46,23 @@
   actions.prepend(btn);
  }
 
+ function decorateVehicleEdit(){
+  const card=document.getElementById('vehicleEditCard');
+  if(!card)return;
+  const actions=card.querySelector('.vehicle-edit-actions');
+  if(!actions||actions.querySelector('.oficina360-edit-btn'))return;
+  const btn=document.createElement('button');
+  btn.type='button';
+  btn.className='btn oficina360-edit-btn';
+  btn.textContent='🛠 ABRIR OFICINA 360';
+  btn.title='Abrir a ficha técnica desta condução no Oficina 360';
+  btn.addEventListener('click',()=>{
+   const id=document.getElementById('editVehicleId')?.value||'';
+   openOficina360(id);
+  });
+  actions.appendChild(btn);
+ }
+
  function installStyle(){
   if(document.getElementById('c360OficinaBridgeStyle'))return;
   const style=document.createElement('style');
@@ -53,7 +70,8 @@
   style.textContent=`
    .fleet-tech-btn{background:#eef4fb!important;color:#163d68!important;border:1px solid #d8e5f2!important}
    .fleet-tech-btn:hover{background:#e3effc!important;border-color:#c6dbf1!important}
-   .oficina360-open-all{background:#102b51!important;color:#fff!important;border-color:#102b51!important}
+   .oficina360-open-all,.oficina360-edit-btn{background:#102b51!important;color:#fff!important;border:1px solid #102b51!important}
+   .oficina360-edit-btn{margin-left:auto}
   `;
   document.head.appendChild(style);
  }
@@ -62,6 +80,7 @@
   installStyle();
   decorateFleetCards();
   decorateFleetHeader();
+  decorateVehicleEdit();
  }
 
  function boot(){
