@@ -6,7 +6,7 @@
  const DEVICE_SESSION_BACKUP_KEY='c360_device_session_backup_v1';
  const DEVICE_SESSION_MAX_AGE=7*24*60*60*1000;
  const SW_URL='./sw-v7-02.js';
- const RUNTIME_MODULES=['./c360-autorecovery.js','./c360-device-control.js','./c360-field-location-ui-hotfix.js','./c360-native-tracker-admin.js','./c360-system-health.js'];
+ const RUNTIME_MODULES=['./c360-autorecovery.js','./c360-device-control.js','./c360-field-location-ui-hotfix.js','./c360-native-tracker-admin.js','./c360-system-health.js','./c360-vehicle-tech.js'];
  let registrationPromise=null;
  let recovering=false;
  let backupTimer=null;
