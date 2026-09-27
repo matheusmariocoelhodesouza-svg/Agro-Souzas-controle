@@ -1,6 +1,7 @@
 (function(){
  'use strict';
- const VERSION='2026.09.27-oficina360-bridge-v2';
+ const VERSION='2026.09.27-oficina360-bridge-v3';
+ let decorateQueued=false;
 
  function officeUrl(vehicleId){
   const url=new URL('./oficina360.html',window.location.href);
@@ -17,18 +18,19 @@
   if(!root)return;
   root.querySelectorAll('.fleet-card[data-fleet-vehicle]').forEach(card=>{
    const actions=card.querySelector('.fleet-actions');
-   if(!actions)return;
+   if(!actions||actions.querySelector('.fleet-tech-btn'))return;
    const id=card.getAttribute('data-fleet-vehicle');
-   let btn=actions.querySelector('.fleet-tech-btn');
-   if(!btn){
-    btn=document.createElement('button');
-    btn.type='button';
-    btn.className='btn fleet-tech-btn';
-    actions.prepend(btn);
-   }
+   const btn=document.createElement('button');
+   btn.type='button';
+   btn.className='btn fleet-tech-btn';
    btn.textContent='🛠 Oficina 360';
    btn.title='Abrir catálogo, vistas explodidas, manutenção e diagnóstico desta condução';
-   btn.onclick=()=>openOficina360(id);
+   btn.addEventListener('click',event=>{
+    event.preventDefault();
+    event.stopPropagation();
+    openOficina360(id);
+   });
+   actions.prepend(btn);
   });
  }
 
@@ -83,10 +85,23 @@
   decorateVehicleEdit();
  }
 
+ function queueDecorate(){
+  if(decorateQueued)return;
+  decorateQueued=true;
+  requestAnimationFrame(()=>{
+   decorateQueued=false;
+   decorate();
+  });
+ }
+
  function boot(){
   decorate();
-  const observer=new MutationObserver(()=>decorate());
-  observer.observe(document.body,{childList:true,subtree:true});
+  const root=document.getElementById('frota')||document.body;
+  const observer=new MutationObserver(mutations=>{
+   if(!mutations.some(m=>m.addedNodes&&m.addedNodes.length))return;
+   queueDecorate();
+  });
+  observer.observe(root,{childList:true,subtree:true});
   window.c360OpenVehicleTech=openOficina360;
   window.c360OpenOficina360=openOficina360;
   window.c360ReloadVehicleTech=openOficina360;
