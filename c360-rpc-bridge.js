@@ -14,16 +14,16 @@ function load(src){
    const base=String(src).split('?')[0];
    const found=[...document.scripts].find(s=>{try{return new URL(s.src,location.href).pathname.endsWith(base.replace(/^\.\//,''))}catch(_){return false}});
    if(found){if(found.dataset.c360Loaded==='1'||document.readyState!=='loading')return resolve(true);found.addEventListener('load',()=>resolve(true),{once:true});found.addEventListener('error',()=>resolve(false),{once:true});return}
-   const el=document.createElement('script');el.src=src+(src.includes('?')?'&':'?')+'v=20260927-3';el.async=false;el.onload=()=>{el.dataset.c360Loaded='1';resolve(true)};el.onerror=()=>resolve(false);document.head.appendChild(el);
+   const el=document.createElement('script');el.src=src+(src.includes('?')?'&':'?')+'v=20260927-4';el.async=false;el.onload=()=>{el.dataset.c360Loaded='1';resolve(true)};el.onerror=()=>resolve(false);document.head.appendChild(el);
   }catch(e){console.warn('Comando 360 módulo complementar',e);resolve(false)}
  });
 }
-function stabilizeToasts(){
+function stabilizeUiGuards(){
  try{
-  if(document.getElementById('c360NonBlockingToastFix'))return;
+  if(document.getElementById('c360RuntimeUiGuards'))return;
   const style=document.createElement('style');
-  style.id='c360NonBlockingToastFix';
-  style.textContent='.c360-toast-stack,.c360-toast{pointer-events:none!important}';
+  style.id='c360RuntimeUiGuards';
+  style.textContent='.c360-toast-stack,.c360-toast{pointer-events:none!important}body.device-mode .mobile-bottom-nav,body.device-mode #nav,body.device-mode .v2sidebar{display:none!important;visibility:hidden!important;pointer-events:none!important}';
   document.head.appendChild(style);
  }catch(_){ }
 }
@@ -46,7 +46,7 @@ function installFiscalOnDemand(){
  guarded.__c360FiscalDemandGuard=true;
  window.v2Go=guarded;
 }
-stabilizeToasts();
+stabilizeUiGuards();
 load('./c360-device-control.js');
 load('./c360-device-permission-guard.js');
 load('./c360-team-report-recovery.js');
