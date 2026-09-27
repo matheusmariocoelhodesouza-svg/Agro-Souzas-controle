@@ -1,9 +1,11 @@
 (function(){
  'use strict';
- const VERSION='2026.09.26-v2';
+ const VERSION='2026.09.27-epc-v1';
  let modal=null;
  let currentVehicleId=null;
+ let currentMode='systems';
  const catalogCache=new Map();
+ const viewItemCache=new Map();
 
  function h(value){
   try{if(typeof esc==='function')return esc(value==null?'':String(value))}catch(_){}
@@ -15,6 +17,12 @@
  function activeCompanyId(){try{return typeof companyId!=='undefined'?companyId:null}catch(_){return null}}
  function restApi(){try{return typeof rest==='function'?rest:null}catch(_){return null}}
  function canUse(){return !!activeCompanyId()&&!!restApi()}
+ function list(v){return Array.isArray(v)?v:[]}
+ function words(v){return list(v).map(x=>h(x)).join(' • ')}
+ function sourceMeta(c){return c&&c.source_metadata&&typeof c.source_metadata==='object'?c.source_metadata:{}}
+ function viewKeyFor(c){return sourceMeta(c).view_key||''}
+ function itemNumberFor(c){return sourceMeta(c).item_number||''}
+ function numSort(a,b){const aa=parseFloat(a?.item_number),bb=parseFloat(b?.item_number);if(Number.isFinite(aa)&&Number.isFinite(bb))return aa-bb;return String(a?.item_number||'').localeCompare(String(b?.item_number||''),'pt-BR',{numeric:true})}
 
  function installStyle(){
   if(document.getElementById('c360VehicleTechStyle'))return;
@@ -24,139 +32,76 @@
    .fleet-tech-btn{background:#e9f7ef!important;color:#17653f!important;border:1px solid #cfead9!important}
    .c360-tech-backdrop{position:fixed;inset:0;background:rgba(9,19,35,.58);z-index:2147483000;display:flex;align-items:stretch;justify-content:flex-end;backdrop-filter:blur(3px)}
    .c360-tech-backdrop[hidden]{display:none!important}
-   .c360-tech-drawer{width:min(920px,96vw);height:100%;background:#f5f7fb;box-shadow:-24px 0 60px rgba(8,25,47,.22);overflow:auto;color:#172033}
-   .c360-tech-head{position:sticky;top:0;z-index:4;background:#fff;border-bottom:1px solid #e4eaf2;padding:16px 18px;display:flex;gap:14px;align-items:center;justify-content:space-between}
+   .c360-tech-drawer{width:min(980px,98vw);height:100%;background:#f5f7fb;box-shadow:-24px 0 60px rgba(8,25,47,.22);overflow:auto;color:#172033}
+   .c360-tech-head{position:sticky;top:0;z-index:7;background:#fff;border-bottom:1px solid #e4eaf2;padding:16px 18px;display:flex;gap:14px;align-items:center;justify-content:space-between}
    .c360-tech-title{min-width:0}.c360-tech-title h2{font-size:20px;margin:0;color:#10233f}.c360-tech-title p{font-size:12px;color:#6b7d95;margin:4px 0 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
    .c360-tech-close{border:1px solid #d9e2ed;background:#fff;width:40px;height:40px;border-radius:12px;font-size:20px;cursor:pointer}
    .c360-tech-body{padding:16px}.c360-tech-profile{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin-bottom:14px}
    .c360-tech-kpi{background:#fff;border:1px solid #e3eaf3;border-radius:14px;padding:12px;min-height:75px}.c360-tech-kpi span{display:block;color:#71839a;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.4px}.c360-tech-kpi b{display:block;margin-top:5px;font-size:13px;color:#142641;overflow-wrap:anywhere}
-   .c360-tech-note{background:#fff8e6;border:1px solid #f2e1ae;color:#755216;border-radius:13px;padding:11px 13px;font-size:12px;line-height:1.45;margin-bottom:14px}
-   .c360-tech-toolbar{display:flex;gap:8px;align-items:center;margin-bottom:12px;position:sticky;top:74px;z-index:3;background:#f5f7fb;padding:5px 0}
-   .c360-tech-search{flex:1;min-width:0;height:42px;border:1px solid #d9e2ed;border-radius:11px;background:#fff;padding:0 13px;font:inherit;font-size:12px}
-   .c360-tech-count{font-size:11px;color:#60748d;white-space:nowrap}
-   .c360-tech-group{background:#fff;border:1px solid #e3eaf3;border-radius:15px;margin-bottom:10px;overflow:hidden}.c360-tech-group summary{list-style:none;cursor:pointer;padding:13px 14px;font-weight:900;color:#173251;display:flex;align-items:center;justify-content:space-between}.c360-tech-group summary::-webkit-details-marker{display:none}.c360-tech-group summary small{font-weight:700;color:#7a8ca3}
+   .c360-tech-note{background:#fff8e6;border:1px solid #f2e1ae;color:#755216;border-radius:13px;padding:11px 13px;font-size:12px;line-height:1.45;margin-bottom:12px}
+   .c360-tech-modebar{display:flex;gap:8px;margin:0 0 10px}.c360-tech-mode{border:1px solid #d9e2ed;background:#fff;color:#46607d;border-radius:999px;padding:8px 12px;font:800 11px/1 inherit;cursor:pointer}.c360-tech-mode.active{background:#173a63;color:#fff;border-color:#173a63}
+   .c360-tech-toolbar{display:flex;gap:8px;align-items:center;margin-bottom:12px;position:sticky;top:74px;z-index:6;background:#f5f7fb;padding:5px 0}
+   .c360-tech-search{flex:1;min-width:0;height:42px;border:1px solid #d9e2ed;border-radius:11px;background:#fff;padding:0 13px;font:inherit;font-size:12px}.c360-tech-count{font-size:11px;color:#60748d;white-space:nowrap}
+   .c360-tech-group,.c360-epc-view{background:#fff;border:1px solid #e3eaf3;border-radius:15px;margin-bottom:10px;overflow:hidden}.c360-tech-group summary,.c360-epc-view>summary{list-style:none;cursor:pointer;padding:13px 14px;font-weight:900;color:#173251;display:flex;align-items:center;justify-content:space-between;gap:12px}.c360-tech-group summary::-webkit-details-marker,.c360-epc-view>summary::-webkit-details-marker{display:none}.c360-tech-group summary small,.c360-epc-view>summary small{font-weight:700;color:#7a8ca3}
    .c360-tech-items{border-top:1px solid #edf1f6}.c360-tech-item{padding:13px 14px;border-bottom:1px solid #edf1f6}.c360-tech-item:last-child{border-bottom:0}.c360-tech-item-head{display:flex;gap:10px;justify-content:space-between;align-items:flex-start}.c360-tech-item-name{font-weight:850;color:#193654;font-size:13px}.c360-tech-chip{display:inline-flex;border-radius:999px;padding:4px 8px;font-size:10px;font-weight:850;background:#eef4fb;color:#34516f;white-space:nowrap}.c360-tech-chip.ok{background:#e6f8ef;color:#17653f}.c360-tech-chip.warn{background:#fff5df;color:#8a5a00}
-   .c360-tech-oem{margin-top:5px;font:800 12px ui-monospace,SFMono-Regular,Menlo,monospace;color:#0f2747}.c360-tech-meta{margin-top:7px;color:#6b7d95;font-size:11px;line-height:1.45}.c360-tech-meta b{color:#455c76}.c360-tech-empty{background:#fff;border:1px dashed #cfd9e5;border-radius:14px;padding:28px;text-align:center;color:#70839b}
-   .c360-tech-loading{padding:50px 20px;text-align:center;color:#64748b;font-weight:700}
-   @media(max-width:760px){.c360-tech-drawer{width:100vw}.c360-tech-profile{grid-template-columns:repeat(2,minmax(0,1fr))}.c360-tech-body{padding:11px}.c360-tech-head{padding:12px}.c360-tech-toolbar{top:65px}.c360-tech-item-head{flex-direction:column}.c360-tech-chip{align-self:flex-start}}
+   .c360-tech-oem{margin-top:5px;font:800 12px ui-monospace,SFMono-Regular,Menlo,monospace;color:#0f2747}.c360-tech-meta{margin-top:7px;color:#6b7d95;font-size:11px;line-height:1.5}.c360-tech-meta b{color:#455c76}.c360-tech-empty{background:#fff;border:1px dashed #cfd9e5;border-radius:14px;padding:28px;text-align:center;color:#70839b}.c360-tech-loading{padding:50px 20px;text-align:center;color:#64748b;font-weight:700}
+   .c360-tech-linkbtn{border:1px solid #cdd9e7;background:#f8fbff;color:#244c78;border-radius:9px;padding:6px 9px;font:800 10px/1 inherit;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:5px;margin-top:7px}
+   .c360-epc-wrap{border-top:1px solid #edf1f6;padding:12px 14px}.c360-epc-top{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:9px}.c360-epc-note{font-size:11px;line-height:1.45;color:#677b93}.c360-epc-license{background:#f7f9fc;border:1px dashed #d4dfeb;border-radius:10px;padding:9px 10px;font-size:10px;color:#667990;margin:9px 0}
+   .c360-epc-item{border:1px solid #e6ecf3;border-radius:11px;margin:7px 0;background:#fbfcfe}.c360-epc-item>summary{list-style:none;cursor:pointer;padding:10px 11px;display:grid;grid-template-columns:52px minmax(0,1fr) auto;gap:8px;align-items:center}.c360-epc-item>summary::-webkit-details-marker{display:none}.c360-epc-n{font:900 11px ui-monospace,SFMono-Regular,Menlo,monospace;color:#1c4f80}.c360-epc-name{font-size:11px;font-weight:850;color:#1c3551}.c360-epc-q{font-size:10px;color:#6e8198;white-space:nowrap}.c360-epc-detail{border-top:1px solid #edf1f6;padding:10px 11px;font-size:10.5px;color:#63768e;line-height:1.5}.c360-epc-detail b{color:#3e5671}.c360-epc-type{text-transform:capitalize}
+   @media(max-width:760px){.c360-tech-drawer{width:100vw}.c360-tech-profile{grid-template-columns:repeat(2,minmax(0,1fr))}.c360-tech-body{padding:11px}.c360-tech-head{padding:12px}.c360-tech-toolbar{top:65px}.c360-tech-item-head{flex-direction:column}.c360-tech-chip{align-self:flex-start}.c360-epc-item>summary{grid-template-columns:46px minmax(0,1fr)}}
   `;
   document.head.appendChild(style);
  }
 
  function ensureModal(){
   if(modal)return modal;
-  modal=document.createElement('div');
-  modal.className='c360-tech-backdrop';
-  modal.id='c360VehicleTechModal';
-  modal.hidden=true;
+  modal=document.createElement('div');modal.className='c360-tech-backdrop';modal.id='c360VehicleTechModal';modal.hidden=true;
   modal.innerHTML='<section class="c360-tech-drawer" role="dialog" aria-modal="true" aria-labelledby="c360TechTitle"><header class="c360-tech-head"><div class="c360-tech-title"><h2 id="c360TechTitle">Catálogo técnico</h2><p id="c360TechSubtitle">Carregando veículo...</p></div><button class="c360-tech-close" type="button" aria-label="Fechar">×</button></header><div class="c360-tech-body" id="c360TechBody"><div class="c360-tech-loading">Carregando ficha técnica...</div></div></section>';
-  modal.addEventListener('click',e=>{if(e.target===modal)closeModal()});
-  modal.querySelector('.c360-tech-close').addEventListener('click',closeModal);
-  document.body.appendChild(modal);
-  return modal;
+  modal.addEventListener('click',e=>{if(e.target===modal)closeModal()});modal.querySelector('.c360-tech-close').addEventListener('click',closeModal);document.body.appendChild(modal);return modal;
  }
  function closeModal(){if(modal)modal.hidden=true;document.body.style.removeProperty('overflow');currentVehicleId=null}
-
+ async function fetchComponents(ids){
+  const api=restApi();const uniq=[...new Set(ids.filter(Boolean))];if(!uniq.length)return[];const chunks=[];for(let i=0;i<uniq.length;i+=70)chunks.push(uniq.slice(i,i+70));
+  const out=await Promise.all(chunks.map(a=>api('v2_vehicle_components','select=*&id=in.'+encodeURIComponent('('+a.join(',')+')'))));return out.flat();
+ }
  async function loadCatalog(vehicleId,force=false){
-  if(!canUse())throw new Error('Sessão administrativa ainda não está pronta.');
-  if(!force&&catalogCache.has(vehicleId))return catalogCache.get(vehicleId);
-  const api=restApi();
-  const cid=encodeURIComponent(activeCompanyId());
-  const vid=encodeURIComponent(vehicleId);
+  if(!canUse())throw new Error('Sessão administrativa ainda não está pronta.');if(!force&&catalogCache.has(vehicleId))return catalogCache.get(vehicleId);
+  const api=restApi(),cid=encodeURIComponent(activeCompanyId()),vid=encodeURIComponent(vehicleId);
   const [profiles,links,groups]=await Promise.all([
    api('v2_vehicle_technical_profiles','select=*&company_id=eq.'+cid+'&vehicle_id=eq.'+vid+'&limit=1'),
    api('v2_vehicle_component_links','select=id,component_id,fitment_status,installed_part_number,installed_brand,installed_at,notes&company_id=eq.'+cid+'&vehicle_id=eq.'+vid+'&order=created_at.asc'),
    api('v2_vehicle_component_groups','select=code,name,parent_code,sort_order&order=sort_order.asc')
   ]);
-  const ids=[...new Set((links||[]).map(x=>x.component_id).filter(Boolean))];
-  let components=[];
-  if(ids.length){
-   const encoded='('+ids.join(',')+')';
-   components=await api('v2_vehicle_components','select=*&id=in.'+encodeURIComponent(encoded));
-  }
-  const map=new Map((components||[]).map(c=>[c.id,c]));
-  const data={profile:profiles?.[0]||null,links:links||[],groups:groups||[],components:map};
-  catalogCache.set(vehicleId,data);
-  return data;
+  const p=profiles?.[0]||null;const components=await fetchComponents((links||[]).map(x=>x.component_id));const map=new Map(components.map(c=>[c.id,c]));let views=[];
+  if(p?.chassis_variant&&p?.engine_code){views=await api('v2_vehicle_exploded_views','select=id,group_code,assembly_code,title,subtitle,source_name,source_url,source_diagram_key,image_reference,image_license_status,verification_status,notes&chassis_variant=eq.'+encodeURIComponent(p.chassis_variant)+'&engine_code=eq.'+encodeURIComponent(p.engine_code)+'&order=group_code.asc,title.asc')||[]}
+  const data={profile:p,links:links||[],groups:groups||[],components:map,views};catalogCache.set(vehicleId,data);return data;
+ }
+ async function loadViewItems(viewId){
+  if(viewItemCache.has(viewId))return viewItemCache.get(viewId);const api=restApi();const rows=await api('v2_vehicle_exploded_view_items','select=id,exploded_view_id,component_id,item_number,parent_item_number,quantity,component_type,position_note,exactness_status&exploded_view_id=eq.'+encodeURIComponent(viewId))||[];rows.sort(numSort);const comps=await fetchComponents(rows.map(x=>x.component_id));const map=new Map(comps.map(c=>[c.id,c]));const data=rows.map(r=>({...r,component:map.get(r.component_id)||null}));viewItemCache.set(viewId,data);return data;
  }
 
  function vehicleById(id){return (window.__fleetVehicles||[]).find(v=>String(v.id)===String(id))||{id}}
- function profileHtml(v,p){
-  const items=[
-   ['Veículo',fmt(v.description||v.model)],['Placa',fmt(v.plate)],['Ano fab./modelo',p?fmt(p.production_year)+' / '+fmt(p.model_year):fmt(v.model_year)],['Chassi',p?fmt(p.chassis_variant):'—'],
-   ['Motor',p?fmt(p.engine_code):'—'],['Nº motor',p?fmt(p.engine_serial):'—'],['Potência',p?.power_cv?fmt(p.power_cv)+' cv':'—'],['Combustível',p?fmt(p.fuel_type):'—'],
-   ['VIN / chassi completo',p?fmt(p.vin):'—'],['PBT',p?.gross_vehicle_weight_t?fmt(p.gross_vehicle_weight_t)+' t':'—'],['CMT',p?.gross_combination_weight_t?fmt(p.gross_combination_weight_t)+' t':'—'],['Lotação',p?.seats?fmt(p.seats)+' pessoas':'—']
-  ];
-  return '<div class="c360-tech-profile">'+items.map(x=>'<div class="c360-tech-kpi"><span>'+h(x[0])+'</span><b>'+h(x[1])+'</b></div>').join('')+'</div>';
- }
- function grouped(data,query=''){
-  const needle=String(query||'').trim().toLocaleLowerCase('pt-BR');
-  const byGroup=new Map();
-  for(const link of data.links){
-   const c=data.components.get(link.component_id);if(!c)continue;
-   const text=[c.name,c.generic_name,c.oem_part_number,c.manufacturer_part_number,c.location_description,c.function_description].filter(Boolean).join(' ').toLocaleLowerCase('pt-BR');
-   if(needle&&!text.includes(needle))continue;
-   if(!byGroup.has(c.group_code))byGroup.set(c.group_code,[]);
-   byGroup.get(c.group_code).push({link,c});
-  }
-  return byGroup;
- }
- function catalogHtml(data,query=''){
-  const byGroup=grouped(data,query);
-  const groups=[...data.groups].filter(g=>byGroup.has(g.code));
-  if(!groups.length)return '<div class="c360-tech-empty"><strong>Nenhuma peça encontrada.</strong><div style="margin-top:6px">Tente outro termo de busca.</div></div>';
-  return groups.map((g,gi)=>{
-   const rows=byGroup.get(g.code)||[];
-   return '<details class="c360-tech-group" '+(gi<4?'open':'')+'><summary><span>'+h(g.name)+'</span><small>'+rows.length+' item(ns)</small></summary><div class="c360-tech-items">'+rows.map(({link,c})=>{
-    const verified=c.data_status==='verified'||link.fitment_status==='verified';
-    const code=c.oem_part_number||c.manufacturer_part_number||'';
-    const view=c.exploded_view_reference||'';
-    return '<article class="c360-tech-item">'+
-     '<div class="c360-tech-item-head"><div><div class="c360-tech-item-name">'+h(c.name)+'</div><div class="c360-tech-oem">'+(code?'OEM '+h(code):'OEM: aguardando validação no EPC')+'</div></div><span class="c360-tech-chip '+(verified?'ok':'warn')+'">'+h(verified?'Confirmado':componentStatus(c))+'</span></div>'+
-     '<div class="c360-tech-meta">'+(c.location_description?'<div><b>Local:</b> '+h(c.location_description)+'</div>':'')+(c.function_description?'<div><b>Função:</b> '+h(c.function_description)+'</div>':'')+'<div><b>Aplicação:</b> '+h(statusLabel(link.fitment_status))+'</div>'+(view?'<div><b>Vista explodida:</b> '+h(view)+'</div>':'<div><b>Vista explodida:</b> aguardando referência EPC</div>')+(link.notes?'<div><b>Nota:</b> '+h(link.notes)+'</div>':'')+'</div>'+
-    '</article>';
-   }).join('')+'</div></details>';
-  }).join('');
- }
+ function profileHtml(v,p){const items=[['Veículo',fmt(v.description||v.model)],['Placa',fmt(v.plate)],['Ano fab./modelo',p?fmt(p.production_year)+' / '+fmt(p.model_year):fmt(v.model_year)],['Chassi',p?fmt(p.chassis_variant):'—'],['Motor',p?fmt(p.engine_code):'—'],['Nº motor',p?fmt(p.engine_serial):'—'],['Potência',p?.power_cv?fmt(p.power_cv)+' cv':'—'],['Combustível',p?fmt(p.fuel_type):'—'],['VIN / chassi completo',p?fmt(p.vin):'—'],['PBT',p?.gross_vehicle_weight_t?fmt(p.gross_vehicle_weight_t)+' t':'—'],['CMT',p?.gross_combination_weight_t?fmt(p.gross_combination_weight_t)+' t':'—'],['Lotação',p?.seats?fmt(p.seats)+' pessoas':'—']];return '<div class="c360-tech-profile">'+items.map(x=>'<div class="c360-tech-kpi"><span>'+h(x[0])+'</span><b>'+h(x[1])+'</b></div>').join('')+'</div>'}
+ function grouped(data,query=''){const needle=String(query||'').trim().toLocaleLowerCase('pt-BR'),byGroup=new Map();for(const link of data.links){const c=data.components.get(link.component_id);if(!c)continue;const text=[c.name,c.generic_name,c.oem_part_number,c.manufacturer_part_number,c.location_description,c.function_description,itemNumberFor(c)].filter(Boolean).join(' ').toLocaleLowerCase('pt-BR');if(needle&&!text.includes(needle))continue;if(!byGroup.has(c.group_code))byGroup.set(c.group_code,[]);byGroup.get(c.group_code).push({link,c})}return byGroup}
+ function catalogHtml(data,query=''){const byGroup=grouped(data,query),groups=[...data.groups].filter(g=>byGroup.has(g.code));if(!groups.length)return '<div class="c360-tech-empty"><strong>Nenhuma peça encontrada.</strong><div style="margin-top:6px">Tente outro termo de busca ou um código OEM.</div></div>';return groups.map((g,gi)=>{const rows=byGroup.get(g.code)||[];return '<details class="c360-tech-group" '+(gi<3?'open':'')+'><summary><span>'+h(g.name)+'</span><small>'+rows.length+' item(ns)</small></summary><div class="c360-tech-items">'+rows.map(({link,c})=>{const verified=c.data_status==='verified'||link.fitment_status==='verified',code=c.oem_part_number||c.manufacturer_part_number||'',viewKey=viewKeyFor(c),view=data.views.find(v=>v.source_diagram_key===viewKey);return '<article class="c360-tech-item"><div class="c360-tech-item-head"><div><div class="c360-tech-item-name">'+h(c.name)+'</div><div class="c360-tech-oem">'+(code?'OEM '+h(code):'OEM: aguardando validação no EPC')+'</div></div><span class="c360-tech-chip '+(verified?'ok':'warn')+'">'+h(verified?'Confirmado':componentStatus(c))+'</span></div><div class="c360-tech-meta">'+(c.location_description?'<div><b>Local:</b> '+h(c.location_description)+'</div>':'')+(c.function_description?'<div><b>Função:</b> '+h(c.function_description)+'</div>':'')+'<div><b>Aplicação:</b> '+h(statusLabel(link.fitment_status))+'</div>'+(itemNumberFor(c)?'<div><b>Posição EPC:</b> item '+h(itemNumberFor(c))+'</div>':'')+(link.notes?'<div><b>Nota:</b> '+h(link.notes)+'</div>':'')+(view?'<button type="button" class="c360-tech-linkbtn" data-c360-view="'+h(view.id)+'">🧩 Abrir vista explodida</button>':'')+'</div></article>'}).join('')+'</div></details>'}).join('')}
+ function viewsHtml(data,query=''){const needle=String(query||'').trim().toLocaleLowerCase('pt-BR'),groupNames=new Map(data.groups.map(g=>[g.code,g.name]));const views=data.views.filter(v=>!needle||[v.title,v.subtitle,v.assembly_code,v.source_diagram_key,groupNames.get(v.group_code)].filter(Boolean).join(' ').toLocaleLowerCase('pt-BR').includes(needle));if(!views.length)return '<div class="c360-tech-empty"><strong>Nenhuma vista encontrada.</strong><div style="margin-top:6px">As vistas disponíveis aparecem conforme o chassi e o motor cadastrados.</div></div>';return views.map(v=>'<details class="c360-epc-view" id="c360View_'+h(v.id)+'" data-view-id="'+h(v.id)+'"><summary><span>'+h(v.title)+'</span><small>'+h(groupNames.get(v.group_code)||v.group_code)+' • '+h(v.verification_status==='verified'?'confirmada':'a confirmar')+'</small></summary><div class="c360-epc-wrap" data-view-host="'+h(v.id)+'"><div class="c360-tech-loading">Abra a vista para carregar os itens numerados.</div></div></details>').join('')}
+ function epcItemHtml(row){const c=row.component||{},code=c.oem_part_number||'Código a confirmar',verified=row.exactness_status==='verified'&&c.data_status==='verified';return '<details class="c360-epc-item"><summary><span class="c360-epc-n">#'+h(row.item_number||'—')+'</span><span class="c360-epc-name">'+h(c.generic_name||c.name||'Item EPC')+'<br><span class="c360-tech-oem">'+h(code)+'</span></span><span class="c360-epc-q">Qtd. '+h(row.quantity||'—')+' • <span class="c360-epc-type">'+h(row.component_type||c.component_type||'peça')+'</span></span></summary><div class="c360-epc-detail"><div><b>Localização:</b> '+h(c.location_description||row.position_note||'—')+'</div><div><b>Status:</b> '+h(verified?'Confirmado para a vista':'Referência / confirmar variante')+'</div><div><b>Sintomas:</b> '+(list(c.failure_symptoms).length?words(c.failure_symptoms):'—')+'</div><div><b>Testes sugeridos:</b> '+(list(c.diagnostic_notes).length?words(c.diagnostic_notes):'—')+'</div><div><b>Ferramentas:</b> '+(list(c.required_tools).length?words(c.required_tools):'—')+'</div>'+(c.thread_spec&&Object.keys(c.thread_spec).length?'<div><b>Rosca:</b> '+h(JSON.stringify(c.thread_spec))+'</div>':'')+'</div></details>'}
+ async function renderView(viewId,data){const host=modal?.querySelector('[data-view-host="'+CSS.escape(String(viewId))+'"]');if(!host)return;host.innerHTML='<div class="c360-tech-loading">Carregando itens, parafusos, arruelas e vedações...</div>';try{const rows=await loadViewItems(viewId),v=data.views.find(x=>String(x.id)===String(viewId));const source=v?.source_url?'<a class="c360-tech-linkbtn" href="'+h(v.source_url)+'" target="_blank" rel="noopener noreferrer">↗ Abrir vista original / fonte</a>':'';host.innerHTML='<div class="c360-epc-top"><span class="c360-tech-chip '+(v?.verification_status==='verified'?'ok':'warn')+'">'+h(v?.verification_status==='verified'?'Vista confirmada':'Vista de referência')+'</span><span class="c360-tech-count">'+rows.length+' posições cadastradas</span>'+source+'</div>'+(v?.notes?'<div class="c360-epc-note">'+h(v.notes)+'</div>':'')+'<div class="c360-epc-license">A imagem original do EPC não é republicada quando a licença é apenas de referência. O Comando 360 guarda a vista, a numeração, os códigos e o vínculo de cada item; use “Abrir vista original” para ver o desenho da fonte.</div>'+rows.map(epcItemHtml).join('')}catch(err){host.innerHTML='<div class="c360-tech-empty">Erro ao carregar esta vista: '+h(err?.message||err)+'</div>'}}
+ function modeBar(data){return '<div class="c360-tech-modebar"><button class="c360-tech-mode '+(currentMode==='systems'?'active':'')+'" data-mode="systems">Peças e componentes ('+data.links.length+')</button><button class="c360-tech-mode '+(currentMode==='views'?'active':'')+'" data-mode="views">Vistas explodidas ('+data.views.length+')</button></div>'}
+ function modeContent(data,query=''){return currentMode==='views'?viewsHtml(data,query):catalogHtml(data,query)}
+ function renderMode(body,data){const search=body.querySelector('#c360TechSearch'),host=body.querySelector('#c360TechCatalog'),bar=body.querySelector('#c360TechModeBar');if(bar)bar.innerHTML=modeBar(data);if(host)host.innerHTML=modeContent(data,search?.value||'');const count=body.querySelector('.c360-tech-count-main');if(count)count.textContent=currentMode==='views'?data.views.length+' vistas':data.links.length+' itens'}
 
  async function openVehicleTech(vehicleId){
-  installStyle();ensureModal();currentVehicleId=vehicleId;modal.hidden=false;document.body.style.overflow='hidden';
-  const v=vehicleById(vehicleId);
-  modal.querySelector('#c360TechTitle').textContent='Ficha técnica • '+(v.description||v.model||'Veículo');
-  modal.querySelector('#c360TechSubtitle').textContent=[v.make,v.model,v.plate].filter(Boolean).join(' • ');
-  const body=modal.querySelector('#c360TechBody');
-  body.innerHTML='<div class="c360-tech-loading">Carregando catálogo técnico...</div>';
-  try{
-   const data=await loadCatalog(vehicleId);
-   if(currentVehicleId!==vehicleId)return;
-   const p=data.profile;
-   if(!p){body.innerHTML='<div class="c360-tech-empty"><strong>Ficha técnica ainda não cadastrada.</strong><div style="margin-top:6px">Cadastre o perfil técnico deste veículo antes de vincular peças.</div></div>';return}
-   body.innerHTML=profileHtml(v,p)+
-    '<div class="c360-tech-note"><b>Controle de precisão:</b> código OEM e vista explodida só aparecem como confirmados quando a referência foi validada. Itens pendentes não devem ser usados como confirmação de compra.</div>'+
-    '<div class="c360-tech-toolbar"><input class="c360-tech-search" id="c360TechSearch" placeholder="Buscar peça, sensor, turbo, rail, código OEM..."/><span class="c360-tech-count">'+data.links.length+' itens</span></div><div id="c360TechCatalog">'+catalogHtml(data)+'</div>';
-   const search=body.querySelector('#c360TechSearch'),host=body.querySelector('#c360TechCatalog');
-   search.addEventListener('input',()=>{host.innerHTML=catalogHtml(data,search.value)});
+  installStyle();ensureModal();currentVehicleId=vehicleId;currentMode='systems';modal.hidden=false;document.body.style.overflow='hidden';const v=vehicleById(vehicleId);modal.querySelector('#c360TechTitle').textContent='Ficha técnica • '+(v.description||v.model||'Veículo');modal.querySelector('#c360TechSubtitle').textContent=[v.make,v.model,v.plate].filter(Boolean).join(' • ');const body=modal.querySelector('#c360TechBody');body.innerHTML='<div class="c360-tech-loading">Carregando catálogo técnico...</div>';
+  try{const data=await loadCatalog(vehicleId);if(currentVehicleId!==vehicleId)return;const p=data.profile;if(!p){body.innerHTML='<div class="c360-tech-empty"><strong>Ficha técnica ainda não cadastrada.</strong></div>';return}body.innerHTML=profileHtml(v,p)+'<div class="c360-tech-note"><b>Controle de precisão:</b> o catálogo diferencia peça confirmada, referência de família e item a confirmar. Parafusos, arruelas, O-rings, juntas e presilhas ficam vinculados à posição numerada da vista. Imagens EPC de terceiros são abertas na fonte e não republicadas sem licença.</div><div id="c360TechModeBar">'+modeBar(data)+'</div><div class="c360-tech-toolbar"><input class="c360-tech-search" id="c360TechSearch" placeholder="Buscar peça, parafuso, O-ring, item EPC, código OEM..."/><span class="c360-tech-count c360-tech-count-main">'+data.links.length+' itens</span></div><div id="c360TechCatalog">'+modeContent(data)+'</div>';
+   body.addEventListener('click',async e=>{const mb=e.target.closest('[data-mode]');if(mb){currentMode=mb.getAttribute('data-mode');renderMode(body,data);return}const vb=e.target.closest('[data-c360-view]');if(vb){currentMode='views';renderMode(body,data);const id=vb.getAttribute('data-c360-view');requestAnimationFrame(()=>{const d=body.querySelector('#c360View_'+CSS.escape(id));if(d){d.open=true;d.scrollIntoView({behavior:'smooth',block:'start'});renderView(id,data)}});return}});
+   body.addEventListener('toggle',e=>{const d=e.target;if(d?.matches?.('.c360-epc-view')&&d.open){const host=d.querySelector('[data-view-host]');if(host&&!host.dataset.loaded){host.dataset.loaded='1';renderView(d.getAttribute('data-view-id'),data)}}},true);
+   const search=body.querySelector('#c360TechSearch');search.addEventListener('input',()=>{const host=body.querySelector('#c360TechCatalog');host.innerHTML=modeContent(data,search.value)});
   }catch(err){body.innerHTML='<div class="c360-tech-empty"><strong>Não foi possível abrir o catálogo.</strong><div style="margin-top:6px">'+h(err?.message||err)+'</div></div>'}
  }
 
- function decorateFleet(){
-  const root=document.getElementById('frota');if(!root)return;
-  root.querySelectorAll('.fleet-card[data-fleet-vehicle]').forEach(card=>{
-   const actions=card.querySelector('.fleet-actions');if(!actions||actions.querySelector('.fleet-tech-btn'))return;
-   const id=card.getAttribute('data-fleet-vehicle');
-   const btn=document.createElement('button');btn.type='button';btn.className='btn fleet-tech-btn';btn.textContent='🔧 Catálogo técnico';btn.addEventListener('click',()=>openVehicleTech(id));
-   actions.prepend(btn);
-  });
- }
- function observe(){
-  installStyle();decorateFleet();
-  const obs=new MutationObserver(()=>decorateFleet());obs.observe(document.body,{childList:true,subtree:true});
-  window.c360OpenVehicleTech=openVehicleTech;
-  window.c360ReloadVehicleTech=id=>{catalogCache.delete(id);return openVehicleTech(id)};
-  window.C360_VEHICLE_TECH_VERSION=VERSION;
- }
- function boot(){
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',observe,{once:true});else observe();
- }
+ function decorateFleet(){const root=document.getElementById('frota');if(!root)return;root.querySelectorAll('.fleet-card[data-fleet-vehicle]').forEach(card=>{const actions=card.querySelector('.fleet-actions');if(!actions||actions.querySelector('.fleet-tech-btn'))return;const id=card.getAttribute('data-fleet-vehicle');const btn=document.createElement('button');btn.type='button';btn.className='btn fleet-tech-btn';btn.textContent='🔧 Catálogo técnico';btn.addEventListener('click',()=>openVehicleTech(id));actions.prepend(btn)})}
+ function observe(){installStyle();decorateFleet();const obs=new MutationObserver(()=>decorateFleet());obs.observe(document.body,{childList:true,subtree:true});window.c360OpenVehicleTech=openVehicleTech;window.c360ReloadVehicleTech=id=>{catalogCache.delete(id);viewItemCache.clear();return openVehicleTech(id)};window.C360_VEHICLE_TECH_VERSION=VERSION}
+ function boot(){if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',observe,{once:true});else observe()}
  boot();
 })();
