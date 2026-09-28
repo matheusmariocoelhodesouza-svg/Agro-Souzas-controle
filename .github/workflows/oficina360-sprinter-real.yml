@@ -7,14 +7,20 @@ on:
       - 'oficina360.html'
       - 'oficina360-sprinter-real.js'
       - 'oficina360-sprinter-real.css'
+      - 'oficina360-sprinter-exploded-v2.js'
+      - 'oficina360-sprinter-exploded-v2.css'
       - 'qa/oficina360_sprinter_real_contract.mjs'
+      - 'qa/oficina360_sprinter_exploded_v2_contract.mjs'
   push:
     branches: [main]
     paths:
       - 'oficina360.html'
       - 'oficina360-sprinter-real.js'
       - 'oficina360-sprinter-real.css'
+      - 'oficina360-sprinter-exploded-v2.js'
+      - 'oficina360-sprinter-exploded-v2.css'
       - 'qa/oficina360_sprinter_real_contract.mjs'
+      - 'qa/oficina360_sprinter_exploded_v2_contract.mjs'
   workflow_dispatch:
 
 permissions:
@@ -27,6 +33,10 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - name: JavaScript syntax
-        run: node --check oficina360-sprinter-real.js
+        run: |
+          node --check oficina360-sprinter-real.js
+          node --check oficina360-sprinter-exploded-v2.js
       - name: Sprinter real-data contract
         run: node qa/oficina360_sprinter_real_contract.mjs
+      - name: Sprinter exploded v2 contract
+        run: node qa/oficina360_sprinter_exploded_v2_contract.mjs
