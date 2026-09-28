@@ -1,11 +1,33 @@
 (()=>{
 'use strict';
 const $=s=>document.querySelector(s);
+const $$=s=>[...document.querySelectorAll(s)];
 const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 let client=null;
+
+function activateSpecs(){
+  $$('.side-nav button[data-tab]').forEach(b=>b.classList.toggle('active',b.dataset.tab==='specs'));
+  $$('.tab').forEach(t=>t.classList.toggle('active',t.id==='tab-specs'));
+  const title=$('#pageTitle');if(title)title.textContent='Ficha completa da condução';
+  setTimeout(()=>load().catch(console.error),0);
+}
+
 function inject(){
- const nav=$('.side-nav');if(nav&&!nav.querySelector('[data-tab="specs"]')){const btn=document.createElement('button');btn.type='button';btn.dataset.tab='specs';btn.innerHTML='<span>▤</span> Ficha completa';const cat=nav.querySelector('[data-tab="catalog"]');nav.insertBefore(btn,cat);btn.addEventListener('click',()=>{setTimeout(()=>{const t=$('#pageTitle');if(t)t.textContent='Ficha completa da condução'},0)});}
- const overview=$('#tab-overview');if(overview&&!$('#tab-specs')){const s=document.createElement('section');s.id='tab-specs';s.className='tab';s.innerHTML='<div class="section-head"><div><span class="eyebrow">DATA CARD + ESPECIFICAÇÕES</span><h2>Ficha completa da condução</h2><p>Dados de identificação, construção, pintura, motor, transmissão, eixo, fluidos, capacidades e itens que exigem confirmação física.</p></div></div><div id="o360SpecsHost" class="o360-spec-groups"></div>';overview.after(s);}
+ const nav=$('.side-nav');
+ if(nav&&!nav.querySelector('[data-tab="specs"]')){
+   const btn=document.createElement('button');
+   btn.type='button';btn.dataset.tab='specs';btn.innerHTML='<span>▤</span> Ficha completa';
+   const cat=nav.querySelector('[data-tab="catalog"]');nav.insertBefore(btn,cat);
+   // Este botão é injetado depois do bindUi() principal. Por isso ele precisa
+   // ativar sua própria aba em vez de depender do listener criado no boot.
+   btn.addEventListener('click',e=>{e.preventDefault();activateSpecs()});
+ }
+ const overview=$('#tab-overview');
+ if(overview&&!$('#tab-specs')){
+   const s=document.createElement('section');s.id='tab-specs';s.className='tab';
+   s.innerHTML='<div class="section-head"><div><span class="eyebrow">DATA CARD + ESPECIFICAÇÕES</span><h2>Ficha completa da condução</h2><p>Dados de identificação, construção, pintura, motor, transmissão, eixo, fluidos, capacidades e itens que exigem confirmação física.</p></div></div><div id="o360SpecsHost" class="o360-spec-groups"></div>';
+   overview.after(s);
+ }
  addStyle();
  const picker=$('#vehiclePicker');picker?.addEventListener('change',()=>setTimeout(()=>load().catch(console.error),300));
 }
@@ -14,6 +36,6 @@ function label(cat){return ({identity:'Identificação',vehicle:'Veículo',engin
 function st(v){return v==='verified'?'verified':'pending'}
 function detail(x){const evidence=Array.isArray(x.value_json?.required_evidence)?x.value_json.required_evidence.join(' • '):'';return `<div class="o360-spec ${st(x.verification_status)}"><span>${esc(x.label)}</span><b>${esc(x.value_text||(x.verification_status==='needs_physical_verification'?'A confirmar fisicamente':'Pendente'))}${x.unit&&x.value_text?' '+esc(x.unit):''}</b><small>${x.verification_status==='verified'?'✓ Confirmado':'⚠ '+esc(x.verification_status==='needs_physical_verification'?'Precisa de etiqueta/data card/foto':'Ainda precisa de confirmação')}</small>${x.notes?`<small>${esc(x.notes)}</small>`:''}${evidence?`<small><b>Evidência necessária:</b> ${esc(evidence)}</small>`:''}</div>`}
 async function getClient(){if(client)return client;if(!window.supabase||!window.SUPABASE_URL||!window.SUPABASE_PUBLISHABLE_KEY)return null;client=window.supabase.createClient(window.SUPABASE_URL,window.SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});return client}
-async function load(){const c=await getClient();if(!c)return;const vid=$('#vehiclePicker')?.value||new URLSearchParams(location.search).get('vehicle');if(!vid)return;const r=await c.from('v2_vehicle_specifications').select('*').eq('vehicle_id',vid).order('category').order('label');if(r.error)throw r.error;const rows=r.data||[],by=new Map();rows.forEach(x=>{if(!by.has(x.category))by.set(x.category,[]);by.get(x.category).push(x)});const host=$('#o360SpecsHost');if(!host)return;host.innerHTML=[...by.entries()].map(([cat,items])=>`<article class="o360-spec-group"><h3>${esc(label(cat))}</h3><div class="o360-spec-grid">${items.map(detail).join('')}</div></article>`).join('')||'<div class="empty">Ainda não há especificações cadastradas para esta condução.</div>'}
+async function load(){const c=await getClient();if(!c)return;const vid=$('#vehiclePicker')?.value||new URLSearchParams(location.search).get('vehicle');if(!vid)return;const host=$('#o360SpecsHost');if(host&&!host.dataset.loaded)host.innerHTML='<div class="empty">Carregando ficha técnica completa...</div>';const r=await c.from('v2_vehicle_specifications').select('*').eq('vehicle_id',vid).order('category').order('label');if(r.error)throw r.error;const rows=r.data||[],by=new Map();rows.forEach(x=>{if(!by.has(x.category))by.set(x.category,[]);by.get(x.category).push(x)});if(!host)return;host.dataset.loaded=vid;host.innerHTML=[...by.entries()].map(([cat,items])=>`<article class="o360-spec-group"><h3>${esc(label(cat))}</h3><div class="o360-spec-grid">${items.map(detail).join('')}</div></article>`).join('')||'<div class="empty">Ainda não há especificações cadastradas para esta condução.</div>'}
 document.addEventListener('DOMContentLoaded',()=>{inject();setTimeout(()=>load().catch(console.error),650)},{once:true});
 })();
