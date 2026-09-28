@@ -5,6 +5,9 @@ on:
     branches: [main]
     paths:
       - 'oficina360.html'
+      - 'oficina360-spec-sheet.js'
+      - 'oficina360-exploded-browser-v1.js'
+      - 'oficina360-exploded-browser-v1.css'
       - 'oficina360-fleet-premium-v1.js'
       - 'oficina360-fleet-premium-v1.css'
       - 'oficina360-mobile-performance-fix-v1.js'
@@ -13,10 +16,14 @@ on:
       - 'supabase/migrations/20260928_oficina360_all_fleet_premium.sql'
       - 'qa/oficina360_all_fleet_premium_contract.mjs'
       - 'qa/oficina360_mobile_performance_contract.mjs'
+      - 'qa/oficina360_specs_exploded_mobile_contract.mjs'
   push:
     branches: [main]
     paths:
       - 'oficina360.html'
+      - 'oficina360-spec-sheet.js'
+      - 'oficina360-exploded-browser-v1.js'
+      - 'oficina360-exploded-browser-v1.css'
       - 'oficina360-fleet-premium-v1.js'
       - 'oficina360-fleet-premium-v1.css'
       - 'oficina360-mobile-performance-fix-v1.js'
@@ -25,6 +32,7 @@ on:
       - 'supabase/migrations/20260928_oficina360_all_fleet_premium.sql'
       - 'qa/oficina360_all_fleet_premium_contract.mjs'
       - 'qa/oficina360_mobile_performance_contract.mjs'
+      - 'qa/oficina360_specs_exploded_mobile_contract.mjs'
   workflow_dispatch:
 
 permissions:
@@ -40,7 +48,11 @@ jobs:
         run: |
           node --check oficina360-fleet-premium-v1.js
           node --check oficina360-mobile-performance-fix-v1.js
+          node --check oficina360-spec-sheet.js
+          node --check oficina360-exploded-browser-v1.js
       - name: Fleet Premium contract
         run: node qa/oficina360_all_fleet_premium_contract.mjs
       - name: Mobile visual performance contract
         run: node qa/oficina360_mobile_performance_contract.mjs
+      - name: Specs and exploded mobile contract
+        run: node qa/oficina360_specs_exploded_mobile_contract.mjs
