@@ -79,6 +79,21 @@ function routeUrl(op,farm){
 function scheduleMeta(op){return op?.metadata||{}}
 function fullReleaseAt(op){const m=scheduleMeta(op),mins=Number(m.full_release_minutes??DEFAULT_FULL_RELEASE_MIN);return new Date(new Date(op.scheduled_start).getTime()-mins*60000)}
 function isFullReleased(op){return !isDevice()||Date.now()>=fullReleaseAt(op).getTime()}
+function startScheduledOperation(op,data){
+ const loading=loadingFor(data,op),farm=data.farms.find(x=>x.id===loading?.farm_id),plans=plansFor(data,loading);
+ if(!loading||!farm)return alert('Programação incompleta. Atualize a tela e tente novamente.');
+ if(!isFullReleased(op))return alert('A apanha será liberada 1 hora antes do horário programado.');
+ const form=id('poultryForm');form?.classList.remove('hidden');
+ if(id('poTeam')){id('poTeam').value=op.team_id||'';id('poTeam').disabled=true}
+ if(id('poStart')){id('poStart').value=localInput(op.scheduled_start);id('poStart').readOnly=true}
+ if(id('poSavedAviary')){id('poSavedAviary').value=farm.id;id('poSavedAviary').disabled=true}
+ if(id('poIntegratedName')){id('poIntegratedName').value=farm.producer_name||op.customer_name||'';id('poIntegratedName').readOnly=true}
+ if(id('poCity')){id('poCity').value=farm.city||farm.address?.city||'';id('poCity').readOnly=true}
+ if(id('poFarmName')){id('poFarmName').value=farm.farm_name||op.location_name||'';id('poFarmName').readOnly=true}
+ window.__c360ScheduledStart={operationId:op.id,loadingId:loading.id,farmId:farm.id,plans};
+ form?.scrollIntoView({behavior:'smooth',block:'start'});
+ const msg=id('poMsg');if(msg)msg.textContent='Programação carregada do fax ✓ Dados planejados bloqueados. Salve para abrir o Caminhão 1.';
+}
 function publicScheduleHtml(op,farm,m,route){const integrated=m.integrated_name||farm?.producer_name||op.customer_name||'—',shed=m.shed_name||farm?.farm_name||op.location_name||'—',city=m.city||farm?.city||'—';return `<div class="c360-schedule-instructions"><b>Informações para organização</b><div><b>Integrado:</b> ${safe(integrated)}<br><b>Galpão/granja:</b> ${safe(shed)}<br><b>Cidade:</b> ${safe(city)}<br><b>Início:</b> ${fmtDateTime(op.scheduled_start)}${m.recommended_departure?`<br><b>Saída sugerida:</b> ${fmtDateTime(m.recommended_departure)}`:''}</div></div>${route?`<div class="c360-schedule-actions"><button type="button" class="btn soft c360-open-route" data-url="${safe(route)}">📍 Abrir localização</button></div>`:''}`}
 function loadingFor(data,op){return data.loadings.find(x=>x.operation_id===op.id)}
 function plansFor(data,loading){return loading?data.plans.filter(x=>x.loading_id===loading.id).sort((a,b)=>Number(a.truck_sequence)-Number(b.truck_sequence)):[]}
@@ -102,7 +117,7 @@ function scheduleCard(op,data,compact=false){
   ${m.loading_instructions?`<div class="c360-schedule-instructions"><b>Como será o carregamento</b><div>${safe(m.loading_instructions)}</div></div>`:''}
   ${m.fax_reference||m.fax_file_path?`<div class="c360-schedule-source">📄 Fax/programação: <b>${safe(m.fax_reference||'anexo recebido')}</b>${m.fax_file_path?` <button type="button" class="c360-link-btn c360-open-fax" data-path="${safe(m.fax_file_path)}">Ver anexo</button>`:''}</div>`:''}
   ${truckCompareRows(plans,trucks)}`}
-  <div class="c360-schedule-actions">${isDevice()&&loading&&op.status!=='completed'?`<button type="button" class="btn ${acknowledged?'soft':'primary'} c360-ack-schedule" data-loading="${loading.id}" ${acknowledged?'disabled':''}>${acknowledged?'✓ Programação confirmada':'Confirmar programação'}</button>`:''}</div>
+  <div class="c360-schedule-actions">${isDevice()&&full&&loading&&op.status!=='completed'?`<button type="button" class="btn ${acknowledged?'soft':'primary'} c360-ack-schedule" data-loading="${loading.id}" ${acknowledged?'disabled':''}>${acknowledged?'✓ Programação confirmada':'Confirmar programação'}</button>`:''}${isDevice()&&full&&loading&&op.status!=='completed'?`<button type="button" class="btn primary c360-start-scheduled" data-op="${safe(op.id)}">▶ Iniciar apanha</button>`:''}</div>
  </article>`
 }
 
@@ -314,6 +329,7 @@ function bindEvents(){
   if(e.target.closest('#c360RefreshSchedules,#c360RefreshTomorrow')){await refreshPanels();return}
   const route=e.target.closest('.c360-open-route');if(route){window.open(route.dataset.url,'_blank','noopener');return}
   const ack=e.target.closest('.c360-ack-schedule');if(ack){await acknowledgeSchedule(ack.dataset.loading,ack);return}
+  const start=e.target.closest('.c360-start-scheduled');if(start){const data=await loadScheduleWindow(),op=data.ops.find(x=>String(x.id)===String(start.dataset.op));if(op)startScheduledOperation(op,data);return}
   const fax=e.target.closest('.c360-open-fax');if(fax){await openFax(fax.dataset.path);return}
  },true);
  document.addEventListener('click',validatePlannedTruckSave,true);
