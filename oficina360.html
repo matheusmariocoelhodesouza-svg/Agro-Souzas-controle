@@ -15,6 +15,7 @@
 <link rel="stylesheet" href="./oficina360-fleet-premium-v1.css?v=20260928-1">
 <link rel="stylesheet" href="./oficina360-mobile-performance-fix-v1.css?v=20260928-1">
 <link rel="stylesheet" href="./oficina360-exploded-browser-v1.css?v=20260928-2">
+<link rel="stylesheet" href="./oficina360-quotes-v1.css?v=20260928-1">
 </head>
 <body>
 <div id="sessionGate" class="session-gate hidden">
@@ -44,6 +45,7 @@
       <button data-tab="catalog" type="button"><span>⚙</span> Catálogo de peças</button>
       <button data-tab="exploded" type="button"><span>◫</span> Vistas explodidas</button>
       <button data-tab="maintenance" type="button"><span>🔧</span> Manutenção</button>
+      <button data-tab="quotes" type="button"><span>💰</span> Orçamentos</button>
       <button data-tab="orders" type="button"><span>📋</span> Ordens de serviço</button>
       <button data-tab="diagnostics" type="button"><span>⌁</span> Scanner & falhas</button>
     </nav>
@@ -111,6 +113,31 @@
         <div id="maintenanceList" class="stack"></div>
       </section>
 
+      <section id="tab-quotes" class="tab">
+        <div class="section-head">
+          <div><span class="eyebrow">COMERCIAL + OFICINA</span><h2>Orçamentos</h2><p>Peças, mão de obra, terceiros, margem interna, aprovação e conversão direta em ordem de serviço.</p></div>
+          <button id="quoteNewBtn" class="btn primary" type="button">+ Novo orçamento</button>
+        </div>
+        <div id="quotesSummary" class="kpi-grid compact"></div>
+        <div class="quote-toolbar">
+          <div class="quote-toolbar-left">
+            <input id="quoteSearch" type="search" placeholder="Buscar orçamento, cliente ou serviço...">
+            <select id="quoteStatusFilter">
+              <option value="">Todos os status</option>
+              <option value="draft">Rascunho</option>
+              <option value="sent">Enviado</option>
+              <option value="approved">Aprovado</option>
+              <option value="change_requested">Alteração solicitada</option>
+              <option value="rejected">Recusado</option>
+              <option value="converted">Convertido em OS</option>
+              <option value="expired">Vencido</option>
+            </select>
+          </div>
+          <div class="quote-toolbar-right"><button id="quoteRefreshBtn" class="btn soft" type="button">↻ Atualizar</button></div>
+        </div>
+        <div id="quotesList" class="stack"><div class="quote-empty">Carregando orçamentos...</div></div>
+      </section>
+
       <section id="tab-orders" class="tab">
         <div class="section-head">
           <div><span class="eyebrow">EXECUÇÃO</span><h2>Ordens de serviço</h2><p>Diagnóstico e serviço feitos aqui ficam disponíveis no histórico da frota.</p></div>
@@ -134,6 +161,7 @@
 <script src="./config.js"></script>
 <script src="./oficina360-auth-bridge.js?v=20260927-1"></script>
 <script src="./oficina360.js"></script>
+<script src="./oficina360-quotes-v1.js?v=20260928-1"></script>
 <script src="./oficina360-diagnostic-assistant.js?v=20260927-1"></script>
 <script src="./oficina360-deep-catalog.js?v=20260927-1"></script>
 <script src="./oficina360-spec-sheet.js?v=20260928-2"></script>
