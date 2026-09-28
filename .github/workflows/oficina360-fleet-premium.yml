@@ -14,6 +14,7 @@ on:
       - 'oficina360-mobile-performance-fix-v1.css'
       - 'oficina360-repair-assistant-v1.js'
       - 'supabase/migrations/20260928_oficina360_all_fleet_premium.sql'
+      - 'supabase/migrations/20260928_oficina360_visual_provenance.sql'
       - 'qa/oficina360_all_fleet_premium_contract.mjs'
       - 'qa/oficina360_mobile_performance_contract.mjs'
       - 'qa/oficina360_specs_exploded_mobile_contract.mjs'
@@ -30,6 +31,7 @@ on:
       - 'oficina360-mobile-performance-fix-v1.css'
       - 'oficina360-repair-assistant-v1.js'
       - 'supabase/migrations/20260928_oficina360_all_fleet_premium.sql'
+      - 'supabase/migrations/20260928_oficina360_visual_provenance.sql'
       - 'qa/oficina360_all_fleet_premium_contract.mjs'
       - 'qa/oficina360_mobile_performance_contract.mjs'
       - 'qa/oficina360_specs_exploded_mobile_contract.mjs'
@@ -54,5 +56,5 @@ jobs:
         run: node qa/oficina360_all_fleet_premium_contract.mjs
       - name: Mobile visual performance contract
         run: node qa/oficina360_mobile_performance_contract.mjs
-      - name: Specs and exploded mobile contract
+      - name: Specs and exploded provenance contract
         run: node qa/oficina360_specs_exploded_mobile_contract.mjs
