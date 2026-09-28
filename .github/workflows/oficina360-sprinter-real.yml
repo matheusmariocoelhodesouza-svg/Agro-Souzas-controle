@@ -9,8 +9,11 @@ on:
       - 'oficina360-sprinter-real.css'
       - 'oficina360-sprinter-exploded-v2.js'
       - 'oficina360-sprinter-exploded-v2.css'
+      - 'oficina360-sprinter-premium-v3.js'
+      - 'oficina360-sprinter-premium-v3.css'
       - 'qa/oficina360_sprinter_real_contract.mjs'
       - 'qa/oficina360_sprinter_exploded_v2_contract.mjs'
+      - 'qa/oficina360_sprinter_premium_v3_contract.mjs'
   push:
     branches: [main]
     paths:
@@ -19,8 +22,11 @@ on:
       - 'oficina360-sprinter-real.css'
       - 'oficina360-sprinter-exploded-v2.js'
       - 'oficina360-sprinter-exploded-v2.css'
+      - 'oficina360-sprinter-premium-v3.js'
+      - 'oficina360-sprinter-premium-v3.css'
       - 'qa/oficina360_sprinter_real_contract.mjs'
       - 'qa/oficina360_sprinter_exploded_v2_contract.mjs'
+      - 'qa/oficina360_sprinter_premium_v3_contract.mjs'
   workflow_dispatch:
 
 permissions:
@@ -36,7 +42,10 @@ jobs:
         run: |
           node --check oficina360-sprinter-real.js
           node --check oficina360-sprinter-exploded-v2.js
+          node --check oficina360-sprinter-premium-v3.js
       - name: Sprinter real-data contract
         run: node qa/oficina360_sprinter_real_contract.mjs
       - name: Sprinter exploded v2 contract
         run: node qa/oficina360_sprinter_exploded_v2_contract.mjs
+      - name: Sprinter Premium v3 contract
+        run: node qa/oficina360_sprinter_premium_v3_contract.mjs
