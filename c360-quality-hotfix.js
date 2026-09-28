@@ -23,7 +23,7 @@ const routeStyles={fiscal:['./c360-fiscal.css'],frota:['./c360-trailer-hitches.c
 const essentialModules=[
  './c360-platform.js','./c360-product-core.js','./c360-release-core.js','./c360-quality-core.js','./c360-farm-cache-hotfix.js',
  './c360-field-offline-hotfix.js','./c360-field-stability.js','./c360-runtime-compatibility.js','./c360-final-stabilization.js','./c360-data-integrity.js',
- './c360-field-route-guard.js','./c360-ux-polish-hotfix.js','./c360-onboarding-entry.js','./c360-team-chat.js','./c360-system-health.js','./c360-enterprise.js',
+ './c360-field-route-guard.js','./c360-ux-polish-hotfix.js','./c360-employee-photo.js','./c360-onboarding-entry.js','./c360-team-chat.js','./c360-system-health.js','./c360-enterprise.js',
  './c360-commercial.js','./c360-saas-readiness.js','./c360-rpc-bridge.js','./c360-showcase-exact.js'
 ];
 const routeModules={
@@ -44,7 +44,7 @@ let modeObserver=null;
 const resourceUrl=src=>src+(src.includes('?')?'&':'?')+'v='+encodeURIComponent(BOOT_VERSION);
 const baseName=src=>src.split('?')[0];
 const normalizedPath=src=>baseName(src).replace(/^\.\//,'');
-function mark(name){try{performance.mark(name)}catch(_){}}
+function mark(name){try{performance.mark(name)}catch(_){} }
 function emit(name,detail){document.dispatchEvent(new CustomEvent(name,{detail}))}
 function isDevice(){return !!document.body?.classList.contains('device-mode')}
 function isAppReady(){return !!document.body?.classList.contains('app-ready')}
