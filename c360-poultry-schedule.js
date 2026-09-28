@@ -94,7 +94,7 @@ function startScheduledOperation(op,data){
  form?.scrollIntoView({behavior:'smooth',block:'start'});
  const msg=id('poMsg');if(msg)msg.textContent='Programação carregada do fax ✓ Dados planejados bloqueados. Salve para abrir o Caminhão 1.';
 }
-function publicScheduleHtml(op,farm,m,route){const integrated=m.integrated_name||farm?.producer_name||op.customer_name||'—',shed=m.shed_name||farm?.farm_name||op.location_name||'—',city=m.city||farm?.city||'—';return `<div class="c360-schedule-instructions"><b>Informações para organização</b><div><b>Integrado:</b> ${safe(integrated)}<br><b>Galpão/granja:</b> ${safe(shed)}<br><b>Cidade:</b> ${safe(city)}<br><b>Início:</b> ${fmtDateTime(op.scheduled_start)}${m.recommended_departure?`<br><b>Saída sugerida:</b> ${fmtDateTime(m.recommended_departure)}`:''}</div></div>${route?`<div class="c360-schedule-actions"><button type="button" class="btn soft c360-open-route" data-url="${safe(route)}">📍 Abrir localização</button></div>`:''}`}
+function publicScheduleHtml(op,farm,m,route,daySequence=1){const integrated=m.integrated_name||farm?.producer_name||op.customer_name||'—',shed=m.shed_name||farm?.farm_name||op.location_name||'—',city=m.city||farm?.city||'—',travel=Number(m.travel_minutes||0);const movement=daySequence<=1?(m.recommended_departure?`<br><b>Saída sugerida:</b> ${fmtDateTime(m.recommended_departure)}`:''):(travel?`<br><b>Tempo de trajeto:</b> ${safe(travel)} min`:'<br><b>Tempo de trajeto:</b> a definir');return `<div class="c360-schedule-instructions"><b>Informações para organização</b><div><b>Integrado:</b> ${safe(integrated)}<br><b>Galpão/granja:</b> ${safe(shed)}<br><b>Cidade:</b> ${safe(city)}<br><b>Início:</b> ${fmtDateTime(op.scheduled_start)}${movement}</div></div>${route?`<div class="c360-schedule-actions"><button type="button" class="btn soft c360-open-route" data-url="${safe(route)}">📍 Abrir localização</button></div>`:''}`}
 function loadingFor(data,op){return data.loadings.find(x=>x.operation_id===op.id)}
 function plansFor(data,loading){return loading?data.plans.filter(x=>x.loading_id===loading.id).sort((a,b)=>Number(a.truck_sequence)-Number(b.truck_sequence)):[]}
 function trucksFor(data,loading){return loading?data.trucks.filter(x=>x.loading_id===loading.id).sort((a,b)=>Number(a.truck_sequence)-Number(b.truck_sequence)):[]}
@@ -104,14 +104,14 @@ function truckCompareRows(plans,trucks){
  const seqs=[...new Set([...plans.map(x=>Number(x.truck_sequence)),...trucks.map(x=>Number(x.truck_sequence))])].sort((a,b)=>a-b);
  return `<div class="c360-compare-list">${seqs.map(seq=>{const p=plans.find(x=>Number(x.truck_sequence)===seq),t=trucks.find(x=>Number(x.truck_sequence)===seq);const planned=p?Number(p.planned_birds||0):null,actual=t?Number(t.birds||0):null,diff=planned!=null&&actual!=null?actual-planned:null;return `<div class="c360-compare-row ${diff==null?'':compareClass(diff)}"><div><b>Caminhão ${seq}</b><small>${p?.planned_barn?'Aviário '+safe(p.planned_barn):''}</small></div><div><span>Programado</span><b>${planned==null?'—':fmtInt(planned)}</b></div><div><span>Real</span><b>${actual==null?'Aguardando':fmtInt(actual)}</b></div><div><span>Dif.</span><b>${diff==null?'—':(diff>0?'+':'')+fmtInt(diff)}</b></div></div>`}).join('')}</div>`
 }
-function scheduleCard(op,data,compact=false){
+function scheduleCard(op,data,compact=false,daySequence=1){
  const loading=loadingFor(data,op),farm=data.farms.find(x=>x.id===loading?.farm_id),team=data.teams.find(x=>x.id===op.team_id),plans=plansFor(data,loading),trucks=trucksFor(data,loading),m=scheduleMeta(op);
  const route=routeUrl(op,farm),total=loading?.planned_birds??op.planned_birds??plans.reduce((a,p)=>a+Number(p.planned_birds||0),0);
  const acknowledged=!!loading?.schedule_acknowledged_at,full=isFullReleased(op);
- const publicInfo=publicScheduleHtml(op,farm,m,route);
+ const publicInfo=publicScheduleHtml(op,farm,m,route,daySequence);
  const locked=isDevice()&&!full;
  return `<article class="c360-schedule-card" data-op="${safe(op.id)}" data-loading="${safe(loading?.id||'')}">
-  <div class="c360-schedule-card-head"><div><div class="c360-schedule-eyebrow">${compact?'PRÓXIMA APANHA':'PROGRAMAÇÃO'}</div><h3>${safe(farm?.farm_name||farm?.producer_name||op.location_name||op.customer_name||'Apanha')}</h3><p>${safe(team?.name||'Equipe')} • ${fmtDateTime(op.scheduled_start)}</p></div><span class="c360-schedule-status ${op.status==='completed'?'done':''}">${op.status==='completed'?'Concluída':op.status==='in_progress'?'Em andamento':'Programada'}</span></div>
+  <div class="c360-schedule-card-head"><div><div class="c360-schedule-eyebrow">${compact?(daySequence+'ª APANHA'):'PROGRAMAÇÃO'}</div><h3>${safe(farm?.farm_name||farm?.producer_name||op.location_name||op.customer_name||'Apanha')}</h3><p>${safe(team?.name||'Equipe')} • ${fmtDateTime(op.scheduled_start)}</p></div><span class="c360-schedule-status ${op.status==='completed'?'done':''}">${op.status==='completed'?'Concluída':op.status==='in_progress'?'Em andamento':'Programada'}</span></div>
   ${publicInfo}
   ${locked?`<div class="c360-schedule-callout">🔒 Fax completo será liberado às <b>${fmtDateTime(fullReleaseAt(op))}</b> (1 hora antes).</div>`:`<div class="c360-schedule-kpis"><div><span>Aves previstas</span><b>${fmtInt(total)}</b></div><div><span>Caminhões</span><b>${plans.length||loading?.planned_trucks||'—'}</b></div><div><span>Distância</span><b>${m.distance_km?safe(m.distance_km)+' km':'—'}</b></div><div><span>Viagem</span><b>${m.travel_minutes?safe(m.travel_minutes)+' min':'—'}</b></div></div>
   ${m.loading_instructions?`<div class="c360-schedule-instructions"><b>Como será o carregamento</b><div>${safe(m.loading_instructions)}</div></div>`:''}
@@ -136,8 +136,9 @@ function renderOperationsPanel(data){
 function renderHomePanel(data){
  const host=id('c360TomorrowHomeList');if(!host)return;
  const tomorrow=todayLocal();const td=new Date(tomorrow+'T12:00:00');td.setDate(td.getDate()+1);const key=localInput(td).slice(0,10);
- const ops=data.ops.filter(o=>String(o.scheduled_start||'').slice(0,10)===key&&o.status!=='cancelled');
- host.innerHTML=ops.length?ops.map(o=>scheduleCard(o,data,true)).join(''):'<div class="c360-schedule-empty">Sem programação para amanhã.</div>';
+ const ops=data.ops.filter(o=>String(o.scheduled_start||'').slice(0,10)===key&&o.status!=='cancelled').sort((a,b)=>new Date(a.scheduled_start)-new Date(b.scheduled_start));
+ const alert=ops.length>1?`<div class="c360-schedule-callout">⚠️ <b>AMANHÃ: ${ops.length} APANHAS PROGRAMADAS</b> • confira todos os locais e horários.</div>`:'';
+ host.innerHTML=ops.length?alert+ops.map((o,i)=>scheduleCard(o,data,true,i+1)).join(''):'<div class="c360-schedule-empty">Sem programação para amanhã.</div>';
 }
 
 function ensureHomePanel(){
