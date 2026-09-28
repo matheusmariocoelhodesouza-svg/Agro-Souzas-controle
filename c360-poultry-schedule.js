@@ -6,7 +6,7 @@ const DEFAULT_VEHICLE_MARGIN_MIN=20;
 const DEFAULT_FULL_RELEASE_MIN=60;
 const PLAN_TABLE='v2_poultry_truck_plans';
 const CACHE_NS='c360:poultry:schedule:v1';
-const state={plansByLoading:new Map(),activePlan:null,activePlanSet:[],activeLoadingId:null,activeSequence:0,restWrapped:false,queueWrapped:false,truckWrapped:false,refreshTimer:null};
+const state={plansByLoading:new Map(),activePlan:null,activePlanSet:[],activeLoadingId:null,activeSequence:0,restWrapped:false,queueWrapped:false,truckWrapped:false,refreshTimer:null,releaseTimer:null};
 
 const id=x=>document.getElementById(x);
 const num=v=>{const n=Number(String(v??'').replace(',','.'));return Number.isFinite(n)?n:0};
@@ -365,8 +365,9 @@ function bindEvents(){
  window.addEventListener('online',()=>refreshPanels());
 }
 
+function installReleaseClock(){if(state.releaseTimer)return;state.releaseTimer=setInterval(()=>{if(isDevice()&&!document.hidden)refreshPanels()},60000)}
 function mount(){
- injectStyleFallback();installRestHook();installTruckHook();installOfflineQueueHook();ensureHomePanel();ensureOperationsPanel();refreshPanels();
+ injectStyleFallback();installRestHook();installTruckHook();installOfflineQueueHook();installReleaseClock();ensureHomePanel();ensureOperationsPanel();refreshPanels();
 }
 
 bindEvents();
