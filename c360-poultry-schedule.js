@@ -1,6 +1,9 @@
 (()=>{
 'use strict';
-const VERSION='2026.09.27-1';
+const VERSION='2026.09.28-2';
+const DEFAULT_ARRIVAL_EARLY_MIN=60;
+const DEFAULT_VEHICLE_MARGIN_MIN=20;
+const DEFAULT_FULL_RELEASE_MIN=60;
 const PLAN_TABLE='v2_poultry_truck_plans';
 const CACHE_NS='c360:poultry:schedule:v1';
 const state={plansByLoading:new Map(),activePlan:null,activePlanSet:[],activeLoadingId:null,activeSequence:0,restWrapped:false,queueWrapped:false,truckWrapped:false,refreshTimer:null};
@@ -74,6 +77,9 @@ function routeUrl(op,farm){
  return addr?`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(addr)}`:'';
 }
 function scheduleMeta(op){return op?.metadata||{}}
+function fullReleaseAt(op){const m=scheduleMeta(op),mins=Number(m.full_release_minutes??DEFAULT_FULL_RELEASE_MIN);return new Date(new Date(op.scheduled_start).getTime()-mins*60000)}
+function isFullReleased(op){return !isDevice()||Date.now()>=fullReleaseAt(op).getTime()}
+function publicScheduleHtml(op,farm,m,route){const integrated=m.integrated_name||farm?.producer_name||op.customer_name||'—',shed=m.shed_name||farm?.farm_name||op.location_name||'—',city=m.city||farm?.city||'—';return `<div class="c360-schedule-instructions"><b>Informações para organização</b><div><b>Integrado:</b> ${safe(integrated)}<br><b>Galpão/granja:</b> ${safe(shed)}<br><b>Cidade:</b> ${safe(city)}<br><b>Início:</b> ${fmtDateTime(op.scheduled_start)}${m.recommended_departure?`<br><b>Saída sugerida:</b> ${fmtDateTime(m.recommended_departure)}`:''}</div></div>${route?`<div class="c360-schedule-actions"><button type="button" class="btn soft c360-open-route" data-url="${safe(route)}">📍 Abrir localização</button></div>`:''}`}
 function loadingFor(data,op){return data.loadings.find(x=>x.operation_id===op.id)}
 function plansFor(data,loading){return loading?data.plans.filter(x=>x.loading_id===loading.id).sort((a,b)=>Number(a.truck_sequence)-Number(b.truck_sequence)):[]}
 function trucksFor(data,loading){return loading?data.trucks.filter(x=>x.loading_id===loading.id).sort((a,b)=>Number(a.truck_sequence)-Number(b.truck_sequence)):[]}
@@ -86,15 +92,17 @@ function truckCompareRows(plans,trucks){
 function scheduleCard(op,data,compact=false){
  const loading=loadingFor(data,op),farm=data.farms.find(x=>x.id===loading?.farm_id),team=data.teams.find(x=>x.id===op.team_id),plans=plansFor(data,loading),trucks=trucksFor(data,loading),m=scheduleMeta(op);
  const route=routeUrl(op,farm),total=loading?.planned_birds??op.planned_birds??plans.reduce((a,p)=>a+Number(p.planned_birds||0),0);
- const acknowledged=!!loading?.schedule_acknowledged_at;
+ const acknowledged=!!loading?.schedule_acknowledged_at,full=isFullReleased(op);
+ const publicInfo=publicScheduleHtml(op,farm,m,route);
+ const locked=isDevice()&&!full;
  return `<article class="c360-schedule-card" data-op="${safe(op.id)}" data-loading="${safe(loading?.id||'')}">
   <div class="c360-schedule-card-head"><div><div class="c360-schedule-eyebrow">${compact?'PRÓXIMA APANHA':'PROGRAMAÇÃO'}</div><h3>${safe(farm?.farm_name||farm?.producer_name||op.location_name||op.customer_name||'Apanha')}</h3><p>${safe(team?.name||'Equipe')} • ${fmtDateTime(op.scheduled_start)}</p></div><span class="c360-schedule-status ${op.status==='completed'?'done':''}">${op.status==='completed'?'Concluída':op.status==='in_progress'?'Em andamento':'Programada'}</span></div>
-  <div class="c360-schedule-kpis"><div><span>Aves previstas</span><b>${fmtInt(total)}</b></div><div><span>Caminhões</span><b>${plans.length||loading?.planned_trucks||'—'}</b></div><div><span>Distância</span><b>${m.distance_km?safe(m.distance_km)+' km':'—'}</b></div><div><span>Viagem</span><b>${m.travel_minutes?safe(m.travel_minutes)+' min':'—'}</b></div></div>
-  ${m.recommended_departure?`<div class="c360-schedule-callout">🚌 Saída recomendada: <b>${fmtDateTime(m.recommended_departure)}</b></div>`:''}
+  ${publicInfo}
+  ${locked?`<div class="c360-schedule-callout">🔒 Fax completo será liberado às <b>${fmtDateTime(fullReleaseAt(op))}</b> (1 hora antes).</div>`:`<div class="c360-schedule-kpis"><div><span>Aves previstas</span><b>${fmtInt(total)}</b></div><div><span>Caminhões</span><b>${plans.length||loading?.planned_trucks||'—'}</b></div><div><span>Distância</span><b>${m.distance_km?safe(m.distance_km)+' km':'—'}</b></div><div><span>Viagem</span><b>${m.travel_minutes?safe(m.travel_minutes)+' min':'—'}</b></div></div>
   ${m.loading_instructions?`<div class="c360-schedule-instructions"><b>Como será o carregamento</b><div>${safe(m.loading_instructions)}</div></div>`:''}
   ${m.fax_reference||m.fax_file_path?`<div class="c360-schedule-source">📄 Fax/programação: <b>${safe(m.fax_reference||'anexo recebido')}</b>${m.fax_file_path?` <button type="button" class="c360-link-btn c360-open-fax" data-path="${safe(m.fax_file_path)}">Ver anexo</button>`:''}</div>`:''}
-  ${truckCompareRows(plans,trucks)}
-  <div class="c360-schedule-actions">${route?`<button type="button" class="btn soft c360-open-route" data-url="${safe(route)}">📍 Abrir rota</button>`:''}${isDevice()&&loading&&op.status!=='completed'?`<button type="button" class="btn ${acknowledged?'soft':'primary'} c360-ack-schedule" data-loading="${loading.id}" ${acknowledged?'disabled':''}>${acknowledged?'✓ Programação confirmada':'Confirmar programação'}</button>`:''}</div>
+  ${truckCompareRows(plans,trucks)}`}
+  <div class="c360-schedule-actions">${isDevice()&&loading&&op.status!=='completed'?`<button type="button" class="btn ${acknowledged?'soft':'primary'} c360-ack-schedule" data-loading="${loading.id}" ${acknowledged?'disabled':''}>${acknowledged?'✓ Programação confirmada':'Confirmar programação'}</button>`:''}</div>
  </article>`
 }
 
@@ -144,8 +152,10 @@ function ensureScheduleForm(sec){
   <label>Equipe<select id="c360ScheduleTeam"><option value="">Selecione...</option></select></label>
   <label>Granja<select id="c360ScheduleFarm"><option value="">Selecione...</option></select></label>
   <label>Distância até a granja (km)<input id="c360ScheduleDistance" type="number" min="0" step="0.1" placeholder="Ex.: 82"></label>
-  <label>Tempo de viagem (min)<input id="c360ScheduleTravel" type="number" min="0" step="1" placeholder="Ex.: 75"></label>
-  <label>Saída recomendada<input id="c360ScheduleDeparture" type="datetime-local"></label>
+  <label>Tempo do Maps (min)<input id="c360ScheduleTravel" type="number" min="0" step="1" placeholder="Ex.: 80"></label>
+  <label>Margem da condução (min)<input id="c360ScheduleVehicleMargin" type="number" min="0" step="1" value="20"></label>
+  <label>Chegar antes (min)<input id="c360ScheduleArrivalEarly" type="number" min="0" step="1" value="60"></label>
+  <label>Saída recomendada<input id="c360ScheduleDeparture" type="datetime-local" readonly></label>
   <label class="span2">Link/localização para rota<input id="c360ScheduleLocationUrl" placeholder="Cole o link da localização, se quiser"></label>
   <label class="span2">Referência do fax/programação<input id="c360ScheduleFaxRef" placeholder="Ex.: Fax Zanchetta 28/09 - lote 123"></label>
   <label class="span2">Foto do fax/programação<input id="c360ScheduleFaxFile" type="file" accept="image/jpeg,image/png,image/webp"></label>
@@ -176,9 +186,9 @@ function updatePlanTotal(){
 }
 function resetScheduleForm(){
  if(!id('c360ScheduleForm'))return;
- id('c360ScheduleStart').value=localInput(nextDay());id('c360ScheduleDistance').value='';id('c360ScheduleTravel').value='';id('c360ScheduleDeparture').value='';id('c360ScheduleLocationUrl').value='';id('c360ScheduleFaxRef').value='';id('c360ScheduleInstructions').value='';id('c360ScheduleFaxFile').value='';id('c360ScheduleMsg').textContent='';id('c360PlanTruckRows').innerHTML='';addPlanTruck();recalcDeparture();
+ id('c360ScheduleStart').value=localInput(nextDay());id('c360ScheduleDistance').value='';id('c360ScheduleTravel').value='';id('c360ScheduleVehicleMargin').value=DEFAULT_VEHICLE_MARGIN_MIN;id('c360ScheduleArrivalEarly').value=DEFAULT_ARRIVAL_EARLY_MIN;id('c360ScheduleDeparture').value='';id('c360ScheduleLocationUrl').value='';id('c360ScheduleFaxRef').value='';id('c360ScheduleInstructions').value='';id('c360ScheduleFaxFile').value='';id('c360ScheduleMsg').textContent='';id('c360PlanTruckRows').innerHTML='';addPlanTruck();recalcDeparture();
 }
-function recalcDeparture(){const start=id('c360ScheduleStart')?.value,mins=num(id('c360ScheduleTravel')?.value);if(!start||!mins)return;const d=new Date(start);d.setMinutes(d.getMinutes()-mins);id('c360ScheduleDeparture').value=localInput(d)}
+function recalcDeparture(){const start=id('c360ScheduleStart')?.value,travel=num(id('c360ScheduleTravel')?.value),margin=num(id('c360ScheduleVehicleMargin')?.value),early=num(id('c360ScheduleArrivalEarly')?.value);if(!start)return;const d=new Date(start);d.setMinutes(d.getMinutes()-(travel+margin+early));id('c360ScheduleDeparture').value=localInput(d)}
 async function populateScheduleSelectors(){
  if(!hasApi()||isDevice())return;
  try{
@@ -198,12 +208,12 @@ async function saveSchedule(){
  const farm=(window.__c360ScheduleFarms||[]).find(x=>x.id===farmId),team=(window.__c360ScheduleTeams||[]).find(x=>x.id===teamId);
  if(!start||!teamId||!farmId)return msg.textContent='Informe data, equipe e granja.';
  if(!plans.length||plans.some(p=>p.planned_birds<=0))return msg.textContent='Informe a quantidade prevista de aves em todos os caminhões.';
- const total=plans.reduce((a,p)=>a+p.planned_birds,0),travel=Math.round(num(id('c360ScheduleTravel').value)),distance=num(id('c360ScheduleDistance').value),departure=id('c360ScheduleDeparture').value;
+ const total=plans.reduce((a,p)=>a+p.planned_birds,0),travel=Math.round(num(id('c360ScheduleTravel').value)),distance=num(id('c360ScheduleDistance').value),departure=id('c360ScheduleDeparture').value,vehicleMargin=Math.round(num(id('c360ScheduleVehicleMargin').value)),arrivalEarly=Math.round(num(id('c360ScheduleArrivalEarly').value));
  msg.textContent='Salvando programação...';id('c360SaveSchedule').disabled=true;
  let opId=null,loadingId=null;
  try{
   let faxPath=null;const fax=id('c360ScheduleFaxFile')?.files?.[0];if(fax){if(typeof uploadPoultrySheet!=='function')throw new Error('Upload do fax ainda não está disponível nesta sessão.');faxPath=await uploadPoultrySheet(fax,'schedule-'+Date.now())}
-  const metadata={source:'admin_schedule',schedule_version:1,distance_km:distance||null,travel_minutes:travel||null,recommended_departure:departure?new Date(departure).toISOString():null,loading_instructions:id('c360ScheduleInstructions').value.trim()||null,fax_reference:id('c360ScheduleFaxRef').value.trim()||null,fax_file_path:faxPath||null,schedule_location_url:id('c360ScheduleLocationUrl').value.trim()||null,team_name:team?.name||null,farm_id:farmId,city:farm?.city||null,integrated_name:farm?.producer_name||null};
+  const metadata={source:'admin_schedule',schedule_version:2,distance_km:distance||null,travel_minutes:travel||null,vehicle_margin_minutes:vehicleMargin,arrival_early_minutes:arrivalEarly,full_release_minutes:DEFAULT_FULL_RELEASE_MIN,recommended_departure:departure?new Date(departure).toISOString():null,loading_instructions:id('c360ScheduleInstructions').value.trim()||null,fax_reference:id('c360ScheduleFaxRef').value.trim()||null,fax_file_path:faxPath||null,schedule_location_url:id('c360ScheduleLocationUrl').value.trim()||null,team_name:team?.name||null,farm_id:farmId,city:farm?.city||null,integrated_name:farm?.producer_name||null};
   const opRows=await rest('v2_operations','','POST',{company_id:getCompany(),operation_type:'poultry_catching',title:'Apanha • '+(farm?.farm_name||farm?.producer_name||'Programada'),customer_name:farm?.producer_name||null,location_name:farm?.farm_name||farm?.producer_name||null,location_address:farm?.address||{},latitude:farm?.latitude||null,longitude:farm?.longitude||null,scheduled_start:new Date(start).toISOString(),status:'planned',team_id:teamId,planned_birds:total,notes:metadata.loading_instructions,metadata});
   opId=opRows?.[0]?.id;if(!opId)throw new Error('Não foi possível criar a operação programada.');
   const loadingRows=await rest('v2_poultry_loadings','','POST',{company_id:getCompany(),operation_id:opId,integrator_id:farm.integrator_id,farm_id:farmId,loading_date:start.slice(0,10),catching_method:'back',planned_birds:total,reported_birds:0,planned_trucks:plans.length,reported_trucks:0,status:'planned',team_id:teamId,metadata:{source:'admin_schedule',schedule_version:1,fax_reference:metadata.fax_reference,fax_file_path:faxPath}});
@@ -309,7 +319,7 @@ function bindEvents(){
  document.addEventListener('click',validatePlannedTruckSave,true);
  document.addEventListener('input',e=>{
   if(e.target.closest('#c360PlanTruckRows'))updatePlanTotal();
-  if(e.target.id==='c360ScheduleTravel'||e.target.id==='c360ScheduleStart')recalcDeparture();
+  if(['c360ScheduleTravel','c360ScheduleStart','c360ScheduleVehicleMargin','c360ScheduleArrivalEarly'].includes(e.target.id))recalcDeparture();
   if(e.target.closest('#poTruckCard'))updateTruckComparison();
  },true);
  document.addEventListener('change',e=>{
