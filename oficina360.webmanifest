@@ -1,0 +1,19 @@
+{
+  "name": "Oficina 360",
+  "short_name": "Oficina 360",
+  "description": "Diagnóstico, manutenção e inteligência técnica da frota no ecossistema Comando 360.",
+  "start_url": "./oficina360.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#07111f",
+  "theme_color": "#0b1424",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "./oficina360-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
