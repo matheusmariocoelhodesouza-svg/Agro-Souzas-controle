@@ -5,6 +5,31 @@ const COMANDO_SESSION_KEY='controla_beta_session';
 const SUPABASE_SESSION_KEY='sb-'+PROJECT_REF+'-auth-token';
 const DIRECT_COPY='Entre diretamente no Oficina 360 com a mesma conta do Comando 360. A frota e o histórico continuam compartilhados automaticamente.';
 
+function installStandaloneShell(){
+  try{
+    if(!document.querySelector('link[rel="manifest"]')){
+      const manifest=document.createElement('link');
+      manifest.rel='manifest';
+      manifest.href='./oficina360.webmanifest';
+      document.head.appendChild(manifest);
+    }
+    let icon=document.querySelector('link[rel="icon"]');
+    if(icon)icon.href='./oficina360-icon.svg';
+    else{
+      icon=document.createElement('link');
+      icon.rel='icon';
+      icon.type='image/svg+xml';
+      icon.href='./oficina360-icon.svg';
+      document.head.appendChild(icon);
+    }
+    if('serviceWorker' in navigator){
+      navigator.serviceWorker.register('./oficina360-sw.js').catch(err=>console.warn('Oficina 360: service worker não registrado',err));
+    }
+  }catch(err){
+    console.warn('Oficina 360: não foi possível preparar a instalação independente',err);
+  }
+}
+
 function migrateComandoSession(){
   try{
     const raw=localStorage.getItem(COMANDO_SESSION_KEY);
@@ -152,6 +177,7 @@ function renderStandaloneLogin(){
   });
 }
 
+installStandaloneShell();
 migrateComandoSession();
 window.c360MigrateSessionToOficina=migrateComandoSession;
 document.addEventListener('DOMContentLoaded',()=>{
