@@ -1,0 +1,36 @@
+name: Oficina 360 Fleet Premium
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'oficina360.html'
+      - 'oficina360-fleet-premium-v1.js'
+      - 'oficina360-fleet-premium-v1.css'
+      - 'oficina360-repair-assistant-v1.js'
+      - 'supabase/migrations/20260928_oficina360_all_fleet_premium.sql'
+      - 'qa/oficina360_all_fleet_premium_contract.mjs'
+  push:
+    branches: [main]
+    paths:
+      - 'oficina360.html'
+      - 'oficina360-fleet-premium-v1.js'
+      - 'oficina360-fleet-premium-v1.css'
+      - 'oficina360-repair-assistant-v1.js'
+      - 'supabase/migrations/20260928_oficina360_all_fleet_premium.sql'
+      - 'qa/oficina360_all_fleet_premium_contract.mjs'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+      - name: JavaScript syntax
+        run: node --check oficina360-fleet-premium-v1.js
+      - name: Fleet Premium contract
+        run: node qa/oficina360_all_fleet_premium_contract.mjs
