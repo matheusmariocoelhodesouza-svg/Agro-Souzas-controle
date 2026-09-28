@@ -310,6 +310,23 @@ function validatePlannedTruckSave(e){
  }
 }
 
+async function startScheduledCatch(opId,loadingId){
+ if(!isDevice()||!hasApi())return;
+ const data=await loadScheduleWindow(),op=data.ops.find(x=>String(x.id)===String(opId)),loading=data.loadings.find(x=>String(x.id)===String(loadingId));
+ if(!op||!loading)return alert('Programação não encontrada. Atualize a tela.');
+ if(!isFullReleased(op))return alert('A apanha será liberada 1 hora antes do início programado.');
+ const farm=data.farms.find(x=>x.id===loading.farm_id),plans=plansFor(data,loading);
+ if(typeof poultryFarms!=='undefined'&&farm&&!poultryFarms.some(x=>x.id===farm.id))poultryFarms.unshift(farm);
+ if(typeof poultryLoadings!=='undefined'&&!poultryLoadings.some(x=>x.id===loading.id))poultryLoadings.unshift(loading);
+ if(typeof poultryOpsCache!=='undefined'&&!poultryOpsCache.some(x=>x.id===op.id))poultryOpsCache.unshift(op);
+ const nextSeq=Math.max(1,(typeof poultryTruckLoads!=='undefined'?poultryTruckLoads.filter(x=>x.loading_id===loading.id).length:0)+1);
+ state.activePlanSet=plans;state.activeLoadingId=loading.id;
+ if(typeof openNextTruckForm!=='function')return alert('Formulário da apanha ainda não está pronto nesta tela.');
+ openNextTruckForm({operationId:op.id,loadingId:loading.id,farmId:loading.farm_id,name:farm?.producer_name||op.customer_name||op.title||'Apanha',sequence:nextSeq});
+ const plan=plans.find(x=>Number(x.truck_sequence)===nextSeq);
+ setTimeout(()=>{if(plan&&id('poTruckAviaryNumber')&&plan.planned_barn)id('poTruckAviaryNumber').value=plan.planned_barn;const msg=id('poTruckMsg');if(msg){msg.className='okmsg';msg.textContent='Apanha aberta a partir do fax ✓ O planejado está preservado; informe somente o realizado.'}},80);
+}
+
 async function acknowledgeSchedule(loadingId,btn){
  if(!loadingId||!hasApi())return;
  try{btn.disabled=true;btn.textContent='Confirmando...';let uid=null;try{uid=typeof session==='function'?session()?.user?.id:null}catch(_){ }
@@ -328,6 +345,7 @@ function bindEvents(){
   if(e.target.closest('#c360SaveSchedule')){await saveSchedule();return}
   if(e.target.closest('#c360RefreshSchedules,#c360RefreshTomorrow')){await refreshPanels();return}
   const route=e.target.closest('.c360-open-route');if(route){window.open(route.dataset.url,'_blank','noopener');return}
+  const start=e.target.closest('.c360-start-scheduled');if(start){await startScheduledCatch(start.dataset.op,start.dataset.loading);return}
   const ack=e.target.closest('.c360-ack-schedule');if(ack){await acknowledgeSchedule(ack.dataset.loading,ack);return}
   const start=e.target.closest('.c360-start-scheduled');if(start){const data=await loadScheduleWindow(),op=data.ops.find(x=>String(x.id)===String(start.dataset.op));if(op)startScheduledOperation(op,data);return}
   const fax=e.target.closest('.c360-open-fax');if(fax){await openFax(fax.dataset.path);return}
