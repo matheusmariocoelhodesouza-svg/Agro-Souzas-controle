@@ -1,0 +1,32 @@
+name: Oficina 360 Sprinter Real
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'oficina360.html'
+      - 'oficina360-sprinter-real.js'
+      - 'oficina360-sprinter-real.css'
+      - 'qa/oficina360_sprinter_real_contract.mjs'
+  push:
+    branches: [main]
+    paths:
+      - 'oficina360.html'
+      - 'oficina360-sprinter-real.js'
+      - 'oficina360-sprinter-real.css'
+      - 'qa/oficina360_sprinter_real_contract.mjs'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+      - name: JavaScript syntax
+        run: node --check oficina360-sprinter-real.js
+      - name: Sprinter real-data contract
+        run: node qa/oficina360_sprinter_real_contract.mjs
