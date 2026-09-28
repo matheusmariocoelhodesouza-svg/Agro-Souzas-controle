@@ -1,6 +1,6 @@
 (()=>{
 'use strict';
-const BOOT_VERSION='2026.09.25-audit3';
+const BOOT_VERSION='2026.09.28-photo1';
 const recoveryModule='./c360-autorecovery.js';
 
 /* Runtime enxuto: só recursos globais entram no primeiro paint. */
@@ -23,7 +23,7 @@ const routeStyles={fiscal:['./c360-fiscal.css'],frota:['./c360-trailer-hitches.c
 const essentialModules=[
  './c360-platform.js','./c360-product-core.js','./c360-release-core.js','./c360-quality-core.js','./c360-farm-cache-hotfix.js',
  './c360-field-offline-hotfix.js','./c360-field-stability.js','./c360-runtime-compatibility.js','./c360-final-stabilization.js','./c360-data-integrity.js',
- './c360-field-route-guard.js','./c360-ux-polish-hotfix.js','./c360-onboarding-entry.js','./c360-team-chat.js','./c360-system-health.js','./c360-enterprise.js',
+ './c360-field-route-guard.js','./c360-ux-polish-hotfix.js','./c360-employee-photo.js','./c360-onboarding-entry.js','./c360-team-chat.js','./c360-system-health.js','./c360-enterprise.js',
  './c360-commercial.js','./c360-saas-readiness.js','./c360-rpc-bridge.js','./c360-showcase-exact.js'
 ];
 const routeModules={
