@@ -104,8 +104,8 @@ function ensureUi(){
   btn.addEventListener('click',()=>{
     document.querySelectorAll('.side-nav button[data-tab]').forEach(b=>b.classList.toggle('active',b===btn));
     document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x===section));
-    const title=document.querySelector('#pageTitle');if(title)title.textContent='Fontes oficiais';
     render();
+    setTimeout(()=>{const title=document.querySelector('#pageTitle');if(title)title.textContent='Fontes oficiais';},0);
   });
 }
 function render(){
