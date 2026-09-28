@@ -103,6 +103,7 @@ function decorateDeep(cards,meta){
      const pv=provenance(v);summary.insertAdjacentHTML('beforeend',`<span class="o360-card-origin ${pv.cls}">${esc(pv.label)}</span>`);
    }
    const body=$('.o360-view-content',card);if(!body||$('.o360-group-loading',body))return;
+   const stored=$('img.o360-view-img',body);if(stored&&needsReconstruction(v))stored.remove();
    if(!$('.o360-provenance',body))body.insertAdjacentHTML('afterbegin',provenanceBlock(v));
    if(needsReconstruction(v)&&!$('.o360-generated-preview',body)){
      const visual=document.createElement('div');visual.className='o360-generated-preview o360-deep-preview';visual.innerHTML=miniSvg(card,v);
