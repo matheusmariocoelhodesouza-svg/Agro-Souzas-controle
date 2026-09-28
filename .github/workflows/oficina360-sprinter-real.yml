@@ -11,9 +11,12 @@ on:
       - 'oficina360-sprinter-exploded-v2.css'
       - 'oficina360-sprinter-premium-v3.js'
       - 'oficina360-sprinter-premium-v3.css'
+      - 'oficina360-repair-assistant-v1.js'
+      - 'oficina360-repair-assistant-v1.css'
       - 'qa/oficina360_sprinter_real_contract.mjs'
       - 'qa/oficina360_sprinter_exploded_v2_contract.mjs'
       - 'qa/oficina360_sprinter_premium_v3_contract.mjs'
+      - 'qa/oficina360_repair_assistant_v1_contract.mjs'
   push:
     branches: [main]
     paths:
@@ -24,9 +27,12 @@ on:
       - 'oficina360-sprinter-exploded-v2.css'
       - 'oficina360-sprinter-premium-v3.js'
       - 'oficina360-sprinter-premium-v3.css'
+      - 'oficina360-repair-assistant-v1.js'
+      - 'oficina360-repair-assistant-v1.css'
       - 'qa/oficina360_sprinter_real_contract.mjs'
       - 'qa/oficina360_sprinter_exploded_v2_contract.mjs'
       - 'qa/oficina360_sprinter_premium_v3_contract.mjs'
+      - 'qa/oficina360_repair_assistant_v1_contract.mjs'
   workflow_dispatch:
 
 permissions:
@@ -43,9 +49,12 @@ jobs:
           node --check oficina360-sprinter-real.js
           node --check oficina360-sprinter-exploded-v2.js
           node --check oficina360-sprinter-premium-v3.js
+          node --check oficina360-repair-assistant-v1.js
       - name: Sprinter real-data contract
         run: node qa/oficina360_sprinter_real_contract.mjs
       - name: Sprinter exploded v2 contract
         run: node qa/oficina360_sprinter_exploded_v2_contract.mjs
       - name: Sprinter Premium v3 contract
         run: node qa/oficina360_sprinter_premium_v3_contract.mjs
+      - name: Oficina 360 repair assistant v1 contract
+        run: node qa/oficina360_repair_assistant_v1_contract.mjs

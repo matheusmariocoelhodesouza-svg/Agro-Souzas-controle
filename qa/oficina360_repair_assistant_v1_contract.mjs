@@ -1,0 +1,11 @@
+import fs from 'node:fs';
+const js=fs.readFileSync('oficina360-repair-assistant-v1.js','utf8');
+const css=fs.readFileSync('oficina360-repair-assistant-v1.css','utf8');
+const html=fs.readFileSync('oficina360.html','utf8');
+const must=(t,n,l=n)=>{if(!t.includes(n))throw new Error(`Missing ${l}`)};
+for(const x of ['oficina360-repair-assistant-v1.css?v=20260928-1','oficina360-repair-assistant-v1.js?v=20260928-1'])must(html,x);
+for(const x of ['OFICINA 360 • REPARO GUIADO','Ferramentas','Torque / especificações','Scanner / falha','Histórico desta condução','Marcar esta etapa como concluída','Destacar no explodido','Abrir Ordens de Serviço','speechSynthesis','v2_work_orders','v2_vehicle_faults','localStorage'])must(js,x);
+for(const x of ['.repair-assist','.repair-grid','.repair-step-text','.spr-v3-controls #repairV3Btn'])must(css,x);
+if(!js.includes("c.data_status==='verified'"))throw new Error('Repair assistant must preserve verification state');
+if(!js.includes('Não use torque/código estimado como definitivo.'))throw new Error('Repair assistant must warn on unverified technical data');
+console.log('Oficina 360 repair assistant v1 contract: OK');
