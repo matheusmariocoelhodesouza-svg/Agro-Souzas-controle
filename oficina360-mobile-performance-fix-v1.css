@@ -1,0 +1,20 @@
+#tab-visual.fleet-premium-active #fleetPremium{contain:layout paint style}
+#tab-visual.fleet-premium-active #fleetStage{contain:layout paint style;overflow:hidden}
+#tab-visual.fleet-premium-active #fleetStage .fleet-svg{display:block;contain:layout paint}
+#tab-visual.fleet-premium-active #fleetStage .fleet-node{will-change:transform}
+#tab-visual.fleet-premium-active #fleetStage .fleet-node.o360-isolated-muted{opacity:.12;pointer-events:none}
+#tab-visual.fleet-premium-active .pv-stage-toolbar{display:none!important}
+#tab-visual.fleet-premium-active .pv-stage>#fleetPremium~*{display:none!important}
+#tab-visual.fleet-premium-active #fleetAssembled.active,
+#tab-visual.fleet-premium-active #fleetExploded.active,
+#tab-visual.fleet-premium-active #fleetPlay.active{background:#0e67bb;border-color:#2999f3;color:#fff}
+
+@media(max-width:900px){
+  #tab-visual.fleet-premium-active #fleetStage .fleet-toolbar{position:sticky;top:0;z-index:7}
+  #tab-visual.fleet-premium-active #fleetStage .spr-v3-controls{flex-wrap:wrap}
+  #tab-visual.fleet-premium-active #fleetStage .spr-v3-controls input[type=range]{min-width:140px;flex:1}
+}
+
+@media(prefers-reduced-motion:reduce){
+  #tab-visual.fleet-premium-active #fleetStage .fleet-node{will-change:auto}
+}
