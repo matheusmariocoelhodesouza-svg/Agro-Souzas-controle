@@ -1,6 +1,6 @@
 (()=>{
 'use strict';
-const BOOT_VERSION='2026.09.28-photo1';
+const BOOT_VERSION='2026.09.25-audit3';
 const recoveryModule='./c360-autorecovery.js';
 
 /* Runtime enxuto: só recursos globais entram no primeiro paint. */
@@ -44,7 +44,7 @@ let modeObserver=null;
 const resourceUrl=src=>src+(src.includes('?')?'&':'?')+'v='+encodeURIComponent(BOOT_VERSION);
 const baseName=src=>src.split('?')[0];
 const normalizedPath=src=>baseName(src).replace(/^\.\//,'');
-function mark(name){try{performance.mark(name)}catch(_){}}
+function mark(name){try{performance.mark(name)}catch(_){} }
 function emit(name,detail){document.dispatchEvent(new CustomEvent(name,{detail}))}
 function isDevice(){return !!document.body?.classList.contains('device-mode')}
 function isAppReady(){return !!document.body?.classList.contains('app-ready')}
