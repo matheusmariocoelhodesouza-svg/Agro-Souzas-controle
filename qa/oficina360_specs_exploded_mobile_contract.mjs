@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 const read=p=>fs.readFileSync(new URL('../'+p,import.meta.url),'utf8');
 const specs=read('oficina360-spec-sheet.js');
 const exploded=read('oficina360-exploded-browser-v1.js');
+const deep=read('oficina360-deep-catalog.js');
 const css=read('oficina360-exploded-browser-v1.css');
 const html=read('oficina360.html');
 const migration=read('supabase/migrations/20260928_oficina360_visual_provenance.sql');
@@ -30,7 +31,18 @@ assert.match(exploded,/pvSystem/,'Navegador deve selecionar o sistema técnico c
 assert.match(exploded,/decorateDeep/,'Navegador deve tratar o layout do catálogo profundo');
 assert.match(exploded,/\.o360-view-full/,'Navegador deve reconhecer as vistas profundas');
 assert.match(exploded,/\.o360-view-table tbody tr/,'Fallback profundo deve reutilizar a numeração real dos itens catalogados');
+assert.match(exploded,/IntersectionObserver/,'Prévia deve ser desenhada sob demanda no mobile');
+assert.doesNotMatch(exploded,/new MutationObserver/,'Navegador explodido não pode observar toda a árvore e reprocessar tabelas');
 assert.doesNotMatch(exploded,/setInterval\([^)]*miniSvg/,'Prévia não pode redesenhar continuamente');
+
+assert.match(deep,/async function loadViewItems/,'Itens das vistas precisam carregar somente quando a vista for aberta');
+assert.match(deep,/countViewItems/,'Total de posições deve ser contado sem baixar todos os registros');
+assert.match(deep,/head:true/,'Contagem deve usar consulta head sem transferir as posições');
+assert.match(deep,/data-o360-more-group/,'Grupos grandes precisam de paginação visual');
+assert.match(deep,/async function renderPartBody/,'Detalhes completos da peça devem carregar só ao abrir');
+assert.match(deep,/o360:view-rendered/,'Catálogo deve avisar quando a vista terminar o lazy load');
+assert.doesNotMatch(deep,/state\.items\s*=\s*await chunks\('v2_vehicle_exploded_view_items'/,'Catálogo não pode baixar todas as posições de todas as vistas no carregamento inicial');
+assert.doesNotMatch(deep,/v2_vehicle_components'\s*,state\.links\.map\(x=>x\.component_id\)\)\s*;/,'Catálogo não pode usar select * para todos os componentes ligados');
 
 assert.match(css,/\.o360-generated-preview/,'Estilo da prévia precisa estar presente');
 assert.match(css,/\.o360-provenance/,'Estilo da procedência visual precisa estar presente');
@@ -45,5 +57,7 @@ assert.match(migration,/add column if not exists visual_confidence/,'Banco preci
 assert.match(migration,/runtime:oficina360-exploded-browser-v1/,'Reconstrução em runtime precisa ficar registrada');
 
 assert.match(html,/oficina360-spec-sheet\.js\?v=20260928-2/,'Ficha completa precisa quebrar cache da versão antiga');
+assert.match(html,/oficina360-deep-catalog\.js\?v=20260928-4/,'Hotfix do catálogo precisa quebrar cache');
+assert.match(html,/oficina360-exploded-browser-v1\.js\?v=20260928-4/,'Hotfix das vistas precisa quebrar cache');
 
-console.log('Oficina 360 specs + exploded provenance contract: OK');
+console.log('Oficina 360 specs + exploded provenance + mobile freeze contract: OK');

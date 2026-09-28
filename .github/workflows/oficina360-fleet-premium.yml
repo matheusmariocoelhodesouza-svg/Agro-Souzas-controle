@@ -6,6 +6,7 @@ on:
     paths:
       - 'oficina360.html'
       - 'oficina360-spec-sheet.js'
+      - 'oficina360-deep-catalog.js'
       - 'oficina360-exploded-browser-v1.js'
       - 'oficina360-exploded-browser-v1.css'
       - 'oficina360-fleet-premium-v1.js'
@@ -23,6 +24,7 @@ on:
     paths:
       - 'oficina360.html'
       - 'oficina360-spec-sheet.js'
+      - 'oficina360-deep-catalog.js'
       - 'oficina360-exploded-browser-v1.js'
       - 'oficina360-exploded-browser-v1.css'
       - 'oficina360-fleet-premium-v1.js'
@@ -51,6 +53,7 @@ jobs:
           node --check oficina360-fleet-premium-v1.js
           node --check oficina360-mobile-performance-fix-v1.js
           node --check oficina360-spec-sheet.js
+          node --check oficina360-deep-catalog.js
           node --check oficina360-exploded-browser-v1.js
       - name: Fleet Premium contract
         run: node qa/oficina360_all_fleet_premium_contract.mjs

@@ -5,143 +5,30 @@ const $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 const eq=(a,b)=>String(a??'').toLowerCase()===String(b??'').toLowerCase();
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
-let client=null,token=0,currentVehicle=null,views=[],syncQueued=false;
+let client=null,token=0,currentVehicle=null,views=[],syncQueued=false,lazyObserver=null;
 
 function toast(msg){const t=$('#toast');if(!t)return;t.textContent=msg;t.classList.add('show');clearTimeout(window.__o360ExplodedToast);window.__o360ExplodedToast=setTimeout(()=>t.classList.remove('show'),2800)}
 function getClient(){if(client)return client;if(!window.supabase||!window.SUPABASE_URL||!window.SUPABASE_PUBLISHABLE_KEY)return null;client=window.supabase.createClient(window.SUPABASE_URL,window.SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});return client}
-
-function provenance(v){
- const type=v?.visual_type||((v?.image_reference&&v?.can_store_image)?'licensed_partner':'oficina360_reconstructed');
- if(type==='official_authorized')return {key:type,label:'OFICIAL',short:'Fonte técnica autorizada',description:'Imagem técnica autorizada para uso no Oficina 360.',cls:'official'};
- if(type==='licensed_partner')return {key:type,label:'LICENCIADA',short:'Uso autorizado por parceiro/fonte',description:'Imagem utilizada com permissão/licença válida.',cls:'licensed'};
- if(type==='validation_pending')return {key:type,label:'EM VALIDAÇÃO',short:'Visual em conferência técnica',description:'Visual disponível, aguardando conferência técnica final.',cls:'validation'};
- if(type==='insufficient_basis')return {key:type,label:'SEM BASE SUFICIENTE',short:'Dados insuficientes para reconstrução segura',description:'Ainda não há base suficiente para exibir uma reconstrução segura desta vista.',cls:'insufficient'};
- return {key:'oficina360_reconstructed',label:'RECONSTRUÇÃO OFICINA 360',short:'Baseada em pesquisa técnica • Não OEM',description:'Visual próprio do Oficina 360 baseado em pesquisa técnica, aplicação, OEM e estrutura do conjunto. Não OEM.',cls:'reconstructed'};
-}
+function provenance(v){const type=v?.visual_type||((v?.image_reference&&v?.can_store_image)?'licensed_partner':'oficina360_reconstructed');if(type==='official_authorized')return {key:type,label:'OFICIAL',short:'Fonte técnica autorizada',description:'Imagem técnica autorizada para uso no Oficina 360.',cls:'official'};if(type==='licensed_partner')return {key:type,label:'LICENCIADA',short:'Uso autorizado por parceiro/fonte',description:'Imagem utilizada com permissão/licença válida.',cls:'licensed'};if(type==='validation_pending')return {key:type,label:'EM VALIDAÇÃO',short:'Visual em conferência técnica',description:'Visual disponível, aguardando conferência técnica final.',cls:'validation'};if(type==='insufficient_basis')return {key:type,label:'SEM BASE SUFICIENTE',short:'Dados insuficientes para reconstrução segura',description:'Ainda não há base suficiente para exibir uma reconstrução segura desta vista.',cls:'insufficient'};return {key:'oficina360_reconstructed',label:'RECONSTRUÇÃO OFICINA 360',short:'Baseada em pesquisa técnica • Não OEM',description:'Visual próprio do Oficina 360 baseado em pesquisa técnica, aplicação, OEM e estrutura do conjunto. Não OEM.',cls:'reconstructed'}}
 function confidence(v){const x=String(v?.visual_confidence||'').toLowerCase();return x==='high'?'Alta':x==='medium'?'Média':x==='low'?'Baixa':'A confirmar'}
 function sourceText(v){return v?.source_name||'Base técnica Oficina 360'}
 
-async function loadViews(){
- const vid=$('#vehiclePicker')?.value||new URLSearchParams(location.search).get('vehicle');if(!vid)return [];
- if(currentVehicle===vid&&views.length)return views;
- const c=getClient();if(!c)return [];
- const my=++token;
- const [pr,vr]=await Promise.all([
-   c.from('v2_vehicle_technical_profiles').select('chassis_family,chassis_variant,engine_code').eq('vehicle_id',vid).maybeSingle(),
-   c.from('v2_vehicle_exploded_views').select('id,title,group_code,chassis_family,chassis_variant,engine_code,source_diagram_key,assembly_code,image_reference,image_license_status,source_name,source_url,visual_type,can_store_image,show_source_button,visual_confidence,generated_preview_reference,last_reviewed_at').order('group_code').order('title')
- ]);
- if(my!==token)return views;
- const p=pr.data||{};
- views=(vr.data||[]).filter(x=>{
-   if(x.chassis_family&&(!p.chassis_family||!eq(x.chassis_family,p.chassis_family)))return false;
-   if(x.chassis_variant&&(!p.chassis_variant||!eq(x.chassis_variant,p.chassis_variant)))return false;
-   if(x.engine_code&&(!p.engine_code||!eq(x.engine_code,p.engine_code)))return false;
-   return true;
- });
- currentVehicle=vid;return views;
-}
+async function loadViews(){const vid=$('#vehiclePicker')?.value||new URLSearchParams(location.search).get('vehicle');if(!vid)return [];if(currentVehicle===vid&&views.length)return views;const c=getClient();if(!c)return [];const my=++token;const [pr,vr]=await Promise.all([c.from('v2_vehicle_technical_profiles').select('chassis_family,chassis_variant,engine_code').eq('vehicle_id',vid).maybeSingle(),c.from('v2_vehicle_exploded_views').select('id,title,group_code,chassis_family,chassis_variant,engine_code,source_diagram_key,assembly_code,image_reference,image_license_status,source_name,source_url,visual_type,can_store_image,show_source_button,visual_confidence,generated_preview_reference,last_reviewed_at').order('group_code').order('title')]);if(my!==token)return views;const p=pr.data||{};views=(vr.data||[]).filter(x=>{if(x.chassis_family&&(!p.chassis_family||!eq(x.chassis_family,p.chassis_family)))return false;if(x.chassis_variant&&(!p.chassis_variant||!eq(x.chassis_variant,p.chassis_variant)))return false;if(x.engine_code&&(!p.engine_code||!eq(x.engine_code,p.engine_code)))return false;return true});currentVehicle=vid;return views}
+function itemNumbers(card){const legacy=$$('.view-part',card).slice(0,6).map((row,i)=>$('b',row)?.textContent?.trim()||String(i+1));if(legacy.length)return legacy;const deep=$$('.o360-view-table tbody tr',card).slice(0,6).map((row,i)=>$('td b',row)?.textContent?.trim()||String(i+1));if(deep.length)return deep;return ['01','02','03','04','05','06']}
+function miniSvg(card,v){const nums=itemNumbers(card),n=Math.max(3,Math.min(6,nums.length||6)),pos=[[86,62],[86,164],[205,42],[415,42],[534,62],[534,164]];let lines='',nodes='';for(let i=0;i<n;i++){const [x,y]=pos[i],right=x>310,targetX=right?383:237,targetY=i%2?137:92;lines+=`<line x1="${x+(right?-18:18)}" y1="${y}" x2="${targetX}" y2="${targetY}"/>`;const num=esc(nums[i]||String(i+1));if(i%3===0)nodes+=`<g transform="translate(${x} ${y})"><circle r="25"/><circle r="10" class="hole"/><text y="4">${num}</text></g>`;else if(i%3===1)nodes+=`<g transform="translate(${x} ${y})"><rect x="-31" y="-20" width="62" height="40" rx="8"/><text y="4">${num}</text></g>`;else nodes+=`<g transform="translate(${x} ${y})"><path d="M-30,-18 H22 L34,0 L22,18 H-30 Z"/><text y="4">${num}</text></g>`}const pv=provenance(v);return `<div class="o360-preview-badge ${pv.cls}">${esc(pv.label)}</div><svg viewBox="0 0 620 215" role="img" aria-label="Reconstrução estrutural da vista explodida"><g class="o360-preview-axis"><line x1="146" y1="108" x2="474" y2="108"/></g><g class="o360-preview-lines">${lines}</g><g class="o360-preview-core"><rect x="247" y="66" width="126" height="84" rx="16"/><rect x="267" y="83" width="86" height="15" rx="5"/><circle cx="278" cy="127" r="12"/><circle cx="342" cy="127" r="12"/></g><g class="o360-preview-nodes">${nodes}</g></svg><div class="o360-preview-note">${esc(pv.description)}</div>`}
+function provenanceBlock(v){const pv=provenance(v),source=sourceText(v),conf=confidence(v);return `<div class="o360-provenance ${pv.cls}"><div class="o360-provenance-head"><span class="o360-provenance-badge ${pv.cls}">${esc(pv.label)}</span><span class="o360-confidence">Confiança visual: <b>${esc(conf)}</b></span></div><b>${esc(pv.short)}</b><small>${esc(pv.description)}</small><small>Fonte/base: ${esc(source)}</small></div>`}
+function openButtons(v){const source=(v?.show_source_button!==false&&v?.source_url)?`<a class="o360-source-view" target="_blank" rel="noopener" href="${esc(v.source_url)}">↗ Abrir fonte técnica</a>`:'';return `<div class="o360-view-actions"><button type="button" class="o360-open-view" data-view="${esc(v.id)}" data-group="${esc(v.group_code||'')}">◫ Abrir vista explodida interativa</button><button type="button" class="o360-diagnose-view" data-view="${esc(v.id)}" data-group="${esc(v.group_code||'')}">⌁ Diagnosticar neste conjunto</button>${source}</div>`}
+function needsReconstruction(v){const pv=provenance(v);if(pv.key==='insufficient_basis')return false;return !(v?.image_reference&&v?.can_store_image&&(pv.key==='official_authorized'||pv.key==='licensed_partner'))}
+function getLazyObserver(){if(lazyObserver!==null)return lazyObserver;if(!('IntersectionObserver'in window)){lazyObserver=false;return false}lazyObserver=new IntersectionObserver(entries=>{for(const e of entries){if(!e.isIntersecting)continue;const p=e.target;if(typeof p.__o360Draw==='function')p.__o360Draw();lazyObserver.unobserve(p)}},{rootMargin:'220px 0px'});return lazyObserver}
+function schedulePreview(preview,card,v){const draw=()=>{if(preview.dataset.drawn==='1')return;preview.innerHTML=miniSvg(card,v);preview.dataset.drawn='1';preview.__o360Draw=null};preview.__o360Draw=draw;const io=getLazyObserver();if(io)io.observe(preview);else draw()}
 
-function itemNumbers(card){
- const legacy=$$('.view-part',card).slice(0,6).map((row,i)=>$('b',row)?.textContent?.trim()||String(i+1));
- if(legacy.length)return legacy;
- const deep=$$('.o360-view-table tbody tr',card).slice(0,6).map((row,i)=>$('td b',row)?.textContent?.trim()||String(i+1));
- if(deep.length)return deep;
- return ['01','02','03','04','05','06'];
-}
-
-function miniSvg(card,v){
- const nums=itemNumbers(card);const n=Math.max(3,Math.min(6,nums.length||6));
- const pos=[[86,62],[86,164],[205,42],[415,42],[534,62],[534,164]];
- let lines='',nodes='';
- for(let i=0;i<n;i++){
-   const [x,y]=pos[i];const right=x>310;const targetX=right?383:237;const targetY=i%2?137:92;
-   lines+=`<line x1="${x+(right?-18:18)}" y1="${y}" x2="${targetX}" y2="${targetY}"/>`;
-   const num=esc(nums[i]||String(i+1));
-   if(i%3===0)nodes+=`<g transform="translate(${x} ${y})"><circle r="25"/><circle r="10" class="hole"/><text y="4">${num}</text></g>`;
-   else if(i%3===1)nodes+=`<g transform="translate(${x} ${y})"><rect x="-31" y="-20" width="62" height="40" rx="8"/><text y="4">${num}</text></g>`;
-   else nodes+=`<g transform="translate(${x} ${y})"><path d="M-30,-18 H22 L34,0 L22,18 H-30 Z"/><text y="4">${num}</text></g>`;
- }
- const pv=provenance(v);
- return `<div class="o360-preview-badge ${pv.cls}">${esc(pv.label)}</div><svg viewBox="0 0 620 215" role="img" aria-label="Reconstrução estrutural da vista explodida"><g class="o360-preview-axis"><line x1="146" y1="108" x2="474" y2="108"/></g><g class="o360-preview-lines">${lines}</g><g class="o360-preview-core"><rect x="247" y="66" width="126" height="84" rx="16"/><rect x="267" y="83" width="86" height="15" rx="5"/><circle cx="278" cy="127" r="12"/><circle cx="342" cy="127" r="12"/></g><g class="o360-preview-nodes">${nodes}</g></svg><div class="o360-preview-note">${esc(pv.description)}</div>`;
-}
-
-function provenanceBlock(v){
- const pv=provenance(v),source=sourceText(v),conf=confidence(v);
- return `<div class="o360-provenance ${pv.cls}"><div class="o360-provenance-head"><span class="o360-provenance-badge ${pv.cls}">${esc(pv.label)}</span><span class="o360-confidence">Confiança visual: <b>${esc(conf)}</b></span></div><b>${esc(pv.short)}</b><small>${esc(pv.description)}</small><small>Fonte/base: ${esc(source)}</small></div>`;
-}
-function openButtons(v){
- const source=(v?.show_source_button!==false&&v?.source_url)?`<a class="o360-source-view" target="_blank" rel="noopener" href="${esc(v.source_url)}">↗ Abrir fonte técnica</a>`:'';
- return `<div class="o360-view-actions"><button type="button" class="o360-open-view" data-view="${esc(v.id)}" data-group="${esc(v.group_code||'')}">◫ Abrir vista explodida interativa</button><button type="button" class="o360-diagnose-view" data-view="${esc(v.id)}" data-group="${esc(v.group_code||'')}">⌁ Diagnosticar neste conjunto</button>${source}</div>`;
-}
-
-function needsReconstruction(v){
- const pv=provenance(v);
- if(pv.key==='insufficient_basis')return false;
- return !(v?.image_reference&&v?.can_store_image&&(pv.key==='official_authorized'||pv.key==='licensed_partner'));
-}
-
-function decorateLegacy(cards,meta){
- cards.forEach((card,i)=>{
-   const title=$('h3',card)?.textContent?.trim()||'';
-   let v=meta[i];if(!v||v.title!==title)v=meta.find(x=>x.title===title)||v;if(!v)return;
-   card.dataset.o360ViewId=v.id;card.dataset.o360Group=v.group_code||'';
-   const icon=$('.view-icon',card);
-   if(icon&&needsReconstruction(v)&&!$('img',icon)&&!$('.o360-generated-preview',icon)){
-     icon.innerHTML=`<div class="o360-generated-preview" aria-live="polite">${miniSvg(card,v)}</div>`;
-   }
-   if(!$('.o360-provenance',card)){const summary=$('h3',card)?.parentElement||card;summary.insertAdjacentHTML('afterend',provenanceBlock(v))}
-   if(!$('.o360-open-view',card)){const parts=$('.view-parts',card);(parts||card).insertAdjacentHTML('afterend',openButtons(v))}
- });
-}
-
-function decorateDeep(cards,meta){
- cards.forEach(card=>{
-   const id=card.dataset.o360View;const v=meta.find(x=>x.id===id);if(!v)return;
-   card.dataset.o360Group=v.group_code||'';
-   const summary=$('summary',card);
-   if(summary&&!$('.o360-card-origin',summary)){
-     const pv=provenance(v);summary.insertAdjacentHTML('beforeend',`<span class="o360-card-origin ${pv.cls}">${esc(pv.label)}</span>`);
-   }
-   const body=$('.o360-view-content',card);if(!body||$('.o360-group-loading',body))return;
-   const stored=$('img.o360-view-img',body);if(stored&&needsReconstruction(v))stored.remove();
-   if(!$('.o360-provenance',body))body.insertAdjacentHTML('afterbegin',provenanceBlock(v));
-   if(needsReconstruction(v)&&!$('.o360-generated-preview',body)){
-     const visual=document.createElement('div');visual.className='o360-generated-preview o360-deep-preview';visual.innerHTML=miniSvg(card,v);
-     const prov=$('.o360-provenance',body);prov.insertAdjacentElement('afterend',visual);
-   }
-   if(!$('.o360-open-view',body))body.insertAdjacentHTML('beforeend',openButtons(v));
- });
-}
-
-async function sync(){
- const host=$('#explodedViews');if(!host)return;
- try{const meta=await loadViews();decorateLegacy($$('.view-card',host),meta);decorateDeep($$('.o360-view-full',host),meta)}catch(e){console.error('Oficina360 exploded browser',e)}
-}
+function decorateLegacy(cards,meta){cards.forEach((card,i)=>{const title=$('h3',card)?.textContent?.trim()||'';let v=meta[i];if(!v||v.title!==title)v=meta.find(x=>x.title===title)||v;if(!v)return;card.dataset.o360ViewId=v.id;card.dataset.o360Group=v.group_code||'';const icon=$('.view-icon',card);if(icon&&needsReconstruction(v)&&!$('img',icon)&&!$('.o360-generated-preview',icon)){const p=document.createElement('div');p.className='o360-generated-preview';p.innerHTML='<div class="o360-preview-loading">Preparando visual…</div>';icon.replaceChildren(p);schedulePreview(p,card,v)}if(!$('.o360-provenance',card)){const summary=$('h3',card)?.parentElement||card;summary.insertAdjacentHTML('afterend',provenanceBlock(v))}if(!$('.o360-open-view',card)){const parts=$('.view-parts',card);(parts||card).insertAdjacentHTML('afterend',openButtons(v))}})}
+function decorateDeep(cards,meta){cards.forEach(card=>{const id=card.dataset.o360View,v=meta.find(x=>x.id===id);if(!v)return;card.dataset.o360Group=v.group_code||'';const summary=$('summary',card);if(summary&&!$('.o360-card-origin',summary)){const pv=provenance(v);summary.insertAdjacentHTML('beforeend',`<span class="o360-card-origin ${pv.cls}">${esc(pv.label)}</span>`)}const body=$('.o360-view-content',card);if(!body||$('.o360-group-loading,.o360-loading-row',body))return;const stored=$('img.o360-view-img',body);if(stored&&needsReconstruction(v))stored.remove();if(!$('.o360-provenance',body))body.insertAdjacentHTML('afterbegin',provenanceBlock(v));if(needsReconstruction(v)&&!$('.o360-generated-preview',body)){const visual=document.createElement('div');visual.className='o360-generated-preview o360-deep-preview';visual.innerHTML=miniSvg(card,v);const prov=$('.o360-provenance',body);prov.insertAdjacentElement('afterend',visual)}if(!$('.o360-open-view',body))body.insertAdjacentHTML('beforeend',openButtons(v))})}
+async function sync(){const host=$('#explodedViews');if(!host)return;try{const meta=await loadViews();decorateLegacy($$('.view-card',host),meta);decorateDeep($$('.o360-view-full',host),meta)}catch(e){console.error('Oficina360 exploded browser',e)}}
 function queueSync(){if(syncQueued)return;syncQueued=true;requestAnimationFrame(()=>{syncQueued=false;sync()})}
 
-async function openInteractive(viewId,group){
- const visual=$('.side-nav [data-tab="visual"]')||$('[data-tab="visual"]');
- if(!visual){toast('O diagnóstico visual ainda está carregando. Tente novamente.');return}
- visual.click();await sleep(90);
- const sel=$('#pvSystem');
- if(sel&&group&&[...sel.options].some(o=>o.value===group)){sel.value=group;sel.dispatchEvent(new Event('change',{bubbles:true}));await sleep(70)}
- let exact=null;
- for(let i=0;i<24&&!exact;i++){exact=$$('[data-fleet-view]').find(b=>b.dataset.fleetView===viewId)||null;if(!exact)await sleep(50)}
- if(exact)exact.click();else toast('Sistema visual aberto. O conjunto correspondente já foi selecionado.');
- await sleep(80);($('#fleetStage')||$('#pvStage')||$('#tab-visual'))?.scrollIntoView({behavior:'smooth',block:'start'});
-}
-
-function bind(){
- const host=$('#explodedViews');if(!host)return false;
- if(host.dataset.o360ExplodedBound!=='1'){
-   host.dataset.o360ExplodedBound='1';
-   host.addEventListener('click',e=>{const b=e.target.closest('.o360-open-view,.o360-diagnose-view');if(!b)return;e.preventDefault();openInteractive(b.dataset.view,b.dataset.group)});
-   host.addEventListener('toggle',e=>{const d=e.target;if(d instanceof HTMLDetailsElement&&d.matches('.o360-view-full')&&d.open)setTimeout(queueSync,0)},true);
-   new MutationObserver(queueSync).observe(host,{childList:true,subtree:true});
- }
- $('#vehiclePicker')?.addEventListener('change',()=>{currentVehicle=null;views=[];setTimeout(queueSync,220)});
- queueSync();return true;
-}
+async function openInteractive(viewId,group){const visual=$('.side-nav [data-tab="visual"]')||$('[data-tab="visual"]');if(!visual){toast('O diagnóstico visual ainda está carregando. Tente novamente.');return}visual.click();await sleep(90);const sel=$('#pvSystem');if(sel&&group&&[...sel.options].some(o=>o.value===group)){sel.value=group;sel.dispatchEvent(new Event('change',{bubbles:true}));await sleep(70)}let exact=null;for(let i=0;i<24&&!exact;i++){exact=$$('[data-fleet-view]').find(b=>b.dataset.fleetView===viewId)||null;if(!exact)await sleep(50)}if(exact)exact.click();else toast('Sistema visual aberto. O conjunto correspondente já foi selecionado.');await sleep(80);($('#fleetStage')||$('#pvStage')||$('#tab-visual'))?.scrollIntoView({behavior:'smooth',block:'start'})}
+function bind(){const host=$('#explodedViews');if(!host)return false;if(host.dataset.o360ExplodedBound!=='1'){host.dataset.o360ExplodedBound='1';host.addEventListener('click',e=>{const b=e.target.closest('.o360-open-view,.o360-diagnose-view');if(!b)return;e.preventDefault();openInteractive(b.dataset.view,b.dataset.group)});host.addEventListener('toggle',e=>{const d=e.target;if(d instanceof HTMLDetailsElement&&d.matches('.o360-view-full')&&d.open)setTimeout(queueSync,60)},true)}document.addEventListener('o360:views-rendered',queueSync);document.addEventListener('o360:view-rendered',queueSync);$('#vehiclePicker')?.addEventListener('change',()=>{currentVehicle=null;views=[];setTimeout(queueSync,220)});queueSync();return true}
 function boot(){let tries=0;const t=setInterval(()=>{tries++;if(bind()||tries>100)clearInterval(t)},80)}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 })();
