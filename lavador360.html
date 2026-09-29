@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0f766e">
+<meta name="application-name" content="Lavador 360">
+<meta name="mobile-web-app-capable" content="yes">
+<title>Lavador 360</title>
+<link rel="manifest" href="./lavador360.webmanifest?v=20260929-1">
+<link rel="icon" type="image/svg+xml" href="./lavador360-icon.svg?v=20260929-1">
+<link rel="apple-touch-icon" href="./lavador360-icon.svg?v=20260929-1">
+<link rel="stylesheet" href="./lavador360.css?v=20260929-1">
+</head>
+<body>
+<div id="sessionGate" class="session-gate hidden">
+  <div class="gate-card">
+    <div class="gate-mark">L360</div>
+    <h1>Lavador 360</h1>
+    <p>Entre com sua conta do ecossistema 360.</p>
+    <a class="btn primary wide" href="./index.html">Abrir Comando 360</a>
+  </div>
+</div>
+
+<div id="appShell" class="app-shell hidden">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">L360</div>
+      <div><strong>Lavador 360</strong><small>Lavagem • custos • inspeção</small></div>
+    </div>
+    <div class="company-card">
+      <span>EMPRESA</span>
+      <strong id="companyName">Carregando...</strong>
+      <small id="syncState">● Sincronizando</small>
+    </div>
+    <nav class="side-nav" aria-label="Módulos do Lavador 360">
+      <button class="active" data-tab="dashboard" type="button"><span>⌂</span> Visão geral</button>
+      <button data-tab="new-wash" type="button"><span>＋</span> Nova lavagem</button>
+      <button data-tab="washes" type="button"><span>▤</span> Lavagens</button>
+      <button data-tab="customers" type="button"><span>♙</span> Clientes</button>
+      <button data-tab="products" type="button"><span>◫</span> Produtos & estoque</button>
+      <button data-tab="findings" type="button"><span>⚠</span> Inspeções</button>
+      <button data-tab="settings" type="button"><span>⚙</span> Custos & preços</button>
+    </nav>
+    <div class="sidebar-bottom">
+      <div class="ecosystem-links">
+        <a href="./index.html#frota">Comando 360</a>
+        <a href="./oficina360.html">Oficina 360</a>
+      </div>
+      <button id="logoutBtn" class="link-btn" type="button">Sair</button>
+      <small>Apps separados • dados integrados</small>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div><span class="eyebrow">LAVADOR 360</span><h1 id="pageTitle">Visão geral</h1></div>
+      <div class="top-actions">
+        <button id="refreshBtn" class="btn soft" type="button">↻ Atualizar</button>
+        <button class="btn primary" type="button" data-open-tab="new-wash">+ Nova lavagem</button>
+      </div>
+    </header>
+
+    <div class="content">
+      <section id="tab-dashboard" class="tab active">
+        <div id="dashboardKpis" class="kpi-grid"></div>
+        <div class="two-col">
+          <article class="panel">
+            <div class="panel-head"><div><span class="eyebrow">AGORA</span><h2>Lavagens em andamento</h2></div><button class="btn soft small" data-open-tab="new-wash">+ Iniciar</button></div>
+            <div id="activeWashes" class="stack"></div>
+          </article>
+          <article class="panel">
+            <div class="panel-head"><div><span class="eyebrow">ESTOQUE</span><h2>Atenção em produtos</h2></div><button class="btn soft small" data-open-tab="products">Ver estoque</button></div>
+            <div id="stockAlerts" class="stack"></div>
+          </article>
+        </div>
+        <article class="panel">
+          <div class="panel-head"><div><span class="eyebrow">ÚLTIMAS LAVAGENS</span><h2>Movimento recente</h2></div><button class="btn soft small" data-open-tab="washes">Ver todas</button></div>
+          <div id="recentWashes" class="stack"></div>
+        </article>
+      </section>
+
+      <section id="tab-new-wash" class="tab">
+        <div class="section-head">
+          <div><span class="eyebrow">OPERAÇÃO</span><h2>Nova lavagem</h2><p>Registre o veículo, serviço e custos. Produtos usados baixam do estoque automaticamente.</p></div>
+        </div>
+        <form id="washForm" class="panel form-panel">
+          <div class="form-section">
+            <h3>1. Veículo e serviço</h3>
+            <div class="form-grid three">
+              <label>Origem<select id="washOwnership" name="ownership"><option value="internal">Frota própria</option><option value="external">Cliente externo</option></select></label>
+              <label id="ownVehicleField">Condução<select id="washVehicle" name="vehicle_id"></select></label>
+              <label id="externalVehicleField" class="hidden">Veículo do cliente<select id="washExternalVehicle" name="customer_vehicle_id"></select></label>
+              <label>Categoria<select id="washVehicleClass" name="vehicle_class"><option value="van">Van / Sprinter</option><option value="microbus">Micro-ônibus / Volare</option><option value="bus">Ônibus</option><option value="truck">Caminhão</option><option value="pickup">Pickup</option><option value="car">Carro</option><option value="machine">Máquina</option><option value="other">Outro</option></select></label>
+              <label>Serviço<select id="washService" name="service_id"></select></label>
+              <label>Responsável<input name="responsible_name" placeholder="Nome do lavador"></label>
+              <label>Status<select name="status"><option value="in_progress">Em andamento</option><option value="completed">Concluir agora</option><option value="scheduled">Agendada</option></select></label>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <h3>2. Medidas e custos</h3>
+            <div class="form-grid four">
+              <label>Valor cobrado (R$)<input id="washSalePrice" name="sale_price" type="number" min="0" step="0.01" value="0"></label>
+              <label>Referência terceirizada (R$)<input id="washReferencePrice" name="outsourced_reference_price" type="number" min="0" step="0.01" value="0"></label>
+              <label>Água usada (L)<input id="washWaterLiters" name="water_liters" type="number" min="0" step="0.1" value="0"></label>
+              <label>Energia (kWh)<input id="washEnergyKwh" name="energy_kwh" type="number" min="0" step="0.01" value="0"></label>
+              <label>Tempo de mão de obra (min)<input id="washLaborMinutes" name="labor_minutes" type="number" min="0" step="1" value="0"></label>
+              <label>Consumíveis (R$)<input id="washConsumables" name="consumables_cost" type="number" min="0" step="0.01" value="0"></label>
+              <label>Desgaste equipamentos (R$)<input id="washEquipment" name="equipment_cost" type="number" min="0" step="0.01" value="0"></label>
+              <label>Observações<input name="notes" placeholder="Barro pesado, serviço especial..."></label>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <div class="panel-head compact"><div><h3>3. Produtos usados</h3><p>Informe a solução preparada e a diluição; calculamos o concentrado e o custo.</p></div></div>
+            <div class="product-adder">
+              <label>Produto<select id="usageProduct"></select></label>
+              <label>Solução preparada (ml)<input id="usageSolution" type="number" min="1" step="1" placeholder="Ex.: 5000"></label>
+              <label>Diluição 1:<input id="usageRatio" type="number" min="0" step="0.1" placeholder="20"></label>
+              <button id="addUsageBtn" class="btn soft" type="button">Adicionar</button>
+            </div>
+            <div id="usageCart" class="usage-cart"></div>
+          </div>
+
+          <div class="wash-summary">
+            <div><span>Custo estimado</span><strong id="liveCost">R$ 0,00</strong></div>
+            <div><span id="liveResultLabel">Economia estimada</span><strong id="liveResult">R$ 0,00</strong></div>
+            <button id="saveWashBtn" class="btn primary big" type="submit">Salvar lavagem</button>
+          </div>
+        </form>
+      </section>
+
+      <section id="tab-washes" class="tab">
+        <div class="section-head"><div><span class="eyebrow">HISTÓRICO</span><h2>Lavagens</h2><p>Custos reais, margem de clientes externos e economia da frota própria.</p></div><div class="filters"><select id="washStatusFilter"><option value="">Todos os status</option><option value="scheduled">Agendada</option><option value="in_progress">Em andamento</option><option value="completed">Concluída</option><option value="cancelled">Cancelada</option></select><input id="washSearch" type="search" placeholder="Buscar placa, veículo, serviço..."></div></div>
+        <div id="washList" class="stack"></div>
+      </section>
+
+      <section id="tab-customers" class="tab">
+        <div class="section-head"><div><span class="eyebrow">CLIENTES EXTERNOS</span><h2>Clientes e frotas</h2><p>Cadastre empresas, proprietários e os veículos que você atende.</p></div></div>
+        <div class="two-col align-start">
+          <form id="customerForm" class="panel form-panel compact-form">
+            <h3>Novo cliente</h3>
+            <label>Nome / empresa<input name="name" required placeholder="Nome do cliente"></label>
+            <div class="form-grid two"><label>Telefone<input name="phone" placeholder="(15) ..."></label><label>CPF/CNPJ<input name="document" placeholder="Opcional"></label></div>
+            <label>E-mail<input name="email" type="email" placeholder="Opcional"></label>
+            <button class="btn primary" type="submit">Cadastrar cliente</button>
+          </form>
+          <form id="externalVehicleForm" class="panel form-panel compact-form">
+            <h3>Novo veículo de cliente</h3>
+            <label>Cliente<select id="externalVehicleCustomer" name="customer_id" required></select></label>
+            <div class="form-grid two"><label>Placa<input name="plate" placeholder="ABC1D23"></label><label>Categoria<select name="vehicle_class"><option value="van">Van</option><option value="microbus">Micro-ônibus</option><option value="bus">Ônibus</option><option value="truck">Caminhão</option><option value="pickup">Pickup</option><option value="car">Carro</option><option value="machine">Máquina</option><option value="other">Outro</option></select></label></div>
+            <label>Descrição<input name="description" required placeholder="Ex.: Scania R450 branco"></label>
+            <button class="btn primary" type="submit">Cadastrar veículo</button>
+          </form>
+        </div>
+        <article class="panel"><div class="panel-head"><div><h3>Clientes cadastrados</h3></div></div><div id="customerList" class="stack"></div></article>
+      </section>
+
+      <section id="tab-products" class="tab">
+        <div class="section-head"><div><span class="eyebrow">INSUMOS</span><h2>Produtos & estoque</h2><p>O custo por ml é calculado automaticamente e cada lavagem dá baixa no concentrado usado.</p></div></div>
+        <div class="two-col align-start">
+          <form id="productForm" class="panel form-panel compact-form">
+            <h3>Cadastrar produto</h3>
+            <div class="form-grid two"><label>Produto<input name="name" required placeholder="Ex.: HFX"></label><label>Marca<input name="brand" placeholder="Opcional"></label></div>
+            <div class="form-grid two"><label>Embalagem (ml)<input name="package_size_ml" type="number" min="1" step="1" value="5000" required></label><label>Preço pago (R$)<input name="purchase_price" type="number" min="0" step="0.01" required></label></div>
+            <div class="form-grid two"><label>Estoque atual (ml)<input name="stock_ml" type="number" min="0" step="1" value="5000"></label><label>Estoque mínimo (ml)<input name="minimum_stock_ml" type="number" min="0" step="1" value="1000"></label></div>
+            <label>Diluição padrão 1:<input name="default_dilution_ratio" type="number" min="0" step="0.1" placeholder="Ex.: 20"></label>
+            <button class="btn primary" type="submit">Salvar produto</button>
+          </form>
+          <article class="panel info-panel"><span class="eyebrow">CÁLCULO AUTOMÁTICO</span><h3>Exemplo de diluição</h3><p>Em 1:20, uma solução final de 5 litros usa aproximadamente <b>238 ml</b> de produto concentrado. O Lavador 360 calcula isso e baixa só o concentrado do estoque.</p><div id="inventoryValue" class="big-number">R$ 0,00</div><small>valor estimado do estoque atual</small></article>
+        </div>
+        <article class="panel"><div class="panel-head"><div><h3>Estoque atual</h3></div></div><div id="productList" class="product-grid"></div></article>
+      </section>
+
+      <section id="tab-findings" class="tab">
+        <div class="section-head"><div><span class="eyebrow">CHECK VISUAL</span><h2>Inspeções durante a lavagem</h2><p>Viu vazamento, pneu ruim, lâmpada, ferrugem ou dano? Registre e envie ao Oficina 360.</p></div></div>
+        <div class="two-col align-start">
+          <form id="findingForm" class="panel form-panel compact-form">
+            <h3>Novo achado</h3>
+            <label>Lavagem<select id="findingWash" name="wash_order_id" required></select></label>
+            <div class="form-grid two"><label>Categoria<select name="category"><option value="leak">Vazamento</option><option value="tire">Pneu</option><option value="electrical">Elétrica / luz</option><option value="body">Carroceria</option><option value="rust">Ferrugem</option><option value="mechanical">Mecânica</option><option value="inspection">Outro</option></select></label><label>Prioridade<select name="severity"><option value="info">Informação</option><option value="attention" selected>Atenção</option><option value="urgent">Urgente</option></select></label></div>
+            <label>Descrição<textarea name="description" required rows="4" placeholder="Descreva o que foi encontrado"></textarea></label>
+            <button class="btn primary" type="submit">Registrar inspeção</button>
+          </form>
+          <article class="panel info-panel"><span class="eyebrow">INTEGRAÇÃO</span><h3>Lavador → Oficina</h3><p>Para veículos da sua frota, qualquer achado pode virar uma OS do Oficina 360 sem redigitar placa ou problema.</p><a class="btn soft" href="./oficina360.html">Abrir Oficina 360</a></article>
+        </div>
+        <article class="panel"><div class="panel-head"><div><h3>Pendências encontradas</h3></div></div><div id="findingList" class="stack"></div></article>
+      </section>
+
+      <section id="tab-settings" class="tab">
+        <div class="section-head"><div><span class="eyebrow">BASE DO CUSTO REAL</span><h2>Custos & preços</h2><p>Configure uma vez. Esses valores entram automaticamente em cada nova lavagem.</p></div></div>
+        <div class="two-col align-start">
+          <form id="settingsForm" class="panel form-panel compact-form">
+            <h3>Custos padrão</h3>
+            <label>Água por litro (R$)<input name="water_cost_per_liter" type="number" min="0" step="0.000001"></label>
+            <label>Energia por kWh (R$)<input name="energy_cost_per_kwh" type="number" min="0" step="0.0001"></label>
+            <label>Custo total da mão de obra por hora (R$)<input name="labor_cost_per_hour" type="number" min="0" step="0.01"></label>
+            <label>Desgaste padrão por lavagem (R$)<input name="equipment_cost_per_wash" type="number" min="0" step="0.01"></label>
+            <label>Consumíveis padrão por lavagem (R$)<input name="consumables_cost_per_wash" type="number" min="0" step="0.01"></label>
+            <button class="btn primary" type="submit">Salvar custos</button>
+          </form>
+          <article class="panel info-panel"><span class="eyebrow">DICA</span><h3>Quanto mais real, melhor</h3><p>Use o custo real da folha do lavador por hora, sua tarifa de água/energia e um rateio de manutenção da lavadora, compressor, mangueiras e acessórios.</p><p class="muted">Os preços iniciais são apenas referências editáveis.</p></article>
+        </div>
+        <article class="panel"><div class="panel-head"><div><h3>Tabela de serviços</h3><p>Valor para cliente externo e referência de quanto custaria terceirizar sua própria condução.</p></div><button id="savePricesBtn" class="btn primary small" type="button">Salvar preços</button></div><div id="servicePriceList" class="price-grid"></div></article>
+      </section>
+    </div>
+  </main>
+</div>
+
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="./config.js"></script>
+<script src="./lavador360-auth-bridge.js?v=20260929-1"></script>
+<script src="./lavador360.js?v=20260929-1"></script>
+</body>
+</html>

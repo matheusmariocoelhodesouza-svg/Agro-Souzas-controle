@@ -1,0 +1,33 @@
+name: Lavador 360
+
+on:
+  push:
+    paths:
+      - 'lavador360.*'
+      - 'lavador360-*.js'
+      - 'lavador360-*.svg'
+      - 'supabase/migrations/*lavador360*.sql'
+      - 'qa/lavador360_contract.mjs'
+      - '.github/workflows/lavador360.yml'
+  pull_request:
+    paths:
+      - 'lavador360.*'
+      - 'lavador360-*.js'
+      - 'lavador360-*.svg'
+      - 'supabase/migrations/*lavador360*.sql'
+      - 'qa/lavador360_contract.mjs'
+      - '.github/workflows/lavador360.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate Lavador 360 contract
+        run: node qa/lavador360_contract.mjs
