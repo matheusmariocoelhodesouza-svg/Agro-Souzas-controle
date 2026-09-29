@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Lavador 360">
+  <defs>
+    <linearGradient id="bg" x1="56" y1="40" x2="456" y2="472" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#fb923c"/>
+      <stop offset=".55" stop-color="#f97316"/>
+      <stop offset="1" stop-color="#7c2d12"/>
+    </linearGradient>
+    <linearGradient id="bus" x1="128" y1="134" x2="350" y2="334" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#fff7ed"/>
+      <stop offset="1" stop-color="#fed7aa"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+  <path d="M258 66c48 67 101 123 101 190 0 61-45 108-103 108s-103-47-103-108c0-67 57-128 105-190z" fill="#fff7ed" opacity=".18"/>
+  <g transform="translate(80 126)">
+    <path d="M54 44c0-21 17-38 38-38h178c36 0 65 26 69 62l7 57v66c0 18-15 33-33 33H76c-12 0-22-10-22-22V44z" fill="url(#bus)"/>
+    <rect x="79" y="37" width="154" height="66" rx="19" fill="#381708"/>
+    <path d="M242 37h43c20 0 37 15 40 35l5 31h-88V37z" fill="#381708"/>
+    <rect x="86" y="46" width="43" height="47" rx="8" fill="#6b2a0d"/>
+    <rect x="138" y="46" width="43" height="47" rx="8" fill="#6b2a0d"/>
+    <rect x="190" y="46" width="35" height="47" rx="8" fill="#6b2a0d"/>
+    <path d="M70 132h262v60H70z" fill="#fff" opacity=".96"/>
+    <rect x="79" y="147" width="62" height="12" rx="6" fill="#f97316"/>
+    <rect x="266" y="147" width="48" height="12" rx="6" fill="#f97316"/>
+    <circle cx="115" cy="208" r="31" fill="#291208"/>
+    <circle cx="115" cy="208" r="14" fill="#fff7ed"/>
+    <circle cx="282" cy="208" r="31" fill="#291208"/>
+    <circle cx="282" cy="208" r="14" fill="#fff7ed"/>
+    <path d="M18 105c24 0 43 8 59 21" fill="none" stroke="#fff7ed" stroke-width="13" stroke-linecap="round"/>
+    <path d="M2 82c27 0 49 9 69 27" fill="none" stroke="#ffedd5" stroke-width="6" stroke-linecap="round"/>
+    <circle cx="23" cy="61" r="8" fill="#fff7ed"/>
+    <circle cx="3" cy="43" r="5" fill="#ffedd5"/>
+  </g>
+  <path d="M396 104l9 20 20 9-20 9-9 20-9-20-20-9 20-9z" fill="#fff7ed"/>
+  <circle cx="426" cy="184" r="7" fill="#fff7ed"/>
+  <rect x="88" y="374" width="336" height="72" rx="25" fill="#2a1408" opacity=".78"/>
+  <text x="256" y="427" text-anchor="middle" fill="#fff" font-family="Arial,Helvetica,sans-serif" font-size="60" font-weight="900" letter-spacing="2">L360</text>
+</svg>
