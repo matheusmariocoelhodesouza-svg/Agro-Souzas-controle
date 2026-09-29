@@ -5,6 +5,11 @@ const COMANDO_SESSION_KEY='controla_beta_session';
 const SUPABASE_SESSION_KEY='sb-'+PROJECT_REF+'-auth-token';
 const DIRECT_COPY='Entre diretamente no Lavador 360 com a mesma conta do ecossistema 360. Frota, oficina e dados continuam compartilhados automaticamente.';
 
+function applyLavadorTheme(){
+  const meta=document.querySelector('meta[name="theme-color"]');
+  if(meta)meta.setAttribute('content','#2563eb');
+}
+
 function migrateComandoSession(){
   try{
     const raw=localStorage.getItem(COMANDO_SESSION_KEY);
@@ -36,6 +41,7 @@ function authMessage(error){
 }
 
 function renderStandaloneLogin(){
+  applyLavadorTheme();
   const card=document.querySelector('#sessionGate .gate-card');
   if(!card||document.getElementById('l360StandaloneLogin'))return;
   const intro=card.querySelector('p');
@@ -70,6 +76,7 @@ function renderStandaloneLogin(){
   });
 }
 
+applyLavadorTheme();
 migrateComandoSession();
 window.c360MigrateSessionToLavador=migrateComandoSession;
 document.addEventListener('DOMContentLoaded',renderStandaloneLogin,{once:true});
