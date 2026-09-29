@@ -1,0 +1,30 @@
+name: Oficina 360 Production State Contract
+
+on:
+  pull_request:
+    paths:
+      - 'qa/oficina360_fleet_diagnostic_depth_postdeploy.sql'
+      - 'qa/oficina360_production_state_contract.mjs'
+      - 'docs/oficina360/production-state-2026-09-29.md'
+      - '.github/workflows/oficina360-production-state.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'qa/oficina360_fleet_diagnostic_depth_postdeploy.sql'
+      - 'qa/oficina360_production_state_contract.mjs'
+      - 'docs/oficina360/production-state-2026-09-29.md'
+      - '.github/workflows/oficina360-production-state.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  production-state-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate Oficina 360 production state contract
+        run: node qa/oficina360_production_state_contract.mjs
