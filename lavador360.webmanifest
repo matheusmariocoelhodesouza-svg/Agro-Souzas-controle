@@ -10,9 +10,9 @@
   "orientation": "any",
   "icons": [
     {
-      "src": "./lavador360-icon-orange.svg?v=20260929-2",
-      "sizes": "any",
-      "type": "image/svg+xml",
+      "src": "./lavador360-icon-orange-bus.png?v=20260929-3",
+      "sizes": "256x256",
+      "type": "image/png",
       "purpose": "any maskable"
     }
   ]

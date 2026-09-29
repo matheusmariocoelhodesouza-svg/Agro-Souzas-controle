@@ -9,11 +9,14 @@ function applyLavadorTheme(){
   const meta=document.querySelector('meta[name="theme-color"]');
   if(meta)meta.setAttribute('content','#f97316');
   const manifest=document.querySelector('link[rel="manifest"]');
-  if(manifest)manifest.setAttribute('href','./lavador360.webmanifest?v=20260929-2');
+  if(manifest)manifest.setAttribute('href','./lavador360.webmanifest?v=20260929-3');
   const favicon=document.querySelector('link[rel="icon"]');
-  if(favicon)favicon.setAttribute('href','./lavador360-icon-orange.svg?v=20260929-2');
+  if(favicon){
+    favicon.setAttribute('href','./lavador360-icon-orange-bus.png?v=20260929-3');
+    favicon.setAttribute('type','image/png');
+  }
   const appleIcon=document.querySelector('link[rel="apple-touch-icon"]');
-  if(appleIcon)appleIcon.setAttribute('href','./lavador360-icon-orange.svg?v=20260929-2');
+  if(appleIcon)appleIcon.setAttribute('href','./lavador360-icon-orange-bus.png?v=20260929-3');
   if(document.getElementById('l360OrangeTheme'))return;
   const style=document.createElement('style');
   style.id='l360OrangeTheme';
