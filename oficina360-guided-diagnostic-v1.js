@@ -1,12 +1,11 @@
 (()=>{
 'use strict';
 const $=s=>document.querySelector(s);
-const $$=s=>[...document.querySelectorAll(s)];
-const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[m]));
+const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 const norm=v=>String(v??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
 const arr=v=>Array.isArray(v)?v:[];
 const obj=v=>v&&typeof v==='object'&&!Array.isArray(v)?v:{};
-const state={client:null,vehicle:null,profile:null,session:null,steps:[],playbook:null,components:[],electricalNodes:[],recent:[],busy:false,activeStep:null};
+const state={client:null,vehicle:null,profile:null,session:null,steps:[],playbook:null,electricalNodes:[],recent:[],busy:false,activeStep:0};
 
 function addStyle(){
  if($('#o360GuidedDiagStyle'))return;
@@ -22,10 +21,11 @@ function inject(){
  const root=document.createElement('div');root.id='o360GuidedDiagRoot';root.className='o360-gd';
  const assistant=$('#o360DiagAssistant');assistant?assistant.insertAdjacentElement('afterend',root):diag.prepend(root);
  addStyle();
- $('#vehiclePicker')?.addEventListener('change',()=>setTimeout(()=>resetForVehicle(),120));
+ $('#vehiclePicker')?.addEventListener('change',()=>setTimeout(resetForVehicle,120));
  document.addEventListener('click',onClick);
  document.addEventListener('input',e=>{if(e.target?.id==='o360FaultCode'&&!state.session)renderLauncher()});
- new MutationObserver(()=>{if(!state.session)renderLauncher()}).observe(diag,{subtree:true,childList:true});
+ const diagnosticResult=$('#o360DiagResult');
+ if(diagnosticResult)new MutationObserver(()=>{if(!state.session)renderLauncher()}).observe(diagnosticResult,{subtree:true,childList:true});
  resetForVehicle();
 }
 
@@ -36,7 +36,7 @@ async function client(){
 }
 
 async function resetForVehicle(){
- state.session=null;state.steps=[];state.playbook=null;state.components=[];state.electricalNodes=[];state.activeStep=null;
+ state.session=null;state.steps=[];state.playbook=null;state.electricalNodes=[];state.activeStep=0;
  try{await loadVehicle();await loadRecent();renderLauncher()}catch(e){showError(e)}
 }
 
@@ -50,9 +50,8 @@ async function loadVehicle(){
 }
 
 async function loadRecent(){
- if(!state.vehicle)return;const c=await client();
- const r=await c.from('v2_diagnostic_sessions').select('id,code,title,status,current_step_index,started_at,last_activity_at,completed_at').eq('vehicle_id',state.vehicle.id).order('last_activity_at',{ascending:false}).limit(5);
- state.recent=r.data||[];
+ if(!state.vehicle){state.recent=[];return}const c=await client();
+ const r=await c.from('v2_diagnostic_sessions').select('id,code,title,status,current_step_index,started_at,last_activity_at,completed_at').eq('vehicle_id',state.vehicle.id).order('last_activity_at',{ascending:false}).limit(5);if(r.error)throw r.error;state.recent=r.data||[];
 }
 
 function validCode(){const s=String($('#o360FaultCode')?.value||'').toUpperCase().replace(/\s+/g,'');return /^[PCBU][0-9A-F]{4}$/.test(s)?s:null}
@@ -69,22 +68,20 @@ function recentHtml(){
 }
 
 async function choosePlaybook(code){
- const c=await client();
- const r=await c.from('v2_vehicle_diagnostic_playbooks').select('*').eq('protocol','obd2').eq('code',code);if(r.error)throw r.error;
- const p=arr(r.data).find(x=>x.vehicle_id===state.vehicle.id)||arr(r.data).find(x=>!x.vehicle_id&&x.chassis_variant===state.profile?.chassis_variant&&x.engine_code===state.profile?.engine_code)||arr(r.data)[0]||null;
- return p;
+ const c=await client(),r=await c.from('v2_vehicle_diagnostic_playbooks').select('*').eq('protocol','obd2').eq('code',code);if(r.error)throw r.error;
+ return arr(r.data).find(x=>x.vehicle_id===state.vehicle.id)||arr(r.data).find(x=>!x.vehicle_id&&x.chassis_variant===state.profile?.chassis_variant&&x.engine_code===state.profile?.engine_code)||arr(r.data)[0]||null;
 }
 
 function genericSteps(code){return [
- {step:1,action:`Confirmar o código ${code}, descrição exata, freeze frame e sintomas antes de apagar a memória`,pass:'Código e condições registrados'},
- {step:2,action:'Fazer inspeção visual de conectores, chicotes, mangueiras, alimentação e aterramentos ligados ao sistema',pass:'Sem dano aparente ou anomalia encontrada'},
- {step:3,action:'Usar a Central Técnica e o Mapa Elétrico para medir o circuito/componente relacionado antes de substituir peça',pass:'Medições comparadas com fonte técnica'},
- {step:4,action:'Registrar causa provável, teste confirmatório e resultado final',pass:'Causa sustentada por teste'}
+ {action:`Confirmar o código ${code}, descrição exata, freeze frame e sintomas antes de apagar a memória`,pass:'Código e condições registrados'},
+ {action:'Fazer inspeção visual de conectores, chicotes, mangueiras, alimentação e aterramentos ligados ao sistema',pass:'Sem dano aparente ou anomalia encontrada'},
+ {action:'Usar a Central Técnica e o Mapa Elétrico para medir o circuito/componente relacionado antes de substituir peça',pass:'Medições comparadas com fonte técnica'},
+ {action:'Registrar causa provável, teste confirmatório e resultado final',pass:'Causa sustentada por teste'}
 ]}
 
 async function ensureFault(code,title){
  const c=await client(),v=state.vehicle;
- let r=await c.from('v2_vehicle_faults').select('id').eq('company_id',v.company_id).eq('vehicle_id',v.id).eq('protocol','obd2').eq('code',code).eq('status','active').order('last_seen_at',{ascending:false}).limit(1);
+ let r=await c.from('v2_vehicle_faults').select('id').eq('company_id',v.company_id).eq('vehicle_id',v.id).eq('protocol','obd2').eq('code',code).eq('status','active').order('last_seen_at',{ascending:false}).limit(1);if(r.error)throw r.error;
  if(r.data?.[0]?.id)return r.data[0].id;
  r=await c.from('v2_vehicle_faults').insert({company_id:v.company_id,vehicle_id:v.id,protocol:'obd2',code,description:title||code,status:'active',first_seen_at:new Date().toISOString(),last_seen_at:new Date().toISOString(),occurrence_count:1,raw_data:{entry_method:'guided_diagnostic',source:'oficina360'}}).select('id').single();if(r.error)throw r.error;return r.data.id;
 }
@@ -92,47 +89,44 @@ async function ensureFault(code,title){
 async function start(){
  if(state.busy)return;const code=validCode();if(!code){flash('Digite um código DTC válido acima.');return}state.busy=true;
  try{
-  if(!state.vehicle)await loadVehicle();const c=await client();
-  const ex=await c.from('v2_diagnostic_sessions').select('id').eq('vehicle_id',state.vehicle.id).eq('protocol','obd2').eq('code',code).in('status',['active','paused']).order('last_activity_at',{ascending:false}).limit(1);
+  if(!state.vehicle)await loadVehicle();if(!state.vehicle)throw new Error('Selecione uma condução.');const c=await client();
+  const ex=await c.from('v2_diagnostic_sessions').select('id').eq('vehicle_id',state.vehicle.id).eq('protocol','obd2').eq('code',code).in('status',['active','paused']).order('last_activity_at',{ascending:false}).limit(1);if(ex.error)throw ex.error;
   if(ex.data?.[0]?.id){await openSession(ex.data[0].id);return}
-  state.playbook=await choosePlaybook(code);const title=state.playbook?.title||`Diagnóstico ${code}`;const faultId=await ensureFault(code,title);
+  state.playbook=await choosePlaybook(code);const title=state.playbook?.title||`Diagnóstico ${code}`,faultId=await ensureFault(code,title);
   const sr=await c.from('v2_diagnostic_sessions').insert({company_id:state.vehicle.company_id,vehicle_id:state.vehicle.id,fault_id:faultId,playbook_id:state.playbook?.id||null,protocol:'obd2',code,title,status:'active',current_step_index:0,odometer_km:state.vehicle.current_odometer_km||null,metadata:{source:'oficina360',playbook_verification:state.playbook?.verification_status||'generic'}}).select('*').single();if(sr.error)throw sr.error;
   const tests=arr(state.playbook?.ordered_tests).length?arr(state.playbook.ordered_tests):genericSteps(code);
   const rows=tests.map((t,i)=>({session_id:sr.data.id,company_id:state.vehicle.company_id,vehicle_id:state.vehicle.id,step_index:i,step_key:`step_${i+1}`,action:String(t.action||t),expected:t.pass||null,fail_next:t.fail_next||null,outcome:'pending',measurement:{source_step:t}}));
-  const ir=await c.from('v2_diagnostic_session_steps').insert(rows);if(ir.error)throw ir.error;
-  await openSession(sr.data.id);
+  const ir=await c.from('v2_diagnostic_session_steps').insert(rows);if(ir.error)throw ir.error;await openSession(sr.data.id);
  }catch(e){showError(e)}finally{state.busy=false}
 }
 
 async function openSession(id){
- const c=await client();
- const [sr,st]=await Promise.all([
-  c.from('v2_diagnostic_sessions').select('*').eq('id',id).maybeSingle(),
-  c.from('v2_diagnostic_session_steps').select('*').eq('session_id',id).order('step_index')
- ]);if(sr.error)throw sr.error;if(!sr.data)return;
+ const c=await client();if(!state.vehicle)await loadVehicle();
+ const [sr,st]=await Promise.all([c.from('v2_diagnostic_sessions').select('*').eq('id',id).maybeSingle(),c.from('v2_diagnostic_session_steps').select('*').eq('session_id',id).order('step_index')]);
+ if(sr.error)throw sr.error;if(st.error)throw st.error;if(!sr.data)return;
  state.session=sr.data;state.steps=st.data||[];state.activeStep=Math.min(sr.data.current_step_index||0,Math.max(0,state.steps.length-1));
  state.playbook=sr.data.playbook_id?(await c.from('v2_vehicle_diagnostic_playbooks').select('*').eq('id',sr.data.playbook_id).maybeSingle()).data:null;
- const ids=arr(state.playbook?.related_component_ids);
- if(ids.length){const cr=await c.from('v2_vehicle_components').select('id,name,oem_part_number,location_description').in('id',ids);state.components=cr.data||[];const nr=await c.from('v2_vehicle_electrical_nodes').select('id,component_id,label,circuit_code,connector_name,pins,test_procedure,source_metadata,verification_status').eq('vehicle_id',state.vehicle.id).in('component_id',ids);state.electricalNodes=nr.data||[]}else{state.components=[];state.electricalNodes=[]}
+ const ids=arr(state.playbook?.related_component_ids);state.electricalNodes=[];
+ if(ids.length){const nr=await c.from('v2_vehicle_electrical_nodes').select('id,component_id,label,circuit_code,connector_name,pins,test_procedure,source_metadata,verification_status').eq('vehicle_id',state.vehicle.id).in('component_id',ids);if(nr.error)throw nr.error;state.electricalNodes=nr.data||[]}
  renderSession();
 }
 
 function bestNode(step){
- if(!state.electricalNodes.length)return null;const txt=norm(step?.action||'');const stop=new Set(['testar','verificar','medir','comparar','inspecionar','sensor','circuito','chicote','conector','pressao','motor','sistema','com','sem','para','dos','das','uma']);const tokens=txt.split(/[^a-z0-9]+/).filter(x=>x.length>3&&!stop.has(x));
- let best=null,score=0;for(const n of state.electricalNodes){const hay=norm(`${n.label} ${n.circuit_code}`);const s=tokens.reduce((a,t)=>a+(hay.includes(t)?1:0),0);if(s>score){score=s;best=n}}
+ if(!state.electricalNodes.length)return null;const txt=norm(step?.action||''),stop=new Set(['testar','verificar','medir','comparar','inspecionar','sensor','circuito','chicote','conector','pressao','motor','sistema','com','sem','para','dos','das','uma']),tokens=txt.split(/[^a-z0-9]+/).filter(x=>x.length>3&&!stop.has(x));let best=null,score=0;
+ for(const n of state.electricalNodes){const hay=norm(`${n.label} ${n.circuit_code}`),s=tokens.reduce((a,t)=>a+(hay.includes(t)?1:0),0);if(s>score){score=s;best=n}}
  return best||(state.electricalNodes.length===1?state.electricalNodes[0]:null)
 }
 
 function renderSession(){
- const root=$('#o360GuidedDiagRoot');if(!root||!state.session)return;const s=state.session,step=state.steps[state.activeStep],progress=pct(),done=s.status==='completed';
- root.innerHTML=`<div class="o360-gd-hero"><div class="o360-gd-head"><div><span class="eyebrow">SESSÃO DE DIAGNÓSTICO</span><h2>${esc(s.code||'Diagnóstico')} — ${esc(s.title)}</h2><p>${esc(s.symptom||'Registre cada teste antes de condenar qualquer componente.')}</p></div><span class="o360-gd-status ${esc(s.status)}">${esc(s.status)}</span></div><div class="o360-gd-progress"><span style="width:${progress}%"></span></div><small>${progress}% dos testes registrados • ${Number(s.odometer_km||0).toLocaleString('pt-BR')} km</small></div>${lastDecisionHtml()}<div class="o360-gd-layout"><div>${done?finishSummary():stepHtml(step)}</div><aside class="o360-gd-card"><h3 style="margin-top:0">Roteiro</h3><div class="o360-gd-list">${state.steps.map((x,i)=>`<button type="button" class="${i===state.activeStep?'active':''}" data-gd-step="${i}"><span class="o360-gd-status ${esc(x.outcome)}">${esc(outLabel(x.outcome))}</span><b> ${i+1}. ${esc(x.action)}</b>${x.observed_value?`<small>Medido: ${esc(x.observed_value)} ${esc(x.observed_unit||'')}</small>`:''}</button>`).join('')}</div><div class="o360-gd-actions"><button class="btn soft" type="button" data-gd-pause>Pausar</button><button class="btn primary" type="button" data-gd-finish>Concluir diagnóstico</button></div></aside></div>`;
+ const root=$('#o360GuidedDiagRoot');if(!root||!state.session)return;const s=state.session,done=s.status==='completed',step=state.steps[state.activeStep],progress=pct();
+ root.innerHTML=`<div class="o360-gd-hero"><div class="o360-gd-head"><div><span class="eyebrow">SESSÃO DE DIAGNÓSTICO</span><h2>${esc(s.code||'Diagnóstico')} — ${esc(s.title)}</h2><p>${esc(s.symptom||'Registre cada teste antes de condenar qualquer componente.')}</p></div><span class="o360-gd-status ${esc(s.status)}">${esc(s.status)}</span></div><div class="o360-gd-progress"><span style="width:${progress}%"></span></div><small>${progress}% dos testes registrados${s.odometer_km?` • ${Number(s.odometer_km).toLocaleString('pt-BR')} km`:''}</small></div>${lastDecisionHtml()}<div class="o360-gd-layout"><div>${done?finishSummary():stepHtml(step)}</div><aside class="o360-gd-card"><h3 style="margin-top:0">Roteiro</h3><div class="o360-gd-list">${state.steps.map((x,i)=>`<button type="button" class="${i===state.activeStep?'active':''}" data-gd-step="${i}"><span class="o360-gd-status ${esc(x.outcome)}">${esc(outLabel(x.outcome))}</span><b> ${i+1}. ${esc(x.action)}</b>${x.observed_value?`<small>Medido: ${esc(x.observed_value)} ${esc(x.observed_unit||'')}</small>`:''}</button>`).join('')}</div><div class="o360-gd-actions">${done?`<button class="btn soft" type="button" data-gd-os>${s.work_order_id?'Abrir OS':'Gerar OS'}</button><button class="btn soft" type="button" data-gd-close>Voltar</button>`:`<button class="btn soft" type="button" data-gd-pause>Pausar</button><button class="btn primary" type="button" data-gd-finish>Concluir diagnóstico</button>`}</div></aside></div>`;
 }
 
-function lastDecisionHtml(){const d=obj(state.session?.metadata).last_decision;if(!d?.message)return '';return `<div class="o360-gd-decision"><b>Próxima decisão:</b> ${esc(d.message)}</div>`}
+function lastDecisionHtml(){const d=obj(state.session?.metadata).last_decision;return d?.message?`<div class="o360-gd-decision"><b>Próxima decisão:</b> ${esc(d.message)}</div>`:''}
 
 function stepHtml(step){
  if(!step)return '<div class="o360-gd-card">Nenhum passo disponível.</div>';const node=bestNode(step),tp=obj(node?.test_procedure);
- return `<div class="o360-gd-step"><span class="eyebrow">PASSO ${step.step_index+1} DE ${state.steps.length}</span><h3>${esc(step.action)}</h3>${step.expected?`<div class="o360-gd-box"><h4>O que esperamos</h4>${esc(step.expected)}</div>`:''}${step.fail_next?`<div class="o360-gd-box"><h4>Se estiver fora do esperado</h4>${esc(step.fail_next)}</div>`:''}${node?electricalHtml(node,tp):''}<div class="o360-gd-grid"><input id="o360GdValue" value="${esc(step.observed_value||'')}" placeholder="Valor medido / observação curta"><input id="o360GdUnit" value="${esc(step.observed_unit||'')}" placeholder="Unidade: V, Ω, bar..."></div><textarea id="o360GdNotes" class="o360-gd-note" placeholder="Observações do teste, condição do motor, temperatura, comportamento...">${esc(step.notes||'')}</textarea><div class="o360-gd-outcomes"><button class="pass" type="button" data-gd-outcome="pass">✓ Dentro do esperado</button><button class="fail" type="button" data-gd-outcome="fail">✕ Fora do esperado</button><button class="inc" type="button" data-gd-outcome="inconclusive">? Inconclusivo</button></div></div>`
+ return `<div class="o360-gd-step"><span class="eyebrow">PASSO ${step.step_index+1} DE ${state.steps.length}</span><h3>${esc(step.action)}</h3>${step.expected?`<div class="o360-gd-box"><h4>O que esperamos</h4>${esc(step.expected)}</div>`:''}${step.fail_next?`<div class="o360-gd-box"><h4>Se estiver fora do esperado</h4>${esc(step.fail_next)}</div>`:''}${node?electricalHtml(node,tp):''}<div class="o360-gd-grid"><input id="o360GdValue" value="${esc(step.observed_value||'')}" placeholder="Valor medido / observação curta"><input id="o360GdUnit" value="${esc(step.observed_unit||'')}" placeholder="Unidade: V, Ω, bar..."></div><textarea id="o360GdNotes" class="o360-gd-note" placeholder="Condição do motor, temperatura, comportamento, ferramenta usada...">${esc(step.notes||'')}</textarea><div class="o360-gd-outcomes"><button class="pass" type="button" data-gd-outcome="pass">✓ Dentro do esperado</button><button class="fail" type="button" data-gd-outcome="fail">✕ Fora do esperado</button><button class="inc" type="button" data-gd-outcome="inconclusive">? Inconclusivo</button></div></div>`
 }
 
 function electricalHtml(node,tp){
@@ -144,17 +138,17 @@ async function saveOutcome(outcome){
  const step=state.steps[state.activeStep];if(!step||state.busy)return;state.busy=true;
  try{
   const c=await client(),value=$('#o360GdValue')?.value?.trim()||'',unit=$('#o360GdUnit')?.value?.trim()||'',notes=$('#o360GdNotes')?.value?.trim()||'',now=new Date().toISOString();
-  const ur=await c.from('v2_diagnostic_session_steps').update({outcome,observed_value:value||null,observed_unit:unit||null,notes:notes||null,performed_at:now,updated_at:now,measurement:{...(obj(step.measurement)),recorded_at:now}}).eq('id',step.id);if(ur.error)throw ur.error;
-  step.outcome=outcome;step.observed_value=value;step.observed_unit=unit;step.notes=notes;step.performed_at=now;
+  const ur=await c.from('v2_diagnostic_session_steps').update({outcome,observed_value:value||null,observed_unit:unit||null,notes:notes||null,performed_at:now,updated_at:now,measurement:{...obj(step.measurement),recorded_at:now}}).eq('id',step.id);if(ur.error)throw ur.error;
+  Object.assign(step,{outcome,observed_value:value,observed_unit:unit,notes,performed_at:now});
   let next=state.steps.findIndex((x,i)=>i>state.activeStep&&x.outcome==='pending');if(next<0)next=state.steps.findIndex(x=>x.outcome==='pending');if(next<0)next=state.activeStep;
-  const msg=outcome==='fail'?(step.fail_next||'Resultado fora do esperado. Continue o roteiro e use o mapa elétrico/peças relacionadas antes de substituir componente.'):outcome==='pass'?'Teste dentro do esperado. Avance para o próximo ponto do roteiro.':'Resultado inconclusivo. Repita a medição ou use outro método/ferramenta antes de tirar conclusão.';
+  const msg=outcome==='fail'?(step.fail_next||'Resultado fora do esperado. Continue o roteiro e use o mapa elétrico antes de substituir componente.'):outcome==='pass'?'Teste dentro do esperado. Avance para o próximo ponto do roteiro.':'Resultado inconclusivo. Repita a medição ou use outro método/ferramenta antes de tirar conclusão.';
   const meta={...obj(state.session.metadata),last_decision:{step_index:step.step_index,outcome,message:msg,at:now}};
-  const sr=await c.from('v2_diagnostic_sessions').update({current_step_index:next,last_activity_at:now,updated_at:now,metadata:meta}).eq('id',state.session.id).select('*').single();if(sr.error)throw sr.error;state.session=sr.data;state.activeStep=next;renderSession();flash('Teste registrado.');
+  const sr=await c.from('v2_diagnostic_sessions').update({status:'active',current_step_index:next,last_activity_at:now,updated_at:now,metadata:meta}).eq('id',state.session.id).select('*').single();if(sr.error)throw sr.error;state.session=sr.data;state.activeStep=next;renderSession();flash('Teste registrado.');
  }catch(e){showError(e)}finally{state.busy=false}
 }
 
 function finishSummary(){
- return `<div class="o360-gd-card"><h3 style="margin-top:0">Diagnóstico concluído</h3><p>${esc(state.session.conclusion||'Sessão finalizada.')}</p>${state.session.root_cause?`<div class="o360-gd-box"><h4>Causa encontrada</h4>${esc(state.session.root_cause)}</div>`:''}${state.session.result?`<div class="o360-gd-box"><h4>Resultado</h4>${esc(state.session.result)}</div>`:''}<div class="o360-gd-actions"><button class="btn soft" type="button" data-gd-os>Gerar OS deste diagnóstico</button><button class="btn soft" type="button" data-gd-close>Voltar aos diagnósticos</button></div></div>`
+ return `<div class="o360-gd-card"><h3 style="margin-top:0">Diagnóstico concluído</h3><p>${esc(state.session.conclusion||'Sessão finalizada.')}</p>${state.session.root_cause?`<div class="o360-gd-box"><h4>Causa encontrada</h4>${esc(state.session.root_cause)}</div>`:''}${state.session.result?`<div class="o360-gd-box"><h4>Resultado</h4>${esc(state.session.result)}</div>`:''}</div>`
 }
 
 function finishForm(){
@@ -165,8 +159,7 @@ function finishForm(){
 async function complete(){
  if(state.busy)return;state.busy=true;
  try{
-  const c=await client(),now=new Date().toISOString(),resolved=!!$('#o360GdResolved')?.checked,symptom=$('#o360GdSymptom')?.value?.trim()||'',conclusion=$('#o360GdConclusion')?.value?.trim()||'',root=$('#o360GdRoot')?.value?.trim()||'',service=$('#o360GdService')?.value?.trim()||'',result=$('#o360GdResult')?.value?.trim()||'';
-  const tests=state.steps.map(x=>({step:x.step_index+1,action:x.action,expected:x.expected,outcome:x.outcome,observed_value:x.observed_value,observed_unit:x.observed_unit,notes:x.notes,performed_at:x.performed_at}));
+  const c=await client(),now=new Date().toISOString(),resolved=!!$('#o360GdResolved')?.checked,symptom=$('#o360GdSymptom')?.value?.trim()||'',conclusion=$('#o360GdConclusion')?.value?.trim()||'',root=$('#o360GdRoot')?.value?.trim()||'',service=$('#o360GdService')?.value?.trim()||'',result=$('#o360GdResult')?.value?.trim()||'',tests=state.steps.map(x=>({step:x.step_index+1,action:x.action,expected:x.expected,outcome:x.outcome,observed_value:x.observed_value,observed_unit:x.observed_unit,notes:x.notes,performed_at:x.performed_at}));
   const ur=await c.from('v2_diagnostic_sessions').update({symptom:symptom||null,status:'completed',conclusion:conclusion||null,root_cause:root||null,service_performed:service||null,result:result||null,completed_at:now,last_activity_at:now,updated_at:now}).eq('id',state.session.id).select('*').single();if(ur.error)throw ur.error;state.session=ur.data;
   if(state.session.code){
    const rr=await c.from('v2_vehicle_fault_resolutions').insert({company_id:state.vehicle.company_id,vehicle_id:state.vehicle.id,fault_id:state.session.fault_id||null,protocol:state.session.protocol||'obd2',code:state.session.code,symptom:symptom||null,diagnosis:conclusion||null,root_cause:root||null,tests_performed:tests,tools_used:arr(state.playbook?.required_tools),service_performed:service||null,result:result||null,resolved,odometer_km:state.session.odometer_km||state.vehicle.current_odometer_km||null,resolved_at:resolved?now:null,metadata:{guided_session_id:state.session.id,source:'oficina360_guided_diagnostic'}});if(rr.error)throw rr.error;
@@ -176,10 +169,12 @@ async function complete(){
  }catch(e){showError(e)}finally{state.busy=false}
 }
 
-async function pause(){const c=await client(),now=new Date().toISOString();const r=await c.from('v2_diagnostic_sessions').update({status:'paused',last_activity_at:now,updated_at:now}).eq('id',state.session.id).select('*').single();if(r.error)return showError(r.error);state.session=r.data;flash('Diagnóstico pausado. Você pode retomar depois.');renderSession()}
+async function pause(){
+ try{const c=await client(),now=new Date().toISOString(),r=await c.from('v2_diagnostic_sessions').update({status:'paused',last_activity_at:now,updated_at:now}).eq('id',state.session.id).select('*').single();if(r.error)throw r.error;state.session=r.data;renderSession();flash('Diagnóstico pausado. Você pode retomar depois.')}catch(e){showError(e)}
+}
 
 async function createWorkOrder(){
- try{const c=await client();const r=await c.rpc('v2_create_work_order_from_diagnostic_session',{p_session_id:state.session.id});if(r.error)throw r.error;const id=typeof r.data==='string'?r.data:r.data?.id||r.data;state.session.work_order_id=id||state.session.work_order_id;flash('OS criada e ligada ao diagnóstico.');document.querySelector('.side-nav [data-tab="orders"]')?.click()}catch(e){showError(e)}
+ try{const c=await client(),r=await c.rpc('v2_create_work_order_from_diagnostic_session',{p_session_id:state.session.id});if(r.error)throw r.error;state.session.work_order_id=typeof r.data==='string'?r.data:(r.data?.id||r.data||state.session.work_order_id);flash('OS criada e ligada ao diagnóstico.');document.querySelector('.side-nav [data-tab="orders"]')?.click()}catch(e){showError(e)}
 }
 
 function onClick(e){
@@ -189,7 +184,7 @@ function onClick(e){
  else if(t.dataset.gdOpen)openSession(t.dataset.gdOpen).catch(showError);
  else if(t.dataset.gdStep!=null){state.activeStep=Number(t.dataset.gdStep);renderSession()}
  else if(t.dataset.gdOutcome)saveOutcome(t.dataset.gdOutcome);
- else if(t.dataset.gdElectrical){document.dispatchEvent(new CustomEvent('o360:electrical-open',{detail:{query:t.dataset.gdElectrical}}))}
+ else if(t.dataset.gdElectrical)document.dispatchEvent(new CustomEvent('o360:electrical-open',{detail:{query:t.dataset.gdElectrical}}));
  else if(t.hasAttribute('data-gd-pause'))pause();
  else if(t.hasAttribute('data-gd-finish'))finishForm();
  else if(t.hasAttribute('data-gd-save-finish'))complete();
@@ -200,7 +195,6 @@ function onClick(e){
 
 function flash(msg){const t=$('#toast');if(!t)return;t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2600)}
 function showError(e){console.error(e);flash(e?.message||'Não foi possível concluir esta ação.')}
-
 function boot(){inject()}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(boot,0),{once:true});else setTimeout(boot,0);
 })();
