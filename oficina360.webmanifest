@@ -6,21 +6,21 @@
   "start_url": "/oficina360",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#07111f",
-  "theme_color": "#0b1424",
+  "background_color": "#111316",
+  "theme_color": "#1a1d22",
   "orientation": "any",
   "icons": [
     {
-      "src": "/oficina360-icon-192.png?v=20260928-3",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "src": "/oficina360-icon.svg?v=20260929-redgraphite-1",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
     },
     {
-      "src": "/oficina360-icon-512.png?v=20260928-3",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "src": "/oficina360-icon.svg?v=20260929-redgraphite-1",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
     }
   ]
 }
