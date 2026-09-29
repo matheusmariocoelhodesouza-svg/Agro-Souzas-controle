@@ -1,0 +1,27 @@
+name: Oficina 360 Fleet Diagnostic Depth
+
+on:
+  pull_request:
+    paths:
+      - 'supabase/migrations/20260929133000_oficina360_fleet_electrical_diagnostic_depth_v1.sql'
+      - 'supabase/migrations/20260929133500_oficina360_fleet_vehicle_symptom_playbooks_v1.sql'
+      - 'docs/oficina360/fleet-diagnostic-depth-v1.md'
+      - 'qa/oficina360_fleet_diagnostic_depth_v1_contract.mjs'
+      - '.github/workflows/oficina360-fleet-diagnostic-depth.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'supabase/migrations/20260929133000_oficina360_fleet_electrical_diagnostic_depth_v1.sql'
+      - 'supabase/migrations/20260929133500_oficina360_fleet_vehicle_symptom_playbooks_v1.sql'
+      - 'qa/oficina360_fleet_diagnostic_depth_v1_contract.mjs'
+
+jobs:
+  fleet-diagnostic-depth:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate fleet diagnostic depth contract
+        run: node qa/oficina360_fleet_diagnostic_depth_v1_contract.mjs
