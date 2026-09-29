@@ -14,9 +14,14 @@ select
   coalesce(c.group_code, 'electrical'),
   coalesce(c.group_code, 'electrical'),
   case
-    when lower(c.name) like '%sensor%' then 'sensor'
-    when lower(c.name) like '%atuador%' or lower(c.name) like '%válvula%' or lower(c.name) like '%valvula%' or lower(c.name) like '%motor de partida%' then 'actuator'
-    when lower(c.name) like '%alternador%' then 'power'
+    when c.name ~* 'fus[ií]vel|porta-fus' then 'fuse'
+    when c.name ~* 'rel[eé]' then 'relay'
+    when c.name ~* '\mecu\M|m[oó]dulo' then 'module'
+    when c.name ~* 'sensor' then 'sensor'
+    when c.name ~* 'alternador|bateria|cabo b\+|cabo positivo' then 'power'
+    when c.name ~* 'atuador|motor de partida|solen[oó]ide|injetor|buzina|l[aâ]mpada' then 'actuator'
+    when c.name ~* 'conector|chicote' then 'connector'
+    when c.name ~* 'cabo negativo|aterramento' then 'ground'
     else 'component'
   end,
   c.name,
@@ -31,6 +36,5 @@ select
   end
 from public.v2_vehicle_component_links l
 join public.v2_vehicle_components c on c.id=l.component_id
-where (c.connector_spec is not null and c.connector_spec <> '{}'::jsonb)
-   or c.group_code='electrical'
+where c.name ~* '(sensor|atuador|alternador|motor de partida|bateria|fus[ií]vel|rel[eé]|\mecu\M|m[oó]dulo|chicote|conector|buzina|l[aâ]mpada|interruptor|comutador|solen[oó]ide|injetor|vela aquecedora|cabo b\+|cabo positivo|cabo negativo|aterramento|caixa de fus[ií]veis|porta-fus)'
 on conflict (vehicle_id, component_id) where component_id is not null do nothing;
