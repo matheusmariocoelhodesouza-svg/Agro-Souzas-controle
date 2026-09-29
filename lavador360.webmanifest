@@ -1,0 +1,19 @@
+{
+  "name": "Lavador 360",
+  "short_name": "Lavador 360",
+  "description": "Gestão de lavagem, custos, clientes, estoque e inspeção de veículos do ecossistema 360.",
+  "start_url": "./lavador360.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#061816",
+  "theme_color": "#0f766e",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "./lavador360-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
