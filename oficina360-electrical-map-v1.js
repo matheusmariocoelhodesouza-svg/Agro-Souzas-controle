@@ -1,0 +1,92 @@
+(()=>{
+'use strict';
+const $=s=>document.querySelector(s);
+const $$=s=>[...document.querySelectorAll(s)];
+const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+const norm=v=>String(v??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
+const arr=v=>Array.isArray(v)?v:[];
+const obj=v=>v&&typeof v==='object'&&!Array.isArray(v)?v:{};
+const state={client:null,vehicle:null,profile:null,links:[],components:[],nodes:[],wires:[],circuit:'all',selected:null,ready:false};
+
+function addStyle(){
+ if($('#o360ElectricalStyle'))return;
+ const s=document.createElement('style');s.id='o360ElectricalStyle';s.textContent=`
+ .o360-elec{display:grid;gap:16px}.o360-elec-hero{border:1px solid rgba(136,166,199,.2);border-radius:18px;padding:18px;background:linear-gradient(135deg,rgba(20,37,60,.92),rgba(8,18,31,.96))}.o360-elec-hero h2{margin:3px 0 7px}.o360-elec-hero p{margin:0;color:#9fb0c2;line-height:1.5}.o360-elec-toolbar{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;margin-top:14px}.o360-elec-toolbar input,.o360-elec-toolbar select{border:1px solid rgba(136,166,199,.24);background:rgba(255,255,255,.05);color:inherit;border-radius:12px;padding:12px 13px;box-sizing:border-box}.o360-elec-toolbar select{min-width:190px}
+ .o360-elec-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.o360-elec-kpi{border:1px solid rgba(136,166,199,.16);border-radius:14px;padding:12px;background:rgba(12,23,39,.64)}.o360-elec-kpi small{display:block;color:#91a3b8}.o360-elec-kpi b{display:block;font-size:1.35rem;margin-top:4px}
+ .o360-elec-layout{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(300px,.7fr);gap:14px}.o360-elec-panel{border:1px solid rgba(136,166,199,.16);border-radius:16px;background:rgba(12,23,39,.62);overflow:hidden}.o360-elec-panel-head{padding:12px 14px;border-bottom:1px solid rgba(136,166,199,.12);display:flex;justify-content:space-between;gap:10px;align-items:center}.o360-elec-panel-head h3{margin:0;font-size:1rem}.o360-elec-canvas{min-height:360px;padding:14px;overflow:auto}.o360-elec-empty{padding:26px;text-align:center;color:#95a7bb}.o360-elec-empty strong{display:block;color:inherit;margin-bottom:7px}
+ .o360-elec-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}.o360-elec-node{border:1px solid rgba(136,166,199,.18);border-radius:14px;padding:12px;background:rgba(255,255,255,.025);cursor:pointer;min-height:112px}.o360-elec-node:hover,.o360-elec-node.active{border-color:rgba(142,197,255,.55);background:rgba(142,197,255,.07)}.o360-elec-node-top{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}.o360-elec-node b{display:block}.o360-elec-node small{display:block;color:#91a3b8;margin-top:5px;line-height:1.35}.o360-node-type{font-size:.65rem;border:1px solid rgba(136,166,199,.2);border-radius:999px;padding:3px 6px;color:#aebdcb;text-transform:uppercase}.o360-node-type.ok{color:#8ed9af;border-color:rgba(72,187,120,.28)}.o360-node-type.warn{color:#f5c46d;border-color:rgba(245,184,73,.3)}
+ .o360-elec-detail{padding:14px;display:grid;gap:12px}.o360-elec-detail h3{margin:0}.o360-elec-box{border:1px solid rgba(136,166,199,.14);border-radius:12px;padding:11px}.o360-elec-box h4{margin:0 0 8px;font-size:.88rem}.o360-elec-list{display:grid;gap:7px}.o360-elec-line{display:grid;grid-template-columns:minmax(90px,.45fr) 1fr;gap:8px;font-size:.86rem}.o360-elec-line span{color:#91a3b8}.o360-elec-chiprow{display:flex;flex-wrap:wrap;gap:6px}.o360-elec-chip{border:1px solid rgba(136,166,199,.16);border-radius:999px;padding:4px 7px;font-size:.72rem;color:#b8c5d2}.o360-elec-warning{border-left:4px solid #d7a13d;background:rgba(215,161,61,.08);padding:10px 12px;border-radius:9px;line-height:1.45;font-size:.84rem}.o360-elec-actions{display:flex;flex-wrap:wrap;gap:8px}
+ .o360-elec-wires{display:grid;gap:8px}.o360-wire{border:1px solid rgba(136,166,199,.14);border-radius:11px;padding:9px}.o360-wire b{display:block}.o360-wire small{display:block;color:#91a3b8;margin-top:4px}.o360-elec-source{font-size:.76rem;color:#91a3b8;word-break:break-word}
+ @media(max-width:980px){.o360-elec-layout{grid-template-columns:1fr}.o360-elec-kpis{grid-template-columns:1fr 1fr}}@media(max-width:650px){.o360-elec-toolbar{grid-template-columns:1fr}.o360-elec-toolbar select{width:100%}.o360-elec-kpis{grid-template-columns:1fr 1fr}.o360-elec-grid{grid-template-columns:1fr}.o360-elec-actions .btn{flex:1}}
+ `;document.head.appendChild(s);
+}
+
+function inject(){
+ const nav=$('.side-nav'),content=$('.content');if(!nav||!content||$('[data-tab="electrical"]'))return;
+ const btn=document.createElement('button');btn.type='button';btn.dataset.tab='electrical';btn.innerHTML='<span>ϟ</span> Mapa elétrico';
+ const diag=nav.querySelector('[data-tab="diagnostics"]');diag?diag.insertAdjacentElement('afterend',btn):nav.appendChild(btn);
+ const section=document.createElement('section');section.id='tab-electrical';section.className='tab';section.innerHTML='<div id="o360ElectricalRoot" class="o360-elec"></div>';
+ const diagTab=$('#tab-diagnostics');diagTab?diagTab.insertAdjacentElement('afterend',section):content.appendChild(section);
+ btn.addEventListener('click',activate);addStyle();
+ $('#vehiclePicker')?.addEventListener('change',()=>{state.ready=false;state.selected=null;setTimeout(()=>load().catch(showError),250)});
+ document.addEventListener('o360:electrical-open',e=>{activate();const q=e.detail?.query||'';setTimeout(()=>{const i=$('#o360ElectricalSearch');if(i){i.value=q;render()}},80)});
+}
+function activate(){
+ $$('.side-nav button[data-tab]').forEach(b=>b.classList.toggle('active',b.dataset.tab==='electrical'));
+ $$('.tab').forEach(t=>t.classList.toggle('active',t.id==='tab-electrical'));
+ if($('#pageTitle'))$('#pageTitle').textContent='Mapa elétrico inteligente';
+ renderShell();if(!state.ready)load().catch(showError);else render();
+}
+function renderShell(){
+ const host=$('#o360ElectricalRoot');if(!host)return;
+ host.innerHTML=`<div class="o360-elec-hero"><span class="eyebrow">ELETRICIDADE + DIAGNÓSTICO</span><h2>Mapa elétrico inteligente</h2><p>Veja componentes, conectores, pinos, fusíveis, relés, módulos, aterramentos e valores de teste da condução. O Oficina 360 só apresenta função de pino e valor elétrico como definitivo quando há fonte verificada.</p><div class="o360-elec-toolbar"><input id="o360ElectricalSearch" type="search" placeholder="Buscar sensor, fusível, relé, ECU, aterramento, conector..."><select id="o360ElectricalCircuit"><option value="all">Todos os circuitos</option></select></div></div><div id="o360ElectricalBody"></div>`;
+ $('#o360ElectricalSearch')?.addEventListener('input',render);
+ $('#o360ElectricalCircuit')?.addEventListener('change',e=>{state.circuit=e.target.value;render()});
+}
+async function client(){if(state.client)return state.client;if(!window.supabase||!window.SUPABASE_URL||!window.SUPABASE_PUBLISHABLE_KEY)throw new Error('Conexão do Oficina 360 não carregada.');state.client=window.supabase.createClient(window.SUPABASE_URL,window.SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});return state.client}
+async function load(){
+ const c=await client(),vid=$('#vehiclePicker')?.value||new URLSearchParams(location.search).get('vehicle');if(!vid)return;const body=$('#o360ElectricalBody');if(body)body.innerHTML='<div class="o360-elec-empty">Carregando mapa elétrico...</div>';
+ const [vr,pr,lr,nr,wr]=await Promise.all([
+  c.from('v2_vehicles').select('id,company_id,plate,description,make,model,model_year').eq('id',vid).maybeSingle(),
+  c.from('v2_vehicle_technical_profiles').select('*').eq('vehicle_id',vid).maybeSingle(),
+  c.from('v2_vehicle_component_links').select('component_id,fitment_status').eq('vehicle_id',vid),
+  c.from('v2_vehicle_electrical_nodes').select('*').eq('vehicle_id',vid).order('circuit_code').order('label'),
+  c.from('v2_vehicle_electrical_links').select('*').eq('vehicle_id',vid).order('circuit_code')
+ ]);
+ state.vehicle=vr.data||null;state.profile=pr.data||null;state.links=lr.data||[];state.nodes=nr.data||[];state.wires=wr.data||[];
+ const ids=[...new Set(state.links.map(x=>x.component_id).filter(Boolean))],parts=[];
+ for(let i=0;i<ids.length;i+=70){const r=await c.from('v2_vehicle_components').select('id,name,generic_name,group_code,oem_part_number,location_description,function_description,connector_spec,data_status,source_metadata').in('id',ids.slice(i,i+70));if(r.data)parts.push(...r.data)}state.components=parts;
+ state.ready=true;populateCircuits();render();
+}
+function populateCircuits(){const sel=$('#o360ElectricalCircuit');if(!sel)return;const current=state.circuit;const circuits=[...new Set(state.nodes.map(x=>x.circuit_code).filter(Boolean))].sort();sel.innerHTML='<option value="all">Todos os circuitos</option>'+circuits.map(x=>`<option value="${esc(x)}">${esc(x)}</option>`).join('');sel.value=circuits.includes(current)?current:'all';state.circuit=sel.value}
+function hasUsefulConnector(c){const x=obj(c.connector_spec);return Object.keys(x).length>0}
+function derivedNodes(){
+ const linked=new Map(state.links.map(x=>[x.component_id,x]));const persisted=new Set(state.nodes.map(x=>x.component_id).filter(Boolean));
+ return state.components.filter(c=>!persisted.has(c.id)&&(hasUsefulConnector(c)||norm(c.group_code).includes('electrical'))).map(c=>({id:'component:'+c.id,component_id:c.id,circuit_code:c.group_code||'electrical',system_code:c.group_code||'electrical',node_type:/sensor/i.test(c.name)?'sensor':/motor|atuador|valvula|válvula/i.test(c.name)?'actuator':'component',label:c.name,reference:c.oem_part_number||null,location_description:c.location_description,connector_name:null,pins:[],electrical_spec:c.connector_spec||{},test_procedure:{},source_metadata:c.source_metadata||{},verification_status:c.data_status==='verified'&&linked.get(c.id)?.fitment_status==='verified'?'verified':c.data_status==='verified'?'reference':'estimated',_derived:true,_component:c}));
+}
+function allNodes(){return [...state.nodes,...derivedNodes()]}
+function filterNodes(){const q=norm($('#o360ElectricalSearch')?.value||'');return allNodes().filter(n=>(state.circuit==='all'||n.circuit_code===state.circuit)&&(!q||norm([n.label,n.reference,n.location_description,n.connector_name,n.node_type,n.circuit_code,JSON.stringify(n.pins),JSON.stringify(n.electrical_spec)].join(' ')).includes(q)))}
+function status(v){return v==='verified'?['verificado','ok']:v==='needs_physical_verification'?['confirmar fisicamente','warn']:v==='estimated'?['estimado','warn']:['referência','']}
+function nodeIcon(t){return ({fuse:'⏚',relay:'◈',ground:'⏚',power:'⊕',ecu:'▣',module:'▣',connector:'⫶',sensor:'◉',actuator:'⚙',bus:'↔',splice:'●',component:'⚙'})[t]||'•'}
+function render(){
+ const body=$('#o360ElectricalBody');if(!body||!state.ready)return;const nodes=filterNodes(),persisted=state.nodes.length,wires=state.wires.length,withConnector=state.components.filter(hasUsefulConnector).length,verified=allNodes().filter(n=>n.verification_status==='verified').length;
+ body.innerHTML=`<div class="o360-elec-kpis"><div class="o360-elec-kpi"><small>Nós elétricos mapeados</small><b>${persisted}</b></div><div class="o360-elec-kpi"><small>Ligações de circuito</small><b>${wires}</b></div><div class="o360-elec-kpi"><small>Componentes com dado elétrico</small><b>${withConnector}</b></div><div class="o360-elec-kpi"><small>Dados verificados</small><b>${verified}</b></div></div><div class="o360-elec-layout"><article class="o360-elec-panel"><div class="o360-elec-panel-head"><h3>Circuito / componentes</h3><small>${nodes.length} item(ns)</small></div><div class="o360-elec-canvas">${nodes.length?`<div class="o360-elec-grid">${nodes.map(nodeCard).join('')}</div>`:emptyHtml()}</div></article><aside class="o360-elec-panel"><div class="o360-elec-panel-head"><h3>Teste e identificação</h3><small>Fonte + confiança</small></div><div id="o360ElectricalDetail" class="o360-elec-detail">${detailHtml(state.selected&&allNodes().find(x=>x.id===state.selected)||nodes[0])}</div></aside></div>`;
+ $$('#o360ElectricalBody [data-elec-node]').forEach(b=>b.addEventListener('click',()=>{state.selected=b.dataset.elecNode;render()}));
+ bindDetailActions();
+}
+function emptyHtml(){return `<div class="o360-elec-empty"><strong>Ainda não há circuito elétrico cadastrado para este filtro.</strong>Os componentes com informação de conector aparecem automaticamente quando disponíveis. Fusíveis, relés, aterramentos e trajetos entram nesta tela conforme forem confirmados por manual, diagrama ou inspeção física.</div>`}
+function nodeCard(n){const st=status(n.verification_status);const spec=obj(n.electrical_spec);const pinsCount=Array.isArray(n.pins)?n.pins.length:(spec.pins||'');return `<div class="o360-elec-node ${state.selected===n.id?'active':''}" data-elec-node="${esc(n.id)}"><div class="o360-elec-node-top"><div><span style="font-size:20px">${nodeIcon(n.node_type)}</span><b>${esc(n.label)}</b></div><span class="o360-node-type ${st[1]}">${esc(st[0])}</span></div><small>${esc([n.reference,n.location_description].filter(Boolean).join(' • ')||n.circuit_code)}</small>${pinsCount?`<small>${esc(pinsCount)} pino(s)/via(s)</small>`:''}</div>`}
+function kvRows(x){return Object.entries(obj(x)).filter(([,v])=>v!==null&&v!==''&&typeof v!=='object').map(([k,v])=>`<div class="o360-elec-line"><span>${esc(k.replaceAll('_',' '))}</span><b>${esc(v)}</b></div>`).join('')}
+function pinRows(n){const p=Array.isArray(n.pins)?n.pins:[];if(p.length)return p.map(x=>`<div class="o360-wire"><b>Pino ${esc(x.pin||x.number||'—')} ${x.function?'• '+esc(x.function):''}</b><small>${esc([x.signal_type,x.wire_color,x.expected_value].filter(Boolean).join(' • ')||'Sem função/valor confirmado')}</small></div>`).join('');const spec=obj(n.electrical_spec),count=spec.pins;return count?`<div class="o360-elec-warning">Conector registrado com <b>${esc(count)} pino(s)</b>, mas a função individual dos pinos ainda não está confirmada. O Oficina 360 não vai inventar pinagem.</div>`:'<small>Sem pinagem confirmada.</small>'}
+function relatedWires(n){if(!n||String(n.id).startsWith('component:'))return [];return state.wires.filter(w=>w.from_node_id===n.id||w.to_node_id===n.id)}
+function detailHtml(n){if(!n)return '<div class="o360-elec-empty">Selecione um componente para ver conector, medições e circuito.</div>';const st=status(n.verification_status),spec=obj(n.electrical_spec),test=obj(n.test_procedure),wires=relatedWires(n),component=state.components.find(c=>c.id===n.component_id)||n._component,src=obj(n.source_metadata);return `<div><span class="eyebrow">${esc(n.node_type||'componente')}</span><h3>${esc(n.label)}</h3><div class="o360-elec-chiprow"><span class="o360-elec-chip ${st[1]}">${esc(st[0])}</span>${n.circuit_code?`<span class="o360-elec-chip">${esc(n.circuit_code)}</span>`:''}${n.reference?`<span class="o360-elec-chip">${esc(n.reference)}</span>`:''}</div></div><div class="o360-elec-box"><h4>Identificação</h4><div class="o360-elec-list"><div class="o360-elec-line"><span>Local</span><b>${esc(n.location_description||component?.location_description||'A confirmar')}</b></div><div class="o360-elec-line"><span>Conector</span><b>${esc(n.connector_name||'A confirmar')}</b></div>${kvRows(spec)}</div></div><div class="o360-elec-box"><h4>Pinagem</h4><div class="o360-elec-wires">${pinRows(n)}</div></div><div class="o360-elec-box"><h4>Ligações deste circuito</h4>${wires.length?`<div class="o360-elec-wires">${wires.map(wireHtml).join('')}</div>`:'<div class="o360-elec-warning">O trajeto até fusível, relé, módulo ou aterramento ainda não está cadastrado. Isso não significa ausência da ligação; apenas que ainda não temos fonte suficiente para desenhá-la.</div>'}</div><div class="o360-elec-box"><h4>Medição / diagnóstico</h4>${Object.keys(test).length?`<div class="o360-elec-list">${kvRows(test)}</div>`:`<div class="o360-elec-warning">Sem valor de teste específico verificado. Use o diagrama/manual da aplicação antes de assumir tensão, resistência ou forma de onda. Nunca meça resistência com o circuito energizado e não faça jumper em pinos de ECU sem procedimento confirmado.</div>`}</div>${src.source_name||src.url?`<div class="o360-elec-source">Fonte: ${esc(src.source_name||src.name||'referência técnica')}${src.url?' • '+esc(src.url):''}</div>`:''}<div class="o360-elec-actions">${component?`<button class="btn soft" type="button" data-elec-catalog="${esc(component.name)}">Abrir peça no catálogo</button>`:''}<button class="btn primary" type="button" data-elec-diagnose="${esc(component?.name||n.label)}">Diagnosticar componente</button></div>`}
+function wireHtml(w){const a=state.nodes.find(n=>n.id===w.from_node_id),b=state.nodes.find(n=>n.id===w.to_node_id),expected=obj(w.expected_values);return `<div class="o360-wire"><b>${esc(a?.label||'Origem')} → ${esc(b?.label||'Destino')}</b><small>${esc([w.from_pin&&'pino '+w.from_pin,w.to_pin&&'pino '+w.to_pin,w.wire_color,w.wire_code,w.signal_type].filter(Boolean).join(' • ')||'Ligação cadastrada')}</small>${Object.keys(expected).length?`<small>${esc(Object.entries(expected).map(([k,v])=>k.replaceAll('_',' ')+': '+v).join(' • '))}</small>`:''}</div>`}
+function bindDetailActions(){
+ $('#o360ElectricalBody [data-elec-catalog]')?.addEventListener('click',e=>{openTab('catalog');setTimeout(()=>{const i=$('#catalogSearch');if(i){i.value=e.currentTarget.dataset.elecCatalog;i.dispatchEvent(new Event('input',{bubbles:true}))}},50)});
+ $('#o360ElectricalBody [data-elec-diagnose]')?.addEventListener('click',e=>{openTab('diagnostics');setTimeout(()=>{const hint=$('#o360CodeHint');if(hint)hint.innerHTML=`<div class="o360-warning">Investigação iniciada pelo mapa elétrico: <b>${esc(e.currentTarget.dataset.elecDiagnose)}</b>. Use DTC e medições confirmadas antes de substituir a peça.</div>`},80)});
+}
+function openTab(name){const b=$(`.side-nav [data-tab="${name}"]`);if(b){b.click();return}$$('.side-nav button[data-tab]').forEach(x=>x.classList.toggle('active',x.dataset.tab===name));$$('.tab').forEach(t=>t.classList.toggle('active',t.id==='tab-'+name))}
+function showError(e){console.error(e);const body=$('#o360ElectricalBody');if(body)body.innerHTML='<div class="o360-elec-empty">Não foi possível carregar o mapa elétrico: '+esc(e.message||e)+'</div>'}
+
+document.addEventListener('DOMContentLoaded',()=>{inject();},{once:true});
+})();
