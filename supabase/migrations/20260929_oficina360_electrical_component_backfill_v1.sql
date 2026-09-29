@@ -37,4 +37,5 @@ select
 from public.v2_vehicle_component_links l
 join public.v2_vehicle_components c on c.id=l.component_id
 where c.name ~* '(sensor|atuador|alternador|motor de partida|bateria|fus[ií]vel|rel[eé]|\mecu\M|m[oó]dulo|chicote|conector|buzina|l[aâ]mpada|interruptor|comutador|solen[oó]ide|injetor|vela aquecedora|cabo b\+|cabo positivo|cabo negativo|aterramento|caixa de fus[ií]veis|porta-fus)'
+  and c.name !~* '^(ADHESIVE LABEL|BRACKET|BUTT JOINT|CAP[[:space:]]+—|CONTACT|DUST CAP|HEXAGON|FUSEBOX LABEL|FUSEBOX STICKER|STICKER|LABEL|SCREW|BOLT|NUT|WASHER|CLIP|SPRING|COVER|SEAL)'
 on conflict (vehicle_id, component_id) where component_id is not null do nothing;
