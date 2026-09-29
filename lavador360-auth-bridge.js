@@ -7,7 +7,58 @@ const DIRECT_COPY='Entre diretamente no Lavador 360 com a mesma conta do ecossis
 
 function applyLavadorTheme(){
   const meta=document.querySelector('meta[name="theme-color"]');
-  if(meta)meta.setAttribute('content','#2563eb');
+  if(meta)meta.setAttribute('content','#f97316');
+  const manifest=document.querySelector('link[rel="manifest"]');
+  if(manifest)manifest.setAttribute('href','./lavador360.webmanifest?v=20260929-2');
+  const favicon=document.querySelector('link[rel="icon"]');
+  if(favicon)favicon.setAttribute('href','./lavador360-icon-orange.svg?v=20260929-2');
+  const appleIcon=document.querySelector('link[rel="apple-touch-icon"]');
+  if(appleIcon)appleIcon.setAttribute('href','./lavador360-icon-orange.svg?v=20260929-2');
+  if(document.getElementById('l360OrangeTheme'))return;
+  const style=document.createElement('style');
+  style.id='l360OrangeTheme';
+  style.textContent=`
+    :root{
+      --bg:#f8f5f1;
+      --surface:#ffffff;
+      --ink:#261b15;
+      --muted:#74675f;
+      --line:#eaded5;
+      --brand:#f97316;
+      --brand2:#fb923c;
+      --deep:#2a1408;
+      --soft:#fff1e8;
+      --ok:#ea580c;
+      --shadow:0 14px 40px rgba(124,45,18,.09);
+    }
+    .sidebar{background:linear-gradient(180deg,#211008 0%,#351807 100%)}
+    .brand-mark,.gate-mark{background:linear-gradient(135deg,#fb923c,#f97316);box-shadow:0 10px 26px rgba(249,115,22,.28)}
+    .brand small{color:#ddbaa2}
+    .company-card span{color:#cfa58b}
+    .company-card small{color:#fdba74}
+    .side-nav button{color:#e4cbbc}
+    .side-nav button:hover,.side-nav button.active{background:rgba(249,115,22,.24);color:#fff}
+    .sidebar-bottom a,.link-btn{color:#fdba74}
+    .sidebar-bottom small{color:#9e806d}
+    .topbar{background:rgba(248,245,241,.94);border-bottom-color:#eaded5}
+    .btn.primary{background:linear-gradient(135deg,#fb923c,#f97316);box-shadow:0 8px 18px rgba(249,115,22,.24)}
+    .btn.soft{border-color:#ead7c8;color:#7c2d12}
+    label{color:#65534a}
+    input,select,textarea{border-color:#e5d7ce;background:#fffdfa}
+    input:focus,select:focus,textarea:focus{border-color:#fb923c;box-shadow:0 0 0 3px #ffedd5}
+    .list-row,.product-card,.price-row,.wash-card,.usage-item{border-color:#eaded5}
+    .product-stat,.wash-metric{background:#fbf6f2}
+    .wash-summary{background:#431c08;box-shadow:0 18px 50px rgba(67,28,8,.27)}
+    .wash-summary span{color:#fdba74}
+    .chip.ok{background:#fff1e8;color:#c2410c}
+    .chip.brand{background:#fff1e8;color:#ea580c}
+    .direct-badge{background:#fff1e8;color:#c2410c}
+    .session-gate{background:radial-gradient(circle at top,#c2410c 0%,#431c08 45%,#170a04 100%)}
+    .toast{background:#431c08}
+    .toast.ok{background:#c2410c}
+    @media(max-width:760px){.sidebar{background:#2a1408}}
+  `;
+  document.head.appendChild(style);
 }
 
 function migrateComandoSession(){
