@@ -1,10 +1,12 @@
-const CACHE = 'oficina360-shell-20260929-redgraphite-1';
+const CACHE = 'oficina360-shell-20260929-redgraphite-png2';
 const SHELL = [
   '/oficina360',
   '/oficina360.html',
   '/oficina360.css',
   '/oficina360-brand-red.css',
   '/oficina360-icon.svg',
+  '/oficina360-icon-192.png',
+  '/oficina360-icon-512.png',
   '/oficina360.webmanifest'
 ];
 
