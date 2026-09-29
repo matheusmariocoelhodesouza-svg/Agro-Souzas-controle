@@ -1,0 +1,266 @@
+/* Oficina 360 — identidade oficial vermelho + grafite
+   Aplicado por último para manter o Lavador 360 independente em laranja. */
+:root{
+  --oficina-red:#e31b23;
+  --oficina-red-strong:#b41219;
+  --oficina-red-dark:#7f0f14;
+  --oficina-graphite:#1a1d22;
+  --oficina-graphite-2:#252a31;
+  --oficina-graphite-3:#343a43;
+  --oficina-silver:#c8cdd4;
+  --oficina-paper:#f4f5f7;
+  --bg:#f3f4f6;
+  --card:#ffffff;
+  --ink:#20242b;
+  --muted:#6c7580;
+  --line:#dde1e6;
+  --navy:#171a1f;
+  --navy2:#252a31;
+  --blue:#e31b23;
+  --blue-soft:#fff0f1;
+  --red:#e31b23;
+  --red-soft:#fff0f1;
+  --shadow:0 10px 28px rgba(20,22,26,.08);
+  --accent:#e31b23;
+  --primary:#e31b23;
+  --brand:#e31b23;
+}
+
+html,body{
+  background:
+    radial-gradient(circle at 85% 0,rgba(227,27,35,.045),transparent 28rem),
+    #f3f4f6;
+  color:#20242b;
+}
+
+.sidebar{
+  background:
+    radial-gradient(circle at 18% 8%,rgba(227,27,35,.17),transparent 14rem),
+    linear-gradient(180deg,#131518 0%,#1a1d22 52%,#111316 100%) !important;
+  box-shadow:16px 0 42px rgba(8,9,11,.18) !important;
+  border-right:1px solid rgba(255,255,255,.04);
+}
+
+.brand{border-bottom-color:rgba(255,255,255,.08)!important}
+.brand strong{color:#fff!important}
+.brand small{color:#9aa0a8!important}
+
+.brand-mark,.gate-mark{
+  padding:0!important;
+  overflow:hidden!important;
+  background:linear-gradient(145deg,#2d3239,#121417)!important;
+  border:1px solid rgba(255,255,255,.13)!important;
+  box-shadow:
+    0 0 0 2px rgba(227,27,35,.30),
+    0 10px 28px rgba(0,0,0,.28)!important;
+  color:transparent!important;
+}
+.brand-mark img,.gate-mark img{
+  width:100%;
+  height:100%;
+  display:block;
+  object-fit:cover;
+}
+
+.vehicle-picker-wrap label{color:#8d939b!important}
+.vehicle-picker-wrap select{
+  background:#22262c!important;
+  border-color:#3b4149!important;
+  color:#fff!important;
+}
+.identity-badge{background:#2b3037!important;color:#c7ccd2!important}
+
+.side-nav button{color:#bfc3c9!important}
+.side-nav button:hover{background:rgba(255,255,255,.06)!important;color:#fff!important}
+.side-nav button.active{
+  background:linear-gradient(135deg,#f1252d 0%,#c2141b 56%,#8d0e13 100%)!important;
+  color:#fff!important;
+  box-shadow:0 9px 24px rgba(195,20,27,.30)!important;
+}
+.sidebar-bottom{border-top-color:rgba(255,255,255,.08)!important}
+.sidebar-bottom a{color:#f0f1f2!important}
+.sidebar-bottom small{color:#858b93!important}
+
+.topbar{
+  background:rgba(250,250,251,.94)!important;
+  border-bottom-color:#dde1e6!important;
+}
+.eyebrow{color:#a6161c!important}
+
+.btn.primary,
+button.primary,
+a.primary{
+  background:linear-gradient(135deg,#e9232b,#b71118)!important;
+  border-color:#c8181f!important;
+  color:#fff!important;
+  box-shadow:0 6px 16px rgba(190,20,28,.17);
+}
+.btn.primary:hover,
+button.primary:hover,
+a.primary:hover{filter:brightness(1.04)}
+
+.btn.soft{
+  background:#fff!important;
+  border-color:#d6dade!important;
+  color:#3a414a!important;
+}
+.btn.soft:hover{border-color:#aeb4bc!important;background:#f7f8f9!important}
+
+.vehicle-hero{
+  background:
+    radial-gradient(circle at 82% 12%,rgba(236,36,44,.28),transparent 19rem),
+    linear-gradient(120deg,#171a1f,#292e35 58%,#191c20)!important;
+  border:1px solid #3a3f46;
+  box-shadow:0 16px 36px rgba(12,13,15,.20)!important;
+}
+.vehicle-hero p{color:#c0c4ca!important}
+.vehicle-icon{
+  background:linear-gradient(145deg,#343941,#20242a)!important;
+  border-color:#4a5059!important;
+  box-shadow:inset 0 0 0 1px rgba(227,27,35,.12);
+}
+
+.kpi-card,.panel,.catalog-group,.view-card{
+  border-color:#dfe2e6!important;
+  box-shadow:0 9px 25px rgba(21,23,27,.07)!important;
+}
+.kpi-value,.part-name,.part-oem,.list-row strong,.view-part b{color:#292e35!important}
+.detail{background:#f7f8f9!important;border-color:#e7e9ec!important}
+
+.search-box input:focus,
+input:focus,
+select:focus,
+textarea:focus{
+  border-color:#d92931!important;
+  box-shadow:0 0 0 3px rgba(227,27,35,.10)!important;
+  outline:none;
+}
+
+.catalog-group summary{color:#343941!important}
+.notice{background:#f7f8f9!important;border-color:#dde1e5!important;color:#59616a!important}
+.session-gate{
+  background:
+    radial-gradient(circle at 30% 20%,rgba(227,27,35,.30),transparent 25rem),
+    linear-gradient(145deg,#23272d,#0e1013 72%)!important;
+}
+.gate-card{border:1px solid #e0e2e5;box-shadow:0 32px 90px rgba(0,0,0,.38)!important}
+.toast{background:#24282e!important;border:1px solid #3a4048!important}
+
+/* Estados continuam semânticos; o vermelho principal fica reservado à marca/atenção. */
+.chip.danger{background:#fff0f1!important;color:#b41219!important}
+.sync-state{color:#168a55!important}
+
+/* Oficina Visual / Scanner: troca o antigo azul/laranja de marca por vermelho + grafite. */
+#tab-visual{
+  --pv-bg:#0e1013!important;
+  --pv-panel:#15181d!important;
+  --pv-panel2:#20242a!important;
+  --pv-line:#353b43!important;
+  --pv-text:#f1f2f4!important;
+  --pv-muted:#9ea4ac!important;
+  --pv-blue:#e31b23!important;
+  --pv-blue2:#a41117!important;
+  --pv-orange:#bd2026!important;
+  --pv-red:#f02a32!important;
+}
+#tab-visual .pv-shell{
+  background:
+    radial-gradient(circle at 45% 20%,rgba(217,31,40,.16),transparent 31rem),
+    linear-gradient(145deg,#181b20,#0d0f12 68%)!important;
+  border-color:#373c44!important;
+  box-shadow:0 25px 70px rgba(0,0,0,.32)!important;
+}
+#tab-visual .pv-head{
+  background:linear-gradient(180deg,#22262c,#171a1f)!important;
+  border-bottom-color:#383e46!important;
+}
+#tab-visual .pv-eyebrow{color:#ff6970!important}
+#tab-visual .pv-btn,
+#tab-visual .pv-select,
+#tab-visual .pv-input{
+  background:#242930!important;
+  border-color:#414851!important;
+  color:#eef0f2!important;
+}
+#tab-visual .pv-btn:hover{background:#2d3239!important;border-color:#646b74!important}
+#tab-visual .pv-btn.primary{
+  background:linear-gradient(135deg,#ef252d,#a51016)!important;
+  border-color:#f2474e!important;
+}
+#tab-visual .pv-btn.on{
+  border-color:#e31b23!important;
+  box-shadow:0 0 0 2px rgba(227,27,35,.18),0 0 28px rgba(227,27,35,.14)!important;
+}
+#tab-visual .pv-btn.warn{
+  background:#34171a!important;
+  border-color:#78262b!important;
+  color:#ffb9bd!important;
+}
+#tab-visual .pv-stage-toolbar,
+#tab-visual .pv-animation,
+#tab-visual .pv-diagnostic{background:#171a1f!important;border-color:#343a42!important}
+#tab-visual .pv-segmented{border-color:#454b54!important}
+#tab-visual .pv-segmented button{
+  background:#24282e!important;
+  color:#afb4bb!important;
+  border-color:#454b54!important;
+}
+#tab-visual .pv-segmented button.active,
+#tab-visual .pv-tab.active{
+  background:linear-gradient(135deg,#e31b23,#a51016)!important;
+  color:#fff!important;
+}
+#tab-visual .pv-stage{
+  background:
+    radial-gradient(circle at 50% 42%,rgba(227,27,35,.14),transparent 47%),
+    linear-gradient(180deg,#17191d,#0e1012)!important;
+}
+#tab-visual .pv-grid{
+  background-image:
+    linear-gradient(rgba(165,170,178,.07) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(165,170,178,.07) 1px,transparent 1px)!important;
+}
+#tab-visual .pv-part:hover,
+#tab-visual .pv-part.selected{
+  filter:drop-shadow(0 0 9px rgba(242,56,65,.92)) drop-shadow(0 0 20px rgba(227,27,35,.46))!important;
+}
+#tab-visual .pv-part.related{
+  filter:drop-shadow(0 0 7px #bfc4ca) drop-shadow(0 0 18px rgba(190,196,203,.35))!important;
+}
+#tab-visual .pv-label:hover circle{fill:#e31b23!important;stroke:#ffd7d9!important}
+#tab-visual .pv-tech-badge,
+#tab-visual .pv-hint{background:rgba(19,21,25,.90)!important;border-color:#454b54!important;color:#b8bdc4!important}
+#tab-visual .pv-animation input[type=range]{accent-color:#e31b23!important}
+#tab-visual .pv-detail{background:linear-gradient(180deg,#20242a,#111316)!important}
+#tab-visual .pv-num{
+  background:linear-gradient(145deg,#ed232b,#a71117)!important;
+  box-shadow:0 0 22px rgba(227,27,35,.28)!important;
+}
+#tab-visual .pv-preview{
+  background:radial-gradient(circle,#3a3f46,#14171b 72%)!important;
+  border-color:#414851!important;
+}
+#tab-visual .pv-specs dt{color:#ff7379!important}
+#tab-visual .pv-track{background:#30353c!important}
+#tab-visual .pv-track i{background:linear-gradient(90deg,#8f9399,#e31b23)!important}
+#tab-visual .pv-note{background:#20242a!important;color:#adb2b8!important}
+#tab-visual .pv-tab{background:#1b1e23!important;color:#a4a9b0!important;border-color:#343941!important}
+#tab-visual .pv-pill.orange{
+  background:#321619!important;
+  border-color:#78262b!important;
+  color:#ffb1b5!important;
+}
+#tab-visual .pv-warning{
+  border-left-color:#e31b23!important;
+  background:#2c1518!important;
+  color:#ffc2c5!important;
+}
+
+/* Mobile mantém a mesma assinatura visual. */
+@media(max-width:760px){
+  .sidebar{
+    background:linear-gradient(180deg,#1e2227,#111316)!important;
+    border-top:1px solid #363b42;
+  }
+  .side-nav button.active{box-shadow:0 5px 15px rgba(202,20,28,.28)!important}
+}
