@@ -1,14 +1,14 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Lavador 360">
   <defs>
     <linearGradient id="bg" x1="48" y1="36" x2="464" y2="476" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#14b8a6"/>
-      <stop offset=".55" stop-color="#0f766e"/>
-      <stop offset="1" stop-color="#062d2b"/>
+      <stop stop-color="#38bdf8"/>
+      <stop offset=".55" stop-color="#2563eb"/>
+      <stop offset="1" stop-color="#08142f"/>
     </linearGradient>
   </defs>
   <rect width="512" height="512" rx="112" fill="url(#bg)"/>
   <path d="M256 72c54 75 119 142 119 223 0 70-53 125-119 125s-119-55-119-125c0-81 65-148 119-223z" fill="#fff" opacity=".96"/>
-  <path d="M198 303c13 35 43 54 78 50 28-3 50-19 64-44-9 49-42 78-84 78-47 0-85-39-85-89 0-31 16-60 40-95-16 44-23 69-13 100z" fill="#bdfcf2" opacity=".9"/>
-  <rect x="70" y="78" width="164" height="64" rx="20" fill="#042b28" opacity=".78"/>
+  <path d="M198 303c13 35 43 54 78 50 28-3 50-19 64-44-9 49-42 78-84 78-47 0-85-39-85-89 0-31 16-60 40-95-16 44-23 69-13 100z" fill="#dbeafe" opacity=".92"/>
+  <rect x="70" y="78" width="164" height="64" rx="20" fill="#08142f" opacity=".84"/>
   <text x="91" y="124" fill="#fff" font-family="Arial,Helvetica,sans-serif" font-size="44" font-weight="800">L360</text>
 </svg>
