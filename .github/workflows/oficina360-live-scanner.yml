@@ -1,0 +1,36 @@
+name: Oficina 360 Live Scanner
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'oficina360.html'
+      - 'oficina360-live-scanner-v1.js'
+      - 'docs/oficina360-live-scanner-contract.md'
+      - 'qa/oficina360_live_scanner_v1_contract.mjs'
+      - 'supabase/migrations/20260929103000_oficina360_live_scanner_v1.sql'
+      - '.github/workflows/oficina360-live-scanner.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'oficina360.html'
+      - 'oficina360-live-scanner-v1.js'
+      - 'docs/oficina360-live-scanner-contract.md'
+      - 'qa/oficina360_live_scanner_v1_contract.mjs'
+      - 'supabase/migrations/20260929103000_oficina360_live_scanner_v1.sql'
+      - '.github/workflows/oficina360-live-scanner.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+      - name: JavaScript syntax
+        run: node --check oficina360-live-scanner-v1.js
+      - name: Live scanner contract
+        run: node qa/oficina360_live_scanner_v1_contract.mjs
