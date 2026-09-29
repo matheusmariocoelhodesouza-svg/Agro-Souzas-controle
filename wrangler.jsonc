@@ -1,7 +1,15 @@
 {
   "name": "comando360",
+  "main": "worker.js",
   "compatibility_date": "2026-08-16",
   "assets": {
-    "directory": "."
-  }
+    "directory": ".",
+    "binding": "ASSETS"
+  },
+  "routes": [
+    {
+      "pattern": "lavador.comando360.com.br",
+      "custom_domain": true
+    }
+  ]
 }
