@@ -1,0 +1,128 @@
+name: Oficina 360 + Lavador 360 Android
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'android-360-apps/**'
+      - '.github/workflows/android-oficina-lavador-build.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'android-360-apps/**'
+      - '.github/workflows/android-oficina-lavador-build.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      ANDROID_HOME: /usr/local/lib/android/sdk
+      ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Validate permanent app identities
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q 'applicationId = "br.com.comando360.oficina"' android-360-apps/oficina/build.gradle.kts
+          grep -q 'applicationId = "br.com.comando360.lavador"' android-360-apps/lavador/build.gradle.kts
+          grep -q 'versionName = "1.0.0"' android-360-apps/oficina/build.gradle.kts
+          grep -q 'versionName = "1.0.0"' android-360-apps/lavador/build.gradle.kts
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Install Android SDK 35
+        shell: bash
+        run: |
+          set -euo pipefail
+          SDKMANAGER="$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager"
+          if [ ! -x "$SDKMANAGER" ]; then SDKMANAGER="$(command -v sdkmanager)"; fi
+          yes | "$SDKMANAGER" --licenses >/dev/null || true
+          "$SDKMANAGER" "platform-tools" "platforms;android-35" "build-tools;35.0.0"
+
+      - name: Install Gradle 8.11.1
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL -o gradle-8.11.1-bin.zip https://services.gradle.org/distributions/gradle-8.11.1-bin.zip
+          unzip -q gradle-8.11.1-bin.zip
+
+      - name: Prepare stable Android signing
+        if: github.event_name != 'pull_request'
+        shell: bash
+        env:
+          SIGNING_URL: https://aycbrqziusxtxhsdfqjk.supabase.co/functions/v1/comando360-android-signing
+          OIDC_AUDIENCE: comando360-android-signing-v1
+        run: |
+          set -euo pipefail
+          OIDC_JSON="$(curl -fsSL -H "Authorization: Bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=${OIDC_AUDIENCE}")"
+          OIDC_TOKEN="$(python -c 'import json,sys; print(json.load(sys.stdin)["value"])' <<<"$OIDC_JSON")"
+          MATERIAL="$(curl -fsSL -H "Authorization: Bearer ${OIDC_TOKEN}" -H 'Cache-Control: no-store' "$SIGNING_URL")"
+          export MATERIAL
+          INITIALIZED="$(python -c 'import json,os; print(str(json.loads(os.environ["MATERIAL"]).get("initialized",False)).lower())')"
+          test "$INITIALIZED" = "true"
+          KEYSTORE_B64="$(python -c 'import json,os; print(json.loads(os.environ["MATERIAL"])["keystore_b64"])')"
+          STORE_PASSWORD="$(python -c 'import json,os; print(json.loads(os.environ["MATERIAL"])["store_password"])')"
+          KEY_ALIAS="$(python -c 'import json,os; print(json.loads(os.environ["MATERIAL"]).get("key_alias") or "comando360")')"
+          printf '%s' "$KEYSTORE_B64" | base64 -d > /tmp/comando360-release.jks
+          echo "::add-mask::$STORE_PASSWORD"
+          {
+            echo 'C360_KEYSTORE_PATH=/tmp/comando360-release.jks'
+            echo "C360_KEYSTORE_PASSWORD=$STORE_PASSWORD"
+            echo "C360_KEY_PASSWORD=$STORE_PASSWORD"
+            echo "C360_KEY_ALIAS=$KEY_ALIAS"
+          } >> "$GITHUB_ENV"
+
+      - name: Build debug APKs
+        if: github.event_name == 'pull_request'
+        run: ./gradle-8.11.1/bin/gradle -p android-360-apps :oficina:assembleDebug :lavador:assembleDebug --stacktrace
+
+      - name: Build signed release APKs
+        if: github.event_name != 'pull_request'
+        run: ./gradle-8.11.1/bin/gradle -p android-360-apps :oficina:assembleRelease :lavador:assembleRelease --stacktrace
+
+      - name: Verify release signatures
+        if: github.event_name != 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          APKSIGNER="$ANDROID_SDK_ROOT/build-tools/35.0.0/apksigner"
+          "$APKSIGNER" verify --verbose --print-certs android-360-apps/oficina/build/outputs/apk/release/oficina-release.apk
+          "$APKSIGNER" verify --verbose --print-certs android-360-apps/lavador/build/outputs/apk/release/lavador-release.apk
+
+      - uses: actions/upload-artifact@v4
+        if: github.event_name == 'pull_request'
+        with:
+          name: oficina360-v1.0.0-pr-debug
+          path: android-360-apps/oficina/build/outputs/apk/debug/oficina-debug.apk
+          retention-days: 14
+
+      - uses: actions/upload-artifact@v4
+        if: github.event_name == 'pull_request'
+        with:
+          name: lavador360-v1.0.0-pr-debug
+          path: android-360-apps/lavador/build/outputs/apk/debug/lavador-debug.apk
+          retention-days: 14
+
+      - uses: actions/upload-artifact@v4
+        if: github.event_name != 'pull_request'
+        with:
+          name: oficina360-v1.0.0-stable
+          path: android-360-apps/oficina/build/outputs/apk/release/oficina-release.apk
+          retention-days: 30
+
+      - uses: actions/upload-artifact@v4
+        if: github.event_name != 'pull_request'
+        with:
+          name: lavador360-v1.0.0-stable
+          path: android-360-apps/lavador/build/outputs/apk/release/lavador-release.apk
+          retention-days: 30
