@@ -4,5 +4,6 @@
 /* 2026-09-27 — atualiza regra de conferência da Apanha para caixas mistas, caixas vazias e tempos curtos válidos. */
 /* 2026-09-27 — força refresh do cache após correção da ponte Oficina 360. */
 /* 2026-09-30 — refresh de runtime para liberar FAX / Programação e IA de leitura do FAX. */
+/* 2026-09-30 — Apanhas passa a carregar o FAX diretamente pelo roteador principal. */
 importScripts('./sw-v7-02-core-hotfix63.js');
 importScripts('./sw-auth-refresh-guard.js');
