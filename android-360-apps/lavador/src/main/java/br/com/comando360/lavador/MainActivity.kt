@@ -207,6 +207,17 @@ class MainActivity : Activity() {
                 });
               });
 
+              // Fallback nativo para todos os atalhos internos da tela.
+              // Assim + Nova lavagem, + Iniciar, Ver estoque e Ver todas
+              // continuam funcionando mesmo se o listener web falhar no WebView.
+              document.addEventListener('click', function(event){
+                const shortcut = event.target.closest('[data-open-tab]');
+                if (!shortcut) return;
+                event.preventDefault();
+                event.stopPropagation();
+                nativeOpenTab(shortcut.dataset.openTab);
+              }, true);
+
               document.addEventListener('click', function(event){
                 const opener = event.target.closest('[data-open-tab]');
                 if (opener) {
