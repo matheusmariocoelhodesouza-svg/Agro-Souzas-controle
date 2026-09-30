@@ -208,6 +208,13 @@ class MainActivity : Activity() {
               });
 
               document.addEventListener('click', function(event){
+                const opener = event.target.closest('[data-open-tab]');
+                if (opener) {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  nativeOpenTab(opener.dataset.openTab);
+                  return;
+                }
                 if (!sheet.contains(event.target) && !moreButton.contains(event.target)) closeSheet();
               });
               document.addEventListener('keydown', function(event){ if (event.key === 'Escape') closeSheet(); });
