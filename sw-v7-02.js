@@ -6,6 +6,7 @@
 /* 2026-09-30 — refresh de runtime para liberar FAX / Programação e IA de leitura do FAX. */
 /* 2026-09-30 — Apanhas passa a carregar o FAX diretamente pelo roteador principal. */
 /* 2026-09-30 — adiciona recebimento de imagem compartilhada pelo Android/WhatsApp para a IA. */
+/* 2026-09-30 — força atualização do manifesto PWA com ícones 192/512 e registro completo de share target. */
 importScripts('./sw-v7-02-core-hotfix63.js');
 importScripts('./sw-auth-refresh-guard.js');
 importScripts('./sw-share-target.js');
