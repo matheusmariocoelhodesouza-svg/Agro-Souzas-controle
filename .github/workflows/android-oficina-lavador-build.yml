@@ -32,8 +32,8 @@ jobs:
           set -euo pipefail
           grep -q 'applicationId = "br.com.comando360.oficina"' android-360-apps/oficina/build.gradle.kts
           grep -q 'applicationId = "br.com.comando360.lavador"' android-360-apps/lavador/build.gradle.kts
-          grep -q 'versionName = "1.0.0"' android-360-apps/oficina/build.gradle.kts
-          grep -q 'versionName = "1.0.0"' android-360-apps/lavador/build.gradle.kts
+          grep -q 'versionName = "1.0.1"' android-360-apps/oficina/build.gradle.kts
+          grep -q 'versionName = "1.0.1"' android-360-apps/lavador/build.gradle.kts
 
       - uses: actions/setup-java@v5
         with:
@@ -102,27 +102,27 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: github.event_name == 'pull_request'
         with:
-          name: oficina360-v1.0.0-pr-debug
+          name: oficina360-v1.0.1-pr-debug
           path: android-360-apps/oficina/build/outputs/apk/debug/oficina-debug.apk
           retention-days: 14
 
       - uses: actions/upload-artifact@v4
         if: github.event_name == 'pull_request'
         with:
-          name: lavador360-v1.0.0-pr-debug
+          name: lavador360-v1.0.1-pr-debug
           path: android-360-apps/lavador/build/outputs/apk/debug/lavador-debug.apk
           retention-days: 14
 
       - uses: actions/upload-artifact@v4
         if: github.event_name != 'pull_request'
         with:
-          name: oficina360-v1.0.0-stable
+          name: oficina360-v1.0.1-stable
           path: android-360-apps/oficina/build/outputs/apk/release/oficina-release.apk
           retention-days: 30
 
       - uses: actions/upload-artifact@v4
         if: github.event_name != 'pull_request'
         with:
-          name: lavador360-v1.0.0-stable
+          name: lavador360-v1.0.1-stable
           path: android-360-apps/lavador/build/outputs/apk/release/lavador-release.apk
           retention-days: 30
