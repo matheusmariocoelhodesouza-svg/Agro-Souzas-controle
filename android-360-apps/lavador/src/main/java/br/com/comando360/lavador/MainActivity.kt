@@ -162,6 +162,20 @@ class MainActivity : Activity() {
                 sheet.classList.remove('open');
                 moreButton.setAttribute('aria-expanded','false');
               }
+              function nativeOpenTab(tab){
+                nav.querySelectorAll('button[data-tab]').forEach(function(button){
+                  button.classList.toggle('active', button.dataset.tab === tab);
+                });
+                document.querySelectorAll('.tab').forEach(function(section){
+                  section.classList.toggle('active', section.id === 'tab-' + tab);
+                });
+                const titles = {dashboard:'Visão geral','new-wash':'Nova lavagem',washes:'Lavagens',customers:'Clientes',products:'Produtos & estoque',findings:'Inspeções',settings:'Custos & preços'};
+                const title = document.querySelector('#pageTitle');
+                if (title) title.textContent = titles[tab] || 'Lavador 360';
+                window.scrollTo({top:0,behavior:'smooth'});
+                closeSheet();
+                setTimeout(syncActive,0);
+              }
               function syncActive(){
                 const hiddenActive = ['products','findings','settings'].some(function(tab){
                   const button = nav.querySelector('button[data-tab="' + tab + '"]');
@@ -180,16 +194,16 @@ class MainActivity : Activity() {
               sheet.addEventListener('click', function(event){
                 const item = event.target.closest('button[data-target-tab]');
                 if (!item) return;
-                const target = nav.querySelector('button[data-tab="' + item.dataset.targetTab + '"]');
-                if (target) target.click();
-                closeSheet();
-                setTimeout(syncActive,0);
+                event.preventDefault();
+                event.stopPropagation();
+                nativeOpenTab(item.dataset.targetTab);
               });
 
               nav.querySelectorAll('button[data-tab]').forEach(function(button){
-                button.addEventListener('click', function(){
-                  closeSheet();
-                  setTimeout(syncActive,0);
+                button.addEventListener('click', function(event){
+                  event.preventDefault();
+                  event.stopPropagation();
+                  nativeOpenTab(button.dataset.tab);
                 });
               });
 
