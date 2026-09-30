@@ -2,7 +2,7 @@
  'use strict';
  const VERSION='2026.09.30-fax1';
  const BUCKET='v2-poultry-sheets';
- let rows=[],teams=[],selectedFile=null,currentTab='today',installed=false,loading=false;
+ let rows=[],teams=[],selectedFile=null,aiActions=[],currentTab='today',installed=false,loading=false;
  const q=s=>document.querySelector(s);
  const escLocal=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
  const todayLocal=()=>new Intl.DateTimeFormat('en-CA',{timeZone:'America/Sao_Paulo',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
@@ -52,7 +52,7 @@
      <div><label>Aves previstas</label><input id="c360FaxBirds" type="number" min="0" inputmode="numeric"></div>
      <div><label>Nº de aviários</label><input id="c360FaxSheds" type="number" min="0" inputmode="numeric"></div>
      <div class="wide"><label>Observações</label><input id="c360FaxNotes" placeholder="Informações adicionais do FAX"></div>
-     <div class="wide"><label>Foto ou PDF do FAX</label><div class="c360-fax-file-actions"><button class="btn soft" id="c360FaxCameraBtn" type="button">📷 TIRAR FOTO</button><button class="btn soft" id="c360FaxFileBtn" type="button">📎 ESCOLHER FOTO/PDF</button></div><input id="c360FaxCamera" type="file" accept="image/jpeg,image/png,image/webp" capture="environment" hidden><input id="c360FaxFile" type="file" accept="application/pdf,image/jpeg,image/png,image/webp" hidden><div class="c360-fax-file-name" id="c360FaxFileName">Nenhum arquivo selecionado.</div></div>
+     <div class="wide"><label>Foto ou PDF do FAX</label><div class="c360-fax-file-actions"><button class="btn soft" id="c360FaxCameraBtn" type="button">📷 TIRAR FOTO</button><button class="btn soft" id="c360FaxFileBtn" type="button">📎 ESCOLHER FOTO/PDF</button></div><input id="c360FaxCamera" type="file" accept="image/jpeg,image/png,image/webp" capture="environment" hidden><input id="c360FaxFile" type="file" accept="application/pdf,image/jpeg,image/png,image/webp" hidden><div class="c360-fax-file-name" id="c360FaxFileName">Nenhum arquivo selecionado.</div><div id="c360FaxAiBox" class="hidden" style="margin-top:8px"><span class="muted" id="c360FaxAiMsg"></span><select id="c360FaxAiChoice" class="hidden" style="margin-top:7px"></select></div></div>
     </div>
     <div class="toolbar" style="margin-top:13px"><button class="btn primary" id="c360FaxSave" type="button">SALVAR FAX E PROGRAMAR</button><span class="muted" id="c360FaxMsg"></span></div>
    </div>
@@ -79,12 +79,20 @@
  function bind(){
   q('#c360FaxNew').onclick=openForm;q('#c360FaxHeroBtn').onclick=()=>{q('#c360FaxPanel')?.scrollIntoView({behavior:'smooth',block:'start'});openForm()};q('#c360FaxClose').onclick=closeForm;
   q('#c360FaxCameraBtn').onclick=()=>q('#c360FaxCamera').click();q('#c360FaxFileBtn').onclick=()=>q('#c360FaxFile').click();
-  q('#c360FaxCamera').onchange=e=>chooseFile(e.target.files?.[0]);q('#c360FaxFile').onchange=e=>chooseFile(e.target.files?.[0]);
+  q('#c360FaxCamera').onchange=e=>chooseFile(e.target.files?.[0]);q('#c360FaxFile').onchange=e=>chooseFile(e.target.files?.[0]);q('#c360FaxAiChoice').onchange=e=>applyAiAction(aiActions[Number(e.target.value)||0]);
   q('#c360FaxSave').onclick=save;
   document.querySelectorAll('[data-faxtab]').forEach(b=>b.onclick=()=>{currentTab=b.dataset.faxtab;document.querySelectorAll('[data-faxtab]').forEach(x=>x.classList.toggle('active',x===b));render()});
  }
  function chooseFile(file){
-  if(!file)return;const allowed=['application/pdf','image/jpeg','image/png','image/webp'];if(!allowed.includes(file.type)){alert('Use PDF, JPG, PNG ou WEBP.');return}if(file.size>15*1024*1024){alert('O arquivo do FAX deve ter no máximo 15 MB.');return}selectedFile=file;q('#c360FaxFileName').textContent=`${file.name} • ${(file.size/1024/1024).toFixed(1)} MB`;
+  if(!file)return;const allowed=['application/pdf','image/jpeg','image/png','image/webp'];if(!allowed.includes(file.type)){alert('Use PDF, JPG, PNG ou WEBP.');return}if(file.size>15*1024*1024){alert('O arquivo do FAX deve ter no máximo 15 MB.');return}selectedFile=file;aiActions=[];q('#c360FaxFileName').textContent=`${file.name} • ${(file.size/1024/1024).toFixed(1)} MB`;const box=q('#c360FaxAiBox'),msg=q('#c360FaxAiMsg'),choice=q('#c360FaxAiChoice');box?.classList.remove('hidden');choice?.classList.add('hidden');if(file.type.startsWith('image/')){msg.textContent='✨ Lendo o FAX com a IA...';analyzeFaxImage(file)}else msg.textContent='PDF anexado. Os dados podem ser preenchidos manualmente; a leitura automática desta tela usa foto do FAX.';
+ }
+ function fileToDataUrl(file){return new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(String(r.result||''));r.onerror=()=>reject(new Error('Não foi possível ler a foto.'));r.readAsDataURL(file)})}
+ function applyAiAction(a){
+  const p=a?.payload||{};if(!p)return;const start=String(p.scheduled_start||'');if(p.team_id)q('#c360FaxTeam').value=p.team_id;if(start){q('#c360FaxDate').value=start.slice(0,10);const tm=start.match(/T(\d{2}:\d{2})/);if(tm)q('#c360FaxTime').value=tm[1]}if(p.integrator_name)q('#c360FaxClient').value=p.integrator_name;if(p.producer||p.farm_name||p.integrator_name)q('#c360FaxIntegrated').value=p.producer||p.farm_name||p.integrator_name;if(p.farm_name)q('#c360FaxFarm').value=p.farm_name;if(p.city)q('#c360FaxCity').value=p.city;if(p.planned_birds!=null)q('#c360FaxBirds').value=String(Math.round(Number(p.planned_birds)||0));if(p.notes)q('#c360FaxNotes').value=p.notes;
+ }
+ async function analyzeFaxImage(file){
+  const cid=safeCompanyId(),msg=q('#c360FaxAiMsg'),choice=q('#c360FaxAiChoice');if(!cid){msg.textContent='A empresa ainda está carregando. Você pode salvar o FAX manualmente.';return}
+  try{const image=await fileToDataUrl(file);const data=await api('/functions/v1/controla-ai',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({company_id:cid,mode:'analyze',question:'Leia este FAX de programação de apanha. Extraia todas as apanhas/localidades visíveis e os dados de equipe, empresa/integrador, produtor, granja, cidade, data, horário e aves previstas. Apenas proponha os dados; não execute nenhum lançamento.',image_data_url:image})});aiActions=(data?.actions||[]).filter(a=>a.action_type==='poultry_schedule');if(!aiActions.length){msg.textContent='Não consegui identificar uma programação de apanha automaticamente. Confira e preencha os campos manualmente.';return}applyAiAction(aiActions[0]);if(aiActions.length>1){choice.innerHTML=aiActions.map((a,i)=>`<option value="${i}">Apanha ${i+1} — ${escLocal(a.payload?.farm_name||a.payload?.producer||a.payload?.city||'local '+(i+1))}</option>`).join('');choice.classList.remove('hidden');msg.textContent=`✨ IA encontrou ${aiActions.length} apanhas. Escolha acima qual deseja cadastrar agora e confira os campos.`}else{choice.classList.add('hidden');msg.textContent='✨ IA leu o FAX e preencheu os campos. Confira antes de salvar.'}}catch(e){msg.textContent='Não foi possível ler automaticamente: '+e.message+' Você ainda pode preencher e salvar manualmente.'}
  }
  async function loadTeams(){const cid=safeCompanyId();if(!cid)return;teams=await api('/rest/v1/v2_teams?select=id,name,status&company_id=eq.'+encodeURIComponent(cid)+'&status=eq.active&order=name.asc');const sel=q('#c360FaxTeam');if(sel)sel.innerHTML='<option value="">Definir depois</option>'+teams.map(t=>`<option value="${escLocal(t.id)}">${escLocal(t.name)}</option>`).join('')}
  async function loadRows(){
@@ -104,7 +112,7 @@
  }
  function openForm(){q('#c360FaxForm')?.classList.remove('hidden');if(q('#c360FaxDate')&&!q('#c360FaxDate').value)q('#c360FaxDate').value=todayLocal();q('#c360FaxForm')?.scrollIntoView({behavior:'smooth',block:'nearest'})}
  function closeForm(){q('#c360FaxForm')?.classList.add('hidden')}
- function resetForm(){['#c360FaxClient','#c360FaxTime','#c360FaxIntegrated','#c360FaxFarm','#c360FaxCity','#c360FaxLocation','#c360FaxBirds','#c360FaxSheds','#c360FaxNotes'].forEach(id=>{const e=q(id);if(e)e.value=''});if(q('#c360FaxDate'))q('#c360FaxDate').value=todayLocal();if(q('#c360FaxTeam'))q('#c360FaxTeam').value='';if(q('#c360FaxCamera'))q('#c360FaxCamera').value='';if(q('#c360FaxFile'))q('#c360FaxFile').value='';selectedFile=null;q('#c360FaxFileName').textContent='Nenhum arquivo selecionado.'}
+ function resetForm(){['#c360FaxClient','#c360FaxTime','#c360FaxIntegrated','#c360FaxFarm','#c360FaxCity','#c360FaxLocation','#c360FaxBirds','#c360FaxSheds','#c360FaxNotes'].forEach(id=>{const e=q(id);if(e)e.value=''});if(q('#c360FaxDate'))q('#c360FaxDate').value=todayLocal();if(q('#c360FaxTeam'))q('#c360FaxTeam').value='';if(q('#c360FaxCamera'))q('#c360FaxCamera').value='';if(q('#c360FaxFile'))q('#c360FaxFile').value='';selectedFile=null;aiActions=[];q('#c360FaxFileName').textContent='Nenhum arquivo selecionado.';q('#c360FaxAiBox')?.classList.add('hidden');q('#c360FaxAiChoice')?.classList.add('hidden')}
  async function upload(file,faxId,teamId){
   const cid=safeCompanyId();const folder=teamId||cid;const path=`${cid}/${folder}/fax/${faxId}/${Date.now()}-${fileSafe(file.name)}`;await api('/storage/v1/object/'+BUCKET+'/'+pathEncode(path),{method:'POST',headers:{'Content-Type':file.type||'application/octet-stream','x-upsert':'false'},body:file});return path
  }
