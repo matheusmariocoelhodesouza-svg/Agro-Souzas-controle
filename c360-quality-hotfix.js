@@ -1,6 +1,6 @@
 (()=>{
 'use strict';
-const BOOT_VERSION='2026.09.29-assistant360-1';
+const BOOT_VERSION='2026.09.30-fax2';
 const recoveryModule='./c360-autorecovery.js';
 
 /* Runtime enxuto: só recursos globais entram no primeiro paint. */
@@ -27,6 +27,7 @@ const essentialModules=[
  './c360-commercial.js','./c360-saas-readiness.js','./c360-rpc-bridge.js','./c360-showcase-exact.js'
 ];
 const routeModules={
+ operacoes:['./c360-fax.js'],
  relatorios:['./c360-report-share.js','./c360-report-stability.js'],
  insumos:['./c360-consumable-edit.js','./c360-consumable-action-bridge.js','./c360-consumable-mobile-actions.js'],
  fiscal:['./c360-fiscal.js','./c360-fiscal-issuance.js'],
