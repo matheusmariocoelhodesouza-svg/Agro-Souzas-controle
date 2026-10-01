@@ -13,7 +13,7 @@ const statusLabel={scheduled:'Agendada',in_progress:'Em andamento',completed:'Co
 const severityLabel={info:'Informação',attention:'Atenção',urgent:'Urgente'};
 const stageLabel={waiting:'Aguardando',prewash:'Pré-lavagem',washing:'Lavagem',finishing:'Acabamento',inspection:'Inspeção',ready:'Pronto',delivered:'Entregue'};
 const stageFlow=['waiting','prewash','washing','finishing','inspection','ready','delivered'];
-const state={client:null,session:null,company:null,canManage:false,vehicles:[],customers:[],externalVehicles:[],services:[],products:[],orders:[],findings:[],settings:null,usageCart:[],detailOrder:null,detailChecklist:[],detailPhotos:[]};
+const state={client:null,session:null,company:null,canManage:false,vehicles:[],customers:[],externalVehicles:[],services:[],products:[],orders:[],findings:[],settings:null,usageCart:[],detailOrder:null,detailChecklist:[],detailPhotos:[],detailStages:[]};
 
 function toast(message,type='ok'){
   const el=$('#toast');if(!el)return;
@@ -48,6 +48,7 @@ function bindUi(){
   $$('.side-nav button[data-tab]').forEach(btn=>btn.addEventListener('click',()=>openTab(btn.dataset.tab)));
   $('[data-open-tab]').forEach(btn=>btn.addEventListener('click',()=>openTab(btn.dataset.openTab)));
   $('#washPhotoInput')?.addEventListener('change',uploadWashPhoto);
+  $('#deliverWashBtn')?.addEventListener('click',deliverCurrentWash);
   $('#refreshBtn')?.addEventListener('click',loadData);
   $('#logoutBtn')?.addEventListener('click',logout);
   $('#washOwnership')?.addEventListener('change',()=>{syncOwnership();applyVehicleClass();renderServiceOptions();applyServiceDefaults();updateLiveEstimate();});
@@ -289,8 +290,8 @@ const washChecklistTemplate=[
 async function openWashDetail(id){
   const o=state.orders.find(x=>x.id===id);if(!o)return;state.detailOrder=o;
   try{
-    const [cr,pr]=await Promise.all([state.client.from('v2_wash_checklist_items').select('*').eq('wash_order_id',id).order('created_at'),state.client.from('v2_wash_photos').select('*').eq('wash_order_id',id).order('created_at')]);
-    state.detailChecklist=query(cr,'Checklist');state.detailPhotos=query(pr,'Fotos');renderWashDetail();openTab('wash-detail');
+    const [cr,pr,sr]=await Promise.all([state.client.from('v2_wash_checklist_items').select('*').eq('wash_order_id',id).order('created_at'),state.client.from('v2_wash_photos').select('*').eq('wash_order_id',id).order('created_at'),state.client.from('v2_wash_stage_events').select('*').eq('wash_order_id',id).order('created_at')]);
+    state.detailChecklist=query(cr,'Checklist');state.detailPhotos=query(pr,'Fotos');state.detailStages=query(sr,'Tempos');renderWashDetail();openTab('wash-detail');
   }catch(err){toast(err.message||'Falha ao abrir detalhes.','error')}
 }
 function renderWashDetail(){
@@ -299,7 +300,7 @@ function renderWashDetail(){
   const elapsed=o.started_at?Math.max(0,Math.round(((o.finished_at?new Date(o.finished_at):new Date())-new Date(o.started_at))/60000)):0;
   $('#detailSummary').innerHTML='<article class="kpi"><span>Etapa</span><strong>'+stageLabel[o.operation_stage||'waiting']+'</strong></article><article class="kpi"><span>Tempo</span><strong>'+elapsed+' min</strong></article><article class="kpi"><span>Custo</span><strong>'+money(o.total_cost)+'</strong></article><article class="kpi"><span>Economia</span><strong>'+money(o.estimated_savings)+'</strong></article>';
   $('#washChecklist').innerHTML=washChecklistTemplate.map(x=>{const r=state.detailChecklist.find(i=>i.phase===x[0]&&i.item_code===x[1]);const val=r?.result||'pending';return '<div class="check-row"><div><strong>'+esc(x[2])+'</strong><small>'+x[0].toUpperCase()+'</small></div><div class="check-actions">'+['ok','fail','na'].map(v=>'<button class="check-btn '+(val===v?'active '+v:'')+'" data-action="check-result" data-id="'+o.id+'" data-phase="'+x[0]+'" data-code="'+x[1]+'" data-label="'+esc(x[2])+'" data-result="'+v+'">'+(v==='ok'?'✓ OK':v==='fail'?'! Falha':'N/A')+'</button>').join('')+'</div></div>'}).join('');
-  renderWashPhotos();renderVehicleHistory();
+  renderWashPhotos();renderVehicleHistory();renderStageTimeline();renderDeliveryGate();
 }
 async function setChecklistResult(orderId,phase,code,label,result){
   if(!state.canManage)return;let notes=null;if(result==='fail')notes=prompt('Descreva a falha encontrada:','')||null;
@@ -313,13 +314,31 @@ async function uploadWashPhoto(event){
 async function renderWashPhotos(){
   const grid=$('#washPhotoGrid');if(!grid)return;const cards=await Promise.all(state.detailPhotos.map(async p=>{const s=await state.client.storage.from('v2-wash-photos').createSignedUrl(p.storage_path,3600);return '<figure><img src="'+esc(s.data?.signedUrl||'')+'" alt="'+esc(p.angle_code)+'"><figcaption>'+esc(p.phase==='before'?'Antes':'Depois')+' • '+esc(p.angle_code)+'</figcaption></figure>'}));grid.innerHTML=cards.join('')||'<div class="empty-state">Nenhuma foto ainda.</div>';
 }
+function renderStageTimeline(){
+ const el=$('#washStageTimeline');if(!el)return;const rows=state.detailStages;
+ el.innerHTML=rows.map((e,i)=>{const next=rows[i+1];const mins=next?Math.max(0,Math.round((new Date(next.created_at)-new Date(e.created_at))/60000)):null;return '<div class="list-row"><div><strong>'+esc(stageLabel[e.stage]||e.stage)+'</strong><small>'+when(e.created_at)+(e.notes?' • '+esc(e.notes):'')+'</small></div><div><strong>'+(mins===null?'Em andamento':mins+' min')+'</strong></div></div>'}).join('')||'<div class="empty-state">Os tempos começam a ser registrados ao avançar as etapas.</div>';
+}
+function deliveryReady(){
+ const o=state.detailOrder;if(!o)return false;const after=state.detailPhotos.some(p=>p.phase==='after');const qa=state.detailChecklist.filter(x=>x.phase==='qa');const qaDone=washChecklistTemplate.filter(x=>x[0]==='qa').every(x=>qa.some(r=>r.item_code===x[1]&&r.result!=='pending'));
+ return o.qa_status==='approved'&&after&&qaDone;
+}
+function renderDeliveryGate(){
+ const o=state.detailOrder,btn=$('#deliverWashBtn'),msg=$('#deliveryGate');if(!o||!btn||!msg)return;const ready=deliveryReady();btn.disabled=!state.canManage||!ready||o.status==='completed';msg.textContent=o.status==='completed'?'Veículo já liberado.':ready?'Tudo conferido. Veículo pronto para liberação.':'Para liberar: QA aprovado + checklist de inspeção completo + ao menos 1 foto Depois.';
+ if($('#checkoutOdometer'))$('#checkoutOdometer').value=o.checkout_odometer_km||'';if($('#checkoutFuel'))$('#checkoutFuel').value=o.checkout_fuel_level||'';
+}
+async function deliverCurrentWash(){
+ const o=state.detailOrder;if(!o||!deliveryReady())return toast('Finalize QA, checklist e foto Depois antes da entrega.','error');
+ const km=Number($('#checkoutOdometer').value||0),fuel=$('#checkoutFuel').value;if(km&&o.odometer_km&&km<Number(o.odometer_km))return toast('Hodômetro de saída não pode ser menor que o de entrada.','error');
+ const now=new Date().toISOString(),duration=o.started_at?Math.max(0,Math.round((new Date(now)-new Date(o.started_at))/60000)):null;
+ try{const r=await state.client.from('v2_wash_orders').update({operation_stage:'delivered',status:'completed',finished_at:now,delivered_at:now,checkout_odometer_km:km||null,checkout_fuel_level:fuel||null,actual_duration_minutes:duration}).eq('id',o.id).eq('company_id',state.company.id);if(r.error)throw r.error;await state.client.from('v2_wash_stage_events').insert({company_id:state.company.id,wash_order_id:o.id,stage:'delivered',event_type:'enter'});toast('Veículo liberado e lavagem encerrada.');await loadData();openTab('patio')}catch(err){toast(err.message||'Falha ao liberar veículo.','error')}
+}
 function renderVehicleHistory(){
   const o=state.detailOrder;if(!o)return;const list=state.orders.filter(x=>x.id!==o.id&&((o.vehicle_id&&x.vehicle_id===o.vehicle_id)||(o.customer_vehicle_id&&x.customer_vehicle_id===o.customer_vehicle_id))).slice(0,20);
   $('#vehicleWashHistory').innerHTML=list.map(x=>'<div class="list-row"><div><strong>#'+x.wash_number+' • '+esc(x.service_name)+'</strong><small>'+when(x.created_at)+' • '+statusLabel[x.status]+'</small></div><div><strong>'+money(x.total_cost)+'</strong><small>'+qty(x.water_liters,1)+' L água</small></div></div>').join('')||'<div class="empty-state">Primeira lavagem registrada desta condução.</div>';
 }
 
-async function advanceStage(id,stage){if(!state.canManage||!stageFlow.includes(stage))return;try{const patch={operation_stage:stage};if(stage==='washing')patch.started_at=new Date().toISOString();if(stage==='inspection')patch.qa_status='pending';if(stage==='delivered'){patch.status='completed';patch.finished_at=new Date().toISOString()}const r=await state.client.from('v2_wash_orders').update(patch).eq('id',id).eq('company_id',state.company.id);if(r.error)throw r.error;toast('Etapa atualizada: '+stageLabel[stage]+'.');await loadData()}catch(err){toast(err.message||'Não foi possível avançar a etapa.','error')}}
-async function qaDecision(id,status){if(!state.canManage)return;const notes=status==='rework'?(prompt('O que precisa ser refeito?','')||null):null;try{const patch={qa_status:status,qa_notes:notes,qa_checked_at:new Date().toISOString(),operation_stage:status==='approved'?'ready':'washing'};const r=await state.client.from('v2_wash_orders').update(patch).eq('id',id).eq('company_id',state.company.id);if(r.error)throw r.error;toast(status==='approved'?'Qualidade aprovada.':'Veículo voltou para lavagem.');await loadData()}catch(err){toast(err.message||'Falha no controle de qualidade.','error')}}
+async function advanceStage(id,stage){if(!state.canManage||!stageFlow.includes(stage))return;const o=state.orders.find(x=>x.id===id);if(!o)return;if(stage==='delivered')return openWashDetail(id);try{const patch={operation_stage:stage};if(stage==='washing'&&!o.started_at)patch.started_at=new Date().toISOString();if(stage==='inspection')patch.qa_status='pending';const r=await state.client.from('v2_wash_orders').update(patch).eq('id',id).eq('company_id',state.company.id);if(r.error)throw r.error;const ev=await state.client.from('v2_wash_stage_events').insert({company_id:state.company.id,wash_order_id:id,stage,event_type:'enter'});if(ev.error)throw ev.error;toast('Etapa atualizada: '+stageLabel[stage]+'.');await loadData()}catch(err){toast(err.message||'Não foi possível avançar a etapa.','error')}}
+async function qaDecision(id,status){if(!state.canManage)return;const notes=status==='rework'?(prompt('O que precisa ser refeito?','')||null):null;try{const patch={qa_status:status,qa_notes:notes,qa_checked_at:new Date().toISOString(),operation_stage:status==='approved'?'ready':'washing'};if(status==='rework')patch.rework_count=(Number(state.orders.find(x=>x.id===id)?.rework_count)||0)+1;const r=await state.client.from('v2_wash_orders').update(patch).eq('id',id).eq('company_id',state.company.id);if(r.error)throw r.error;const ev=await state.client.from('v2_wash_stage_events').insert({company_id:state.company.id,wash_order_id:id,stage:status==='approved'?'ready':'washing',event_type:status==='approved'?'qa_approved':'rework',notes});if(ev.error)throw ev.error;toast(status==='approved'?'Qualidade aprovada.':'Veículo voltou para lavagem.');await loadData()}catch(err){toast(err.message||'Falha no controle de qualidade.','error')}}
 async function completeWash(id){if(!state.canManage)return;try{const r=await state.client.from('v2_wash_orders').update({status:'completed',finished_at:new Date().toISOString()}).eq('id',id).eq('company_id',state.company.id);if(r.error)throw r.error;toast('Lavagem concluída.');await loadData()}catch(err){toast(err.message,'error')}}
 async function sendToWorkshop(id){if(!state.canManage)return;try{const r=await state.client.rpc('v2_wash_send_finding_to_workshop',{p_finding_id:id});if(r.error)throw r.error;toast('OS criada no Oficina 360.');await loadData()}catch(err){toast(err.message,'error')}}
 async function restock(id){if(!state.canManage)return;const p=state.products.find(x=>x.id===id);if(!p)return;const raw=prompt(`Quantos litros deseja adicionar ao estoque de ${p.name}?`,'5');if(raw===null)return;const liters=Number(String(raw).replace(',','.'));if(!Number.isFinite(liters)||liters<=0){toast('Informe uma quantidade válida.','error');return}try{const r=await state.client.from('v2_wash_products').update({stock_ml:n(p.stock_ml)+liters*1000,updated_at:new Date().toISOString()}).eq('id',id).eq('company_id',state.company.id);if(r.error)throw r.error;toast('Estoque atualizado.');await loadData()}catch(err){toast(err.message,'error')}}
