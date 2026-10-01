@@ -11,7 +11,7 @@
 <link rel="icon" type="image/png" sizes="256x256" href="./lavador360-icon-orange-bus.png?v=20260929-4">
 <link rel="shortcut icon" type="image/png" href="./lavador360-icon-orange-bus.png?v=20260929-4">
 <link rel="apple-touch-icon" sizes="256x256" href="./lavador360-icon-orange-bus.png?v=20260929-4">
-<link rel="stylesheet" href="./lavador360.css?v=20261001-5">
+<link rel="stylesheet" href="./lavador360.css?v=20261001-6">
 </head>
 <body>
 <div id="sessionGate" class="session-gate hidden">
@@ -198,6 +198,7 @@
           </form>
           <article class="panel info-panel"><span class="eyebrow">CÁLCULO AUTOMÁTICO</span><h3>Exemplo de diluição</h3><p>Em 1:20, uma solução final de 5 litros usa aproximadamente <b>238 ml</b> de produto concentrado. O Lavador 360 calcula isso e baixa só o concentrado do estoque.</p><div id="inventoryValue" class="big-number">R$ 0,00</div><small>valor estimado do estoque atual</small></article>
         </div>
+        <article class="panel restock-panel"><div class="panel-head"><div><span class="eyebrow">COMPRAS</span><h3>Lista de reposição</h3><p>Gerada automaticamente quando o estoque chega ao mínimo.</p></div><div class="restock-total"><span>INVESTIMENTO PARA REPOR</span><strong id="restockInvestment">R$ 0,00</strong></div></div><div id="restockList" class="stack"></div></article>
         <article class="panel"><div class="panel-head"><div><h3>Estoque atual</h3></div></div><div id="productList" class="product-grid"></div></article>
       </section>
 
@@ -241,6 +242,6 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="./config.js"></script>
 <script src="./lavador360-auth-bridge.js?v=20260929-4"></script>
-<script src="./lavador360.js?v=20261001-5"></script>
+<script src="./lavador360.js?v=20261001-6"></script>
 </body>
 </html>
