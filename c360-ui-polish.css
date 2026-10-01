@@ -646,3 +646,80 @@ body.darkmode:not(.app-ready) #showAdminLogin{
     height:54px!important;
   }
 }
+
+
+/* 2026-10-01 — dashboard mobile readability hardening */
+#dashboardMonthStats .dash-month{
+  height:auto!important;
+  min-height:88px!important;
+  padding:12px 13px!important;
+  overflow:visible!important;
+  opacity:1!important;
+  filter:none!important;
+}
+#dashboardMonthStats .dash-month>div{
+  min-height:22px!important;
+}
+#dashboardMonthStats .dash-month small{
+  color:#5f7188!important;
+  -webkit-text-fill-color:#5f7188!important;
+  opacity:1!important;
+  font-size:11px!important;
+  font-weight:800!important;
+}
+#dashboardMonthStats .dash-month b{
+  color:#10213d!important;
+  -webkit-text-fill-color:#10213d!important;
+  opacity:1!important;
+  font-size:18px!important;
+  line-height:1.2!important;
+  font-weight:950!important;
+}
+#dashboardMonthStats .dash-month.income b{
+  color:#137a45!important;
+  -webkit-text-fill-color:#137a45!important;
+}
+#dashboardMonthStats .dash-month.expense b{
+  color:#a85035!important;
+  -webkit-text-fill-color:#a85035!important;
+}
+body.darkmode #dashboardMonthStats .dash-month{
+  background:#102033!important;
+  border-color:#2d435c!important;
+  box-shadow:none!important;
+}
+body.darkmode #dashboardMonthStats .dash-month small{
+  color:#b9c8d9!important;
+  -webkit-text-fill-color:#b9c8d9!important;
+}
+body.darkmode #dashboardMonthStats .dash-month b{
+  color:#f8fbff!important;
+  -webkit-text-fill-color:#f8fbff!important;
+}
+body.darkmode #dashboardMonthStats .dash-month.income{
+  background:#102b25!important;
+  border-color:#2c5b4c!important;
+}
+body.darkmode #dashboardMonthStats .dash-month.income b{
+  color:#8ff0bb!important;
+  -webkit-text-fill-color:#8ff0bb!important;
+}
+body.darkmode #dashboardMonthStats .dash-month.expense{
+  background:#2b1d1d!important;
+  border-color:#63423c!important;
+}
+body.darkmode #dashboardMonthStats .dash-month.expense b{
+  color:#ffb7a6!important;
+  -webkit-text-fill-color:#ffb7a6!important;
+}
+@media(max-width:760px){
+  #dashboardMonthStats{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    gap:9px!important;
+  }
+  #dashboardMonthStats .dash-month{
+    min-width:0!important;
+    min-height:90px!important;
+    border-radius:14px!important;
+  }
+}
