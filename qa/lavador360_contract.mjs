@@ -12,6 +12,12 @@ const sequence=read('supabase/migrations/20260929111500_lavador360_order_sequenc
 const must=(value,message)=>{if(!value)throw new Error(message)};
 
 new Function(js);
+
+must(html.includes('id="tab-patio"'),'Tela de pátio ausente');
+must(html.includes('id="patioBoard"'),'Board do pátio ausente');
+must(js.includes('function renderPatio'),'Render do pátio ausente');
+must(js.includes("action==='advance-stage'"),'Avanço de etapa ausente');
+must(js.includes('qaDecision'),'Controle de qualidade ausente');
 new Function(auth);
 
 for(const id of ['sessionGate','appShell','dashboardKpis','washForm','washList','customerForm','productForm','findingForm','settingsForm','servicePriceList']){
