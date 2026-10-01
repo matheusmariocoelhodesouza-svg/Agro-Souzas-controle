@@ -227,6 +227,23 @@ function renderProducts(){
   let inventory=0;
   $('#productList').innerHTML=state.products.length?state.products.map(p=>{const low=n(p.stock_ml)<=n(p.minimum_stock_ml),value=n(p.stock_ml)*n(p.unit_cost_per_ml);inventory+=value;return `<div class="product-card ${low?'low':''}"><div class="product-top"><div><h4>${esc(p.name)}</h4><p>${esc(p.brand||'Sem marca')} • embalagem ${qty(p.package_size_ml/1000,2)} L</p></div><span class="chip ${low?'warn':'ok'}">${low?'REPOR':'OK'}</span></div><div class="product-stats"><div class="product-stat"><span>ESTOQUE</span><b>${qty(p.stock_ml/1000,2)} L</b></div><div class="product-stat"><span>CUSTO / L</span><b>${money(n(p.unit_cost_per_ml)*1000)}</b></div><div class="product-stat"><span>DILUIÇÃO</span><b>${p.default_dilution_ratio!==null?'1:'+qty(p.default_dilution_ratio,1):'—'}</b></div><div class="product-stat"><span>VALOR ESTOQUE</span><b>${money(value)}</b></div></div>${state.canManage?`<div class="wash-actions"><button class="btn soft small" data-action="restock" data-id="${p.id}">+ Repor estoque</button></div>`:''}</div>`}).join(''):'<div class="empty">Cadastre seus produtos para calcular o custo real das lavagens.</div>';
   $('#inventoryValue').textContent=money(inventory);
+  renderRestockList();
+}
+function renderRestockList(){
+  const box=$('#restockList'),totalEl=$('#restockInvestment');if(!box||!totalEl)return;
+  let total=0;
+  const rows=state.products.filter(p=>n(p.stock_ml)<=n(p.minimum_stock_ml)).map(p=>{
+    const pack=Math.max(1,n(p.package_size_ml));
+    const target=Math.max(n(p.minimum_stock_ml)*2,pack);
+    const missing=Math.max(0,target-n(p.stock_ml));
+    const packages=Math.max(1,Math.ceil(missing/pack));
+    const buyMl=packages*pack;
+    const investment=packages*n(p.purchase_price);
+    total+=investment;
+    return '<div class="restock-row"><div><strong>'+esc(p.name)+'</strong><small>'+esc(p.brand||'Sem marca')+' • atual '+qty(n(p.stock_ml)/1000,2)+' L • mínimo '+qty(n(p.minimum_stock_ml)/1000,2)+' L</small></div><div class="restock-buy"><span>Comprar <b>'+packages+' × '+qty(pack/1000,2)+' L</b></span><strong>'+money(investment)+'</strong><small>Após compra: '+qty((n(p.stock_ml)+buyMl)/1000,2)+' L</small></div></div>';
+  });
+  totalEl.textContent=money(total);
+  box.innerHTML=rows.join('')||'<div class="empty-state">Nenhum produto precisa de reposição agora.</div>';
 }
 
 function renderFindings(){
