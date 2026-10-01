@@ -23,6 +23,12 @@ must(html.includes('id="washPhotoInput"'),'Captura fotográfica ausente');
 must(js.includes('washChecklistTemplate'),'Checklist operacional ausente');
 must(js.includes("storage.from('v2-wash-photos')"),'Storage de fotos ausente');
 must(js.includes('renderVehicleHistory'),'Histórico por condução ausente');
+must(html.includes('id="washStageTimeline"'),'Timeline de etapas ausente');
+must(html.includes('id="deliverWashBtn"'),'Controle de entrega ausente');
+must(js.includes('deliveryReady'),'Gate de entrega ausente');
+must(js.includes("from('v2_wash_stage_events')"),'Registro de tempos por etapa ausente');
+must(js.includes('actual_duration_minutes'),'Duração real ausente');
+must(js.includes('rework_count'),'Contador de retrabalho ausente');
 new Function(auth);
 
 for(const id of ['sessionGate','appShell','dashboardKpis','washForm','washList','customerForm','productForm','findingForm','settingsForm','servicePriceList']){
