@@ -244,7 +244,7 @@ async function submitFinding(event){event.preventDefault();if(!state.canManage)r
 async function submitSettings(event){event.preventDefault();if(!state.canManage)return;const f=event.currentTarget,p={company_id:state.company.id,water_cost_per_liter:n(f.elements.water_cost_per_liter.value),energy_cost_per_kwh:n(f.elements.energy_cost_per_kwh.value),labor_cost_per_hour:n(f.elements.labor_cost_per_hour.value),equipment_cost_per_wash:n(f.elements.equipment_cost_per_wash.value),consumables_cost_per_wash:n(f.elements.consumables_cost_per_wash.value),updated_at:new Date().toISOString()};try{const r=await state.client.from('v2_wash_settings').upsert(p,{onConflict:'company_id'});if(r.error)throw r.error;toast('Custos padrão atualizados.');await loadData()}catch(err){toast(err.message,'error')}}
 async function savePrices(){if(!state.canManage)return;const rows=$$('[data-service-row]');const btn=$('#savePricesBtn');btn.disabled=true;try{for(const row of rows){const id=row.dataset.serviceRow,sale=n(row.querySelector('[data-price="sale"]').value),ref=n(row.querySelector('[data-price="reference"]').value);const r=await state.client.from('v2_wash_service_catalog').update({sale_price:sale,outsourced_reference_price:ref,updated_at:new Date().toISOString()}).eq('id',id).eq('company_id',state.company.id);if(r.error)throw r.error}toast('Tabela de preços atualizada.');await loadData()}catch(err){toast(err.message,'error')}finally{btn.disabled=false}}
 
-async function handleActions(event){
+async async function handleActions(event){
   const b=event.target.closest('[data-action]');if(!b)return;
   const id=b.dataset.id,action=b.dataset.action;
   if(action==='complete-wash')await completeWash(id);
