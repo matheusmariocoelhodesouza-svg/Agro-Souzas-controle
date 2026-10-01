@@ -33,7 +33,7 @@ jobs:
           grep -q 'applicationId = "br.com.comando360.oficina"' android-360-apps/oficina/build.gradle.kts
           grep -q 'applicationId = "br.com.comando360.lavador"' android-360-apps/lavador/build.gradle.kts
           grep -q 'versionName = "1.0.1"' android-360-apps/oficina/build.gradle.kts
-          grep -q 'versionName = "1.0.2"' android-360-apps/lavador/build.gradle.kts
+          grep -q 'versionName = "1.0.3"' android-360-apps/lavador/build.gradle.kts
 
       - uses: actions/setup-java@v5
         with:
@@ -109,7 +109,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: github.event_name == 'pull_request'
         with:
-          name: lavador360-v1.0.2-pr-debug
+          name: lavador360-v1.0.3-pr-debug
           path: android-360-apps/lavador/build/outputs/apk/debug/lavador-debug.apk
           retention-days: 14
 
@@ -123,6 +123,6 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: github.event_name != 'pull_request'
         with:
-          name: lavador360-v1.0.2-stable
+          name: lavador360-v1.0.3-stable
           path: android-360-apps/lavador/build/outputs/apk/release/lavador-release.apk
           retention-days: 30
