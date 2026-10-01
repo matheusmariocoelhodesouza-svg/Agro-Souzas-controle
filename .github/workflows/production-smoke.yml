@@ -32,15 +32,15 @@ jobs:
             fetch_once "/sw-v7-02.js" /tmp/sw.js || return 1
             fetch_once "/c360-quality-hotfix.js" /tmp/bootstrap.js || return 1
             grep -q 'sw-v7-02-core-hotfix63.js' /tmp/sw.js || return 1
-            grep -q "BOOT_VERSION='2026.09.25-audit3'" /tmp/bootstrap.js || return 1
+            grep -q "BOOT_VERSION='2026.09.30-assistant-share1'" /tmp/bootstrap.js || return 1
             grep -q 'SCRIPT_BATCH_SIZE=5' /tmp/bootstrap.js || return 1
             grep -q 'yieldToMain' /tmp/bootstrap.js || return 1
           }
 
           ready=0
-          for i in $(seq 1 18); do
+          for i in $(seq 1 48); do
             if release_ready; then ready=1; break; fi
-            sleep 4
+            sleep 5
           done
           if [ "$ready" -ne 1 ]; then
             echo 'Production did not expose the current Comando 360 release markers in time.'
