@@ -1,6 +1,6 @@
 (()=>{
 'use strict';
-const BOOT_VERSION='2026.09.30-assistant-share1';
+const BOOT_VERSION='2026.10.01-comando-ai1';
 const recoveryModule='./c360-autorecovery.js';
 
 /* Runtime enxuto: só recursos globais entram no primeiro paint. */
