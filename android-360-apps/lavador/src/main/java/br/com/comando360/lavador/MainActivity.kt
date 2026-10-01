@@ -33,7 +33,7 @@ class MainActivity : Activity() {
             databaseEnabled = true
             mediaPlaybackRequiresUserGesture = false
             mixedContentMode = WebSettings.MIXED_CONTENT_NEVER_ALLOW
-            userAgentString = "$userAgentString Lavador360Android/1.0.1"
+            userAgentString = "$userAgentString Lavador360Android/1.0.2"
         }
 
         webView.webViewClient = object : WebViewClient() {
@@ -219,13 +219,6 @@ class MainActivity : Activity() {
               }, true);
 
               document.addEventListener('click', function(event){
-                const opener = event.target.closest('[data-open-tab]');
-                if (opener) {
-                  event.preventDefault();
-                  event.stopPropagation();
-                  nativeOpenTab(opener.dataset.openTab);
-                  return;
-                }
                 if (!sheet.contains(event.target) && !moreButton.contains(event.target)) closeSheet();
               });
               document.addEventListener('keydown', function(event){ if (event.key === 'Escape') closeSheet(); });
