@@ -17,3 +17,5 @@ dependencyResolutionManagement {
 rootProject.name = "Comando360Apps"
 include(":oficina")
 include(":lavador")
+
+include(":comando")
