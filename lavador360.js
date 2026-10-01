@@ -46,7 +46,7 @@ async function boot(){
 
 function bindUi(){
   $$('.side-nav button[data-tab]').forEach(btn=>btn.addEventListener('click',()=>openTab(btn.dataset.tab)));
-  $('[data-open-tab]').forEach(btn=>btn.addEventListener('click',()=>openTab(btn.dataset.openTab)));
+  $$('[data-open-tab]').forEach(btn=>btn.addEventListener('click',()=>openTab(btn.dataset.openTab)));
   $('#washPhotoInput')?.addEventListener('change',uploadWashPhoto);
   $('#deliverWashBtn')?.addEventListener('click',deliverCurrentWash);
   $('#refreshBtn')?.addEventListener('click',loadData);
@@ -241,7 +241,7 @@ function renderSettings(){
 function applyManageState(){
   const editable=['washForm','customerForm','externalVehicleForm','productForm','findingForm','settingsForm'];
   editable.forEach(id=>$('#'+id)?.querySelectorAll('input,select,textarea,button').forEach(x=>x.disabled=!state.canManage));
-  $('#servicePriceList input').forEach(x=>x.disabled=!state.canManage);
+  $$('#servicePriceList input').forEach(x=>x.disabled=!state.canManage);
   if($('#savePricesBtn'))$('#savePricesBtn').disabled=!state.canManage;
 }
 
