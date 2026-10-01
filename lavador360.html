@@ -36,7 +36,7 @@
     </div>
     <nav class="side-nav" aria-label="Módulos do Lavador 360">
       <button class="active" data-tab="dashboard" type="button"><span>⌂</span> Visão geral</button>
-      <button data-tab="new-wash" type="button"><span>＋</span> Nova lavagem</button>
+      <button data-tab="patio" type="button"><span>▦</span> Pátio</button>\n      <button data-tab="new-wash" type="button"><span>＋</span> Nova lavagem</button>
       <button data-tab="washes" type="button"><span>▤</span> Lavagens</button>
       <button data-tab="customers" type="button"><span>♙</span> Clientes</button>
       <button data-tab="products" type="button"><span>◫</span> Produtos & estoque</button>
@@ -81,13 +81,19 @@
         </article>
       </section>
 
+      <section id="tab-patio" class="tab">
+        <div class="section-head"><div><span class="eyebrow">OPERAÇÃO AO VIVO</span><h2>Pátio</h2><p>Acompanhe cada condução da chegada à liberação. Avance a etapa sem abrir outra tela.</p></div></div>
+        <div id="patioKpis" class="kpi-grid"></div>
+        <div id="patioBoard" class="patio-board"></div>
+      </section>
+
       <section id="tab-new-wash" class="tab">
         <div class="section-head">
           <div><span class="eyebrow">OPERAÇÃO</span><h2>Nova lavagem</h2><p>Registre o veículo, serviço e custos. Produtos usados baixam do estoque automaticamente.</p></div>
         </div>
         <form id="washForm" class="panel form-panel">
           <div class="form-section">
-            <h3>1. Veículo e serviço</h3>
+            <h3>1. Check-in, veículo e serviço</h3>
             <div class="form-grid three">
               <label>Origem<select id="washOwnership" name="ownership"><option value="internal">Frota própria</option><option value="external">Cliente externo</option></select></label>
               <label id="ownVehicleField">Condução<select id="washVehicle" name="vehicle_id"></select></label>
@@ -96,6 +102,9 @@
               <label>Serviço<select id="washService" name="service_id"></select></label>
               <label>Responsável<input name="responsible_name" placeholder="Nome do lavador"></label>
               <label>Status<select name="status"><option value="in_progress">Em andamento</option><option value="completed">Concluir agora</option><option value="scheduled">Agendada</option></select></label>
+              <label>Hodômetro na entrada (km)<input name="odometer_km" type="number" min="0" step="0.1" placeholder="Ex.: 159428,1"></label>
+              <label>Combustível<select name="fuel_level"><option value="">Não informado</option><option value="reserve">Reserva</option><option value="quarter">1/4</option><option value="half">1/2</option><option value="three_quarters">3/4</option><option value="full">Cheio</option></select></label>
+              <label class="span-two">Condição na entrada<input name="checkin_notes" placeholder="Barro, avaria já existente, objeto no veículo..."></label>
             </div>
           </div>
 
@@ -214,6 +223,6 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="./config.js"></script>
 <script src="./lavador360-auth-bridge.js?v=20260929-4"></script>
-<script src="./lavador360.js?v=20260930-5"></script>
+<script src="./lavador360.js?v=20261001-2"></script>
 </body>
 </html>
