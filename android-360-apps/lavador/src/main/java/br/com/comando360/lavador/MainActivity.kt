@@ -33,7 +33,7 @@ class MainActivity : Activity() {
             databaseEnabled = true
             mediaPlaybackRequiresUserGesture = false
             mixedContentMode = WebSettings.MIXED_CONTENT_NEVER_ALLOW
-            userAgentString = "$userAgentString Lavador360Android/1.0.2"
+            userAgentString = "$userAgentString Lavador360Android/1.0.3"\n            cacheMode = WebSettings.LOAD_NO_CACHE
         }
 
         webView.webViewClient = object : WebViewClient() {
@@ -97,7 +97,7 @@ class MainActivity : Activity() {
     }
 
     companion object {
-        private const val APP_URL = "https://app.comando360.com.br/lavador360.html?source=android"
+        private const val APP_URL = "https://app.comando360.com.br/lavador360.html?source=android&v=20260930-6"
         private const val FILE_CHOOSER_REQUEST = 3602
         private val MOBILE_NAV_SCRIPT = """
             (function(){
@@ -162,20 +162,6 @@ class MainActivity : Activity() {
                 sheet.classList.remove('open');
                 moreButton.setAttribute('aria-expanded','false');
               }
-              function nativeOpenTab(tab){
-                nav.querySelectorAll('button[data-tab]').forEach(function(button){
-                  button.classList.toggle('active', button.dataset.tab === tab);
-                });
-                document.querySelectorAll('.tab').forEach(function(section){
-                  section.classList.toggle('active', section.id === 'tab-' + tab);
-                });
-                const titles = {dashboard:'Visão geral','new-wash':'Nova lavagem',washes:'Lavagens',customers:'Clientes',products:'Produtos & estoque',findings:'Inspeções',settings:'Custos & preços'};
-                const title = document.querySelector('#pageTitle');
-                if (title) title.textContent = titles[tab] || 'Lavador 360';
-                window.scrollTo({top:0,behavior:'smooth'});
-                closeSheet();
-                setTimeout(syncActive,0);
-              }
               function syncActive(){
                 const hiddenActive = ['products','findings','settings'].some(function(tab){
                   const button = nav.querySelector('button[data-tab="' + tab + '"]');
@@ -184,8 +170,7 @@ class MainActivity : Activity() {
                 moreButton.classList.toggle('active', hiddenActive);
               }
 
-              moreButton.addEventListener('click', function(event){
-                event.stopPropagation();
+              moreButton.addEventListener('click', function(){
                 const open = !sheet.classList.contains('open');
                 sheet.classList.toggle('open', open);
                 moreButton.setAttribute('aria-expanded', open ? 'true' : 'false');
@@ -194,29 +179,10 @@ class MainActivity : Activity() {
               sheet.addEventListener('click', function(event){
                 const item = event.target.closest('button[data-target-tab]');
                 if (!item) return;
-                event.preventDefault();
-                event.stopPropagation();
-                nativeOpenTab(item.dataset.targetTab);
+                const target = nav.querySelector('button[data-tab="' + item.dataset.targetTab + '"]');
+                if (target) target.click();
+                closeSheet();
               });
-
-              nav.querySelectorAll('button[data-tab]').forEach(function(button){
-                button.addEventListener('click', function(event){
-                  event.preventDefault();
-                  event.stopPropagation();
-                  nativeOpenTab(button.dataset.tab);
-                });
-              });
-
-              // Fallback nativo para todos os atalhos internos da tela.
-              // Assim + Nova lavagem, + Iniciar, Ver estoque e Ver todas
-              // continuam funcionando mesmo se o listener web falhar no WebView.
-              document.addEventListener('click', function(event){
-                const shortcut = event.target.closest('[data-open-tab]');
-                if (!shortcut) return;
-                event.preventDefault();
-                event.stopPropagation();
-                nativeOpenTab(shortcut.dataset.openTab);
-              }, true);
 
               document.addEventListener('click', function(event){
                 if (!sheet.contains(event.target) && !moreButton.contains(event.target)) closeSheet();
