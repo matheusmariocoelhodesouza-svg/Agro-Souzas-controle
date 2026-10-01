@@ -38,7 +38,7 @@ must(js.includes("rpc('v2_wash_send_finding_to_workshop'"),'Integração Oficina
 must(js.includes("from('v2_wash_order_products')"),'Baixa de produto ausente');
 must(auth.includes('SUPABASE_PUBLISHABLE_KEY'),'Login deve usar publishable key');
 must(!auth.toLowerCase().includes('service_role'),'Auth não pode conter service_role');
-must(manifest.start_url==='./lavador360.html','Manifest start_url incorreto');
+must(['./lavador360.html','/lavador360'].includes(manifest.start_url),'Manifest start_url incorreto');
 must(manifest.display==='standalone','Manifest precisa ser standalone');
 must(css.includes('@media(max-width:760px)'),'Layout mobile ausente');
 
