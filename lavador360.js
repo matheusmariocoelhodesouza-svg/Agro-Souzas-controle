@@ -11,6 +11,8 @@ const sameDay=(a,b=new Date())=>a&&new Date(a).toDateString()===b.toDateString()
 const classLabel={van:'Van / Sprinter',microbus:'Micro-ônibus',bus:'Ônibus',truck:'Caminhão',pickup:'Pickup',car:'Carro',machine:'Máquina',other:'Outro',any:'Qualquer'};
 const statusLabel={scheduled:'Agendada',in_progress:'Em andamento',completed:'Concluída',cancelled:'Cancelada'};
 const severityLabel={info:'Informação',attention:'Atenção',urgent:'Urgente'};
+const stageLabel={waiting:'Aguardando',prewash:'Pré-lavagem',washing:'Lavagem',finishing:'Acabamento',inspection:'Inspeção',ready:'Pronto',delivered:'Entregue'};
+const stageFlow=['waiting','prewash','washing','finishing','inspection','ready','delivered'];
 const state={client:null,session:null,company:null,canManage:false,vehicles:[],customers:[],externalVehicles:[],services:[],products:[],orders:[],findings:[],settings:null,usageCart:[]};
 
 function toast(message,type='ok'){
@@ -79,7 +81,7 @@ async function logout(){
 function openTab(tab){
   $$('.side-nav button[data-tab]').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
   $$('.tab').forEach(x=>x.classList.toggle('active',x.id==='tab-'+tab));
-  const names={dashboard:'Visão geral','new-wash':'Nova lavagem',washes:'Lavagens',customers:'Clientes',products:'Produtos & estoque',findings:'Inspeções',settings:'Custos & preços'};
+  const names={dashboard:'Visão geral',patio:'Pátio','new-wash':'Nova lavagem',washes:'Lavagens',customers:'Clientes',products:'Produtos & estoque',findings:'Inspeções',settings:'Custos & preços'};
   $('#pageTitle').textContent=names[tab]||'Lavador 360';
   window.scrollTo({top:0,behavior:'smooth'});
 }
@@ -109,7 +111,7 @@ async function loadData(){
 
 function renderAll(){
   $('#companyName').textContent=state.company.trade_name||state.company.legal_name||'Empresa 360';
-  renderSelectors();renderDashboard();renderWashes();renderCustomers();renderProducts();renderFindings();renderSettings();syncOwnership();applyVehicleClass();renderServiceOptions();renderUsageCart();updateLiveEstimate();applyManageState();
+  renderSelectors();renderDashboard();renderPatio();renderWashes();renderCustomers();renderProducts();renderFindings();renderSettings();syncOwnership();applyVehicleClass();renderServiceOptions();renderUsageCart();updateLiveEstimate();applyManageState();
 }
 
 function renderSelectors(){
@@ -193,6 +195,22 @@ function miniWash(o){const result=o.ownership==='external'?`Margem ${money(o.mar
 function statusClass(s){return s==='completed'?'ok':s==='in_progress'?'brand':s==='scheduled'?'warn':'neutral'}
 
 function filteredOrders(){const search=String($('#washSearch')?.value||'').trim().toLocaleLowerCase('pt-BR'),status=$('#washStatusFilter')?.value||'';return state.orders.filter(o=>(!status||o.status===status)&&(!search||[o.vehicle_label,o.plate_snapshot,o.service_name,o.responsible_name].filter(Boolean).join(' ').toLocaleLowerCase('pt-BR').includes(search)))}
+function renderPatio(){
+  const board=$('#patioBoard'),kpis=$('#patioKpis');if(!board)return;
+  const active=state.orders.filter(o=>o.status!=='cancelled'&&o.status!=='completed'&&(o.operation_stage||'waiting')!=='delivered');
+  if(kpis)kpis.innerHTML='<article class="kpi"><span>No pátio</span><strong>'+active.length+'</strong></article><article class="kpi"><span>Lavando</span><strong>'+active.filter(o=>o.operation_stage==='washing').length+'</strong></article><article class="kpi"><span>Inspeção</span><strong>'+active.filter(o=>o.operation_stage==='inspection').length+'</strong></article><article class="kpi"><span>Prontos</span><strong>'+active.filter(o=>o.operation_stage==='ready').length+'</strong></article>';
+  board.innerHTML=stageFlow.slice(0,6).map(stage=>{
+    const list=active.filter(o=>(o.operation_stage||'waiting')===stage);
+    const cards=list.map(o=>{
+      const next=stageFlow[stageFlow.indexOf(stage)+1];
+      let actions=next?'<button class="btn soft small" data-action="advance-stage" data-id="'+esc(o.id)+'" data-stage="'+next+'">→ '+stageLabel[next]+'</button>':'';
+      if(stage==='inspection')actions+='<button class="btn soft small" data-action="qa-approve" data-id="'+esc(o.id)+'">✓ Aprovar</button><button class="btn soft small" data-action="qa-rework" data-id="'+esc(o.id)+'">↺ Refazer</button>';
+      return '<article class="patio-card"><strong>#'+o.wash_number+' • '+esc(o.vehicle_label)+'</strong><small>'+esc(o.plate_snapshot||'Sem placa')+' • '+esc(o.service_name)+'</small><small>Responsável: '+esc(o.responsible_name||'Não informado')+'</small>'+(o.odometer_km?'<small>Entrada: '+qty(o.odometer_km,1)+' km</small>':'')+(o.qa_status==='rework'?'<span class="badge danger">Refazer</span>':'')+'<div class="card-actions">'+actions+'</div></article>';
+    }).join('');
+    return '<section class="patio-column"><div class="patio-column-head"><strong>'+stageLabel[stage]+'</strong><span>'+list.length+'</span></div><div class="patio-cards">'+(cards||'<div class="empty-state">Nenhum veículo</div>')+'</div></section>';
+  }).join('');
+}
+
 function renderWashes(){const list=filteredOrders();$('#washList').innerHTML=list.length?list.map(washCard).join(''):'<div class="empty">Nenhuma lavagem encontrada.</div>'}
 function washCard(o){
   const external=o.ownership==='external',result=external?o.margin_value:o.estimated_savings;
@@ -232,7 +250,7 @@ async function submitWash(event){
   if(ownership==='internal'&&!own){toast('Escolha uma condução da frota.','error');return;}
   if(ownership==='external'&&!ext){toast('Cadastre e escolha o veículo do cliente.','error');return;}
   const status=form.elements.status.value,now=new Date().toISOString(),item=ownership==='internal'?own:ext;
-  const payload={company_id:state.company.id,ownership,customer_id:ownership==='external'?ext.customer_id:null,vehicle_id:ownership==='internal'?own.id:null,customer_vehicle_id:ownership==='external'?ext.id:null,plate_snapshot:item.plate||null,vehicle_label:item.description||item.model||item.plate||'Veículo',vehicle_class:form.elements.vehicle_class.value,service_code:service.code,service_name:service.name,status,scheduled_for:status==='scheduled'?now:null,started_at:status!=='scheduled'?now:null,finished_at:status==='completed'?now:null,responsible_name:form.elements.responsible_name.value.trim()||null,sale_price:n(form.elements.sale_price.value),outsourced_reference_price:n(form.elements.outsourced_reference_price.value),water_liters:n(form.elements.water_liters.value),water_cost_per_liter:n(state.settings.water_cost_per_liter),energy_kwh:n(form.elements.energy_kwh.value),energy_cost_per_kwh:n(state.settings.energy_cost_per_kwh),labor_minutes:Math.round(n(form.elements.labor_minutes.value)),labor_cost_per_hour:n(state.settings.labor_cost_per_hour),consumables_cost:n(form.elements.consumables_cost.value),equipment_cost:n(form.elements.equipment_cost.value),notes:form.elements.notes.value.trim()||null};
+  const payload={company_id:state.company.id,ownership,customer_id:ownership==='external'?ext.customer_id:null,vehicle_id:ownership==='internal'?own.id:null,customer_vehicle_id:ownership==='external'?ext.id:null,plate_snapshot:item.plate||null,vehicle_label:item.description||item.model||item.plate||'Veículo',vehicle_class:form.elements.vehicle_class.value,service_code:service.code,service_name:service.name,status,scheduled_for:status==='scheduled'?now:null,started_at:status!=='scheduled'?now:null,finished_at:status==='completed'?now:null,responsible_name:form.elements.responsible_name.value.trim()||null,operation_stage:status==='completed'?'ready':'waiting',odometer_km:form.elements.odometer_km.value===''?null:n(form.elements.odometer_km.value),fuel_level:form.elements.fuel_level.value||null,checkin_notes:form.elements.checkin_notes.value.trim()||null,qa_status:status==='completed'?'approved':'pending',sale_price:n(form.elements.sale_price.value),outsourced_reference_price:n(form.elements.outsourced_reference_price.value),water_liters:n(form.elements.water_liters.value),water_cost_per_liter:n(state.settings.water_cost_per_liter),energy_kwh:n(form.elements.energy_kwh.value),energy_cost_per_kwh:n(state.settings.energy_cost_per_kwh),labor_minutes:Math.round(n(form.elements.labor_minutes.value)),labor_cost_per_hour:n(state.settings.labor_cost_per_hour),consumables_cost:n(form.elements.consumables_cost.value),equipment_cost:n(form.elements.equipment_cost.value),notes:form.elements.notes.value.trim()||null};
   const btn=$('#saveWashBtn');btn.disabled=true;btn.textContent='Salvando...';let orderId=null;
   try{
     const orderR=await state.client.from('v2_wash_orders').insert(payload).select('id,wash_number').single();if(orderR.error)throw orderR.error;orderId=orderR.data.id;
@@ -256,7 +274,12 @@ async function handleActions(event){
   if(action==='inspect-wash'){if($('#findingWash'))$('#findingWash').value=id;openTab('findings');$('#findingForm')?.scrollIntoView({behavior:'smooth',block:'start'});}
   if(action==='send-workshop')await sendToWorkshop(id);
   if(action==='restock')await restock(id);
+  if(action==='advance-stage')await advanceStage(id,b.dataset.stage);
+  if(action==='qa-approve')await qaDecision(id,'approved');
+  if(action==='qa-rework')await qaDecision(id,'rework');
 }
+async function advanceStage(id,stage){if(!state.canManage||!stageFlow.includes(stage))return;try{const patch={operation_stage:stage};if(stage==='washing')patch.started_at=new Date().toISOString();if(stage==='inspection')patch.qa_status='pending';if(stage==='delivered'){patch.status='completed';patch.finished_at=new Date().toISOString()}const r=await state.client.from('v2_wash_orders').update(patch).eq('id',id).eq('company_id',state.company.id);if(r.error)throw r.error;toast('Etapa atualizada: '+stageLabel[stage]+'.');await loadData()}catch(err){toast(err.message||'Não foi possível avançar a etapa.','error')}}
+async function qaDecision(id,status){if(!state.canManage)return;const notes=status==='rework'?(prompt('O que precisa ser refeito?','')||null):null;try{const patch={qa_status:status,qa_notes:notes,qa_checked_at:new Date().toISOString(),operation_stage:status==='approved'?'ready':'washing'};const r=await state.client.from('v2_wash_orders').update(patch).eq('id',id).eq('company_id',state.company.id);if(r.error)throw r.error;toast(status==='approved'?'Qualidade aprovada.':'Veículo voltou para lavagem.');await loadData()}catch(err){toast(err.message||'Falha no controle de qualidade.','error')}}
 async function completeWash(id){if(!state.canManage)return;try{const r=await state.client.from('v2_wash_orders').update({status:'completed',finished_at:new Date().toISOString()}).eq('id',id).eq('company_id',state.company.id);if(r.error)throw r.error;toast('Lavagem concluída.');await loadData()}catch(err){toast(err.message,'error')}}
 async function sendToWorkshop(id){if(!state.canManage)return;try{const r=await state.client.rpc('v2_wash_send_finding_to_workshop',{p_finding_id:id});if(r.error)throw r.error;toast('OS criada no Oficina 360.');await loadData()}catch(err){toast(err.message,'error')}}
 async function restock(id){if(!state.canManage)return;const p=state.products.find(x=>x.id===id);if(!p)return;const raw=prompt(`Quantos litros deseja adicionar ao estoque de ${p.name}?`,'5');if(raw===null)return;const liters=Number(String(raw).replace(',','.'));if(!Number.isFinite(liters)||liters<=0){toast('Informe uma quantidade válida.','error');return}try{const r=await state.client.from('v2_wash_products').update({stock_ml:n(p.stock_ml)+liters*1000,updated_at:new Date().toISOString()}).eq('id',id).eq('company_id',state.company.id);if(r.error)throw r.error;toast('Estoque atualizado.');await loadData()}catch(err){toast(err.message,'error')}}
