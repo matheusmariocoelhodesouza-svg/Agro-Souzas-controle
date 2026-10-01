@@ -1,6 +1,6 @@
 (()=>{
 'use strict';
-const VERSION='2026.10.01-comando-ai-1';
+const VERSION='2026.10.01-comando-ai-2';
 if(window.__c360Assistant360Version===VERSION)return;
 window.__c360Assistant360Version=VERSION;
 
@@ -199,13 +199,13 @@ function install(root){
  }
  if(intro)intro.textContent='Converse com o Comando 360, envie fotos e documentos e peça análises da operação. Qualquer lançamento é mostrado para conferência antes de ser salvo.';
  if(card&&!$('.ai360-capabilities',card)){
-   const caps=document.createElement('div');caps.className='ai360-capabilities';caps.innerHTML='<span>📠 Ler FAX</span><span>⛽ Abastecimento</span><span>🔧 Manutenção</span><span>🐔 Apanhas</span><span>🚚 Frota</span><span>📊 Análises</span>';
+   const caps=document.createElement('div');caps.className='ai360-capabilities';caps.innerHTML='<span>📠 Ler FAX</span><span>⛽ Abastecimento</span><span>🔧 Oficina 360</span><span>🧽 Lavador 360</span><span>🐔 Apanhas</span><span>🚚 Frota</span><span>📊 Análises</span>';
    const bar=$('.ai360-tools',root);if(bar)bar.insertAdjacentElement('beforebegin',caps);else card.prepend(caps);
  }
  tools(root);attachmentHost(root);actionsHost(root);
  const btn=sendBtn(root);if(btn){btn.removeAttribute('onclick');btn.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();analyze(root)},true)}
  const input=inputEl(root);if(input){input.placeholder='Pergunte ao Comando IA ou diga o que deseja fazer…';input.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();e.stopImmediatePropagation();analyze(root)}},true)}
- const box=chatBox(root);if(box&&!box.dataset.ai360Intro){box.dataset.ai360Intro='1';addMessage(root,'Olá! Eu sou o Comando IA. Posso analisar sua operação, ler um FAX ou foto, ajudar com frota, abastecimento, manutenção e apanhas. Quando uma solicitação alterar dados, eu mostro uma prévia antes de salvar.','ai')}
+ const box=chatBox(root);if(box&&!box.dataset.ai360Intro){box.dataset.ai360Intro='1';addMessage(root,'Olá! Eu sou o Comando IA. Posso analisar sua operação, ler um FAX ou foto, ajudar com a Oficina 360, Lavador 360, frota, abastecimento, manutenção e apanhas. Quando uma solicitação alterar dados, eu mostro uma prévia antes de salvar.','ai')}
 }
 function openIaScreen(){
  const candidates=['showScreen','openScreen','navigateTo','goToScreen'];for(const name of candidates){const fn=globalFn(name);if(fn){try{fn('ia');return}catch{}}}
