@@ -9,6 +9,7 @@ import android.webkit.CookieManager
 import android.webkit.ValueCallback
 import android.webkit.WebChromeClient
 import android.webkit.WebResourceRequest
+import android.webkit.WebResourceError
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
@@ -16,6 +17,7 @@ import android.webkit.WebViewClient
 class MainActivity : Activity() {
     private lateinit var webView: WebView
     private var fileCallback: ValueCallback<Array<Uri>>? = null
+    private var usingFallback = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,7 +35,7 @@ class MainActivity : Activity() {
             databaseEnabled = true
             mediaPlaybackRequiresUserGesture = false
             mixedContentMode = WebSettings.MIXED_CONTENT_NEVER_ALLOW
-            userAgentString = "$userAgentString Lavador360Android/1.0.3"
+            userAgentString = "$userAgentString Lavador360Android/1.0.4"
             cacheMode = WebSettings.LOAD_NO_CACHE
         }
 
@@ -45,6 +47,14 @@ class MainActivity : Activity() {
                     startActivity(Intent(Intent.ACTION_VIEW, uri))
                     true
                 } catch (_: Exception) { false }
+            }
+
+            override fun onReceivedError(view: WebView?, request: WebResourceRequest?, error: WebResourceError?) {
+                super.onReceivedError(view, request, error)
+                if (request?.isForMainFrame == true && !usingFallback) {
+                    usingFallback = true
+                    view?.loadUrl(FALLBACK_URL)
+                }
             }
 
             override fun onPageFinished(view: WebView?, url: String?) {
@@ -98,7 +108,8 @@ class MainActivity : Activity() {
     }
 
     companion object {
-        private const val APP_URL = "https://app.comando360.com.br/lavador360.html?source=android&v=20260930-6"
+        private const val APP_URL = "https://app.comando360.com.br/lavador360.html?source=android&v=20261001-4"
+        private const val FALLBACK_URL = "https://matheusmariocoelhodesouza-svg.github.io/Agro-Souzas-controle/lavador360.html?source=android-fallback&v=20261001-4"
         private const val FILE_CHOOSER_REQUEST = 3602
         private val MOBILE_NAV_SCRIPT = """
             (function(){
