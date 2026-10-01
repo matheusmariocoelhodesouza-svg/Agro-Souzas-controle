@@ -219,9 +219,10 @@ function renderSettings(){
   $('#servicePriceList').innerHTML=state.services.map(s=>`<div class="price-row" data-service-row="${s.id}"><div><strong>${esc(s.name)}</strong><small>${classLabel[s.vehicle_class]||s.vehicle_class}</small></div><label>Venda (R$)<input data-price="sale" type="number" min="0" step="0.01" value="${n(s.sale_price).toFixed(2)}"></label><label>Referência (R$)<input data-price="reference" type="number" min="0" step="0.01" value="${n(s.outsourced_reference_price).toFixed(2)}"></label></div>`).join('');
 }
 function applyManageState(){
-  if(state.canManage)return;
-  ['washForm','customerForm','externalVehicleForm','productForm','findingForm','settingsForm'].forEach(id=>$('#'+id)?.querySelectorAll('input,select,textarea,button').forEach(x=>x.disabled=true));
-  $('#savePricesBtn').disabled=true;
+  const editable=['washForm','customerForm','externalVehicleForm','productForm','findingForm','settingsForm'];
+  editable.forEach(id=>$('#'+id)?.querySelectorAll('input,select,textarea,button').forEach(x=>x.disabled=!state.canManage));
+  $('#servicePriceList input').forEach(x=>x.disabled=!state.canManage);
+  if($('#savePricesBtn'))$('#savePricesBtn').disabled=!state.canManage;
 }
 
 async function submitWash(event){
