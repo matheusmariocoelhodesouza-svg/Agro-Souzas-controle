@@ -18,6 +18,11 @@ must(html.includes('id="patioBoard"'),'Board do pátio ausente');
 must(js.includes('function renderPatio'),'Render do pátio ausente');
 must(js.includes("action==='advance-stage'"),'Avanço de etapa ausente');
 must(js.includes('qaDecision'),'Controle de qualidade ausente');
+must(html.includes('id="tab-wash-detail"'),'Detalhes da lavagem ausente');
+must(html.includes('id="washPhotoInput"'),'Captura fotográfica ausente');
+must(js.includes('washChecklistTemplate'),'Checklist operacional ausente');
+must(js.includes("storage.from('v2-wash-photos')"),'Storage de fotos ausente');
+must(js.includes('renderVehicleHistory'),'Histórico por condução ausente');
 new Function(auth);
 
 for(const id of ['sessionGate','appShell','dashboardKpis','washForm','washList','customerForm','productForm','findingForm','settingsForm','servicePriceList']){
