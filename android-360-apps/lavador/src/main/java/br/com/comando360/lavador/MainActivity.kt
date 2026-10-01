@@ -33,7 +33,8 @@ class MainActivity : Activity() {
             databaseEnabled = true
             mediaPlaybackRequiresUserGesture = false
             mixedContentMode = WebSettings.MIXED_CONTENT_NEVER_ALLOW
-            userAgentString = "$userAgentString Lavador360Android/1.0.3"\n            cacheMode = WebSettings.LOAD_NO_CACHE
+            userAgentString = "$userAgentString Lavador360Android/1.0.3"
+            cacheMode = WebSettings.LOAD_NO_CACHE
         }
 
         webView.webViewClient = object : WebViewClient() {
