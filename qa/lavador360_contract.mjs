@@ -12,7 +12,7 @@ const sequence=read('supabase/migrations/20260929111500_lavador360_order_sequenc
 const must=(value,message)=>{if(!value)throw new Error(message)};
 
 new Function(js);
-must(!/(^|[^$])\\$\\([^\\n]*\\)\\.forEach\\(/m.test(js),'Seletor singular $() usado com forEach; use $$()');
+must(!js.split('\n').some(line=>line.includes("  $('")&&line.includes('.forEach(')),'Seletor singular $() usado com forEach; use $$()');
 must(!html.includes('\\\\n'),'Quebra literal \\n encontrada no HTML');
 
 must(html.includes('id="tab-patio"'),'Tela de pátio ausente');
