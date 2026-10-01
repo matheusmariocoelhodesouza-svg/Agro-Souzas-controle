@@ -27,12 +27,16 @@ async function boot(){
   const {data:{session}}=await state.client.auth.getSession();state.session=session;
   if(!session){showGate();return;}
   try{
-    const companyR=await state.client.from('v2_companies').select('id,trade_name,legal_name').limit(1).maybeSingle();
+    const memberR=await state.client.from('v2_company_members').select('company_id,status').eq('user_id',session.user.id).eq('status','active').limit(1).maybeSingle();
+    if(memberR.error)throw memberR.error;
+    if(!memberR.data?.company_id){showGate('Sua conta ainda não está vinculada a uma empresa do ecossistema 360.');return;}
+    const companyR=await state.client.from('v2_companies').select('id,trade_name,legal_name').eq('id',memberR.data.company_id).maybeSingle();
     if(companyR.error)throw companyR.error;
-    if(!companyR.data){showGate('Sua conta ainda não está vinculada a uma empresa do ecossistema 360.');return;}
+    if(!companyR.data){showGate('Empresa do ecossistema 360 não encontrada.');return;}
     state.company=companyR.data;
     const permissionR=await state.client.rpc('v2_has_permission',{p_company_id:state.company.id,p_permission_code:'wash.manage'});
-    state.canManage=permissionR.error?false:Boolean(permissionR.data);
+    if(permissionR.error)throw new Error('Não foi possível validar sua permissão no Lavador 360: '+permissionR.error.message);
+    state.canManage=Boolean(permissionR.data);
     $('#sessionGate').classList.add('hidden');$('#appShell').classList.remove('hidden');
     bindUi();await loadData();
   }catch(err){console.error(err);showGate(err.message||'Não foi possível abrir o Lavador 360.');}
