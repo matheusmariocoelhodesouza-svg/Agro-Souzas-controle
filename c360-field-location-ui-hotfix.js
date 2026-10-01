@@ -22,7 +22,7 @@ style.textContent=`
    padding:9px 11px!important;
    border-radius:13px!important;
    box-sizing:border-box!important;
-   pointer-events:auto!important;
+   pointer-events:none!important;
    box-shadow:0 3px 12px rgba(15,23,42,.08)!important;
  }
  body.device-mode #c360LocationPermissionCard h1,
@@ -33,7 +33,8 @@ style.textContent=`
  body.device-mode #c360LocationPermissionCard .toolbar{display:flex!important;gap:6px!important;align-items:center!important;flex-wrap:wrap!important}
  body.device-mode #c360LocationPermissionCard button,
  body.device-mode #c360LocationPermissionCard .btn,
- body.device-mode #c360LocationPermissionCard a{min-height:40px!important;padding:8px 10px!important;font-size:10.8px!important;white-space:normal!important}
+ body.device-mode #c360LocationPermissionCard a{
+   pointer-events:auto!important;min-height:40px!important;padding:8px 10px!important;font-size:10.8px!important;white-space:normal!important}
  body.device-mode #c360FieldLocationSlot{width:100%;margin:0;padding:0;order:-100}
  body.device-mode .team-home-grid{gap:10px!important;margin-top:0!important}
  body.device-mode .team-home-grid .team-tile{min-height:88px}
