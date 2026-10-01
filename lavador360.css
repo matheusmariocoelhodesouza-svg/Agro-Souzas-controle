@@ -8,3 +8,8 @@
 .patio-card small{color:#755746}.patio-card .card-actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
 .badge.danger{background:#fee2e2;color:#991b1b}.span-two{grid-column:span 2}
 @media(max-width:760px){.patio-board{grid-template-columns:repeat(6,82vw);scroll-snap-type:x proximity}.patio-column{scroll-snap-align:start}.span-two{grid-column:auto}}
+
+.checklist-grid{display:grid;gap:8px}.check-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px;border:1px solid #eadfd7;border-radius:12px}.check-row>div:first-child{display:grid;gap:2px}.check-row small{color:#806454;font-size:10px}.check-actions{display:flex;gap:5px;flex-wrap:wrap}.check-btn{border:1px solid #ddcfc5;background:#fff;border-radius:9px;padding:7px 9px;font-weight:700;font-size:11px}.check-btn.active.ok{background:#dcfce7;border-color:#86efac}.check-btn.active.fail{background:#fee2e2;border-color:#fca5a5}.check-btn.active.na{background:#f1f5f9;border-color:#cbd5e1}
+.photo-controls{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}.photo-controls select{min-width:120px}.file-btn{position:relative;overflow:hidden}.file-btn input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.wash-photo-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.wash-photo-grid figure{margin:0;border:1px solid #eadfd7;border-radius:12px;overflow:hidden;background:#fff}.wash-photo-grid img{display:block;width:100%;aspect-ratio:4/3;object-fit:cover}.wash-photo-grid figcaption{padding:7px;font-size:11px;color:#6f5547}
+@media(max-width:760px){.check-row{align-items:flex-start;flex-direction:column}.wash-photo-grid{grid-template-columns:1fr 1fr}}
