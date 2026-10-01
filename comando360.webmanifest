@@ -16,22 +16,16 @@
   "prefer_related_applications": false,
   "icons": [
     {
-      "src": "/agro-souzas-controle-192-v6.png",
+      "src": "/comando360-icon-192-v7.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any"
+      "purpose": "any maskable"
     },
     {
-      "src": "/agro-souzas-controle-512-v6.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "/agro-souzas-controle-512-v6.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "maskable"
+      "src": "/comando360-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
     }
   ],
   "share_target": {
@@ -67,7 +61,7 @@
       "url": "./importar-granjas.html",
       "icons": [
         {
-          "src": "./agro-souzas-controle-192-v6.png",
+          "src": "/comando360-icon-192-v7.png",
           "sizes": "192x192",
           "type": "image/png"
         }
@@ -80,7 +74,7 @@
       "url": "./dda.html",
       "icons": [
         {
-          "src": "./agro-souzas-controle-192-v6.png",
+          "src": "/comando360-icon-192-v7.png",
           "sizes": "192x192",
           "type": "image/png"
         }
