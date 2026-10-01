@@ -94,7 +94,7 @@ jobs:
           grep -q 'c360-ui-polish.css' index.html
           if grep -q '<script>window.onload' index.html; then echo 'Unsafe inline window.onload found'; exit 1; fi
 
-          grep -q "BOOT_VERSION='2026.09.28-payroll1'" c360-quality-hotfix.js
+          grep -q "BOOT_VERSION='2026.09.30-assistant-share1'" c360-quality-hotfix.js
           grep -q "const VERSION='2026.09.22-r100-1'" c360-release-core.js
           grep -q "VERSION='2026.09.23-v1-final1'" c360-final-stabilization.js
           grep -q "const VERSION='2026.09.23-ux2'" c360-ux-polish-hotfix.js
