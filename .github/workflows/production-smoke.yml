@@ -32,7 +32,7 @@ jobs:
             fetch_once "/sw-v7-02.js" /tmp/sw.js || return 1
             fetch_once "/c360-quality-hotfix.js" /tmp/bootstrap.js || return 1
             grep -q 'sw-v7-02-core-hotfix63.js' /tmp/sw.js || return 1
-            grep -q "BOOT_VERSION='2026.09.30-assistant-share1'" /tmp/bootstrap.js || return 1
+            grep -Eq "BOOT_VERSION='2026\\.(09\\.30-assistant-share1|10\\.01-comando-ai2)'" /tmp/bootstrap.js || return 1
             grep -q 'SCRIPT_BATCH_SIZE=5' /tmp/bootstrap.js || return 1
             grep -q 'yieldToMain' /tmp/bootstrap.js || return 1
           }
