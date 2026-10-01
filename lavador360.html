@@ -11,7 +11,7 @@
 <link rel="icon" type="image/png" sizes="256x256" href="./lavador360-icon-orange-bus.png?v=20260929-4">
 <link rel="shortcut icon" type="image/png" href="./lavador360-icon-orange-bus.png?v=20260929-4">
 <link rel="apple-touch-icon" sizes="256x256" href="./lavador360-icon-orange-bus.png?v=20260929-4">
-<link rel="stylesheet" href="./lavador360.css?v=20260929-1">
+<link rel="stylesheet" href="./lavador360.css?v=20261001-3">
 </head>
 <body>
 <div id="sessionGate" class="session-gate hidden">
@@ -141,6 +141,19 @@
         </form>
       </section>
 
+      <section id="tab-wash-detail" class="tab">
+        <div class="section-head"><div><span class="eyebrow">ORDEM DE LAVAGEM</span><h2 id="detailTitle">Detalhes da lavagem</h2><p id="detailSubtitle">Checklist, fotos, tempos e histórico da condução.</p></div><button class="btn soft" type="button" data-open-tab="patio">← Pátio</button></div>
+        <div id="detailSummary" class="kpi-grid"></div>
+        <div class="two-col align-start">
+          <article class="panel"><div class="panel-head"><div><h3>Checklist operacional</h3><p>OK, Falha ou N/A. Falhas ficam registradas.</p></div></div><div id="washChecklist" class="checklist-grid"></div></article>
+          <article class="panel"><div class="panel-head"><div><h3>Fotos antes e depois</h3><p>Use os mesmos ângulos para comparar.</p></div></div>
+            <div class="photo-controls"><select id="photoPhase"><option value="before">Antes</option><option value="after">Depois</option></select><select id="photoAngle"><option value="front">Frente</option><option value="rear">Traseira</option><option value="left">Lateral esquerda</option><option value="right">Lateral direita</option><option value="cab">Cabine/interior</option><option value="wheels">Rodas/pneus</option><option value="chassis">Chassi/parte inferior</option><option value="detail">Detalhe/avaria</option></select><label class="btn soft file-btn">📷 Tirar foto<input id="washPhotoInput" type="file" accept="image/*" capture="environment"></label></div>
+            <div id="washPhotoGrid" class="wash-photo-grid"></div>
+          </article>
+        </div>
+        <article class="panel"><div class="panel-head"><div><h3>Histórico desta condução</h3><p>Lavagens, custo e intervalo.</p></div></div><div id="vehicleWashHistory" class="stack"></div></article>
+      </section>
+
       <section id="tab-washes" class="tab">
         <div class="section-head"><div><span class="eyebrow">HISTÓRICO</span><h2>Lavagens</h2><p>Custos reais, margem de clientes externos e economia da frota própria.</p></div><div class="filters"><select id="washStatusFilter"><option value="">Todos os status</option><option value="scheduled">Agendada</option><option value="in_progress">Em andamento</option><option value="completed">Concluída</option><option value="cancelled">Cancelada</option></select><input id="washSearch" type="search" placeholder="Buscar placa, veículo, serviço..."></div></div>
         <div id="washList" class="stack"></div>
@@ -223,6 +236,6 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="./config.js"></script>
 <script src="./lavador360-auth-bridge.js?v=20260929-4"></script>
-<script src="./lavador360.js?v=20261001-2"></script>
+<script src="./lavador360.js?v=20261001-3"></script>
 </body>
 </html>
