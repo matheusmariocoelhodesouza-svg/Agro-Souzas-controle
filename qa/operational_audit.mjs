@@ -72,6 +72,13 @@ for(const file of fs.readdirSync('.').filter(x=>x.endsWith('.html'))){
   new vm.Script(match[2],{filename:file});
  }
 }
+test('EPI handler stays outside printable mirror HTML',()=>{
+ const start=html.indexOf('function printMonthlyMirror(){');
+ const end=html.indexOf('\nfunction setTextSafe',start);
+ assert.ok(start>=0&&end>start,'Missing monthly mirror block');
+ assert.doesNotMatch(html.slice(start,end),/<script\b/i);
+ assert.match(html,/function openEmployeeEpi\(\)/);
+});
 
 
 const employeeNodes=new Map(['employeesList','faceEmployee','scheduleEmployee','monthlyEmployee','monthlyMonth','faceEnrollmentList'].map(id=>[id,{innerHTML:'',value:''}]));

@@ -4840,35 +4840,34 @@ function printMonthlyMirror(){
   ${content}
   <div class="legal"><b>Rastreabilidade:</b> novas marcações recebem NSR sequencial e hash SHA-256 no banco de dados. Os campos essenciais da marcação original são protegidos contra alteração e exclusão. Registros antigos, anteriores à implantação desta camada, podem aparecer sem NSR/hash e não devem ser retroativamente apresentados como se tivessem sido gerados com essa proteção.</div>
   <div class="footer">Este relatório é uma versão operacional em evolução. A conformidade integral como REP-P ainda depende da implementação e validação dos demais requisitos técnicos aplicáveis, incluindo AFD/AEJ, comprovantes eletrônicos e assinatura eletrônica quando exigida.</div>
-  
-<script>
-/* Comando 360 — Ficha individual de EPI vinculada ao cadastro RH */
-(function(){
-  function v(id){var e=document.getElementById(id);return e?String(e.value||'').trim():''}
-  function openEpi(){
-    var id=v('editEmployeeId');
-    if(!id){alert('Abra primeiro a ficha cadastral de um colaborador.');return}
-    var q=new URLSearchParams({
-      id:id,
-      nome:v('editEmployeeName'),
-      matricula:v('editEmployeeNumber'),
-      cpf:v('editEmployeeCpf'),
-      funcao:v('editEmployeeJob'),
-      equipe:v('editEmployeeTeam'),
-      admissao:v('editEmployeeAdmission')
-    });
-    window.open('./ficha-epi.html?'+q.toString(),'_blank','noopener');
-  }
-  document.addEventListener('click',function(ev){
-    var b=ev.target.closest&&ev.target.closest('#openEmployeeEpi');
-    if(b){ev.preventDefault();openEpi()}
-  });
-})();
-</script>
 </body></html>`);
   w.document.close();
  try{setTimeout(()=>{w.focus();w.print()},250)}catch(e){}
 }
+
+/* Comando 360 — Ficha individual de EPI vinculada ao cadastro RH */
+function employeeEpiValue(id){
+  const el=document.getElementById(id);
+  return el?String(el.value||'').trim():'';
+}
+function openEmployeeEpi(){
+  const id=employeeEpiValue('editEmployeeId');
+  if(!id){alert('Abra primeiro a ficha cadastral de um colaborador.');return}
+  const q=new URLSearchParams({
+    id,
+    nome:employeeEpiValue('editEmployeeName'),
+    matricula:employeeEpiValue('editEmployeeNumber'),
+    cpf:employeeEpiValue('editEmployeeCpf'),
+    funcao:employeeEpiValue('editEmployeeJob'),
+    equipe:employeeEpiValue('editEmployeeTeam'),
+    admissao:employeeEpiValue('editEmployeeAdmission')
+  });
+  window.open('./ficha-epi.html?'+q.toString(),'_blank','noopener');
+}
+document.addEventListener('click',event=>{
+  const button=event.target.closest&&event.target.closest('#openEmployeeEpi');
+  if(button){event.preventDefault();openEmployeeEpi()}
+});
 
 function setTextSafe(id,value){const el=document.getElementById(id);if(el)el.textContent=value}
 function setHtmlSafe(id,value){const el=document.getElementById(id);if(el)el.innerHTML=value}

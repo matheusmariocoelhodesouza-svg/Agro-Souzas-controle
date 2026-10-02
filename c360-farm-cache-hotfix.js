@@ -52,7 +52,7 @@ async function warmAllPoultryFarmsOffline(){
 }
 
 try{
-  warmPoultryOfflineCache=warmAllPoultryFarmsOffline;
+  if(typeof warmPoultryOfflineCache!=='undefined')warmPoultryOfflineCache=warmAllPoultryFarmsOffline;
   window.warmPoultryOfflineCache=warmAllPoultryFarmsOffline;
 }catch(e){console.warn('Comando 360: não foi possível substituir a pré-carga de granjas',e)}
 
