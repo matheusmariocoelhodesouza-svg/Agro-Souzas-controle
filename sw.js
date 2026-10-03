@@ -3,7 +3,7 @@
    serializar a rotação do refresh token do Supabase entre PWA/abas/contextos. */
 importScripts('./sw-auth-refresh-guard.js');
 
-const CACHE='comando360-v6-107';
+const CACHE='comando360-v6-108';
 const CORE=[
   './',
   './index.html',
