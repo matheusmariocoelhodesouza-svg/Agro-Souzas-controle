@@ -3635,7 +3635,7 @@ async function warmPoultryOfflineCache(){
  }
  await offlineCacheSet(offlineTeamKey('poultry_context'),{teams:teams.length?teams:(deviceTeam?[deviceTeam]:[]),farms,barns,loadings});
  const [ops,trucks]=await Promise.all([
-  rest('v2_operations','select=id,operation_number,title,customer_name,location_name,team_id,scheduled_start,scheduled_end,actual_start,actual_end,status,planned_birds,actual_birds,price_per_thousand,price_per_bird,actual_revenue,notes,offline_event_id,metadata&company_id=eq.'+companyId+'&operation_type=eq.poultry_catching&order=scheduled_start.desc&limit=100'),
+  rest('v2_operations','select=id,operation_number,title,customer_name,location_name,team_id,scheduled_start,scheduled_end,actual_start,actual_end,status,planned_birds,actual_birds,price_per_thousand,price_per_bird,actual_revenue,notes,offline_event_id,metadata&company_id=eq.'+companyId+'&operation_type=in.(poultry_catching,poultry_loading)&order=scheduled_start.desc&limit=100'),
   rest('v2_poultry_truck_loads','select=id,loading_id,truck_sequence,truck_plate,driver_name,birds,started_at,completed_at,is_cata,external_reference,metadata&company_id=eq.'+companyId+'&order=created_at.asc')
  ]);
  await offlineCacheSet(offlineTeamKey('poultry_ops'),{ops,loadings,trucks});
