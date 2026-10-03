@@ -2956,16 +2956,40 @@ function jwtExpSeconds(token){
   return Number(JSON.parse(decodeURIComponent(Array.prototype.map.call(atob(b),c=>'%'+('00'+c.charCodeAt(0).toString(16)).slice(-2)).join(''))).exp||0);
  }catch(_){return 0}
 }
-async function refreshToken(){
- if(refreshTokenPromise)return refreshTokenPromise;
- refreshTokenPromise=(async()=>{
-  const s=session();if(!s?.refresh_token)throw new Error('Sessão expirada. Entre novamente.');
+async function c360DoRefreshLocked(){
+ const before=session();if(!before?.refresh_token)throw new Error('Sessão expirada. Entre novamente.');
+ const usedRefresh=before.refresh_token;
+ const doRequest=async()=>{
+  const current=session();
+  if(current?.refresh_token&&current.refresh_token!==usedRefresh&&current.access_token)return current.access_token;
   const r=await fetchTimeout(API_URL+'/auth/v1/token?grant_type=refresh_token',{
    method:'POST',headers:{apikey:KEY,'Content-Type':'application/json'},
-   body:JSON.stringify({refresh_token:s.refresh_token})
+   body:JSON.stringify({refresh_token:usedRefresh})
   },12000);
-  const data=await parseResponse(r);saveSession(data);return data.access_token;
- })();
+  if(!r.ok){
+   const raw=await r.text();let data=null;try{data=raw?JSON.parse(raw):null}catch{data=raw}
+   const msg=String((data&&data.msg)||(data&&data.message)||(data&&data.error_description)||(data&&data.error)||('HTTP '+r.status));
+   if(/refresh token.*already used|invalid refresh token.*already used/i.test(msg)){
+    await new Promise(resolve=>setTimeout(resolve,350));
+    const newer=session();
+    if(newer?.refresh_token&&newer.refresh_token!==usedRefresh&&newer.access_token)return newer.access_token;
+   }
+   throw new Error(msg);
+  }
+  const data=await r.json();saveSession(data);
+  try{window.c360BackupDeviceSession?.()}catch(_){}
+  return data.access_token;
+ };
+ if(navigator.locks?.request)return await navigator.locks.request('c360-supabase-refresh',{mode:'exclusive'},async()=>{
+  const current=session();
+  if(current?.refresh_token&&current.refresh_token!==usedRefresh&&current.access_token)return current.access_token;
+  return await doRequest();
+ });
+ return await doRequest();
+}
+async function refreshToken(){
+ if(refreshTokenPromise)return refreshTokenPromise;
+ refreshTokenPromise=c360DoRefreshLocked();
  try{return await refreshTokenPromise}finally{refreshTokenPromise=null}
 }
 async function ensureFreshAccessToken(minSeconds=90){
