@@ -1,19 +1,29 @@
 (function(){
  'use strict';
- const VERSION='2026.09.30-fax1';
+ const VERSION='2026.10.03-fax-admin2';
  const BUCKET='v2-poultry-sheets';
- let rows=[],teams=[],selectedFile=null,aiActions=[],currentTab='today',installed=false,loading=false;
- const q=s=>document.querySelector(s);
+ let rows=[],teams=[],selectedFile=null,aiActions=[],currentTab='today',installed=false,loading=false,dataFlight=null,observedScope=null;
+ function screen(id){try{return document.getElementById(id)||v2ScreenStore[id]}catch(_){return document.getElementById(id)}}
+ const q=s=>document.querySelector(s)||screen('operacoes')?.querySelector(s)||screen('inicio')?.querySelector(s);
  const escLocal=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
  const todayLocal=()=>new Intl.DateTimeFormat('en-CA',{timeZone:'America/Sao_Paulo',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
  const dateBR=v=>{if(!v)return '—';const [y,m,d]=String(v).slice(0,10).split('-');return `${d}/${m}/${y}`};
  const timeHM=v=>v?String(v).slice(0,5):'Sem horário';
  const num=v=>Number(v||0).toLocaleString('pt-BR');
  function safeCompanyId(){try{return (typeof companyId!=='undefined'&&companyId)||null}catch(_){return null}}
- function isDevice(){try{return typeof deviceMode!=='undefined'&&deviceMode}catch(_){return false}}
+ function isDevice(){try{return !!(typeof deviceMode!=='undefined'&&deviceMode)||document.body.classList.contains('device-mode')}catch(_){return document.body.classList.contains('device-mode')}}
+ function canManage(){try{return !isDevice()&&document.body.classList.contains('app-ready')&&!!safeCompanyId()&&['owner','admin','general_admin'].includes(String(currentRoleCode||'').toLowerCase())}catch(_){return false}}
+ function sameAdminCompany(cid){return canManage()&&safeCompanyId()===cid}
+ function removeAdminUi(){
+  q('#c360FaxPanel')?.remove();q('#c360FaxHeroBtn')?.remove();q('#c360FaxDashboardBtn')?.remove();
+  const actions=screen('operacoes')?.querySelector('.c360-fax-hero-actions'),newOp=actions?.querySelector('#newPoultryOp');
+  if(newOp)actions.parentNode.insertBefore(newOp,actions);actions?.remove();
+  installed=false;rows=[];teams=[];selectedFile=null;aiActions=[];
+ }
  function pathEncode(path){return String(path||'').split('/').map(encodeURIComponent).join('/')}
  function fileSafe(name){return String(name||'fax').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9._-]+/g,'-').replace(/-+/g,'-').slice(-100)||'fax'}
  async function api(path,opts={}){
+  if(!canManage())throw new Error('O cadastro do FAX é restrito ao administrador.');
   if(typeof authFetch!=='function')throw new Error('Sessão do Comando 360 ainda não está pronta.');
   const r=await authFetch(path,opts);
   const text=await r.text();
@@ -25,6 +35,7 @@
   if(q('#c360FaxStyle'))return;
   const s=document.createElement('style');s.id='c360FaxStyle';s.textContent=`
   #c360FaxPanel{border:1px solid #dbe6f1;background:linear-gradient(180deg,#fff,#fbfdff);box-shadow:0 5px 18px rgba(18,46,78,.04)}
+  body.device-mode #c360FaxPanel,body.device-mode #c360FaxHeroBtn,body.device-mode #c360FaxDashboardBtn{display:none!important}
   .c360-fax-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}
   .c360-fax-head h3{margin:0;color:#162d49}.c360-fax-head .muted{margin-top:4px}
   .c360-fax-tabs{display:flex;gap:7px;flex-wrap:wrap;margin:13px 0 10px}.c360-fax-tab{border:1px solid #dbe5ef;background:#f7f9fc;color:#40566f;border-radius:999px;padding:8px 12px;font-weight:850;cursor:pointer}.c360-fax-tab.active{background:#173b67;color:#fff;border-color:#173b67}
@@ -60,8 +71,9 @@
    <div class="c360-fax-list" id="c360FaxList"><div class="c360-fax-empty">Carregando programação...</div></div>
   </div>`}
  function inject(){
-  if(installed||isDevice())return false;
-  const section=q('#operacoes'),hero=section?.querySelector('.v2hero');if(!section||!hero)return false;
+  if(!canManage())return false;
+  if(installed&&q('#c360FaxPanel'))return true;
+  const section=screen('operacoes'),hero=section?.querySelector('.v2hero');if(!section||!hero)return false;
   style();
   let actions=hero.querySelector('.c360-fax-hero-actions');
   if(!actions){actions=document.createElement('div');actions.className='c360-fax-hero-actions';const newOp=q('#newPoultryOp');if(newOp){hero.insertBefore(actions,newOp);actions.appendChild(newOp)}else hero.appendChild(actions)}
@@ -73,7 +85,7 @@
  function addDashboardShortcut(){
   const host=q('#dashboardActions');if(!host||q('#c360FaxDashboardBtn'))return;
   const b=document.createElement('button');b.type='button';b.id='c360FaxDashboardBtn';b.className='c360-fax-dashboard-btn';b.innerHTML='<span>📠</span><div><b>Adicionar FAX</b><small>Programar apanha</small></div>';
-  b.onclick=async()=>{try{if(typeof v2Go==='function')await v2Go('operacoes')}catch(_){};setTimeout(()=>{q('#c360FaxPanel')?.scrollIntoView({behavior:'smooth',block:'start'});openForm()},80)};
+  b.onclick=async()=>{if(!canManage())return;try{if(typeof v2Go==='function')await v2Go('operacoes');if(!canManage())return;q('#c360FaxPanel')?.scrollIntoView({behavior:'smooth',block:'start'});openForm()}catch(_){}};
   host.insertBefore(b,host.firstChild);
  }
  function bind(){
@@ -81,67 +93,82 @@
   q('#c360FaxCameraBtn').onclick=()=>q('#c360FaxCamera').click();q('#c360FaxFileBtn').onclick=()=>q('#c360FaxFile').click();
   q('#c360FaxCamera').onchange=e=>chooseFile(e.target.files?.[0]);q('#c360FaxFile').onchange=e=>chooseFile(e.target.files?.[0]);q('#c360FaxAiChoice').onchange=e=>applyAiAction(aiActions[Number(e.target.value)||0]);
   q('#c360FaxSave').onclick=save;
-  document.querySelectorAll('[data-faxtab]').forEach(b=>b.onclick=()=>{currentTab=b.dataset.faxtab;document.querySelectorAll('[data-faxtab]').forEach(x=>x.classList.toggle('active',x===b));render()});
+  const tabs=q('#c360FaxPanel').querySelectorAll('[data-faxtab]');tabs.forEach(b=>b.onclick=()=>{if(!canManage())return;currentTab=b.dataset.faxtab;tabs.forEach(x=>x.classList.toggle('active',x===b));render()});
  }
  function chooseFile(file){
+  if(!canManage())return;
   if(!file)return;const allowed=['application/pdf','image/jpeg','image/png','image/webp'];if(!allowed.includes(file.type)){alert('Use PDF, JPG, PNG ou WEBP.');return}if(file.size>15*1024*1024){alert('O arquivo do FAX deve ter no máximo 15 MB.');return}selectedFile=file;aiActions=[];q('#c360FaxFileName').textContent=`${file.name} • ${(file.size/1024/1024).toFixed(1)} MB`;const box=q('#c360FaxAiBox'),msg=q('#c360FaxAiMsg'),choice=q('#c360FaxAiChoice');box?.classList.remove('hidden');choice?.classList.add('hidden');if(file.type.startsWith('image/')){msg.textContent='✨ Lendo o FAX com a IA...';analyzeFaxImage(file)}else msg.textContent='PDF anexado. Os dados podem ser preenchidos manualmente; a leitura automática desta tela usa foto do FAX.';
  }
  function fileToDataUrl(file){return new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(String(r.result||''));r.onerror=()=>reject(new Error('Não foi possível ler a foto.'));r.readAsDataURL(file)})}
  function applyAiAction(a){
+  if(!canManage())return;
   const p=a?.payload||{};if(!p)return;const start=String(p.scheduled_start||'');if(p.team_id)q('#c360FaxTeam').value=p.team_id;if(start){q('#c360FaxDate').value=start.slice(0,10);const tm=start.match(/T(\d{2}:\d{2})/);if(tm)q('#c360FaxTime').value=tm[1]}if(p.integrator_name)q('#c360FaxClient').value=p.integrator_name;if(p.producer||p.farm_name||p.integrator_name)q('#c360FaxIntegrated').value=p.producer||p.farm_name||p.integrator_name;if(p.farm_name)q('#c360FaxFarm').value=p.farm_name;if(p.city)q('#c360FaxCity').value=p.city;if(p.planned_birds!=null)q('#c360FaxBirds').value=String(Math.round(Number(p.planned_birds)||0));if(p.notes)q('#c360FaxNotes').value=p.notes;
  }
  async function analyzeFaxImage(file){
+  if(!canManage())return;
   const cid=safeCompanyId(),msg=q('#c360FaxAiMsg'),choice=q('#c360FaxAiChoice');if(!cid){msg.textContent='A empresa ainda está carregando. Você pode salvar o FAX manualmente.';return}
   try{const image=await fileToDataUrl(file);const data=await api('/functions/v1/controla-ai',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({company_id:cid,mode:'analyze',question:'Leia este FAX de programação de apanha. Extraia todas as apanhas/localidades visíveis e os dados de equipe, empresa/integrador, produtor, granja, cidade, data, horário e aves previstas. Apenas proponha os dados; não execute nenhum lançamento.',image_data_url:image})});aiActions=(data?.actions||[]).filter(a=>a.action_type==='poultry_schedule');if(!aiActions.length){msg.textContent='Não consegui identificar uma programação de apanha automaticamente. Confira e preencha os campos manualmente.';return}applyAiAction(aiActions[0]);if(aiActions.length>1){choice.innerHTML=aiActions.map((a,i)=>`<option value="${i}">Apanha ${i+1} — ${escLocal(a.payload?.farm_name||a.payload?.producer||a.payload?.city||'local '+(i+1))}</option>`).join('');choice.classList.remove('hidden');msg.textContent=`✨ IA encontrou ${aiActions.length} apanhas. Escolha acima qual deseja cadastrar agora e confira os campos.`}else{choice.classList.add('hidden');msg.textContent='✨ IA leu o FAX e preencheu os campos. Confira antes de salvar.'}}catch(e){msg.textContent='Não foi possível ler automaticamente: '+e.message+' Você ainda pode preencher e salvar manualmente.'}
  }
- async function loadTeams(){const cid=safeCompanyId();if(!cid)return;teams=await api('/rest/v1/v2_teams?select=id,name,status&company_id=eq.'+encodeURIComponent(cid)+'&status=eq.active&order=name.asc');const sel=q('#c360FaxTeam');if(sel)sel.innerHTML='<option value="">Definir depois</option>'+teams.map(t=>`<option value="${escLocal(t.id)}">${escLocal(t.name)}</option>`).join('')}
+ async function loadTeams(){const cid=safeCompanyId();if(!sameAdminCompany(cid))return;const data=await api('/rest/v1/v2_teams?select=id,name,status&company_id=eq.'+encodeURIComponent(cid)+'&status=eq.active&order=name.asc');if(!sameAdminCompany(cid))return;teams=Array.isArray(data)?data:[];const sel=q('#c360FaxTeam');if(sel)sel.innerHTML='<option value="">Definir depois</option>'+teams.map(t=>`<option value="${escLocal(t.id)}">${escLocal(t.name)}</option>`).join('')}
  async function loadRows(){
-  const cid=safeCompanyId();if(!cid){q('#c360FaxList').innerHTML='<div class="c360-fax-empty">Abra o Comando 360 com seu usuário para carregar os FAX.</div>';return}
+  const cid=safeCompanyId();if(!sameAdminCompany(cid))return;
   if(loading)return;loading=true;
-  try{rows=await api('/rest/v1/v2_poultry_faxes?select=*&company_id=eq.'+encodeURIComponent(cid)+'&order=pickup_date.asc,scheduled_time.asc,created_at.asc');render()}
-  catch(e){q('#c360FaxList').innerHTML='<div class="c360-fax-empty">Não foi possível carregar os FAX: '+escLocal(e.message)+'</div>'}
+  try{const data=await api('/rest/v1/v2_poultry_faxes?select=*&company_id=eq.'+encodeURIComponent(cid)+'&order=pickup_date.asc,scheduled_time.asc,created_at.asc');if(!sameAdminCompany(cid))return;rows=Array.isArray(data)?data:[];render()}
+  catch(e){const host=q('#c360FaxList');if(sameAdminCompany(cid)&&host)host.innerHTML='<div class="c360-fax-empty">Não foi possível carregar os FAX: '+escLocal(e.message)+'</div>'}
   finally{loading=false}
  }
  function counters(){const t=todayLocal();return {today:rows.filter(r=>r.status==='scheduled'&&r.pickup_date<=t).length,upcoming:rows.filter(r=>r.status==='scheduled'&&r.pickup_date>t).length,completed:rows.filter(r=>r.status!=='scheduled').length}}
  function render(){
+  if(!canManage())return;
   const host=q('#c360FaxList');if(!host)return;const t=todayLocal(),c=counters();q('#c360FaxCountToday').textContent=c.today?`(${c.today})`:'';q('#c360FaxCountUpcoming').textContent=c.upcoming?`(${c.upcoming})`:'';q('#c360FaxCountCompleted').textContent=c.completed?`(${c.completed})`:'';
   let list=rows.filter(r=>currentTab==='today'?r.status==='scheduled'&&r.pickup_date<=t:currentTab==='upcoming'?r.status==='scheduled'&&r.pickup_date>t:r.status!=='scheduled');if(currentTab==='today')list=list.sort((a,b)=>String(a.pickup_date+a.scheduled_time).localeCompare(String(b.pickup_date+b.scheduled_time)));if(currentTab==='completed')list=list.sort((a,b)=>String(b.pickup_date).localeCompare(String(a.pickup_date)));
   if(!list.length){host.innerHTML='<div class="c360-fax-empty">Nenhum FAX nesta aba.</div>';return}
   host.innerHTML=list.map(r=>{const team=teams.find(ti=>ti.id===r.team_id)?.name||'Equipe a definir';const overdue=r.status==='scheduled'&&r.pickup_date<t;const done=r.status!=='scheduled';return `<div class="c360-fax-card ${overdue?'overdue':''} ${done?'done':''}" data-faxid="${escLocal(r.id)}"><div class="c360-fax-main"><div><div class="c360-fax-title">${escLocal(r.client_name||'FAX')} • ${escLocal(r.integrated_name)}</div><div class="c360-fax-meta">${escLocal(r.farm_name||'Granja não informada')} • ${escLocal(r.city)}${r.location_text?' • '+escLocal(r.location_text):''}</div><div class="c360-fax-badges"><span class="c360-fax-badge ${overdue?'hot':''}">${overdue?'Atrasado • ':''}${dateBR(r.pickup_date)} • ${timeHM(r.scheduled_time)}</span><span class="c360-fax-badge">${escLocal(team)}</span>${r.status==='completed'?'<span class="c360-fax-badge ok">Concluído</span>':''}${r.status==='cancelled'?'<span class="c360-fax-badge">Cancelado</span>':''}</div></div><div><div class="muted">Planejamento</div><div style="font-weight:850;margin-top:3px">${r.expected_birds!=null?num(r.expected_birds)+' aves':'Aves não informadas'}</div><div class="c360-fax-meta">${r.shed_count!=null?num(r.shed_count)+' aviário(s)':'Aviários não informados'}</div></div><div><div class="muted">Documento</div><div style="font-weight:800;margin-top:3px">${r.storage_path?'FAX anexado':'Sem anexo'}</div><div class="c360-fax-meta">${escLocal(r.original_name||r.notes||'')}</div></div></div><div class="c360-fax-actions">${r.storage_path?`<button class="btn soft c360FaxOpenFile" type="button" data-id="${escLocal(r.id)}">📄 Abrir FAX</button>`:''}${r.status==='scheduled'?`<button class="btn soft c360FaxUse" type="button" data-id="${escLocal(r.id)}">↗ Usar na apanha</button><button class="btn primary c360FaxDone" type="button" data-id="${escLocal(r.id)}">✓ Concluir</button>`:''}</div></div>`}).join('');
   host.querySelectorAll('.c360FaxOpenFile').forEach(b=>b.onclick=()=>openFile(b.dataset.id));host.querySelectorAll('.c360FaxUse').forEach(b=>b.onclick=()=>useInOperation(b.dataset.id));host.querySelectorAll('.c360FaxDone').forEach(b=>b.onclick=()=>complete(b.dataset.id));
  }
- function openForm(){q('#c360FaxForm')?.classList.remove('hidden');if(q('#c360FaxDate')&&!q('#c360FaxDate').value)q('#c360FaxDate').value=todayLocal();q('#c360FaxForm')?.scrollIntoView({behavior:'smooth',block:'nearest'})}
+ function openForm(){if(!canManage())return;q('#c360FaxForm')?.classList.remove('hidden');if(q('#c360FaxDate')&&!q('#c360FaxDate').value)q('#c360FaxDate').value=todayLocal();q('#c360FaxForm')?.scrollIntoView({behavior:'smooth',block:'nearest'})}
  function closeForm(){q('#c360FaxForm')?.classList.add('hidden')}
  function resetForm(){['#c360FaxClient','#c360FaxTime','#c360FaxIntegrated','#c360FaxFarm','#c360FaxCity','#c360FaxLocation','#c360FaxBirds','#c360FaxSheds','#c360FaxNotes'].forEach(id=>{const e=q(id);if(e)e.value=''});if(q('#c360FaxDate'))q('#c360FaxDate').value=todayLocal();if(q('#c360FaxTeam'))q('#c360FaxTeam').value='';if(q('#c360FaxCamera'))q('#c360FaxCamera').value='';if(q('#c360FaxFile'))q('#c360FaxFile').value='';selectedFile=null;aiActions=[];q('#c360FaxFileName').textContent='Nenhum arquivo selecionado.';q('#c360FaxAiBox')?.classList.add('hidden');q('#c360FaxAiChoice')?.classList.add('hidden')}
  async function upload(file,faxId,teamId){
   const cid=safeCompanyId();const folder=teamId||cid;const path=`${cid}/${folder}/fax/${faxId}/${Date.now()}-${fileSafe(file.name)}`;await api('/storage/v1/object/'+BUCKET+'/'+pathEncode(path),{method:'POST',headers:{'Content-Type':file.type||'application/octet-stream','x-upsert':'false'},body:file});return path
  }
  async function save(){
+  if(!canManage())return;
   const cid=safeCompanyId(),date=q('#c360FaxDate').value,integrated=q('#c360FaxIntegrated').value.trim(),city=q('#c360FaxCity').value.trim();if(!cid)return alert('Empresa ainda não carregada.');if(!date)return alert('Informe a data da apanha.');if(!integrated)return alert('Informe o integrado / produtor.');if(!city)return alert('Informe a cidade.');
   const btn=q('#c360FaxSave'),msg=q('#c360FaxMsg');btn.disabled=true;msg.textContent='Salvando FAX...';let created=null;
   try{
    const payload={company_id:cid,team_id:q('#c360FaxTeam').value||null,pickup_date:date,scheduled_time:q('#c360FaxTime').value||null,client_name:q('#c360FaxClient').value.trim()||null,integrated_name:integrated,farm_name:q('#c360FaxFarm').value.trim()||null,city,location_text:q('#c360FaxLocation').value.trim()||null,expected_birds:q('#c360FaxBirds').value?Number(q('#c360FaxBirds').value):null,shed_count:q('#c360FaxSheds').value?Number(q('#c360FaxSheds').value):null,notes:q('#c360FaxNotes').value.trim()||null,status:'scheduled',updated_at:new Date().toISOString()};
    const data=await api('/rest/v1/v2_poultry_faxes',{method:'POST',headers:{'Content-Type':'application/json','Prefer':'return=representation'},body:JSON.stringify(payload)});created=Array.isArray(data)?data[0]:data;
    if(selectedFile){msg.textContent='Enviando foto/PDF do FAX...';const path=await upload(selectedFile,created.id,payload.team_id);await api('/rest/v1/v2_poultry_faxes?id=eq.'+encodeURIComponent(created.id),{method:'PATCH',headers:{'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({storage_bucket:BUCKET,storage_path:path,original_name:selectedFile.name,mime_type:selectedFile.type||null,updated_at:new Date().toISOString()})})}
-   msg.textContent='FAX salvo e programação criada.';resetForm();closeForm();currentTab=date<=todayLocal()?'today':'upcoming';document.querySelectorAll('[data-faxtab]').forEach(x=>x.classList.toggle('active',x.dataset.faxtab===currentTab));await loadRows();
+   msg.textContent='FAX salvo e programação criada.';resetForm();closeForm();currentTab=date<=todayLocal()?'today':'upcoming';q('#c360FaxPanel').querySelectorAll('[data-faxtab]').forEach(x=>x.classList.toggle('active',x.dataset.faxtab===currentTab));await loadRows();
   }catch(e){if(created?.id&&selectedFile){try{await api('/rest/v1/v2_poultry_faxes?id=eq.'+encodeURIComponent(created.id),{method:'DELETE',headers:{'Prefer':'return=minimal'}})}catch(_){}}msg.textContent='Erro: '+e.message}
   finally{btn.disabled=false}
  }
  async function openFile(id){
+  if(!canManage())return;
   const r=rows.find(x=>x.id===id);if(!r?.storage_path)return;const win=window.open('','_blank');try{const res=await authFetch('/storage/v1/object/'+BUCKET+'/'+pathEncode(r.storage_path));if(!res.ok)throw new Error('Não foi possível abrir o documento.');const blob=await res.blob(),url=URL.createObjectURL(blob);if(win)win.location.href=url;else location.href=url;setTimeout(()=>URL.revokeObjectURL(url),60000)}catch(e){if(win)win.close();alert(e.message)}
  }
  async function complete(id){
+  if(!canManage())return;
   try{await api('/rest/v1/v2_poultry_faxes?id=eq.'+encodeURIComponent(id),{method:'PATCH',headers:{'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({status:'completed',updated_at:new Date().toISOString()})});await loadRows()}catch(e){alert('Não foi possível concluir: '+e.message)}
  }
  async function useInOperation(id){
+  if(!canManage())return;const cid=safeCompanyId();
   const r=rows.find(x=>x.id===id);if(!r)return;
   try{
    await openNewPoultryOperation();
+   if(!sameAdminCompany(cid))return;
    const set=(id,val)=>{const el=q(id);if(el&&val!=null)el.value=val};if(r.team_id)set('#poTeam',r.team_id);if(r.pickup_date)set('#poStart',r.pickup_date+'T'+(r.scheduled_time?String(r.scheduled_time).slice(0,5):String(q('#poStart')?.value||'').slice(11,16)));set('#poIntegratedName',r.integrated_name||'');set('#poCity',r.city||'');set('#poFarmName',r.farm_name||'');if(r.expected_birds!=null)set('#poPlannedBirds',r.expected_birds);const noteParts=[];if(r.client_name)noteParts.push('Cliente: '+r.client_name);if(r.location_text)noteParts.push('Localização: '+r.location_text);if(r.shed_count!=null)noteParts.push('Aviários previstos: '+r.shed_count);if(r.notes)noteParts.push(r.notes);noteParts.push('Origem: FAX '+r.id.slice(0,8));set('#poNotes',noteParts.join(' | '));q('#poultryForm')?.scrollIntoView({behavior:'smooth',block:'start'});const m=q('#poMsg');if(m)m.textContent='Dados preenchidos a partir do FAX. Confira e salve a apanha.';
   }catch(e){alert('Não foi possível abrir a apanha: '+e.message)}
  }
- async function readyData(){if(isDevice())return;const cid=safeCompanyId();if(!cid)return;try{await loadTeams();await loadRows()}catch(e){console.warn('FAX / Programação',e)}}
- function boot(){if(!inject()){let n=0;const t=setInterval(()=>{n++;if(inject()||n>80)clearInterval(t)},100)}setTimeout(readyData,300);const ob=new MutationObserver(()=>{if(document.body.classList.contains('app-ready'))readyData()});ob.observe(document.body,{attributes:true,attributeFilter:['class']});window.addEventListener('c360:company-changed',readyData)}
+ async function readyData(){
+  if(!canManage()){removeAdminUi();return}if(!inject())return;const cid=safeCompanyId();
+  if(dataFlight?.company===cid)return dataFlight.promise;
+  const promise=(async()=>{try{await loadTeams();if(sameAdminCompany(cid))await loadRows()}catch(e){if(sameAdminCompany(cid))console.warn('FAX / Programação',e)}})();dataFlight={company:cid,promise};
+  try{await promise}finally{if(dataFlight?.promise===promise)dataFlight=null}
+ }
+ function syncMode(){const scope=canManage()?safeCompanyId()+':'+currentRoleCode:'';if(scope===observedScope)return;observedScope=scope;readyData()}
+ function boot(){style();syncMode();const ob=new MutationObserver(syncMode);ob.observe(document.body,{attributes:true,attributeFilter:['class']});window.addEventListener('c360:company-changed',readyData)}
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
  window.c360FaxRefresh=readyData;window.C360_FAX_VERSION=VERSION;
 })();

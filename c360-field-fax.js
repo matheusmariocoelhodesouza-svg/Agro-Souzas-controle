@@ -1,9 +1,9 @@
 (()=>{
 'use strict';
-const VERSION='2026.10.03-field-fax1';
+const VERSION='2026.10.03-field-fax2';
 const BUCKET='v2-poultry-sheets';
 let state={scope:'',rows:[],loaded:false,updatedAt:null,notice:'',lastAttempt:0};
-let flight=null,home=null,panel=null,using=false;
+let flight=null,home=null,panel=null,using=false,observedScope=null;
 const escape=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 const today=()=>new Intl.DateTimeFormat('en-CA',{timeZone:'America/Sao_Paulo',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
 const dateLabel=d=>{const [y,m,day]=String(d||'').slice(0,10).split('-');return y&&m&&day?`${day}/${m}/${y}`:'Data não informada'};
@@ -18,12 +18,19 @@ function online(){return typeof c360NetOnline==='function'?c360NetOnline():navig
 function style(){
  if(document.getElementById('c360FieldFaxStyle'))return;
  const s=document.createElement('style');s.id='c360FieldFaxStyle';s.textContent=`
+ body.device-mode #c360FaxPanel,body.device-mode #c360FaxHeroBtn,body.device-mode #c360FaxDashboardBtn{display:none!important}
+ body:not(.device-mode) .c360-field-fax{display:none!important}
  .c360-field-fax{margin-top:12px;border:1px solid #dbe5ef;border-radius:16px;padding:14px;background:#fff;color:#172d46;min-width:0}
  .c360-field-fax h3{margin:0 0 8px;font-size:16px;color:inherit}.c360-field-fax-list{display:grid;gap:10px}
  .c360-field-fax-row{border:1px solid #dbe5ef;border-radius:12px;padding:12px;min-width:0;overflow-wrap:anywhere}
  .c360-field-fax-date{font-weight:800;font-size:12px;margin:5px 0}.c360-field-fax-status{font-size:12px;color:#51677e;margin:8px 0;overflow-wrap:anywhere}
  .c360-field-fax-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.c360-field-fax-actions .btn{flex:1 1 130px;white-space:normal}
  body.darkmode .c360-field-fax{background:#102238;color:#edf4fc;border-color:#29425d}body.darkmode .c360-field-fax-row{border-color:#29425d}body.darkmode .c360-field-fax-status{color:#b9cce1}
+ body.device-mode .c360-field-fax{background:#102238!important;color:#edf4fc!important;border-color:#29425d!important}
+ body.device-mode .c360-field-fax-row{border-color:#29425d!important}
+ body.device-mode .c360-field-fax h3,body.device-mode .c360-field-fax strong,body.device-mode .c360-field-fax-date{color:#edf4fc!important}
+ body.device-mode .c360-field-fax-status{color:#b9cce1!important}
+ body.device-mode .c360-field-fax .btn.soft{background:#183653!important;border-color:#3c5873!important;color:#edf4fc!important}
  `;document.head.appendChild(s);
 }
 function install(){
@@ -54,7 +61,7 @@ function render(){
  }
 }
 async function refresh(force=false){
- const ctx=context();if(!ctx||!install())return;
+ const ctx=context();if(!ctx){home?.remove();panel?.remove();home=null;panel=null;state={scope:'',rows:[],loaded:false,updatedAt:null,notice:'',lastAttempt:0};return}if(!install())return;
  if(state.scope!==ctx.key)state={scope:ctx.key,rows:[],loaded:false,updatedAt:null,notice:'',lastAttempt:0};
  if(flight?.scope===ctx.key)return flight.promise;
  if(!force&&state.loaded&&Date.now()-state.lastAttempt<60000){render();return}
@@ -103,5 +110,8 @@ async function openDocument(id){
 document.addEventListener('c360:screen-changed',e=>{if(['equipehome','operacoes'].includes(e.detail?.id||e.detail?.screen))refresh()});
 window.addEventListener('online',()=>refresh(true));window.addEventListener('offline',()=>{state.notice='';render()});
 window.C360FieldFax={version:VERSION,refresh};
-refresh();
+style();
+function syncMode(){const scope=context()?.key||'';if(scope===observedScope)return;observedScope=scope;refresh()}
+const modeObserver=new MutationObserver(syncMode);modeObserver.observe(document.body,{attributes:true,attributeFilter:['class']});
+syncMode();
 })();

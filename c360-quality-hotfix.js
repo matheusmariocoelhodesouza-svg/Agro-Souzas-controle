@@ -1,6 +1,6 @@
 (()=>{
 'use strict';
-const BOOT_VERSION='2026.10.02-bootfix1';
+const BOOT_VERSION='2026.10.03-field-fax2';
 const recoveryModule='./c360-autorecovery.js';
 
 /* Runtime enxuto: só recursos globais entram no primeiro paint. */
@@ -113,7 +113,8 @@ function normalizeScreen(value){return String(value||'').trim().toLowerCase().re
 function resourcesForScreen(screen,map){const s=normalizeScreen(screen),out=[];for(const [key,list] of Object.entries(map))if(s===key||s.includes(key))out.push(...list);return out}
 async function loadScreenFeatures(screen){
  const s=normalizeScreen(screen);if(!s)return;
- const [styleResults,moduleResults]=await Promise.all([loadStylesParallel(resourcesForScreen(s,routeStyles)),loadScriptsOrderedParallel(resourcesForScreen(s,routeModules))]);
+ const modules=resourcesForScreen(s,routeModules).filter(src=>src!=='./c360-fax.js'||!isDevice());
+ const [styleResults,moduleResults]=await Promise.all([loadStylesParallel(resourcesForScreen(s,routeStyles)),loadScriptsOrderedParallel(modules)]);
  lazyErrors.push(...errorsFrom(styleResults),...errorsFrom(moduleResults));
  emit('c360:lazy-feature-ready',{version:BOOT_VERSION,screen:s,styles:styleResults,modules:moduleResults,errors:[...lazyErrors]});
 }

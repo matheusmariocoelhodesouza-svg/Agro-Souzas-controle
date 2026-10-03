@@ -13,7 +13,7 @@ try{
  await page.waitForFunction(()=>window.__c360Bootstrap?.ready===true);
  await page.waitForFunction(()=>!!navigator.serviceWorker.controller,{timeout:30000});
  const cached=await page.evaluate(async()=>{
-  const c=await caches.open('comando360-v7-02-hotfix65');
+  const c=await caches.open('comando360-v7-02-hotfix66');
   return {keys:(await c.keys()).map(r=>new URL(r.url).pathname)};
  });
  for(const name of ['c360-field-fax.js','c360-assistant360.js','c360-employee-photo.js','c360-fuel-type.js'])assert(cached.keys.some(x=>x.endsWith('/'+name)),name+' must be prepared for offline');
