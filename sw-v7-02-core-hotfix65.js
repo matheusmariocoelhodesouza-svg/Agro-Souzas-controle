@@ -13,7 +13,7 @@ const META_KEY='./__c360_recovery_meta__';
  */
 const CORE=[
   './','./index.html','./cadastro.html','./legal.html','./comando360.webmanifest','./comando360-icon.svg','./agro-souzas-controle-192-v6.png','./agro-souzas-controle-512-v6.png',
-  './c360-field-fax.js','./c360-employee-photo.js','./c360-assistant360.js','./c360-fax.js','./c360-fuel-type.js','./c360-report-share.js','./c360-report-stability.js',
+  './c360-field-fax.js','./c360-employee-photo.js','./c360-assistant360.js','./c360-fax.js','./c360-fuel-type.js',
   './c360-quality-hotfix.js','./c360-autorecovery.js','./c360-platform.js','./c360-product-core.js','./c360-release-core.js','./c360-quality-core.js',
   './c360-farm-cache-hotfix.js','./c360-field-offline-hotfix.js','./c360-field-stability.js','./c360-runtime-compatibility.js','./c360-final-stabilization.js','./c360-data-integrity.js','./c360-system-health.js','./c360-consumable-edit.js',
   './c360-field-route-guard.js','./c360-ux-polish-hotfix.js','./c360-onboarding-entry.js','./c360-team-chat.js','./c360-enterprise.js','./c360-commercial.js','./c360-saas-readiness.js','./c360-rpc-bridge.js','./c360-showcase-exact.js',

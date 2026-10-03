@@ -149,12 +149,12 @@ jobs:
           grep -q 'body.device-mode' c360-product-ui.css
 
           SW_CORE="$(grep -oE 'sw-v7-02-core-hotfix[0-9]+\.js' sw-v7-02.js | head -n1)"
-          test "$SW_CORE" = 'sw-v7-02-core-hotfix64.js'
+          test "$SW_CORE" = 'sw-v7-02-core-hotfix65.js'
           test -s "$SW_CORE"
           SW_CONTRACT="$(cat sw-v7-02.js "$SW_CORE")"
-          grep -q 'loader 7.17.0' sw-v7-02.js
+          grep -q 'loader 7.18.0' sw-v7-02.js
           grep -q 'sw-auth-refresh-guard.js' sw-v7-02.js
-          grep -q "comando360-v7-02-hotfix64" <<<"$SW_CONTRACT"
+          grep -q "comando360-v7-02-hotfix65" <<<"$SW_CONTRACT"
           grep -q 'comando360-stable-v1' <<<"$SW_CONTRACT"
           grep -q 'c360-platform.js' <<<"$SW_CONTRACT"
           grep -q 'c360-product-core.js' <<<"$SW_CONTRACT"
