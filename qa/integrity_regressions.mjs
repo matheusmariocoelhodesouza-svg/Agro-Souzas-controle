@@ -42,7 +42,7 @@ await test('Finance uses actual maintenance records and does not equate equal to
 });
 await test('New field operation tolerates optional inputs removed during async loading',async()=>{
  const html=fs.readFileSync('index.html','utf8');
- const start=html.indexOf("if($('#newPoultryOp'))$('#newPoultryOp').addEventListener");
+ const start=html.indexOf('async function openNewPoultryOperation(){');
  const end=html.indexOf("if($('#closePoultryForm'))",start);
  const dom=fixture('operacoes','<button id="newPoultryOp"></button><div id="poultryForm" class="hidden"><input id="poStart"><input id="poEnd"><input id="poNotes"><span id="poMsg"></span><input id="poIntegratedName"></div>'),w=dom.window;
  let handler,energy=false;

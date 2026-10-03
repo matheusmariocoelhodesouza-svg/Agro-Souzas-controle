@@ -6256,7 +6256,7 @@ async function completePoultryOperation(operationId,loadingId){
   await loadPoultryOps();
  }catch(e){alert(e.message)}
 }
-if($('#newPoultryOp'))$('#newPoultryOp').addEventListener('click',async()=>{
+async function openNewPoultryOperation(){
  $('#poultryForm').classList.remove('hidden');
  $('#poStart').value=poLocalInputDate();
  $('#poEnd').value='';
@@ -6277,7 +6277,8 @@ if($('#newPoultryOp'))$('#newPoultryOp').addEventListener('click',async()=>{
  setPoultryEnergy('');
  const aviaryMsg=$('#aviaryMsg');
  if(aviaryMsg)aviaryMsg.textContent='✓ Sem botão de cadastro: a granja será salva automaticamente.';
-});
+}
+if($('#newPoultryOp'))$('#newPoultryOp').addEventListener('click',openNewPoultryOperation);
 if($('#closePoultryForm'))$('#closePoultryForm').addEventListener('click',()=>$('#poultryForm').classList.add('hidden'));
 if($('#savePoultryOp'))$('#savePoultryOp').addEventListener('click',savePoultryOperation);
 if($('#refreshPoultry'))$('#refreshPoultry').addEventListener('click',loadPoultryOps);
@@ -9246,6 +9247,8 @@ async function v2Go(tab){
  if(tab!=='rastreamento')stopMovitTrackingPolling();
  if(tab==='documentosfrota')tab='frota';
  if(deviceMode&&!['equipehome','operacoes','ponto','combustivel','equipereport'].includes(tab))tab='equipehome';
+ // Dynamic screens must be registered before the router looks them up.
+ if(typeof window.c360LoadScreenFeatures==='function')await window.c360LoadScreenFeatures(tab);
  c360SetModule(tab);
  c360CloseMobileMenu();
  c360Busy(true);
@@ -9269,12 +9272,12 @@ async function v2Go(tab){
  renderDeviceModeBar(tab);
 
  try{
-   if(tab==='equipehome'){await loadTeamHome();}
+   if(tab==='equipehome'){await loadTeamHome();await window.C360FieldFax?.refresh();}
    else if(tab==='equipereport'){await loadTeamReport();}
    else if(tab==='inicio'){await loadPoultrySelectors();await loadDashboard();await loadPoultryDashboard();}
    else if(tab==='equipes') await loadTeams();
    else if(tab==='funcionarios'){await loadEmployees();await Promise.all([loadProfessionalProfile(),loadRHPoint()]);}
-   else if(tab==='operacoes'){if(deviceMode)await loadDevicePoultryContext();else await loadPoultrySelectors();await loadPoultryOps();}
+   else if(tab==='operacoes'){if(deviceMode)await loadDevicePoultryContext();else await loadPoultrySelectors();await loadPoultryOps();if(deviceMode)await window.C360FieldFax?.refresh();else await window.c360FaxRefresh?.();}
    else if(tab==='frota') await loadVehicles();
    else if(tab==='rastreamento') await loadMovitTracking(true);
    else if(tab==='manutencoes') await loadMaintenances();
@@ -9286,6 +9289,7 @@ async function v2Go(tab){
    else if(tab==='configuracoes') await loadSettings();
    else if(tab==='alertas') await loadSmartAlerts();
    else if(tab==='integracoes') await loadIntegrations();
+   else if(tab==='fiscal') await window.c360Fiscal?.load();
    else if(tab==='ponto'){await loadSchedules();if(deviceMode)await loadTeamPoint();else{await loadEmployees();await loadRHPoint();}}
  }catch(e){
    console.warn('Falha ao carregar tela',tab,e);

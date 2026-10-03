@@ -23,6 +23,7 @@ const routeStyles={fiscal:['./c360-fiscal.css'],frota:['./c360-trailer-hitches.c
 const essentialModules=[
  './c360-platform.js','./c360-product-core.js','./c360-release-core.js','./c360-quality-core.js','./c360-farm-cache-hotfix.js',
  './c360-field-offline-hotfix.js','./c360-field-stability.js','./c360-runtime-compatibility.js','./c360-final-stabilization.js','./c360-data-integrity.js',
+ './c360-field-fax.js',
  './c360-field-route-guard.js','./c360-ux-polish-hotfix.js','./c360-employee-photo.js','./c360-onboarding-entry.js','./c360-team-chat.js','./c360-system-health.js','./c360-enterprise.js',
  './c360-commercial.js','./c360-saas-readiness.js','./c360-rpc-bridge.js','./c360-showcase-exact.js','./c360-assistant360.js'
 ];
@@ -116,6 +117,7 @@ async function loadScreenFeatures(screen){
  lazyErrors.push(...errorsFrom(styleResults),...errorsFrom(moduleResults));
  emit('c360:lazy-feature-ready',{version:BOOT_VERSION,screen:s,styles:styleResults,modules:moduleResults,errors:[...lazyErrors]});
 }
+window.c360LoadScreenFeatures=loadScreenFeatures;
 function installRuntimeTriggers(){
  const sync=()=>{loadModeStyles();loadScreenFeatures(activeScreen())};
  if(document.body&&!modeObserver){modeObserver=new MutationObserver(sync);modeObserver.observe(document.body,{attributes:true,attributeFilter:['class']})}

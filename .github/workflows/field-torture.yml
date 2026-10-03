@@ -37,7 +37,10 @@ jobs:
           exit 1
 
       - name: Run field torture regression suite
-        run: node qa/field_torture.mjs
+        run: |
+          node qa/field_torture.mjs
+          node qa/field_fax.mjs
+          node qa/field_offline_reload.mjs
 
       - name: Upload field QA evidence
         if: always()
