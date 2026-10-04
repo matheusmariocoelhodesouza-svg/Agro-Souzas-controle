@@ -112,7 +112,7 @@ function placeFieldToast(){
  if(homeActive){
    const grid=document.querySelector('#equipehome .team-home-grid');const host=fieldHost();if(!grid||!host)return;
    let slot=document.getElementById('c360FieldToastSlot');
-   if(!slot){slot=document.createElement('div');slot.id='c360FieldToastSlot';slot.setAttribute('aria-live','polite');host.insertBefore(slot,grid)}
+   if(!slot){slot=document.createElement('div');slot.id='c360FieldToastSlot';slot.setAttribute('aria-live','polite');if(grid.parentElement===host)host.insertBefore(slot,grid);else host.appendChild(slot)}
    if(stack.parentElement!==slot)slot.appendChild(stack);
  }else if(stack.parentElement?.id==='c360FieldToastSlot'){
    const parent=toastOriginalParent&&toastOriginalParent.isConnected?toastOriginalParent:document.body;
