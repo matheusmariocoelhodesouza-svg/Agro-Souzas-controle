@@ -4069,7 +4069,7 @@ async function dashRest(table,query,timeoutMs=7000){
 async function loadPoultryDashboard(){
  const k=$('#poultryDashKpis'),list=$('#poultryDashTeams'); if(!k||!list)return;
  try{
-  const ops=await rest('v2_operations','select=id,team_id,scheduled_start,actual_start,actual_end,status,planned_birds,actual_birds,price_per_thousand,price_per_bird,actual_revenue&company_id=eq.'+companyId+'&operation_type=eq.poultry_catching&order=scheduled_start.desc');
+  const ops=await rest('v2_operations','select=id,team_id,scheduled_start,actual_start,actual_end,status,planned_birds,actual_birds,price_per_thousand,price_per_bird,actual_revenue&company_id=eq.'+companyId+'&operation_type=in.(poultry_catching,poultry_loading)&order=scheduled_start.desc');
   const today=ops.filter(o=>o.scheduled_start&&new Date(o.scheduled_start).toDateString()===new Date().toDateString());
   let mins=0,doneBirds=0,revenue=0;
   today.filter(o=>o.status==='completed').forEach(o=>{
@@ -4114,7 +4114,7 @@ async function loadDashboard(){
    dashSafe('v2_teams','select=id,name,code,supervisor_employee_id,status,metadata&company_id=eq.'+companyId+'&status=eq.active&order=name.asc'),
    dashSafe('v2_vehicles','select=id,description,plate,model,current_odometer_km,status,renavam,metadata&company_id=eq.'+companyId+'&status=eq.active&order=description.asc'),
    dashSafe('v2_vehicle_documents','select=id,vehicle_id,document_type,expires_at,status&company_id=eq.'+companyId+'&status=eq.active'),
-   dashSafe('v2_operations','select=id,team_id,title,customer_name,location_name,scheduled_start,actual_start,actual_end,status,planned_birds,actual_birds,actual_revenue,actual_cost&company_id=eq.'+companyId+'&operation_type=eq.poultry_catching&scheduled_start=gte.'+encodeURIComponent(b.monthStart)+'&scheduled_start=lt.'+encodeURIComponent(b.nextMonth)+'&order=scheduled_start.desc'),
+   dashSafe('v2_operations','select=id,team_id,title,customer_name,location_name,scheduled_start,actual_start,actual_end,status,planned_birds,actual_birds,actual_revenue,actual_cost&company_id=eq.'+companyId+'&operation_type=in.(poultry_catching,poultry_loading)&scheduled_start=gte.'+encodeURIComponent(b.monthStart)+'&scheduled_start=lt.'+encodeURIComponent(b.nextMonth)+'&order=scheduled_start.desc'),
    dashSafe('v2_fuel_logs','select=id,vehicle_id,fueled_at,liters,total_amount,odometer_km&company_id=eq.'+companyId+'&fueled_at=gte.'+encodeURIComponent(b.monthStart)+'&fueled_at=lt.'+encodeURIComponent(b.nextMonth)),
    dashSafe('v2_financial_entries','select=id,entry_type,amount,status,competence_date,paid_at&company_id=eq.'+companyId+'&competence_date=gte.'+b.monthDate+'&competence_date=lt.'+b.nextMonthDate+'&status=neq.cancelled'),
    dashSafe('v2_maintenance_plans','select=id,vehicle_id,name,next_due_at,next_due_odometer_km,active&company_id=eq.'+companyId+'&active=eq.true'),
@@ -4886,7 +4886,11 @@ function printMonthlyMirror(){
   <div class="footer">Este relatório é uma versão operacional em evolução. A conformidade integral como REP-P ainda depende da implementação e validação dos demais requisitos técnicos aplicáveis, incluindo AFD/AEJ, comprovantes eletrônicos e assinatura eletrônica quando exigida.</div>
 </body></html>`);
   w.document.close();
- try{setTimeout(()=>{w.focus();w.print()},250)}catch(e){}
+ try{
+  w.onafterprint=()=>setTimeout(()=>printFrame.remove(),150);
+  setTimeout(()=>{w.focus();w.print()},350);
+  setTimeout(()=>{if(printFrame.isConnected)printFrame.remove()},60000);
+ }catch(e){if(printFrame.isConnected)printFrame.remove();alert('Não foi possível abrir a impressão. Tente novamente.');}
 }
 
 /* Comando 360 — Ficha individual de EPI vinculada ao cadastro RH */
@@ -5819,7 +5823,7 @@ async function loadPoultryOps(renderUi=true){
    ops=cached.ops||[];loadings=cached.loadings||[];trucks=cached.trucks||[];
   }else{
    [ops,loadings,trucks]=await Promise.all([
-    rest('v2_operations','select=id,operation_number,title,customer_name,location_name,team_id,scheduled_start,scheduled_end,actual_start,actual_end,status,planned_birds,actual_birds,price_per_thousand,price_per_bird,actual_revenue,notes,offline_event_id,metadata&company_id=eq.'+companyId+'&operation_type=eq.poultry_catching&order=scheduled_start.desc&limit=100'),
+    rest('v2_operations','select=id,operation_number,title,customer_name,location_name,team_id,scheduled_start,scheduled_end,actual_start,actual_end,status,planned_birds,actual_birds,price_per_thousand,price_per_bird,actual_revenue,notes,offline_event_id,metadata&company_id=eq.'+companyId+'&operation_type=in.(poultry_catching,poultry_loading)&order=scheduled_start.desc&limit=100'),
     rest('v2_poultry_loadings','select=id,operation_id,farm_id,status,reported_birds,reported_trucks,metadata,team_id&company_id=eq.'+companyId+'&order=created_at.desc'),
     rest('v2_poultry_truck_loads','select=id,loading_id,truck_sequence,truck_plate,driver_name,birds,started_at,completed_at,is_cata,external_reference,metadata&company_id=eq.'+companyId+'&order=created_at.asc')
    ]);
@@ -6421,7 +6425,7 @@ async function getDeviceSupervisorReportInfo(){
  }
  return {name:name||'Não informado',phone:phone||'Não cadastrado'};
 }
-async function buildCatchReportsForDay(day){
+async async function buildCatchReportsForDay(day){
  await loadDevicePoultryContext();
  await loadPoultryOps(false);
  const supervisor=await getDeviceSupervisorReportInfo();
@@ -6512,8 +6516,13 @@ function printCatchReport(index,format='80'){
  const totalEmpty=r.trucks.reduce((a,t)=>a+poN(t.metadata?.empty_boxes),0);
  const totalDeaths=r.trucks.reduce((a,t)=>a+poN(t.metadata?.loading_deaths),0);
 
- const w=window.open('','_blank');
- if(!w)return alert('O navegador bloqueou a janela de impressão.');
+ const printFrame=document.createElement('iframe');
+ printFrame.setAttribute('aria-hidden','true');
+ printFrame.style.position='fixed';printFrame.style.right='0';printFrame.style.bottom='0';
+ printFrame.style.width='1px';printFrame.style.height='1px';printFrame.style.border='0';printFrame.style.opacity='0';
+ document.body.appendChild(printFrame);
+ const w=printFrame.contentWindow;
+ if(!w){printFrame.remove();return alert('Não foi possível preparar a impressão.');}
  w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>Apanha - '+esc(integrated)+'</title><style>'+
  '@page{size:80mm auto;margin:2.5mm}*{box-sizing:border-box}html,body{margin:0;padding:0;width:75mm}body{font-family:Arial,Helvetica,sans-serif;color:#000;font-size:10.5px;line-height:1.28}.center{text-align:center}.brand{font-size:20px;font-weight:900;line-height:1.05}.legal{font-size:9px;margin-top:2px}.title{font-size:14px;font-weight:900;margin-top:9px}.sep{border-top:1px dashed #000;margin:8px 0}.row{margin:3px 0}.row b{font-size:11px}.label{font-size:8.5px;text-transform:uppercase;font-weight:700}.block{border:1px solid #000;padding:6px;margin:6px 0}.block-title{font-weight:900;font-size:10px;border-bottom:1px solid #000;padding-bottom:3px;margin-bottom:4px;text-transform:uppercase}.aviary-title{font-size:13px;font-weight:950;border-top:2px solid #000;border-bottom:1px solid #000;padding:5px 0;margin-top:10px}.truck{border:1px dashed #000;padding:6px;margin:6px 0}.truck-head{font-size:11px;font-weight:900;border-bottom:1px dashed #000;padding-bottom:3px;margin-bottom:4px}.truck-birds{text-align:center;font-size:18px;font-weight:950;margin-top:5px}.aviary-total{border:1px solid #000;padding:6px;text-align:center;margin:7px 0}.aviary-total strong{display:block;font-size:17px}.aviary-total small{display:block;margin-top:3px}.note{font-size:9px;margin-top:4px}.totals{border:2px solid #000;padding:7px;margin:10px 0;text-align:center}.total-big{font-size:25px;font-weight:950;line-height:1}.total-label{font-size:10px;font-weight:900;margin-bottom:3px}.totals-small{display:grid;grid-template-columns:repeat(2,1fr);gap:4px;margin-top:7px}.totals-small div{border-top:1px solid #000;padding-top:4px}.obs{border:1px solid #000;min-height:34px;padding:5px;margin-top:5px}.sign{margin-top:26px;border-top:1px solid #000;text-align:center;padding-top:3px;font-size:9px}.sign+.sign{margin-top:28px}.footer{text-align:center;font-size:8px;margin-top:10px;border-top:1px dashed #000;padding-top:6px}@media print{html,body{width:75mm}}'+
  (isA4?'@page{size:A4 portrait;margin:14mm}html,body{width:auto!important;max-width:none!important}body{max-width:182mm!important;margin:0 auto!important;font-size:12px!important;line-height:1.4!important}.brand{font-size:27px!important}.legal{font-size:10px!important}.title{font-size:18px!important}.block{padding:10px!important;margin:9px 0!important;border-color:#475569!important}.block-title{font-size:12px!important}.aviary-title{font-size:15px!important;padding:7px 0!important}.truck{padding:9px!important;margin:8px 0!important;break-inside:avoid}.truck-head{font-size:12px!important}.truck-birds{font-size:20px!important}.aviary-total{padding:9px!important;break-inside:avoid}.aviary-total strong{font-size:20px!important}.totals{padding:12px!important;break-inside:avoid}.total-big{font-size:30px!important}.totals-small{grid-template-columns:repeat(3,1fr)!important;gap:7px!important}.obs{min-height:50px!important;padding:8px!important}.sign{margin-top:40px!important;font-size:10px!important}.footer{font-size:9px!important;margin-top:18px!important}@media print{html,body{width:auto!important}}':'')+
@@ -7694,7 +7703,7 @@ async function deletePoultryOperation(operationId,loadingId){
  try{
   // A operação é o registro principal. O banco apaga carregamento, caminhões e aviários
   // automaticamente por ON DELETE CASCADE, evitando exclusões parciais e apanhas "fantasmas".
-  const deleted=await rest('v2_operations','id=eq.'+encodeURIComponent(operationId)+'&operation_type=eq.poultry_catching','DELETE');
+  const deleted=await rest('v2_operations','id=eq.'+encodeURIComponent(operationId)+'&operation_type=in.(poultry_catching,poultry_loading)','DELETE');
   if(!deleted?.length)throw new Error('O registro principal não foi removido do banco.');
   await loadPoultryOps();
   await loadPoultryDashboard();
@@ -9133,7 +9142,7 @@ async function loadReports(){
   dashSafe('v2_report_operations_monthly','select=*&company_id=eq.'+companyId+'&reference_month=eq.'+start),
   dashSafe('v2_report_poultry_monthly','select=*&company_id=eq.'+companyId+'&reference_month=eq.'+start),
   dashSafe('v2_report_attendance_monthly','select=*&company_id=eq.'+companyId+'&reference_month=eq.'+start),
-  dashSafe('v2_operations','select=id,team_id,customer_name,title,status,scheduled_start,actual_birds,planned_birds,actual_revenue,actual_cost&company_id=eq.'+companyId+'&operation_type=eq.poultry_catching&scheduled_start=gte.'+encodeURIComponent(bounds.start)+'&scheduled_start=lt.'+encodeURIComponent(bounds.end)),
+  dashSafe('v2_operations','select=id,team_id,customer_name,title,status,scheduled_start,actual_birds,planned_birds,actual_revenue,actual_cost&company_id=eq.'+companyId+'&operation_type=in.(poultry_catching,poultry_loading)&scheduled_start=gte.'+encodeURIComponent(bounds.start)+'&scheduled_start=lt.'+encodeURIComponent(bounds.end)),
   dashSafe('v2_teams','select=id,name,status&company_id=eq.'+companyId),
   dashSafe('v2_vehicles','select=id,description,plate,model&company_id=eq.'+companyId),
   dashSafe('v2_fuel_logs','select=id,vehicle_id,fueled_at,odometer_km,liters,total_amount,station_name,metadata&company_id=eq.'+companyId+'&fueled_at=gte.'+encodeURIComponent(bounds.start)+'&fueled_at=lt.'+encodeURIComponent(bounds.end)+'&order=fueled_at.asc'),
