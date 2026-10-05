@@ -9567,8 +9567,25 @@ setInterval(async()=>{
  }
 },10*60*1000);
 if('serviceWorker' in navigator){
- window.addEventListener('load',()=>{
-  navigator.serviceWorker.register('./sw-v7-02.js',{scope:'./',updateViaCache:'none'}).catch(e=>console.warn('Service Worker',e));
+ window.addEventListener('load',async()=>{
+  try{
+   const reg=await navigator.serviceWorker.register('./sw-v7-02.js',{scope:'./',updateViaCache:'none'});
+   // PWA instalado pode permanecer executando o worker anterior mesmo após um hotfix.
+   // Forçamos a verificação e, quando o novo worker assumir o controle, fazemos
+   // somente um reload para entregar o shell novo sem criar loop de atualização.
+   try{await reg.update()}catch(_){}
+   let reloading=false;
+   navigator.serviceWorker.addEventListener('controllerchange',()=>{
+    if(reloading)return;
+    const key='c360_sw_controller_reload_7_18_4';
+    try{
+     if(sessionStorage.getItem(key)==='1')return;
+     sessionStorage.setItem(key,'1');
+    }catch(_){}
+    reloading=true;
+    location.reload();
+   });
+  }catch(e){console.warn('Service Worker',e)}
  });
 }
 
