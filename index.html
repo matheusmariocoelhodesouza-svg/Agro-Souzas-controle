@@ -2083,7 +2083,7 @@ body.darkmode #financeiro .finance-privacy-btn{background:#17283d;border-color:#
  <input class="team-code-input" id="deviceCode" inputmode="text" maxlength="12" placeholder="AB12CD34"/>
  <button type="button" class="btn primary" id="deviceActivateBtn" style="width:100%;padding:14px">ATIVAR CELULAR</button>
  <div class="muted" id="deviceMsg" style="margin-top:10px;text-align:center"></div>
- <button class="btn soft" id="showAdminLogin" type="button" style="width:100%;margin-top:14px">Acesso do administrador</button>
+ <button class="btn soft" id="showAdminLogin" type="button" onclick="window.c360ShowAdminLogin?.()" style="width:100%;margin-top:14px">Acesso do administrador</button>
 </div>
 <div class="card hidden" id="adminLoginCard">
  <div class="admin-brand"><img src="./comando360-icon.svg" alt="Comando 360"/><div><h2>Comando <span>360</span></h2><div class="muted">Acesso administrativo completo</div></div></div>
@@ -4024,8 +4024,21 @@ async function enterApp(authUser){
   debug('');
   refreshAll().catch(function(e){console.warn('refresh',e)});
 }
-$('#showAdminLogin').addEventListener('click',()=>{$('#deviceSetupCard').classList.add('hidden');$('#adminLoginCard').classList.remove('hidden')});
-$('#backDeviceSetup').addEventListener('click',()=>{$('#adminLoginCard').classList.add('hidden');$('#deviceSetupCard').classList.remove('hidden')});
+function c360ShowAdminLogin(){
+ const device=document.getElementById('deviceSetupCard'),admin=document.getElementById('adminLoginCard');
+ if(device)device.classList.add('hidden');
+ if(admin){admin.classList.remove('hidden');admin.style.display='block'}
+ setTimeout(()=>document.getElementById('email')?.focus(),50);
+}
+function c360ShowDeviceSetup(){
+ const admin=document.getElementById('adminLoginCard'),device=document.getElementById('deviceSetupCard');
+ if(admin){admin.classList.add('hidden');admin.style.removeProperty('display')}
+ if(device)device.classList.remove('hidden');
+}
+window.c360ShowAdminLogin=c360ShowAdminLogin;
+window.c360ShowDeviceSetup=c360ShowDeviceSetup;
+document.getElementById('showAdminLogin')?.addEventListener('click',c360ShowAdminLogin);
+document.getElementById('backDeviceSetup')?.addEventListener('click',c360ShowDeviceSetup);
 $('#deviceActivateBtn').addEventListener('click',async()=>{
  const b=$('#deviceActivateBtn'),m=$('#deviceMsg');if(b.disabled)return;b.disabled=true;m.className='muted';m.textContent='Ativando este celular...';
  try{await activateDevice($('#deviceCode').value);m.className='okmsg';m.textContent='Celular ativado.'}
