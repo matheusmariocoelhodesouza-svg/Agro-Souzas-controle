@@ -99,7 +99,7 @@ async function createPdfFile(r){
  const pageW=210,margin=14,usable=pageW-(margin*2),bottom=282;
  let y=16;
  const ensure=(need=8)=>{if(y+need>bottom){doc.addPage();y=16}};
- const text=(value,size=10,bold=false,space=5)=>{const clean=pdfText(value);doc.setFont('helvetica',bold?'bold':'normal');doc.setFontSize(size);const rows=doc.splitTextToSize(clean,usable);ensure(rows.length*space+2);doc.text(rows,margin,y);y+=rows.length*space};
+ const text=(value,size=10,bold=false,space=5)=>{const clean=pdfText(value);doc.setFont('helvetica',bold?'bold':'normal');doc.setFontSize(size);const rows=doc.splitTextToSize(clean,usable);for(const row of rows){ensure(space+2);doc.text(row,margin,y);y+=space}};
  const rule=()=>{ensure(5);doc.setDrawColor(210);doc.line(margin,y,196,y);y+=5};
 
  doc.setFont('helvetica','bold');doc.setFontSize(16);doc.text('RELATÓRIO DE APANHA DE AVES',105,y,{align:'center'});y+=7;
@@ -111,19 +111,31 @@ async function createPdfFile(r){
  rule();text(`TOTAL: ${fmtNum(r.totalBirds)} AVES • ${(r.trucks||[]).length} CAMINHÕES`,13,true,6);y+=2;
 
  (r.trucks||[]).forEach(t=>{
-  ensure(42);
-  doc.setFillColor(247,249,252);doc.setDrawColor(220,226,234);
-  const top=y-4;
   const breakdown=Array.isArray(t.metadata?.barn_breakdown)?t.metadata.barn_breakdown:[];
   const aviary=breakdown.length?breakdown.map(x=>`Aviário ${x.barn_number||'—'}: ${fmtNum(x.birds)} aves`).join(' • '):`Aviário ${t.metadata?.aviary_number||'—'}`;
   const detail=[`${t.truck_plate||'Sem placa'} • ${t.driver_name||'Sem motorista'}`,aviary,`${fmtNum(t.birds)} aves • ${fmtTime(t.started_at)} → ${fmtTime(t.completed_at)}`,`Caixas: ${fmtNum(t.metadata?.boxes_count)} • Aves/caixa: ${num(t.metadata?.birds_per_box).toLocaleString('pt-BR',{maximumFractionDigits:2})} • Vazias: ${fmtNum(t.metadata?.empty_boxes)} • Mortes: ${fmtNum(t.metadata?.loading_deaths)}`];
   const extra=t.metadata?.notes?`Obs.: ${t.metadata.notes}`:'';
-  const height=extra?40:34;
-  doc.roundedRect(margin,top,usable,height,2,2,'FD');
-  text(`CAMINHÃO ${t.truck_sequence||'—'}${t.is_cata?' • CATA':''}`,11,true,5.5);
-  detail.forEach(line=>text(line,9,false,4.5));
-  if(extra)text(extra,9,false,4.5);
-  y=Math.max(y,top+height+5);
+  const wrap=(value,size,bold,space)=>{doc.setFont('helvetica',bold?'bold':'normal');doc.setFontSize(size);return doc.splitTextToSize(pdfText(value),usable-6).map(text=>({text,size,bold,space}))};
+  const title=`CAMINHÃO ${t.truck_sequence||'—'}${t.is_cata?' • CATA':''}`;
+  const remaining=detail.concat(extra?[extra]:[]).flatMap(line=>wrap(line,9,false,4.5));
+  let continued=false;
+  while(remaining.length){
+   const heading=wrap(title+(continued?' (CONTINUAÇÃO)':''),11,true,5.5);
+   const fullHeight=Math.max(34,8+heading.concat(remaining).reduce((sum,row)=>sum+row.space,0));
+   // Mantém o caminhão inteiro quando cabe em uma página. Conteúdo maior
+   // continua em outra moldura, sem invadir o rodapé ou perder observações.
+   if(fullHeight<=bottom-12&&y-4+fullHeight>bottom){doc.addPage();y=16}
+   let height=8+heading.reduce((sum,row)=>sum+row.space,0);
+   const rows=[...heading];
+   while(remaining.length&&y-4+height+remaining[0].space<=bottom){const row=remaining.shift();rows.push(row);height+=row.space}
+   if(rows.length===heading.length){doc.addPage();y=16;continue}
+   height=Math.max(34,height);
+   const top=y-4;
+   doc.setFillColor(247,249,252);doc.setDrawColor(220,226,234);doc.roundedRect(margin,top,usable,height,2,2,'FD');
+   for(const row of rows){doc.setFont('helvetica',row.bold?'bold':'normal');doc.setFontSize(row.size);doc.text(row.text,margin+3,y);y+=row.space}
+   y=top+height+5;
+   if(remaining.length){doc.addPage();y=16;continued=true}
+  }
  });
 
  const notes=[op.notes,...(r.trucks||[]).map(t=>t.metadata?.notes).filter(Boolean)].filter(Boolean);

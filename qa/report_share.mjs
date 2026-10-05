@@ -44,6 +44,30 @@ try{
  await page.waitForFunction(()=>!document.querySelector('.catchReportDownload').disabled);
  console.log('PASS PDF download succeeds after a library failure and restores the action button');
 
+ const longReport=await page.evaluate(async()=>{
+  const Original=window.jspdf.jsPDF,boxes=[],lines=[];
+  window.jspdf.jsPDF=function(...args){
+   const doc=new Original(...args),drawText=doc.text,drawBox=doc.roundedRect;
+   doc.text=function(value,x,y,...rest){lines.push({text:String(value),x,y,page:doc.internal.getCurrentPageInfo().pageNumber});return drawText.call(this,value,x,y,...rest)};
+   doc.roundedRect=function(x,y,width,height,...rest){boxes.push({x,y,width,height,page:doc.internal.getCurrentPageInfo().pageNumber});return drawBox.call(this,x,y,width,height,...rest)};
+   return doc;
+  };
+  try{
+   const record=structuredClone(teamCatchReports[0]);
+   record.trucks[0].metadata.barn_breakdown=Array.from({length:12},(_,i)=>({barn_number:i+1,birds:500}));
+   record.trucks[0].metadata.notes='Observação de carregamento com informações importantes para a equipe. '.repeat(140)+'FIM DAS OBSERVAÇÕES QA';
+   const file=await window.C360ReportShare.createPdfFile(record);
+   return{boxes,lines,size:file.size};
+  }finally{window.jspdf.jsPDF=Original}
+ });
+ assert(longReport.size>1000);assert(longReport.boxes.length>1,'a long truck note must continue across pages');
+ assert(longReport.boxes.every(b=>b.y>=12&&b.y+b.height<=282),'report cards must stay above the footer');
+ const cardLines=longReport.lines.filter(line=>line.x===17);
+ assert(cardLines.every(line=>longReport.boxes.some(b=>b.page===line.page&&line.y>=b.y&&line.y<=b.y+b.height-3)),'every truck line must stay inside its page card');
+ assert(cardLines.some(line=>line.text.includes('CONTINUAÇÃO')));assert(cardLines.some(line=>line.text.includes('FIM DAS OBSERVAÇÕES QA')),'long notes must keep their final content');
+ assert(longReport.lines.every(line=>line.y<=282||line.x===105&&line.y===291),'only the footer may use the bottom margin');
+ console.log('PASS Long notes and many barns paginate inside truck cards without clipping or lost content');
+
  await page.evaluate(()=>{Object.defineProperty(navigator,'share',{configurable:true,value:async()=>{throw new DOMException('Share unavailable','NotAllowedError')}});Object.defineProperty(navigator,'canShare',{configurable:true,value:()=>true})});
  const fallback=page.waitForEvent('download');await page.locator('.catchReportWhatsApp').click();const sharedFallback=await fallback;
  assert.equal((await fs.readFile(await sharedFallback.path())).subarray(0,5).toString(),'%PDF-');
