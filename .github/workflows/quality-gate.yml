@@ -53,7 +53,7 @@ jobs:
         run: |
           set -euo pipefail
           files=(
-            index.html cadastro.html dda.html reparar.html comando360.webmanifest sw-v7-02.js sw-v7-02-core-hotfix62.js sw-v7-02-core-hotfix63.js sw-v7-02-core-hotfix64.js sw-v7-02-core-hotfix66.js sw-v7-02-core-hotfix67.js sw-v7-02-core-hotfix68.js c360-field-fax.js
+            index.html cadastro.html dda.html reparar.html comando360.webmanifest sw-v7-02.js sw-v7-02-core-hotfix62.js sw-v7-02-core-hotfix63.js sw-v7-02-core-hotfix64.js sw-v7-02-core-hotfix66.js sw-v7-02-core-hotfix67.js sw-v7-02-core-hotfix68.js sw-v7-02-core-hotfix69.js c360-field-fax.js
             c360-autorecovery.js c360-platform.js c360-product-core.js c360-release-core.js
             c360-quality-hotfix.js c360-quality-core.js c360-field-offline-hotfix.js
             c360-team-chat.js c360-farm-cache-hotfix.js c360-consumable-edit.js
@@ -149,12 +149,12 @@ jobs:
           grep -q 'body.device-mode' c360-product-ui.css
 
           SW_CORE="$(grep -oE 'sw-v7-02-core-hotfix[0-9]+\.js' sw-v7-02.js | head -n1)"
-          test "$SW_CORE" = 'sw-v7-02-core-hotfix68.js'
+          test "$SW_CORE" = 'sw-v7-02-core-hotfix69.js'
           test -s "$SW_CORE"
           SW_CONTRACT="$(cat sw-v7-02.js "$SW_CORE")"
-          grep -q 'loader 7.18.3' sw-v7-02.js
+          grep -q 'loader 7.18.4' sw-v7-02.js
           grep -q 'sw-auth-refresh-guard.js' sw-v7-02.js
-          grep -q "comando360-v7-02-hotfix68" <<<"$SW_CONTRACT"
+          grep -q "comando360-v7-02-hotfix69" <<<"$SW_CONTRACT"
           grep -q 'comando360-stable-v1' <<<"$SW_CONTRACT"
           grep -q 'c360-platform.js' <<<"$SW_CONTRACT"
           grep -q 'c360-product-core.js' <<<"$SW_CONTRACT"
