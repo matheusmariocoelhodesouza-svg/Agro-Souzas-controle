@@ -41,6 +41,8 @@ jobs:
           node qa/field_torture.mjs
           node qa/field_fax.mjs
           node qa/field_offline_reload.mjs
+          node qa/report_share.mjs
+          node qa/service_worker_upgrade.mjs
 
       - name: Upload field QA evidence
         if: always()

@@ -31,8 +31,8 @@ jobs:
           release_ready() {
             fetch_once "/sw-v7-02.js" /tmp/sw.js || return 1
             fetch_once "/c360-quality-hotfix.js" /tmp/bootstrap.js || return 1
-            grep -q 'sw-v7-02-core-stable71.js' /tmp/sw.js || return 1
-            grep -q "BOOT_VERSION='2026.10.03-field-fax2'" /tmp/bootstrap.js || return 1
+            grep -q 'sw-v7-02-core-stable72.js' /tmp/sw.js || return 1
+            grep -q "BOOT_VERSION='2026.10.05-stable72'" /tmp/bootstrap.js || return 1
             grep -q 'SCRIPT_BATCH_SIZE=5' /tmp/bootstrap.js || return 1
             grep -q 'yieldToMain' /tmp/bootstrap.js || return 1
           }
@@ -76,6 +76,7 @@ jobs:
           fetch_once "/c360-native-tracker-admin.js" /tmp/tracker-admin.js
           fetch_once "/c360-fiscal.js" /tmp/fiscal.js
           fetch_once "/c360-report-share.js" /tmp/report-share.js
+          fetch_once "/vendor/jspdf/jspdf.umd.min.js" /tmp/jspdf.js
           fetch_once "/c360-report-stability.js" /tmp/report-stability.js
           fetch_once "/c360-trailer-hitches.js" /tmp/hitches.js
           fetch_once "/c360-ux-polish-hotfix.js" /tmp/ux-polish.js
@@ -86,7 +87,7 @@ jobs:
           fetch_once "/c360-saas-readiness.css" /tmp/saas.css
 
           SW_CORE="$(grep -oE 'sw-v7-02-core-(hotfix[0-9]+|stable[0-9]+)\.js' /tmp/sw.js | head -n1 || true)"
-          test "$SW_CORE" = 'sw-v7-02-core-stable71.js'
+          test "$SW_CORE" = 'sw-v7-02-core-stable72.js'
           fetch_once "/$SW_CORE" /tmp/sw-core.js
 
           for f in \
@@ -131,7 +132,7 @@ jobs:
           grep -q "const VERSION='2026.09.22-locui2'" /tmp/location-ui.js
           grep -q "const VERSION='2026.09.22-reports1'" /tmp/report-stability.js
 
-          grep -q "const CACHE='comando360-v7-02-stable71'" /tmp/sw-core.js
+          grep -q "const CACHE='comando360-v7-02-stable72'" /tmp/sw-core.js
           grep -q 'comando360-stable-v1' /tmp/sw-core.js
           grep -q './c360-release-core.js' /tmp/sw-core.js
           grep -q './c360-release-core.css' /tmp/sw-core.js
@@ -150,9 +151,9 @@ jobs:
           if grep -q './c360-fiscal.js' /tmp/sw-core.js; then
             echo 'Fiscal module must remain lazy, not in initial offline core.'; exit 1
           fi
-          if grep -q './c360-report-share.js' /tmp/sw-core.js; then
-            echo 'Report module must remain lazy, not in initial offline core.'; exit 1
-          fi
+          grep -q './c360-report-share.js' /tmp/sw-core.js
+          grep -q './vendor/jspdf/jspdf.umd.min.js' /tmp/sw-core.js
+          grep -q 'jsPDF' /tmp/jspdf.js
           if grep -q 'CORE.push' /tmp/sw.js; then
             echo 'Runtime service-worker cache mutation found.'; exit 1
           fi
@@ -188,5 +189,5 @@ jobs:
           for name in ('/tmp/ui.css','/tmp/premium.css','/tmp/product.css','/tmp/release-core.css','/tmp/final.css','/tmp/professional.css','/tmp/health.css','/tmp/saas.css'):
               css=Path(name).read_text(encoding='utf-8')
               assert css.count('{') == css.count('}'), f'{name}: unbalanced braces'
-          print('Production stable71 + field FAX + batched boot + lazy admin modules smoke: OK')
+          print('Production stable72 + offline FAX/PDF + batched boot + lazy admin modules smoke: OK')
           PY

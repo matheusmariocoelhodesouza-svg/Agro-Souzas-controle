@@ -1,6 +1,6 @@
 (()=>{
 'use strict';
-const BOOT_VERSION='2026.10.03-field-fax2';
+const BOOT_VERSION='2026.10.05-stable72';
 const recoveryModule='./c360-autorecovery.js';
 
 /* Runtime enxuto: só recursos globais entram no primeiro paint. */
@@ -30,6 +30,7 @@ const essentialModules=[
 const routeModules={
  operacoes:['./c360-fax.js'],
  relatorios:['./c360-report-share.js','./c360-report-stability.js'],
+ equipereport:['./c360-report-share.js'],
  insumos:['./c360-consumable-edit.js','./c360-consumable-action-bridge.js','./c360-consumable-mobile-actions.js'],
  fiscal:['./c360-fiscal.js','./c360-fiscal-issuance.js'],
  frota:['./c360-trailer-hitches.js','./c360-native-tracker-admin.js'],
