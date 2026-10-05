@@ -1,0 +1,1 @@
+window.G360_CONFIG={supabaseUrl:"https://aycbrqziusxtxhsdfqjk.supabase.co",supabaseKey:"sb_publishable_OGJX3NBA__JxoyjB3IZNvQ_0nNwh_Xc"};
