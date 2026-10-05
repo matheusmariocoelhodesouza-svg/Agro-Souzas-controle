@@ -3,23 +3,29 @@
 if(window.__c360ReportShareInstalled)return;
 window.__c360ReportShareInstalled=true;
 
-const JSPDF_URL='https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js';
+const VERSION='2026.10.05-reports2';
+const JSPDF_URL=new URL('./vendor/jspdf/jspdf.umd.min.js',document.baseURI).href;
 let jsPdfPromise=null;
+let observedRoot=null,buttonsObserver=null;
 
 function num(v){const n=Number(v||0);return Number.isFinite(n)?n:0}
 function fmtNum(v){return num(v).toLocaleString('pt-BR')}
-function fmtTime(v){if(!v)return '—';const d=new Date(v);if(Number.isNaN(d.getTime()))return '—';return d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}
-function fmtDate(v){if(!v)return '—';const d=new Date(v);if(Number.isNaN(d.getTime()))return '—';return d.toLocaleDateString('pt-BR')}
+function fmtTime(v){if(!v)return '—';const d=new Date(v);if(Number.isNaN(d.getTime()))return '—';return d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',timeZone:'America/Sao_Paulo'})}
+function fmtDate(v){if(!v)return '—';const d=new Date(v);if(Number.isNaN(d.getTime()))return '—';return d.toLocaleDateString('pt-BR',{timeZone:'America/Sao_Paulo'})}
 function fmtDuration(a,b){if(!a||!b)return '—';const ms=new Date(b)-new Date(a);if(!Number.isFinite(ms)||ms<0)return '—';const mins=Math.round(ms/60000),h=Math.floor(mins/60),m=mins%60;return h?`${h}h ${String(m).padStart(2,'0')}min`:`${m}min`}
 function fileSafe(v){return String(v||'relatorio').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9_-]+/g,'_').replace(/^_+|_+$/g,'').slice(0,70)||'relatorio'}
 function getReports(){try{return typeof teamCatchReports!=='undefined'&&Array.isArray(teamCatchReports)?teamCatchReports:[]}catch(_){return[]}}
 
 function decorateButtons(root=document){
  root.querySelectorAll?.('.catchReportA4').forEach(btn=>{
-  btn.classList.add('catchReportWhatsApp');
-  btn.textContent='💬 ENVIAR PDF NO WHATSAPP';
-  btn.setAttribute('aria-label','Compartilhar relatório PDF no WhatsApp');
-  btn.title='Gerar PDF e compartilhar pelo WhatsApp';
+  const host=btn.parentElement;if(!host)return;
+  for(const [className,label,title] of [
+   ['catchReportDownload','📥 BAIXAR PDF','Baixar o relatório de apanha em PDF'],
+   ['catchReportWhatsApp','💬 COMPARTILHAR PDF','Compartilhar o PDF no WhatsApp ou em outro aplicativo']
+  ]){
+   let action=[...host.querySelectorAll('.'+className)].find(b=>b.dataset.index===btn.dataset.index);
+   if(!action){action=document.createElement('button');action.type='button';action.className='btn soft '+className;action.dataset.index=btn.dataset.index;action.textContent=label;action.setAttribute('aria-label',title);host.appendChild(action)}
+  }
  });
 }
 
@@ -27,28 +33,26 @@ function watchButtons(){
  const root=document.getElementById('teamReportToday');
  if(!root)return;
  decorateButtons(root);
- const obs=new MutationObserver(()=>decorateButtons(root));
- obs.observe(root,{childList:true,subtree:true});
+ if(observedRoot!==root){buttonsObserver?.disconnect();observedRoot=root;buttonsObserver=new MutationObserver(watchButtons);buttonsObserver.observe(root,{childList:true,subtree:true})}
+ // Prepara o gerador ao abrir a tela, antes do clique de compartilhamento.
+ if(root.querySelector('.catchReportA4'))loadJsPdf().catch(()=>{});
 }
 
 function loadJsPdf(){
  if(window.jspdf?.jsPDF)return Promise.resolve(window.jspdf.jsPDF);
  if(jsPdfPromise)return jsPdfPromise;
  jsPdfPromise=new Promise((resolve,reject)=>{
-  const found=[...document.scripts].find(s=>s.src===JSPDF_URL);
-  if(found){
-   if(window.jspdf?.jsPDF)return resolve(window.jspdf.jsPDF);
-   found.addEventListener('load',()=>resolve(window.jspdf?.jsPDF),{once:true});
-   found.addEventListener('error',()=>reject(new Error('Não foi possível carregar o gerador de PDF.')),{once:true});
-   return;
-  }
-  const s=document.createElement('script');
-  s.src=JSPDF_URL;
-  s.async=true;
-  s.onload=()=>window.jspdf?.jsPDF?resolve(window.jspdf.jsPDF):reject(new Error('Gerador de PDF indisponível.'));
-  s.onerror=()=>reject(new Error('Não foi possível carregar o gerador de PDF.'));
-  document.head.appendChild(s);
- });
+  let s=[...document.scripts].find(s=>s.src===JSPDF_URL);
+  if(s?.dataset.c360PdfState==='error'){s.remove();s=null}
+  const existing=!!s;if(!s){s=document.createElement('script');s.src=JSPDF_URL;s.async=true}
+  let done=false;
+  const finish=error=>{if(done)return;done=true;clearTimeout(timer);s.removeEventListener('load',loaded);s.removeEventListener('error',failed);s.dataset.c360PdfState=error?'error':'ready';error?reject(error):resolve(window.jspdf.jsPDF)};
+  const loaded=()=>finish(window.jspdf?.jsPDF?null:new Error('Gerador de PDF indisponível.'));
+  const failed=()=>finish(new Error('Não foi possível carregar o gerador de PDF. Conecte-se e tente novamente.'));
+  const timer=setTimeout(failed,15000);
+  s.addEventListener('load',loaded,{once:true});s.addEventListener('error',failed,{once:true});
+  if(!existing)document.head.appendChild(s);
+ }).catch(error=>{jsPdfPromise=null;throw error});
  return jsPdfPromise;
 }
 
@@ -129,7 +133,12 @@ async function createPdfFile(r){
  return new File([blob],name,{type:'application/pdf',lastModified:Date.now()});
 }
 
-async function shareReport(index,button){
+function downloadPdf(file){
+ const url=URL.createObjectURL(file),a=document.createElement('a');a.href=url;a.download=file.name;a.style.display='none';document.body.appendChild(a);
+ try{a.click()}finally{a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000)}
+}
+
+async function shareReport(index,button,download=false){
  const r=getReports()[Number(index)];
  if(!r)throw new Error('Relatório não encontrado. Atualize a tela e tente novamente.');
  const original=button.textContent;
@@ -137,19 +146,25 @@ async function shareReport(index,button){
  try{
   const file=await createPdfFile(r);
   const shareData={files:[file],title:'Relatório de apanha',text:'Relatório de apanha gerado pelo Comando 360.'};
-  if(navigator.share&&(!navigator.canShare||navigator.canShare(shareData))){button.textContent='ABRINDO COMPARTILHAMENTO...';await navigator.share(shareData);return}
-  window.location.href='https://wa.me/?text='+encodeURIComponent(reportText(r));
+  if(!download&&navigator.share&&(!navigator.canShare||navigator.canShare(shareData))){
+   button.textContent='ABRINDO COMPARTILHAMENTO...';
+   try{await navigator.share(shareData);return}catch(error){if(error?.name==='AbortError')return}
+  }
+  downloadPdf(file);
+  if(!download&&typeof window.c360Toast==='function')window.c360Toast('PDF baixado','Abra o arquivo e compartilhe pelo WhatsApp.','success');
  }finally{
-  button.disabled=false;button.textContent=original||'💬 ENVIAR PDF NO WHATSAPP';decorateButtons(button.parentElement||document);
+  button.disabled=false;button.textContent=original;
  }
 }
 
 document.addEventListener('click',e=>{
- const button=e.target.closest?.('.catchReportA4');
- if(!button)return;
+ const button=e.target.closest?.('.catchReportWhatsApp,.catchReportDownload');
+ if(!button||button.disabled)return;
  e.preventDefault();e.stopImmediatePropagation();
- shareReport(button.dataset.index,button).catch(err=>{if(err?.name==='AbortError')return;console.error('Compartilhamento do relatório',err);alert(err?.message||'Não foi possível compartilhar o relatório agora.')});
+ shareReport(button.dataset.index,button,button.classList.contains('catchReportDownload')).catch(err=>{if(err?.name==='AbortError')return;console.error('Compartilhamento do relatório',err);alert(err?.message||'Não foi possível compartilhar o relatório agora.')});
 },true);
 
+document.addEventListener('c360:screen-changed',watchButtons);
+window.C360ReportShare={version:VERSION,createPdfFile,reportText};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',watchButtons,{once:true});else watchButtons();
 })();

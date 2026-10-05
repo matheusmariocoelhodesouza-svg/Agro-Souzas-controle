@@ -36,8 +36,9 @@ def main():
     sw_ref_value=sw_ref.group(1) if sw_ref else ''
     sw_path=sw_ref_value.split('?',1)[0].replace('./','') if sw_ref else ''
     sw=text(sw_path) if sw_path and exists(sw_path) else ''
-    sw_version_match=re.search(r'hotfix(\d+)\.js$',sw_path)
-    sw_version=int(sw_version_match.group(1)) if sw_version_match else 0
+    sw_version_match=re.search(r'core-(hotfix|stable)(\d+)\.js$',sw_path)
+    sw_generation=sw_version_match.group(1) if sw_version_match else ''
+    sw_version=int(sw_version_match.group(2)) if sw_version_match else 0
 
     security=Category('Segurança')
     security.check('hardening multiempresa versionado',20,exists('supabase/migrations/20260913120000_harden_multitenant_security_v1.sql'))
@@ -83,7 +84,7 @@ def main():
     functionality.check('build automatizado do tracker Android',15,exists('.github/workflows/android-tracker-build.yml'))
 
     architecture=Category('Arquitetura + Operação')
-    architecture.check('service worker usa geração isolada hotfix57+',20,sw_version>=57 and f"comando360-v7-02-hotfix{sw_version}" in sw)
+    architecture.check('service worker usa geração isolada >= 57',20,sw_version>=57 and f"comando360-v7-02-{sw_generation}{sw_version}" in sw)
     architecture.check('assets da release estão dentro do core offline',20,'./c360-release-core.js' in sw and './c360-release-core.css' in sw)
     architecture.check('loader não muta cache em runtime nem usa query de versão',20,'CORE.push' not in sw_loader and '?' not in sw_ref_value)
     architecture.check('budget rígido: 1,5s interativo / 2,5s total / 90 recursos',20,'interactiveWall>1500' in perf_budget and 'completeWall>2500' in perf_budget and 'metrics.resources>90' in perf_budget)
