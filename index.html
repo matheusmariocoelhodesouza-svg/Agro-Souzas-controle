@@ -6438,7 +6438,7 @@ async function getDeviceSupervisorReportInfo(){
  }
  return {name:name||'Não informado',phone:phone||'Não cadastrado'};
 }
-async async function buildCatchReportsForDay(day){
+async function buildCatchReportsForDay(day){
  await loadDevicePoultryContext();
  await loadPoultryOps(false);
  const supervisor=await getDeviceSupervisorReportInfo();
@@ -6549,13 +6549,32 @@ function printCatchReport(index,format='80'){
  '<div class="label">OBSERVAÇÕES</div><div class="obs">'+esc(notes)+'</div><div class="sign">'+esc(sup.name)+'<br>Encarregado da equipe</div><div class="sign">Responsável pela granja / integrado<br>Nome e assinatura</div>'+
  '<div class="footer">Emitido pelo Comando 360<br>'+new Date().toLocaleString('pt-BR')+'<br><br>*** FIM DO RELATÓRIO ***</div></body></html>');
  w.document.close();
- try{setTimeout(()=>{w.focus();w.print()},250)}catch(e){}
+ let printTimer=null;
+ try{
+  printTimer=setTimeout(()=>{
+   try{
+    if(!printFrame.isConnected)return;
+    w.focus();w.print();
+   }catch(_){
+    if(printFrame.isConnected)printFrame.remove();
+   }
+  },250);
+  w.onafterprint=()=>{if(printTimer)clearTimeout(printTimer);setTimeout(()=>{if(printFrame.isConnected)printFrame.remove()},150)};
+  setTimeout(()=>{if(printFrame.isConnected)printFrame.remove()},60000);
+ }catch(e){if(printTimer)clearTimeout(printTimer);if(printFrame.isConnected)printFrame.remove();}
 }
+let c360LastPrintIntentAt=0;
 document.addEventListener('click',function(e){
  const b=e.target.closest('.catchReportPrint');
- if(b){e.preventDefault();printCatchReport(b.dataset.index,'80');return}
  const a4=e.target.closest('.catchReportA4');
- if(a4){e.preventDefault();printCatchReport(a4.dataset.index,'a4')}
+ if(!b&&!a4)return;
+ if(!e.isTrusted)return;
+ e.preventDefault();
+ const now=Date.now();
+ if(now-c360LastPrintIntentAt<1500)return;
+ c360LastPrintIntentAt=now;
+ if(b){printCatchReport(b.dataset.index,'80');return}
+ printCatchReport(a4.dataset.index,'a4');
 });
 function renderDeviceModeBar(tab){const bar=$('#deviceModeBar');if(bar)bar.classList.toggle('hidden',!deviceMode||tab==='equipehome')}
 // Navegação resiliente: um único listener delegado atende desktop e mobile.
