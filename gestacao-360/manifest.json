@@ -1,0 +1,8 @@
+{
+  "name": "Gestação 360",
+  "short_name": "Gestação360",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#fff8fb",
+  "theme_color": "#f8e8f1"
+}
