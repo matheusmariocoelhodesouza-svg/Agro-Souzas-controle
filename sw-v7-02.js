@@ -1,4 +1,4 @@
-/* Comando 360 — loader 7.18.4 / consulta de FAX no campo 2026-10-03. */
+/* Comando 360 — loader 7.18.5 / consulta de FAX no campo 2026-10-03. */
 /* 2026-09-25 — cache offline completo para UI vetorial e correções de corrida. */
 /* 2026-09-25 — runtime consolidation: shell/campo no precache e módulos administrativos sob demanda. */
 /* 2026-09-27 — atualiza regra de conferência da Apanha para caixas mistas, caixas vazias e tempos curtos válidos. */
@@ -8,6 +8,6 @@
 /* 2026-09-30 — adiciona recebimento de imagem compartilhada pelo Android/WhatsApp para a IA. */
 /* 2026-09-30 — manifesto PWA com ícones PNG 192/512 para instalação WebAPK completa. */
 /* 2026-10-02 — remove versão com JavaScript inline interrompido e renova o shell offline. */
-importScripts('./sw-v7-02-core-hotfix69.js');
+importScripts('./sw-v7-02-core-hotfix70.js');
 importScripts('./sw-auth-refresh-guard.js');
 importScripts('./sw-share-target.js');
