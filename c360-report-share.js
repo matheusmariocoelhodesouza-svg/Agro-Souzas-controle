@@ -14,6 +14,9 @@ function fmtTime(v){if(!v)return '—';const d=new Date(v);if(Number.isNaN(d.get
 function fmtDate(v){if(!v)return '—';const d=new Date(v);if(Number.isNaN(d.getTime()))return '—';return d.toLocaleDateString('pt-BR',{timeZone:'America/Sao_Paulo'})}
 function fmtDuration(a,b){if(!a||!b)return '—';const ms=new Date(b)-new Date(a);if(!Number.isFinite(ms)||ms<0)return '—';const mins=Math.round(ms/60000),h=Math.floor(mins/60),m=mins%60;return h?`${h}h ${String(m).padStart(2,'0')}min`:`${m}min`}
 function fileSafe(v){return String(v||'relatorio').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9_-]+/g,'_').replace(/^_+|_+$/g,'').slice(0,70)||'relatorio'}
+// As fontes padrão do PDF usam WinAnsi; setas e travessões Unicode podem
+// fazer uma linha inteira sair com glifos incorretos ou espaçamento quebrado.
+function pdfText(v){return String(v??'-').normalize('NFC').replace(/[\u2010-\u2015\u2212]/g,'-').replace(/[\u2190-\u2194]/g,' - ').replace(/[\u2022\u00b7]/g,' | ').replace(/\u00a0/g,' ')}
 function getReports(){try{return typeof teamCatchReports!=='undefined'&&Array.isArray(teamCatchReports)?teamCatchReports:[]}catch(_){return[]}}
 
 function decorateButtons(root=document){
@@ -96,7 +99,7 @@ async function createPdfFile(r){
  const pageW=210,margin=14,usable=pageW-(margin*2),bottom=282;
  let y=16;
  const ensure=(need=8)=>{if(y+need>bottom){doc.addPage();y=16}};
- const text=(value,size=10,bold=false,space=5)=>{const clean=String(value??'—');doc.setFont('helvetica',bold?'bold':'normal');doc.setFontSize(size);const rows=doc.splitTextToSize(clean,usable);ensure(rows.length*space+2);doc.text(rows,margin,y);y+=rows.length*space};
+ const text=(value,size=10,bold=false,space=5)=>{const clean=pdfText(value);doc.setFont('helvetica',bold?'bold':'normal');doc.setFontSize(size);const rows=doc.splitTextToSize(clean,usable);ensure(rows.length*space+2);doc.text(rows,margin,y);y+=rows.length*space};
  const rule=()=>{ensure(5);doc.setDrawColor(210);doc.line(margin,y,196,y);y+=5};
 
  doc.setFont('helvetica','bold');doc.setFontSize(16);doc.text('RELATÓRIO DE APANHA DE AVES',105,y,{align:'center'});y+=7;
@@ -126,7 +129,7 @@ async function createPdfFile(r){
  const notes=[op.notes,...(r.trucks||[]).map(t=>t.metadata?.notes).filter(Boolean)].filter(Boolean);
  if(notes.length){rule();text('OBSERVAÇÕES',10,true);text(notes.join(' • '),9,false,4.5)}
  const pages=doc.getNumberOfPages();
- for(let p=1;p<=pages;p++){doc.setPage(p);doc.setFontSize(8);doc.setFont('helvetica','normal');doc.setTextColor(110);doc.text(`Comando 360 • Página ${p}/${pages}`,105,291,{align:'center'});doc.setTextColor(0)}
+ for(let p=1;p<=pages;p++){doc.setPage(p);doc.setFontSize(8);doc.setFont('helvetica','normal');doc.setTextColor(110);doc.text(pdfText(`Comando 360 • Página ${p}/${pages}`),105,291,{align:'center'});doc.setTextColor(0)}
  const blob=doc.output('blob');
  const stamp=fmtDate(r.actualStart||op.scheduled_start).replaceAll('/','-');
  const name=`Relatorio_Apanha_${fileSafe(op.operation_number||farmName)}_${fileSafe(stamp)}.pdf`;
