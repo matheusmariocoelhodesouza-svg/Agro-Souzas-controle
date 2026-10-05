@@ -9622,8 +9622,24 @@ window.addEventListener('error',e=>{if(!$('#app').classList.contains('hidden'))r
      try{await enterDeviceApp(u);return}
      catch(e){
        if(e&&e.code==='DEVICE_UNPAIRED'){
+         // Uma sessão de aparelho válida não deve exigir um novo código só porque
+         // o vínculo local/servidor ficou dessincronizado após atualização.
+         // Tenta recuperar o vínculo usando o identificador persistente do aparelho.
+         try{
+           const code=String(localStorage.getItem('c360_device_public_id')||'').trim().toUpperCase();
+           if(code&&/^[A-Z0-9]{8,16}$/.test(code)){
+             const recovered=await rpc('v2_recover_device_session',{p_device_code:code});
+             const row=Array.isArray(recovered)?recovered[0]:recovered;
+             if(row?.recovered){
+               await enterDeviceApp(u);
+               return;
+             }
+           }
+         }catch(recoveryError){
+           console.warn('Recuperação automática do vínculo falhou',recoveryError);
+         }
          $('#app').classList.add('hidden');$('#login').classList.remove('hidden');
-         $('#deviceMsg').className='muted';$('#deviceMsg').textContent='Sessão do aparelho criada. Digite o código da equipe.';
+         $('#deviceMsg').className='muted';$('#deviceMsg').textContent='Este aparelho precisa ser vinculado novamente à equipe.';
          return;
        }
        throw e;
