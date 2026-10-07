@@ -14,7 +14,7 @@ function source(name){
 let passed=0;
 function test(name,fn){fn();passed++;console.log('PASS',name)}
 const context=vm.createContext({console,Date,Number,Blob,setTimeout});
-for(const name of ['fuelPlausibleKmL','fuelInterval','isTrailerVehicle','maintenanceStatus','csvCell'])vm.runInContext(source(name),context);
+for(const name of ['fuelPlausibleKmL','fuelInterval','isTrailerVehicle','maintenanceStatus','csvCell','localDateBR','saoPauloDateKey'])vm.runInContext(source(name),context);
 const fuel=(km,liters,date)=>({odometer_km:km,liters,fueled_at:date});
 const old=fuel(2831,30,'2026-09-14T12:00:00Z');
 test('Observed 8,433 km/L cannot enter valid mileage',()=>{

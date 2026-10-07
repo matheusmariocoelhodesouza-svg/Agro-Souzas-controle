@@ -27,6 +27,16 @@ function activeRoot(){
 function chatBox(root){return $('#chatbox',root)||$('#aiThread',root)||$('.ai-thread',root)}
 function inputEl(root){return $('#question',root)||$('#aiInput',root)||$('.ai-input input',root)}
 function sendBtn(root){return $('#sendAI',root)||$('.ai-input button',root)||$('.toolbar button.primary',root)}
+function appendLinkedText(el,text){
+ const value=String(text??'');let offset=0;
+ for(const match of value.matchAll(/https:\/\/[^\s<>"']+/g)){
+  el.appendChild(document.createTextNode(value.slice(offset,match.index)));
+  const url=match[0].replace(/[),.;!?]+$/,'');
+  const a=document.createElement('a');a.href=url;a.target='_blank';a.rel='noopener noreferrer';a.textContent=url;el.appendChild(a);
+  el.appendChild(document.createTextNode(match[0].slice(url.length)));offset=match.index+match[0].length;
+ }
+ el.appendChild(document.createTextNode(value.slice(offset)));
+}
 function addMessage(root,text,role='ai',meta=''){
  const box=chatBox(root);if(!box)return;
  const modern=box.classList.contains('ai-thread');
@@ -34,12 +44,12 @@ function addMessage(root,text,role='ai',meta=''){
  if(modern){
   d.className='ai-msg '+(role==='user'?'user':'bot');
   const strong=document.createElement('strong');strong.textContent=role==='user'?'Você':'Assistente 360';
-  const span=document.createElement('span');span.textContent=text;
+  const span=document.createElement('span');appendLinkedText(span,text);
   d.append(strong,span);
   if(meta){const small=document.createElement('small');small.className='ai360-msgmeta';small.textContent=meta;d.appendChild(small)}
  }else{
   d.className='msg '+(role==='user'?'user':'ai');
-  d.textContent=text;
+  appendLinkedText(d,text);
   if(meta){const small=document.createElement('div');small.className='ai360-msgmeta';small.textContent=meta;d.appendChild(small)}
  }
  box.appendChild(d);box.scrollTop=box.scrollHeight;
@@ -107,8 +117,8 @@ async function uploadOriginal(file){
  const cid=company(),s=authSession();if(!cid||!s?.access_token)throw new Error('Sessão inválida para arquivar a foto.');
  const day=new Date().toISOString().slice(0,10);const uid=(crypto.randomUUID?crypto.randomUUID():`${Date.now()}-${Math.random().toString(16).slice(2)}`);
  const path=`${cid}/assistant360/${day}/${uid}-${safeFileName(file.name)}`;
- const url=`${apiBase()}/storage/v1/object/company-documents/${path.split('/').map(encodeURIComponent).join('/')}`;
- const r=await fetch(url,{method:'POST',headers:headers({'Content-Type':file.type||'application/octet-stream','x-upsert':'false'}),body:file});
+ const endpoint=`/storage/v1/object/company-documents/${path.split('/').map(encodeURIComponent).join('/')}`;
+ const r=await assistantRequest(endpoint,{method:'POST',headers:{'Content-Type':file.type||'application/octet-stream','x-upsert':'false'},body:file});
  if(!r.ok){let msg='';try{msg=(await r.json())?.message||''}catch{}throw new Error(msg||'Não foi possível arquivar a foto original.');}
  return {bucket:'company-documents',path,original_name:file.name,mime_type:file.type||null,size_bytes:file.size};
 }
@@ -141,9 +151,16 @@ function startVoice(root,btn){
  rec.onerror=()=>notify('Não consegui ouvir. Você pode digitar normalmente.','error');
  rec.onend=()=>{state.recognition=null;btn.classList.remove('recording');btn.textContent='🎤 Falar'};rec.start();
 }
+async function assistantRequest(endpoint,opts){
+ const authenticated=globalFn('authFetch');
+ if(authenticated)return await authenticated(endpoint,opts,true,45000);
+ const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),45000);
+ try{return await fetch(apiBase()+endpoint,{...opts,headers:headers(opts.headers||{}),signal:controller.signal})}
+ finally{clearTimeout(timer)}
+}
 async function callAssistant(body){
  const s=authSession();if(!s?.access_token)throw new Error('Sua sessão expirou. Entre novamente.');
- const r=await fetch(`${apiBase()}/functions/v1/controla-ai`,{method:'POST',headers:headers({'Content-Type':'application/json'}),body:JSON.stringify(body)});
+ const r=await assistantRequest('/functions/v1/controla-ai',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
  let data={};try{data=await r.json()}catch{}
  if(!r.ok)throw new Error(data?.message||data?.detail||data?.error||`Falha na IA (${r.status})`);return data;
 }
@@ -159,6 +176,8 @@ async function analyze(root){
    const body={mode:'analyze',company_id:company(),question:userText,source_attachment:state.sourceAttachment};
    if(state.conversationId)body.conversation_id=state.conversationId;
    if(state.imageDataUrl)body.image_data_url=state.imageDataUrl;
+   const farmAnswer=!state.file&&window.C360FarmSearch?await window.C360FarmSearch.answer(userText):null;
+   if(farmAnswer){addMessage(root,farmAnswer,'ai','Localização do cadastro da empresa');renderActions(root,[]);return}
    const data=await callAssistant(body);if(data.conversation_id)state.conversationId=data.conversation_id;
    addMessage(root,data.answer||data.message||'Solicitação analisada.','ai');renderActions(root,data.actions||[]);
    state.file=null;state.imageDataUrl=null;state.sourceAttachment=null;renderAttachment(root);
@@ -173,7 +192,7 @@ async function confirmAction(root,a,card){
    card.classList.add('saved');const box=$('.ai360-action-buttons',card);if(box)box.innerHTML='<span class="ai360-saved">✓ Salvo no Comando 360</span>';
    addMessage(root,data?.result?.message||'Lançamento salvo com sucesso.','ai');
    document.dispatchEvent(new CustomEvent('c360:assistant-action-executed',{detail:{action:a,result:data?.result}}));
-   ['loadDashboard','loadPoultryDashboard','loadFuel','loadFleet','loadMaintenance'].forEach(name=>{const fn=globalFn(name);if(typeof fn==='function'){try{fn()}catch{}}});
+   ['loadDashboard','loadPoultryDashboard','loadFuel','loadVehicles','loadMaintenances'].forEach(name=>{const fn=globalFn(name);if(typeof fn==='function'){try{Promise.resolve(fn()).catch(e=>console.warn('Atualização após lançamento da IA',e?.message||e))}catch(e){console.warn('Atualização após lançamento da IA',e?.message||e)}}});
  }catch(e){btn.disabled=false;btn.textContent=old;addMessage(root,e?.message||'Não consegui salvar o lançamento.','ai')}
 }
 function tools(root){

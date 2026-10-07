@@ -47,7 +47,7 @@ await test('New field operation tolerates optional inputs removed during async l
  const dom=fixture('operacoes','<button id="newPoultryOp"></button><div id="poultryForm" class="hidden"><input id="poStart"><input id="poEnd"><input id="poNotes"><span id="poMsg"></span><input id="poIntegratedName"></div>'),w=dom.window;
  let handler,energy=false;
  w.$=selector=>w.document.querySelector(selector);w.$('#newPoultryOp').addEventListener=(event,fn)=>{handler=fn};
- w.deviceMode=true;w.deviceAccess=null;w.poLocalInputDate=()=> '2026-09-24T12:00';
+ w.deviceMode=true;w.deviceAccess=null;w.poultrySavePending=false;w.poLocalInputDate=()=> '2026-09-24T12:00';
  w.loadDevicePoultryContext=async()=>{await Promise.resolve();w.$('#poIntegratedName').remove()};
  w.applyPoultryRoleUI=()=>{};w.setPoultryEnergy=()=>{energy=true};
  try{w.eval(html.slice(start,end));await handler();assert.equal(energy,true);assert.equal(w.$('#poultryForm').classList.contains('hidden'),false)}finally{w.close()}

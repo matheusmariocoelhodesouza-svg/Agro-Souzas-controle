@@ -31,8 +31,8 @@ jobs:
           release_ready() {
             fetch_once "/sw-v7-02.js" /tmp/sw.js || return 1
             fetch_once "/c360-quality-hotfix.js" /tmp/bootstrap.js || return 1
-            grep -q 'sw-v7-02-core-stable72.js' /tmp/sw.js || return 1
-            grep -q "BOOT_VERSION='2026.10.05-stable72'" /tmp/bootstrap.js || return 1
+            grep -q 'sw-v7-02-core-stable73.js' /tmp/sw.js || return 1
+            grep -q "BOOT_VERSION='2026.10.07-stable73'" /tmp/bootstrap.js || return 1
             grep -q 'SCRIPT_BATCH_SIZE=5' /tmp/bootstrap.js || return 1
             grep -q 'yieldToMain' /tmp/bootstrap.js || return 1
           }
@@ -71,6 +71,7 @@ jobs:
           fetch_once "/c360-professional-pass.css" /tmp/professional.css
           fetch_once "/c360-team-chat.js" /tmp/chat.js
           fetch_once "/c360-farm-cache-hotfix.js" /tmp/farms.js
+          fetch_once "/c360-farm-search.js" /tmp/farm-search.js
           fetch_once "/c360-consumable-edit.js" /tmp/consumables.js
           fetch_once "/c360-saas-readiness.js" /tmp/saas.js
           fetch_once "/c360-native-tracker-admin.js" /tmp/tracker-admin.js
@@ -87,7 +88,7 @@ jobs:
           fetch_once "/c360-saas-readiness.css" /tmp/saas.css
 
           SW_CORE="$(grep -oE 'sw-v7-02-core-(hotfix[0-9]+|stable[0-9]+)\.js' /tmp/sw.js | head -n1 || true)"
-          test "$SW_CORE" = 'sw-v7-02-core-stable72.js'
+          test "$SW_CORE" = 'sw-v7-02-core-stable73.js'
           fetch_once "/$SW_CORE" /tmp/sw-core.js
 
           for f in \
@@ -95,7 +96,7 @@ jobs:
             /tmp/sw.js /tmp/sw-core.js /tmp/bootstrap.js /tmp/autorecovery.js /tmp/platform.js \
             /tmp/product-core.js /tmp/release-core.js /tmp/final.js /tmp/quality-core.js /tmp/field.js \
             /tmp/location-ui.js /tmp/health.js /tmp/onboarding.js /tmp/professional.js /tmp/chat.js \
-            /tmp/farms.js /tmp/consumables.js /tmp/saas.js /tmp/tracker-admin.js /tmp/fiscal.js \
+            /tmp/farms.js /tmp/farm-search.js /tmp/consumables.js /tmp/saas.js /tmp/tracker-admin.js /tmp/fiscal.js \
             /tmp/report-share.js /tmp/report-stability.js /tmp/hitches.js /tmp/ux-polish.js; do
             test -s "$f"
           done
@@ -119,6 +120,8 @@ jobs:
           grep -q 'c360-native-tracker-admin.js' /tmp/bootstrap.js
           grep -q 'c360-fiscal.js' /tmp/bootstrap.js
           grep -q 'c360-report-share.js' /tmp/bootstrap.js
+          grep -q 'c360-farm-search.js' /tmp/bootstrap.js
+          grep -q '2026.10.07-farm-search1' /tmp/farm-search.js
           grep -q 'SCRIPT_BATCH_SIZE=5' /tmp/bootstrap.js
           grep -q 'yieldToMain' /tmp/bootstrap.js
 
@@ -132,7 +135,7 @@ jobs:
           grep -q "const VERSION='2026.09.22-locui2'" /tmp/location-ui.js
           grep -q "const VERSION='2026.09.22-reports1'" /tmp/report-stability.js
 
-          grep -q "const CACHE='comando360-v7-02-stable72'" /tmp/sw-core.js
+          grep -q "const CACHE='comando360-v7-02-stable73'" /tmp/sw-core.js
           grep -q 'comando360-stable-v1' /tmp/sw-core.js
           grep -q './c360-release-core.js' /tmp/sw-core.js
           grep -q './c360-release-core.css' /tmp/sw-core.js
@@ -152,6 +155,7 @@ jobs:
             echo 'Fiscal module must remain lazy, not in initial offline core.'; exit 1
           fi
           grep -q './c360-report-share.js' /tmp/sw-core.js
+          grep -q './c360-farm-search.js' /tmp/sw-core.js
           grep -q './vendor/jspdf/jspdf.umd.min.js' /tmp/sw-core.js
           grep -q 'jsPDF' /tmp/jspdf.js
           if grep -q 'CORE.push' /tmp/sw.js; then
@@ -169,7 +173,7 @@ jobs:
             /tmp/sw.js /tmp/sw-core.js /tmp/bootstrap.js /tmp/autorecovery.js /tmp/platform.js \
             /tmp/product-core.js /tmp/release-core.js /tmp/final.js /tmp/quality-core.js /tmp/field.js \
             /tmp/location-ui.js /tmp/health.js /tmp/onboarding.js /tmp/professional.js /tmp/chat.js \
-            /tmp/farms.js /tmp/consumables.js /tmp/saas.js /tmp/tracker-admin.js /tmp/fiscal.js \
+            /tmp/farms.js /tmp/farm-search.js /tmp/consumables.js /tmp/saas.js /tmp/tracker-admin.js /tmp/fiscal.js \
             /tmp/report-share.js /tmp/report-stability.js /tmp/hitches.js /tmp/ux-polish.js; do
             node --check "$f"
           done
@@ -189,5 +193,5 @@ jobs:
           for name in ('/tmp/ui.css','/tmp/premium.css','/tmp/product.css','/tmp/release-core.css','/tmp/final.css','/tmp/professional.css','/tmp/health.css','/tmp/saas.css'):
               css=Path(name).read_text(encoding='utf-8')
               assert css.count('{') == css.count('}'), f'{name}: unbalanced braces'
-          print('Production stable72 + offline FAX/PDF + batched boot + lazy admin modules smoke: OK')
+          print('Production stable73 + offline FAX/PDF + batched boot + lazy admin modules smoke: OK')
           PY

@@ -56,7 +56,7 @@ jobs:
             index.html cadastro.html dda.html reparar.html comando360.webmanifest sw-v7-02.js sw-v7-02-core-hotfix62.js sw-v7-02-core-hotfix63.js sw-v7-02-core-hotfix64.js sw-v7-02-core-hotfix66.js sw-v7-02-core-hotfix67.js sw-v7-02-core-hotfix68.js sw-v7-02-core-hotfix69.js c360-field-fax.js
             c360-autorecovery.js c360-platform.js c360-product-core.js c360-release-core.js
             c360-quality-hotfix.js c360-quality-core.js c360-field-offline-hotfix.js
-            c360-team-chat.js c360-farm-cache-hotfix.js c360-consumable-edit.js
+            c360-team-chat.js c360-farm-cache-hotfix.js c360-farm-search.js c360-consumable-edit.js
             c360-system-health.js c360-onboarding-entry.js c360-fiscal.js c360-native-tracker-admin.js c360-ux-polish-hotfix.js
             c360-professional-pass.js c360-professional-pass.css c360-signature-ui.js c360-signature-ui.css c360-signature-icons.css
             c360-final-stabilization.js c360-final-stabilization.css c360-trailer-hitches.js
@@ -80,6 +80,7 @@ jobs:
         run: |
           npm install --prefix /tmp/c360-audit --no-save jsdom@26.1.0
           C360_JSDOM_PATH=/tmp/c360-audit/node_modules/jsdom node qa/integrity_regressions.mjs
+          C360_JSDOM_PATH=/tmp/c360-audit/node_modules/jsdom node qa/audit_regressions_20261007.mjs
 
       - name: Reference structural audit
         run: python qa/reference_audit.py
@@ -94,7 +95,7 @@ jobs:
           grep -q 'c360-ui-polish.css' index.html
           if grep -q '<script>window.onload' index.html; then echo 'Unsafe inline window.onload found'; exit 1; fi
 
-          grep -q "BOOT_VERSION='2026.10.05-stable72'" c360-quality-hotfix.js
+          grep -q "BOOT_VERSION='2026.10.07-stable73'" c360-quality-hotfix.js
           grep -q "const VERSION='2026.09.22-r100-1'" c360-release-core.js
           grep -q "VERSION='2026.09.23-v1-final1'" c360-final-stabilization.js
           grep -q "const VERSION='2026.09.23-ux2'" c360-ux-polish-hotfix.js
@@ -149,12 +150,12 @@ jobs:
           grep -q 'body.device-mode' c360-product-ui.css
 
           SW_CORE="$(grep -oE 'sw-v7-02-core-(hotfix[0-9]+|stable[0-9]+)\.js' sw-v7-02.js | head -n1)"
-          test "$SW_CORE" = 'sw-v7-02-core-stable72.js'
+          test "$SW_CORE" = 'sw-v7-02-core-stable73.js'
           test -s "$SW_CORE"
           SW_CONTRACT="$(cat sw-v7-02.js "$SW_CORE")"
           grep -q 'loader 7.19.1' sw-v7-02.js
           grep -q 'sw-auth-refresh-guard.js' sw-v7-02.js
-          grep -q "comando360-v7-02-stable72" <<<"$SW_CONTRACT"
+          grep -q "comando360-v7-02-stable73" <<<"$SW_CONTRACT"
           grep -q 'comando360-stable-v1' <<<"$SW_CONTRACT"
           grep -q 'c360-platform.js' <<<"$SW_CONTRACT"
           grep -q 'c360-product-core.js' <<<"$SW_CONTRACT"
@@ -170,6 +171,7 @@ jobs:
           if grep -q './c360-native-tracker-admin.js' "$SW_CORE"; then echo 'Admin tracker must stay lazy, not in initial offline core'; exit 1; fi
           if grep -q './c360-fiscal.js' "$SW_CORE"; then echo 'Fiscal module must stay lazy, not in initial offline core'; exit 1; fi
           grep -q './c360-report-share.js' "$SW_CORE"
+          grep -q './c360-farm-search.js' "$SW_CORE"
           grep -q './vendor/jspdf/jspdf.umd.min.js' "$SW_CORE"
           if grep -q 'CORE.push' sw-v7-02.js; then echo 'Runtime service-worker cache mutation found'; exit 1; fi
           if grep -q '?' sw-v7-02.js; then echo 'Version query found in service-worker loader'; exit 1; fi

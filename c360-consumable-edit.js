@@ -127,7 +127,7 @@ function scheduleDecorate(force=false){
 async function itemUsage(id){
  const [movs,parts]=await Promise.all([
   rest('v2_inventory_movements','select=id&company_id=eq.'+encodeURIComponent(companyId)+'&item_id=eq.'+encodeURIComponent(id)+'&limit=1'),
-  rest('v2_work_order_parts','select=id&company_id=eq.'+encodeURIComponent(companyId)+'&item_id=eq.'+encodeURIComponent(id)+'&limit=1').catch(()=>[])
+  rest('v2_work_order_parts','select=work_order_id&company_id=eq.'+encodeURIComponent(companyId)+'&item_id=eq.'+encodeURIComponent(id)+'&limit=1')
  ]);
  return {hasMovements:!!movs?.length,hasWorkOrders:!!parts?.length,hasLinks:!!(movs?.length||parts?.length)};
 }

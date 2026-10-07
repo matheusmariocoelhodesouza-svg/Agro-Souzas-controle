@@ -76,7 +76,7 @@
   const section=screen('operacoes'),hero=section?.querySelector('.v2hero');if(!section||!hero)return false;
   style();
   let actions=hero.querySelector('.c360-fax-hero-actions');
-  if(!actions){actions=document.createElement('div');actions.className='c360-fax-hero-actions';const newOp=q('#newPoultryOp');if(newOp){hero.insertBefore(actions,newOp);actions.appendChild(newOp)}else hero.appendChild(actions)}
+  if(!actions){actions=document.createElement('div');actions.className='c360-fax-hero-actions';const newOp=hero.querySelector('#newPoultryOp');if(newOp){newOp.before(actions);actions.appendChild(newOp)}else hero.appendChild(actions)}
   if(!q('#c360FaxHeroBtn')){const b=document.createElement('button');b.className='btn soft';b.id='c360FaxHeroBtn';b.type='button';b.textContent='📠 FAX / Programação';actions.appendChild(b)}
   hero.insertAdjacentHTML('afterend',markup());
   addDashboardShortcut();bind();installed=true;

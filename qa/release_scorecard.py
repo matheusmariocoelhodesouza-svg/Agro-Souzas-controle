@@ -103,7 +103,8 @@ def main():
     if failed or average<MIN_SCORE:
         print('RESULT: FAIL — release bloqueada')
         return 1
-    print('RESULT: PASS — contrato automatizado >= 9,7/10')
+    print('RESULT: PASS — requisitos estruturais presentes; isso não certifica os fluxos em produção.')
+    print('Validação operacional exige resultados separados de navegador, banco, offline e aparelho Android.')
     return 0
 
 if __name__=='__main__': sys.exit(main())
