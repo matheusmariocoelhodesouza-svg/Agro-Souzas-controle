@@ -9,6 +9,6 @@
 /* 2026-09-30 — manifesto PWA com ícones PNG 192/512 para instalação WebAPK completa. */
 /* 2026-10-02 — remove versão com JavaScript inline interrompido e renova o shell offline. */
 /* 2026-10-07 — auditoria de gravação, sessão, combustível e busca de fazendas. */
-importScripts('./sw-v7-02-core-stable73.js');
+importScripts('./sw-v7-02-core-stable74.js');
 importScripts('./sw-auth-refresh-guard.js');
 importScripts('./sw-share-target.js');
