@@ -9159,6 +9159,7 @@ async function saveFinEntry(){const m=document.getElementById('finMsg'),amount=N
 async function cancelFinEntry(id){if(!id||!confirm('Cancelar este lançamento financeiro?'))return;try{await rest('v2_financial_entries','id=eq.'+id,'PATCH',{status:'cancelled'});await loadFinance()}catch(e){alert(e.message)}}
 
 let adminReportCache=null;
+function reportResultNotice(){return 'Resultado parcial, baseado nos valores registrados. Combustível, manutenção e estoque podem ainda não estar conciliados no Financeiro. Não equivale a lucro líquido.'}
 function biRows(entries,valueFn,labelFn){
  const arr=[...(entries||[])],max=Math.max(1,...arr.map(valueFn));
  return arr.length?arr.map(x=>{
@@ -9190,32 +9191,36 @@ function renderFuelReportByVehicle(fuels=[],filter='all'){
  }).join('');
 }
 async function loadReports(){
+ adminReportCache=null;
  const month=$('#reportsMonth')?.value||new Date().toISOString().slice(0,7);
  if($('#reportsMonth')&&!$('#reportsMonth').value)$('#reportsMonth').value=month;
  const bounds=monthBoundsBR(month),start=month+'-01';
  const [finView,opsView,poultryView,attView,ops,teams,vehicles,fuel,trucks]=await Promise.all([
-  dashSafe('v2_report_monthly_financial','select=*&company_id=eq.'+companyId+'&reference_month=eq.'+start),
-  dashSafe('v2_report_operations_monthly','select=*&company_id=eq.'+companyId+'&reference_month=eq.'+start),
-  dashSafe('v2_report_poultry_monthly','select=*&company_id=eq.'+companyId+'&reference_month=eq.'+start),
-  dashSafe('v2_report_attendance_monthly','select=*&company_id=eq.'+companyId+'&reference_month=eq.'+start),
-  dashSafe('v2_operations','select=id,team_id,customer_name,title,status,scheduled_start,actual_birds,planned_birds,actual_revenue,actual_cost&company_id=eq.'+companyId+'&operation_type=in.(poultry_catching,poultry_loading)&scheduled_start=gte.'+encodeURIComponent(bounds.start)+'&scheduled_start=lt.'+encodeURIComponent(bounds.end)),
-  dashSafe('v2_teams','select=id,name,status&company_id=eq.'+companyId),
-  dashSafe('v2_vehicles','select=id,description,plate,model&company_id=eq.'+companyId),
-  dashSafe('v2_fuel_logs','select=id,vehicle_id,fueled_at,odometer_km,liters,total_amount,station_name,metadata&company_id=eq.'+companyId+'&fueled_at=gte.'+encodeURIComponent(bounds.start)+'&fueled_at=lt.'+encodeURIComponent(bounds.end)+'&order=fueled_at.asc'),
-  dashSafe('v2_poultry_truck_loads','select=id,birds,is_cata,created_at&company_id=eq.'+companyId+'&created_at=gte.'+encodeURIComponent(bounds.start)+'&created_at=lt.'+encodeURIComponent(bounds.end))
+  rest('v2_report_monthly_financial','select=*&company_id=eq.'+companyId+'&reference_month=eq.'+start),
+  rest('v2_report_operations_monthly','select=*&company_id=eq.'+companyId+'&reference_month=eq.'+start),
+  rest('v2_report_poultry_monthly','select=*&company_id=eq.'+companyId+'&reference_month=eq.'+start),
+  rest('v2_report_attendance_monthly','select=*&company_id=eq.'+companyId+'&reference_month=eq.'+start),
+  rest('v2_operations','select=id,team_id,customer_name,title,status,scheduled_start,actual_birds,planned_birds,actual_revenue,actual_cost&company_id=eq.'+companyId+'&operation_type=in.(poultry_catching,poultry_loading)&scheduled_start=gte.'+encodeURIComponent(bounds.start)+'&scheduled_start=lt.'+encodeURIComponent(bounds.end)),
+  rest('v2_teams','select=id,name,status&company_id=eq.'+companyId),
+  rest('v2_vehicles','select=id,description,plate,model&company_id=eq.'+companyId),
+  rest('v2_fuel_logs','select=id,vehicle_id,fueled_at,odometer_km,liters,total_amount,station_name,metadata&company_id=eq.'+companyId+'&fueled_at=gte.'+encodeURIComponent(bounds.start)+'&fueled_at=lt.'+encodeURIComponent(bounds.end)+'&order=fueled_at.asc'),
+  rest('v2_poultry_truck_loads','select=id,birds,is_cata,created_at&company_id=eq.'+companyId+'&created_at=gte.'+encodeURIComponent(bounds.start)+'&created_at=lt.'+encodeURIComponent(bounds.end))
  ]);
  const f=finView?.[0]||{},o=opsView?.[0]||{},p=poultryView?.[0]||{},a=attView?.[0]||{};
  const birds=ops.reduce((s,x)=>s+poN(x.actual_birds||x.planned_birds),0)||poN(p.birds);
- const revenue=poN(o.revenue||f.income),cost=poN(o.cost||f.expense),result=poN(o.result||(revenue-cost));
+ const revenue=poN(o.revenue??f.income),cost=poN(o.cost??f.expense),result=poN(o.result??(revenue-cost));
  const truckCount=poN(p.trucks)||trucks.length;
  const loadings=poN(p.loadings)||ops.length;
  const avgTruck=truckCount?Math.round(birds/truckCount):0;
 
  $('#reportsKpis').innerHTML=[
-  ['FATURAMENTO',money(revenue),'💰'],['CUSTOS',money(cost),'↘'],['RESULTADO',money(result),'▣'],
+  ['FATURAMENTO',money(revenue),'💰'],['CUSTOS REGISTRADOS',money(cost),'↘'],['RESULTADO PARCIAL',money(result),'▣'],
   ['AVES',birds.toLocaleString('pt-BR'),'🐔'],['APANHAS',loadings.toLocaleString('pt-BR'),'📋'],['CAMINHÕES',truckCount.toLocaleString('pt-BR'),'🚚'],
   ['MÉDIA / CAMINHÃO',avgTruck.toLocaleString('pt-BR'),'📦'],['HORAS DE PONTO',fmtMinutes(a.worked_minutes||0),'⏱']
  ].map(x=>'<div class="v2kpi"><div class="t">'+esc(x[0])+'</div><div class="v">'+esc(x[1])+'</div><div class="v2ico">'+x[2]+'</div></div>').join('');
+ let scopeNotice=$('#reportsResultScope');
+ if(!scopeNotice){scopeNotice=document.createElement('p');scopeNotice.id='reportsResultScope';scopeNotice.className='muted';$('#reportsKpis').after(scopeNotice)}
+ scopeNotice.textContent=reportResultNotice();
 
  const teamMap={};
  ops.forEach(x=>{const n=teams.find(t=>t.id===x.team_id)?.name||'Sem equipe';if(!teamMap[n])teamMap[n]={name:n,birds:0,ops:0};teamMap[n].birds+=poN(x.actual_birds||x.planned_birds);teamMap[n].ops++});
@@ -9244,7 +9249,7 @@ async function loadReports(){
  renderFuelReportByVehicle(fuels,fuelSel?.value||'all');
 
  $('#reportsFinance').innerHTML=[
-  ['Entradas',money(f.income||revenue)],['Saídas',money(f.expense||cost)],['Saldo',money(f.balance||result)],['Lançamentos',Number(f.entries||0).toLocaleString('pt-BR')]
+  ['Entradas lançadas',money(f.income??0)],['Saídas lançadas',money(f.expense??0)],['Saldo lançado (parcial)',money(f.balance??0)],['Lançamentos',Number(f.entries||0).toLocaleString('pt-BR')]
  ].map(x=>'<div class="v2mini"><span class="muted">'+esc(x[0])+'</span><b>'+esc(x[1])+'</b></div>').join('');
 
  $('#reportsAttendance').innerHTML=[
@@ -9274,7 +9279,7 @@ function csvCell(value){
 }
 function exportAdminReportsCsv(){
  const r=adminReportCache;if(!r)return alert('Gere o relatório primeiro.');
- const lines=[['Relatório Comando 360',r.label],['Empresa',r.company],[],['Indicador','Valor'],['Aves',r.birds],['Apanhas',r.loadings],['Caminhões',r.trucks],['Faturamento',r.revenue],['Custos',r.cost],['Resultado',r.result],[],['Produção por equipe','Aves']];
+ const lines=[['Relatório Comando 360',r.label],['Empresa',r.company],['Escopo',reportResultNotice()],[],['Indicador','Valor'],['Aves',r.birds],['Apanhas',r.loadings],['Caminhões',r.trucks],['Faturamento',r.revenue],['Custos registrados',r.cost],['Resultado parcial',r.result],[],['Produção por equipe','Aves']];
  r.byTeam.forEach(x=>lines.push([x.name,x.birds]));
  lines.push([],['Produção por integrado','Aves']);r.byCustomer.forEach(x=>lines.push([x.name,x.birds]));
  lines.push([],['ABASTECIMENTOS POR CONDUÇÃO']);r.fuels.forEach(g=>{lines.push([],['Condução',g.name],['Placa',g.plate||''],['Abastecimentos',g.logs],['Litros',g.liters],['Custo total',g.cost],['Média R$/L',g.liters?g.cost/g.liters:0],['Data','Posto','KM','Litros','R$/L','Total']);g.entries.forEach(e=>{const l=poN(e.liters),c=poN(e.total_amount);lines.push([e.fueled_at?new Date(e.fueled_at).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo'}):'',e.station_name||'',e.odometer_km||'',l,l?c/l:0,c])})});
@@ -9289,7 +9294,8 @@ function printAdminReports(){
  const w=window.open('','_blank');if(!w)return alert('Permita pop-ups para gerar o PDF.');
  w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>Relatório '+esc(r.label)+'</title><style>@page{size:A4;margin:12mm}body{font-family:Arial,sans-serif;color:#111;font-size:11px}h1{margin:0;font-size:22px}h2{font-size:14px;margin:18px 0 6px;border-bottom:1px solid #222;padding-bottom:4px}.fuel-section{break-inside:avoid;margin:10px 0 18px}.fuel-section h3{margin:8px 0 4px;font-size:13px}.fuel-summary{font-size:10px;margin-bottom:5px}.head{border-bottom:2px solid #111;padding-bottom:10px}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin:12px 0}.k{border:1px solid #bbb;padding:8px}.k span{display:block;font-size:9px;color:#555}.k b{font-size:15px}table{width:100%;border-collapse:collapse;margin-top:5px}th,td{border-bottom:1px solid #ddd;padding:6px;text-align:left}th{background:#f4f4f4}.footer{margin-top:18px;border-top:1px solid #aaa;padding-top:6px;color:#555;font-size:9px}</style></head><body>'+
  '<div class="head"><h1>'+esc(r.company)+' — RELATÓRIO GERENCIAL</h1><div>'+esc(r.label)+' • Emitido '+new Date().toLocaleString('pt-BR')+'</div></div>'+
- '<div class="grid"><div class="k"><span>AVES</span><b>'+r.birds.toLocaleString('pt-BR')+'</b></div><div class="k"><span>APANHAS</span><b>'+r.loadings+'</b></div><div class="k"><span>CAMINHÕES</span><b>'+r.trucks+'</b></div><div class="k"><span>MÉDIA/CAMINHÃO</span><b>'+r.avgTruck.toLocaleString('pt-BR')+'</b></div><div class="k"><span>FATURAMENTO</span><b>'+money(r.revenue)+'</b></div><div class="k"><span>CUSTOS</span><b>'+money(r.cost)+'</b></div><div class="k"><span>RESULTADO</span><b>'+money(r.result)+'</b></div><div class="k"><span>HORAS PONTO</span><b>'+fmtMinutes(r.attendance.worked_minutes||0)+'</b></div></div>'+
+ '<p>'+esc(reportResultNotice())+'</p>'+
+ '<div class="grid"><div class="k"><span>AVES</span><b>'+r.birds.toLocaleString('pt-BR')+'</b></div><div class="k"><span>APANHAS</span><b>'+r.loadings+'</b></div><div class="k"><span>CAMINHÕES</span><b>'+r.trucks+'</b></div><div class="k"><span>MÉDIA/CAMINHÃO</span><b>'+r.avgTruck.toLocaleString('pt-BR')+'</b></div><div class="k"><span>FATURAMENTO</span><b>'+money(r.revenue)+'</b></div><div class="k"><span>CUSTOS REGISTRADOS</span><b>'+money(r.cost)+'</b></div><div class="k"><span>RESULTADO PARCIAL</span><b>'+money(r.result)+'</b></div><div class="k"><span>HORAS PONTO</span><b>'+fmtMinutes(r.attendance.worked_minutes||0)+'</b></div></div>'+
  '<h2>Produção por equipe</h2><table><tr><th>Equipe</th><th>Apanhas</th><th>Aves</th></tr>'+team+'</table>'+
  '<h2>Produção por integrado</h2><table><tr><th>Integrado</th><th>Apanhas</th><th>Aves</th></tr>'+cust+'</table>'+
  '<h2>Abastecimentos por condução</h2>'+fuel+

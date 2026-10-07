@@ -157,5 +157,19 @@ await test('A failed optional screen download preserves the current screen',()=>
  w.deviceMode=false;w.stopMovitTrackingPolling=()=>{};w.c360Toast=()=>{};w.c360LoadScreenFeatures=async()=>{throw Error('offline')};
  w.eval('let screenNavigationVersion=0;'+source('v2Go'));assert.equal(await w.v2Go('ia'),false);assert.ok(w.document.querySelector('#current'));
 }));
+const reportBody='<input id="reportsMonth" value="2026-10"><div id="reportsKpis"></div><div id="reportsByTeam"></div><div id="reportsByCustomer"></div><div id="reportsFinance"></div><div id="reportsAttendance"></div><div id="reportsSummary"></div>';
+function reportFunctions(w){
+ Object.assign(w,{monthBoundsBR:()=>({start:'2026-10-01',end:'2026-11-01'}),poN:v=>Number(v||0),money:v=>String(Number(v||0)),esc:v=>String(v),fmtMinutes:()=>'',biRows:()=>'',renderFuelReportByVehicle:()=>{},reportMonthLabel:()=> 'Outubro',cleanCompanyName:v=>v,companyProfile:{trade_name:'Fixture'}});
+ load(w,['reportResultNotice','loadReports']);
+}
+await test('Reports retain a valid zero ledger balance and identify the partial result',()=>withFixture(reportBody,async w=>{
+ reportFunctions(w);w.rest=async table=>table==='v2_report_monthly_financial'?[{income:100,expense:100,balance:0,entries:2}]:table==='v2_report_operations_monthly'?[{revenue:100,cost:0,result:100}]:[];
+ await w.loadReports();assert.equal(w.document.querySelector('#reportsFinance .v2mini:nth-child(3) b').textContent,'0');
+ assert.match(w.document.querySelector('#reportsKpis').textContent,/RESULTADO PARCIAL/);assert.match(w.document.querySelector('#reportsResultScope').textContent,/Não equivale a lucro líquido/);
+}));
+await test('A failed report query cannot render zeros or keep an export from another period',()=>withFixture(reportBody,async w=>{
+ reportFunctions(w);w.adminReportCache={month:'2026-09'};w.rest=async()=>{throw Error('Database unavailable')};w.dashSafe=async()=>[];
+ await assert.rejects(w.loadReports(),/Database unavailable/);assert.equal(w.adminReportCache,null);assert.equal(w.document.querySelector('#reportsKpis').textContent,'');
+}));
 console.log(`${passed+failed} audit regressions, ${passed} passed, ${failed} failed.`);
 if(failed)process.exitCode=1;

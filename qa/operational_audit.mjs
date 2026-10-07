@@ -45,7 +45,7 @@ Object.assign(context,{
  adminReportCache:{month:'2026-09',label:'Setembro',company:'São João',birds:100,revenue:21,cost:3,result:18,loadings:1,trucks:1,byTeam:[{name:'=1+1',birds:100}],byCustomer:[],fuels:[]},
  alert(message){throw Error(message)}
 });
-vm.runInContext(source('downloadText')+'\n'+source('exportAdminReportsCsv'),context);
+vm.runInContext(source('downloadText')+'\n'+source('reportResultNotice')+'\n'+source('exportAdminReportsCsv'),context);
 context.exportAdminReportsCsv();
 const csv=await downloadBlob.text();
 test('Real report export produces CSV download and releases URL',()=>{
