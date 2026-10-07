@@ -147,6 +147,15 @@ await test('Farm lookup uses the cached team catalogue offline',()=>withFixture(
  Object.defineProperty(w.navigator,'onLine',{value:false});w.offlineTeamKey=()=> 'fixture-company:team:poultry_context';w.offlineCacheGet=async()=>({farms});
  const answer=await farmApi(w).answer('Localização granja Marcia Cardoso Magalhaes');assert.match(answer,/2 cadastros/);
 }));
+await test('Natural farm requests use the company catalogue without falling back to the model',()=>withFixture('',async w=>{
+ w.rest=async()=>farms;const api=farmApi(w);
+ for(const question of ['Encontre a fazenda de Márcia Cardoso Magalhães e mostre o link do Maps','Me mostra no mapa a propriedade Márcia Cardoso Magalhães','Busque a fazenda Márcia Cardoso Magalhães']){
+  const answer=await api.answer(question);assert.match(answer,/2 cadastros/);assert.match(answer,/https:\/\/goo.gl\/maps\/example/);
+ }
+ assert.match(await api.answer('Encontre a fazenda Produtor Desconhecido'),/Não encontrei/);
+ assert.match(await api.answer('Procure a fazenda'),/Diga o nome/);
+ assert.equal(await api.answer('Qual o pagamento do produtor?'),null);
+}));
 await test('Latest navigation wins when an earlier module download finishes last',()=>withFixture('<div id="screenHost"></div>',async w=>{
  let release;w.deviceMode=false;w.v2ScreenStore={ia:w.document.createElement('section'),equipes:w.document.createElement('section')};w.v2ScreenStore.ia.id='ia';w.v2ScreenStore.equipes.id='equipes';
  for(const name of ['stopMovitTrackingPolling','c360SetModule','c360CloseMobileMenu','c360Busy','c360Toast','renderDeviceModeBar'])w[name]=()=>{};

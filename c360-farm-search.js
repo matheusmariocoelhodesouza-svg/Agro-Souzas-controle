@@ -1,11 +1,12 @@
 (()=>{
 'use strict';
-const VERSION='2026.10.07-farm-search1';
+const VERSION='2026.10.07-farm-search2';
 let cached={company:'',at:0,rows:[]};
 const normalize=value=>String(value??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
-const stop=new Set('a o as os da do das dos de d e em no na nos nas um uma me eu voce vc por favor pfv preciso quero ver veja mostre mostrar mande enviar envie retorna retornar local localizacao localizar localize fica ficam esta estao onde qual endereco link maps mapa rota caminho acesso banco nosso nossa granja granjas produtor integrado sitio chacara para pra como chegar ate consegue poderia pode encontrar buscar procure'.split(' '));
+const stop=new Set('a o as os da do das dos de d e em no na nos nas um uma me eu voce vc por favor pfv preciso quero ver veja mostre mostra mostrar mande enviar envie retorna retornar local localizacao localizar localize fica ficam esta estao onde qual endereco link links maps mapa mapas rota caminho acesso banco nosso nossa granja granjas fazenda fazendas propriedade propriedades produtor produtores integrado integrados sitio sitios chacara chacaras para pra como chegar ate consegue poderia pode encontre encontrar busque busca buscar procure procurar pesquise pesquisar ache achar'.split(' '));
+function hasFarmContext(question){return /\b(granja\w*|fazenda\w*|propriedade\w*|produtor\w*|integrado\w*|sitio\w*|chacara\w*)\b/.test(normalize(question))}
 function terms(question){return normalize(question).split(' ').filter(word=>word&&!stop.has(word))}
-function isLocationQuestion(question){return /\b(localizacao|localiz\w*|onde fica\w*|onde esta\w*|endereco|maps|rota|como chegar)\b/.test(normalize(question))}
+function isLocationQuestion(question){const text=normalize(question);return /\b(localizacao|localiz\w*|onde fica\w*|onde esta\w*|endereco|maps|mapa\w*|rota|como chegar)\b/.test(text)||(hasFarmContext(question)&&/\b(encontre|encontrar|busque|buscar|procure|procurar|pesquise|pesquisar|ache|achar)\b/.test(text))}
 function search(rows,question){
  const words=terms(question);if(!words.length)return[];
  return rows.filter(row=>!['inactive','archived'].includes(row.status)).map(row=>{
@@ -54,9 +55,9 @@ async function load(){
 async function answer(question){
  if(!isLocationQuestion(question))return null;
  const words=terms(question);
- if(!words.length)return /\bgranja\w*\b/.test(normalize(question))?'Diga o nome da granja ou do produtor para eu consultar a localização cadastrada.':null;
+ if(!words.length)return hasFarmContext(question)?'Diga o nome da granja ou do produtor para eu consultar a localização cadastrada.':null;
  const matches=search(await load(),question);
- if(!matches.length)return /\b(granja|produtor|integrado)\b/.test(normalize(question))?'Não encontrei esse nome entre as granjas ativas da empresa. Confira o nome do produtor ou da propriedade.':null;
+ if(!matches.length)return hasFarmContext(question)?'Não encontrei esse nome entre as granjas ativas da empresa. Confira o nome do produtor ou da propriedade.':null;
  const lines=matches.slice(0,10).map(row=>{
   const name=row.farm_name||row.producer_name||'Granja',url=mapsUrl(row);
   return name+(row.city?' · '+row.city:'')+'\n'+(url||'Localização ainda não cadastrada.');
