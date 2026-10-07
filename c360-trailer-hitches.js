@@ -35,7 +35,7 @@ function ensurePanel(){
  <div class="c360-hitch-list" id="c360HitchList"></div>
  <div class="c360-hitch-history" id="c360HitchHistory"></div>`;
  const meta=$('#fleetResultCount')?.parentElement;
- list.parentElement.insertBefore(panel,meta||list);
+ if(meta&&meta.parentElement===list.parentElement)meta.before(panel);else list.before(panel);
  bindPanel();return panel;
 }
 function bindPanel(){

@@ -35,7 +35,9 @@ function ensureFuelTypeField(){
  const row=station?.closest('.row');
  if(!row)return null;
  const box=document.createElement('div');box.id='fuelTypeBox';box.innerHTML='<label>Tipo de combustível</label><select id="fuelType" required><option value="">Selecione...</option><option value="s500">Diesel S500</option><option value="s10">Diesel S10</option></select><div class="muted" style="margin-top:5px">Obrigatório para separar consumo e custo nos relatórios.</div>';
- row.insertBefore(box,station.closest('div'));
+ let stationColumn=station.parentElement;
+ while(stationColumn&&stationColumn.parentElement!==row)stationColumn=stationColumn.parentElement;
+ if(stationColumn)stationColumn.before(box);else row.appendChild(box);
  sel=box.querySelector('#fuelType');
  sel.addEventListener('change',()=>{selectedFuelType=norm(sel.value)});
  return sel;
@@ -114,7 +116,7 @@ function wrapPersistence(){
   const wrapped=async function(...args){
    const table=args[0],method=String(args[2]||'GET').toUpperCase();
    if(table==='v2_fuel_logs'&&['POST','PATCH','PUT'].includes(method)&&args[3]&&typeof args[3]==='object'){
-    const body=args[3],current=typeFromEntry(body),t=selectedFuelType||norm(document.getElementById('fuelType')?.value)||current;
+    const body=args[3],current=typeFromEntry(body),t=current||selectedFuelType||norm(document.getElementById('fuelType')?.value);
     if(t)args[3]={...body,metadata:{...(body.metadata||{}),fuel_type:t,fuel_type_label:LABELS[t]}};
    }
    return originalRest.apply(this,args);
@@ -123,7 +125,7 @@ function wrapPersistence(){
  const originalOffline=window.offlineQueueAdd;
  if(typeof originalOffline==='function'&&!originalOffline.__c360FuelTypeWrapped){
   const wrapped=async function(item){
-   if(item?.type==='fuel'&&item.payload){const t=selectedFuelType||norm(document.getElementById('fuelType')?.value)||typeFromEntry(item.payload);if(t)item={...item,payload:{...item.payload,metadata:{...(item.payload.metadata||{}),fuel_type:t,fuel_type_label:LABELS[t]}}}}
+   if(item?.type==='fuel'&&item.payload){const t=typeFromEntry(item.payload)||selectedFuelType||norm(document.getElementById('fuelType')?.value);if(t)item={...item,payload:{...item.payload,metadata:{...(item.payload.metadata||{}),fuel_type:t,fuel_type_label:LABELS[t]}}}}
    return originalOffline.call(this,item);
   };wrapped.__c360FuelTypeWrapped=true;window.offlineQueueAdd=wrapped;
  }

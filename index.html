@@ -10,7 +10,7 @@
 <meta http-equiv="Expires" content="0"/>
 <title>Comando 360 • v7.02</title>
 <link rel="manifest" href="./comando360.webmanifest"/>
-<link rel="apple-touch-icon" sizes="192x192" href="/comando360-icon-192-v7.png"/>
+<link rel="apple-touch-icon" sizes="192x192" href="./comando360-icon-192-v7.png"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
 <meta name="application-name" content="Comando 360"/>
@@ -2942,7 +2942,7 @@ async function fetchTimeout(url,opts={},ms=12000){
  catch(e){if(e&&e.name==='AbortError')throw new Error('A conexão demorou demais. Tente novamente.');throw e}
  finally{clearTimeout(timer)}
 }
-async function parseResponse(r){const text=await r.text();let data=null;try{data=text?JSON.parse(text):null}catch{data=text}if(!r.ok){const msg=(data&&data.msg)||(data&&data.message)||(data&&data.error_description)||(data&&data.error)||('HTTP '+r.status);throw new Error(msg)}return data}
+async function parseResponse(r){const text=await r.text();let data=null;try{data=text?JSON.parse(text):null}catch{data=text}if(!r.ok){const msg=(data&&data.msg)||(data&&data.message)||(data&&data.error_description)||(data&&data.error)||('HTTP '+r.status);const error=new Error(msg);error.status=r.status;error.code=data?.code||data?.error_code||'';throw error}return data}
 let refreshTokenPromise=null;
 function jwtExpSeconds(token){
  try{
@@ -3006,14 +3006,14 @@ async function ensureFreshAccessToken(minSeconds=90){
  if(exp&&exp-Math.floor(Date.now()/1000)<=minSeconds)return await refreshToken();
  return s.access_token;
 }
-async function authFetch(path,opts={},retry=true){
+async function authFetch(path,opts={},retry=true,timeoutMs=12000){
  let token=await ensureFreshAccessToken();
  const headers={apikey:KEY,Authorization:'Bearer '+token,...(opts.headers||{})};
- let r=await fetchTimeout(API_URL+path,{...opts,headers},12000);
+ let r=await fetchTimeout(API_URL+path,{...opts,headers},timeoutMs);
  if(r.status===401&&retry){
   token=await refreshToken();
   headers.Authorization='Bearer '+token;
-  r=await fetchTimeout(API_URL+path,{...opts,headers},12000);
+  r=await fetchTimeout(API_URL+path,{...opts,headers},timeoutMs);
  }
  return r;
 }
@@ -3976,6 +3976,18 @@ async function rest(table,query='',method='GET',body=null){
 async function restInsert(table,payload){
   return await rest(table,'','POST',payload);
 }
+async function restInsertOnce(table,field,eventId,payload){
+ const query='select=*&company_id=eq.'+encodeURIComponent(payload.company_id)+'&'+field+'=eq.'+encodeURIComponent(eventId)+'&limit=1';
+ const existing=await rest(table,query);
+ if(existing?.length)return existing;
+ try{return await rest(table,'','POST',{...payload,[field]:eventId})}
+ catch(error){
+  // A timeout can arrive after the server committed. Read the same unique ID
+  // before offering a retry, without creating a second operational record.
+  try{const committed=await rest(table,query);if(committed?.length)return committed}catch(_){}
+  throw error;
+ }
+}
 async function enterApp(authUser){
   const user=authUser||await getUser();
   if(!user||!user.id)throw new Error('Não foi possível identificar o usuário.');
@@ -4473,19 +4485,19 @@ function fuelPlausibleKmL(v){
  return Number.isFinite(n)&&n>=0.5&&n<=20;
 }
 function fuelEconomyEstimate(vehicleId,logs=[]){
- const rows=(logs||[]).filter(x=>x.vehicle_id===vehicleId&&Number(x.odometer_km)>0&&Number(x.liters)>0)
+ const rows=(logs||[]).filter(x=>x.vehicle_id===vehicleId&&Number(x.liters)>0)
   .sort((a,b)=>new Date(a.fueled_at)-new Date(b.fueled_at));
  if(rows.length<2)return null;
 
  const fullIndexes=[];
- rows.forEach((x,i)=>{if(fuelLogIsFull(x))fullIndexes.push(i)});
+ rows.forEach((x,i)=>{if(fuelLogIsFull(x)&&Number(x.odometer_km)>0)fullIndexes.push(i)});
  let totalKm=0,totalLiters=0,cycles=0;
  for(let k=1;k<fullIndexes.length;k++){
   const a=fullIndexes[k-1],b=fullIndexes[k];
   const km=Number(rows[b].odometer_km)-Number(rows[a].odometer_km);
   const liters=rows.slice(a+1,b+1).reduce((s,x)=>s+Number(x.liters||0),0);
   const rate=liters>0?km/liters:0;
-  if(km>0&&liters>0&&fuelPlausibleKmL(rate)){
+  if(km>0&&liters>0&&fuelPlausibleKmL(rate)&&!fuelInterval({...rows[b],liters},rows[a]).review){
    totalKm+=km;totalLiters+=liters;cycles++;
   }
  }
@@ -4496,11 +4508,15 @@ function fuelEconomyEstimate(vehicleId,logs=[]){
  // Enquanto ainda não há dois "tanque cheio", usa uma mediana aproximada
  // dos abastecimentos com KM para começar a estimar sem inventar um consumo fixo.
  const rates=[];
- for(let i=1;i<rows.length;i++){
-  const km=Number(rows[i].odometer_km)-Number(rows[i-1].odometer_km);
-  const liters=Number(rows[i].liters||0);
-  const rate=liters>0?km/liters:0;
-  if(km>0&&fuelPlausibleKmL(rate))rates.push(rate);
+ let previousIndex=-1;
+ for(let i=0;i<rows.length;i++){
+  if(!(Number(rows[i].odometer_km)>0))continue;
+  if(previousIndex>=0){
+   const liters=rows.slice(previousIndex+1,i+1).reduce((s,x)=>s+Number(x.liters||0),0);
+   const interval=fuelInterval({...rows[i],liters},rows[previousIndex]);
+   if(interval.rate>0)rates.push(interval.rate);
+  }
+  previousIndex=i;
  }
  if(!rates.length)return null;
  const recent=rates.slice(-8).sort((a,b)=>a-b);
@@ -5699,7 +5715,15 @@ async function findExistingOpenPoultryOperation(teamId,farmId){
   return null;
  }
 }
+let poultrySavePending=false;
 async function savePoultryOperation(){
+ if(poultrySavePending)return;
+ poultrySavePending=true;
+ const button=$('#savePoultryOp');if(button)button.disabled=true;
+ try{return await savePoultryOperationImpl()}
+ finally{poultrySavePending=false;if(button)button.disabled=false}
+}
+async function savePoultryOperationImpl(){
  const t=poultryTeams.find(x=>x.id===$('#poTeam').value)||(deviceMode?deviceTeam:null);
  if(!t||!$('#poStart').value)return $('#poMsg').textContent='Selecione a equipe e informe o início.';
 
@@ -5754,7 +5778,8 @@ async function savePoultryOperation(){
   // No celular de campo, cria operação + carregamento juntos no servidor.
   // Assim não sobra apanha sem carregamento vinculado quando uma gravação falha.
   if(deviceMode){
-   const syncId=makeOfflineId('online-apanha');
+   const form=$('#poultryForm');
+   const syncId=form.dataset.saveEventId||(form.dataset.saveEventId=makeOfflineId('online-apanha'));
    const res=await rpc('v2_device_sync_poultry_operation',{
     p_company_id:companyId,
     p_offline_event_id:syncId,
@@ -5791,7 +5816,9 @@ async function savePoultryOperation(){
   const outlet=farm.metadata?.outlet_type||$('#poOutletType').value.trim()||null;
   const energy=farm.metadata?.energy_type||$('#poEnergyType').value.trim()||null;
   const location=[farm.city||farm.address?.city||'',farm.farm_name||farm.producer_name||''].filter(Boolean).join(' • ');
-  const opRows=await rest('v2_operations','','POST',{
+  const form=$('#poultryForm');
+  const syncId=form.dataset.saveEventId||(form.dataset.saveEventId=makeOfflineId('admin-apanha'));
+  const opRows=await restInsertOnce('v2_operations','offline_event_id',syncId,{
     company_id:companyId,operation_type:'poultry_catching',title:'Apanha - '+farm.producer_name,
     customer_name:farm.producer_name,location_name:location,team_id:t.id,
     scheduled_start:new Date($('#poStart').value).toISOString(),
@@ -5802,7 +5829,8 @@ async function savePoultryOperation(){
   });
   const op=opRows?.[0];
   if(!op)throw new Error('Apanha não foi criada.');
-  const loadingRows=await rest('v2_poultry_loadings','','POST',{
+  const existingLoading=await rest('v2_poultry_loadings','select=*&company_id=eq.'+encodeURIComponent(companyId)+'&operation_id=eq.'+encodeURIComponent(op.id)+'&limit=1');
+  const loadingRows=existingLoading?.length?existingLoading:await rest('v2_poultry_loadings','','POST',{
     company_id:companyId,operation_id:op.id,integrator_id:farm.integrator_id,farm_id:farm.id,loading_date:$('#poStart').value.slice(0,10),
     catching_method:'back',planned_birds:planned||null,reported_birds:0,planned_trucks:null,reported_trucks:0,status:'planned',team_id:t.id,
     metadata:{source:'field_entry'}
@@ -6146,6 +6174,7 @@ function scheduleAutoSaveTruckDriverPair(){
  poultryDriverAutoSaveTimer=setTimeout(autoSaveTruckDriverPair,500);
 }
 function openNextTruckForm({operationId,loadingId,farmId,name,sequence}){
+ delete $('#poTruckCard').dataset.saveEventId;
  resetPoTruckAutoSheet();
  $('#poTruckOperationId').value=operationId||'';
  $('#poTruckLoadingId').value=loadingId||'';
@@ -6240,7 +6269,9 @@ async function saveTruckLoadImpl(closeAfter=false){
  try{
   $('#poTruckMsg').className='muted';$('#poTruckMsg').textContent=sheetFile?'Enviando foto da ficha e salvando caminhão...':'Salvando caminhão...';
   const sheetPath=poTruckAutoSheetPath||(poTruckAutoSheetUpload?await poTruckAutoSheetUpload:null)||(sheetFile?await uploadPoultrySheet(sheetFile,makeOfflineId('sheet')):null);
-  const rows=await rest('v2_poultry_truck_loads','','POST',{
+  const card=$('#poTruckCard');
+  const eventId=card.dataset.saveEventId||(card.dataset.saveEventId=makeOfflineId('online-truck'));
+  const rows=await restInsertOnce('v2_poultry_truck_loads','external_reference',eventId,{
    company_id:companyId,loading_id:loadingId,truck_sequence:sequence,truck_plate:plate,driver_name:driver,birds,
    started_at:payload.started_at,completed_at:payload.completed_at,is_cata:payload.is_cata,
    metadata:{
@@ -6306,6 +6337,8 @@ async function completePoultryOperation(operationId,loadingId){
  }catch(e){alert(e.message)}
 }
 async function openNewPoultryOperation(){
+ if(poultrySavePending)return;
+ delete $('#poultryForm').dataset.saveEventId;
  $('#poultryForm').classList.remove('hidden');
  $('#poStart').value=poLocalInputDate();
  $('#poEnd').value='';
@@ -7275,13 +7308,14 @@ async function uploadFuelReceipt(file,vehicleId){
  const s=session();if(!s?.access_token)throw new Error('Sessão expirada.');
  const ext=file.type==='image/png'?'png':file.type==='image/webp'?'webp':'jpg';
  const path=companyId+'/'+vehicleId+'/'+Date.now()+'-abastecimento.'+ext;
- const r=await fetch(API_URL+'/storage/v1/object/'+FUEL_RECEIPT_BUCKET+'/'+path,{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+s.access_token,'Content-Type':file.type||'image/jpeg','x-upsert':'false'},body:file});
+ const r=await authFetch('/storage/v1/object/'+FUEL_RECEIPT_BUCKET+'/'+path,{method:'POST',headers:{'Content-Type':file.type||'image/jpeg','x-upsert':'false'},body:file},true,45000);
  await parseResponse(r);return path;
 }
 async function openFuelReceipt(path){
  if(!path)return;
  try{
   const r=await authFetch('/storage/v1/object/'+FUEL_RECEIPT_BUCKET+'/'+path);
+  if(!r.ok)await parseResponse(r);
   const b=await r.blob(),u=URL.createObjectURL(b);
   window.open(u,'_blank','noopener');
   setTimeout(()=>URL.revokeObjectURL(u),60000);
@@ -7487,8 +7521,8 @@ async function loadFuel(){
  if(ks)ks.innerHTML=opts;
  const fuelHint=document.getElementById('fuelVehicleHint');
  if(fuelHint&&deviceMode)fuelHint.textContent='A condução da equipe vem selecionada primeiro, mas você pode escolher qualquer outra condução ativa da empresa.';
- const month=new Date().toISOString().slice(0,7);
- const ml=fuelCache.filter(x=>String(x.fueled_at||'').slice(0,7)===month);
+ const month=localDateBR().slice(0,7);
+ const ml=fuelCache.filter(x=>saoPauloDateKey(x.fueled_at).slice(0,7)===month);
  const liters=ml.reduce((a,x)=>a+Number(x.liters||0),0),cost=ml.reduce((a,x)=>a+Number(x.total_amount||0),0);
  let kmDriven=0;
  fuelVehicles.forEach(v=>{const a=fuelCache.filter(x=>x.vehicle_id===v.id).sort((x,y)=>Date.parse(x.fueled_at)-Date.parse(y.fueled_at));for(let i=1;i<a.length;i++)kmDriven+=fuelInterval(a[i],a[i-1]).km});
@@ -7560,7 +7594,8 @@ async function saveFuel(){
   if(btn)btn.disabled=true;
   if(editId&&deviceMode&&!c360NetOnline())throw new Error('Para editar um abastecimento já sincronizado, conecte este celular à internet.');
   const fueledAt=new Date(document.getElementById('fuelDate').value||Date.now()).toISOString();
-  const offlineId=existing?.offline_event_id||makeOfflineId('fuel');
+  const card=document.getElementById('fuelEditCard');
+  const offlineId=existing?.offline_event_id||card.dataset.saveEventId||(card.dataset.saveEventId=makeOfflineId('fuel'));
   const metadata={
     ...(existing?.metadata||{}),
     notes:document.getElementById('fuelNotes').value.trim()||null,
@@ -7572,7 +7607,8 @@ async function saveFuel(){
     device_access_id:deviceMode?(deviceAccess?.id||null):(existing?.metadata?.device_access_id||null),
     device_name:deviceMode?(deviceAccess?.device_name||null):(existing?.metadata?.device_name||null),
     receipt_ocr:window.__fuelReceiptOcr||existing?.metadata?.receipt_ocr||null,
-    tank_filled_full:!!document.getElementById('fuelTankFull')?.checked
+    tank_filled_full:!!document.getElementById('fuelTankFull')?.checked,
+    fuel_type:document.getElementById('fuelType')?.value||existing?.metadata?.fuel_type||null
   };
   const basePayload={
    company_id:companyId,vehicle_id,fueled_at:fueledAt,odometer_km:km||null,liters,total_amount:total,
@@ -7600,7 +7636,7 @@ async function saveFuel(){
     });
     m.className='okmsg';m.textContent='Abastecimento atualizado ✓';
    }else{
-    await rest('v2_fuel_logs','', 'POST',basePayload);
+    await restInsertOnce('v2_fuel_logs','offline_event_id',offlineId,basePayload);
     m.className='okmsg';m.textContent='Abastecimento salvo ✓';
    }
   }
@@ -9123,6 +9159,7 @@ async function saveFinEntry(){const m=document.getElementById('finMsg'),amount=N
 async function cancelFinEntry(id){if(!id||!confirm('Cancelar este lançamento financeiro?'))return;try{await rest('v2_financial_entries','id=eq.'+id,'PATCH',{status:'cancelled'});await loadFinance()}catch(e){alert(e.message)}}
 
 let adminReportCache=null;
+function reportResultNotice(){return 'Resultado parcial, baseado nos valores registrados. Combustível, manutenção e estoque podem ainda não estar conciliados no Financeiro. Não equivale a lucro líquido.'}
 function biRows(entries,valueFn,labelFn){
  const arr=[...(entries||[])],max=Math.max(1,...arr.map(valueFn));
  return arr.length?arr.map(x=>{
@@ -9154,32 +9191,36 @@ function renderFuelReportByVehicle(fuels=[],filter='all'){
  }).join('');
 }
 async function loadReports(){
+ adminReportCache=null;
  const month=$('#reportsMonth')?.value||new Date().toISOString().slice(0,7);
  if($('#reportsMonth')&&!$('#reportsMonth').value)$('#reportsMonth').value=month;
  const bounds=monthBoundsBR(month),start=month+'-01';
  const [finView,opsView,poultryView,attView,ops,teams,vehicles,fuel,trucks]=await Promise.all([
-  dashSafe('v2_report_monthly_financial','select=*&company_id=eq.'+companyId+'&reference_month=eq.'+start),
-  dashSafe('v2_report_operations_monthly','select=*&company_id=eq.'+companyId+'&reference_month=eq.'+start),
-  dashSafe('v2_report_poultry_monthly','select=*&company_id=eq.'+companyId+'&reference_month=eq.'+start),
-  dashSafe('v2_report_attendance_monthly','select=*&company_id=eq.'+companyId+'&reference_month=eq.'+start),
-  dashSafe('v2_operations','select=id,team_id,customer_name,title,status,scheduled_start,actual_birds,planned_birds,actual_revenue,actual_cost&company_id=eq.'+companyId+'&operation_type=in.(poultry_catching,poultry_loading)&scheduled_start=gte.'+encodeURIComponent(bounds.start)+'&scheduled_start=lt.'+encodeURIComponent(bounds.end)),
-  dashSafe('v2_teams','select=id,name,status&company_id=eq.'+companyId),
-  dashSafe('v2_vehicles','select=id,description,plate,model&company_id=eq.'+companyId),
-  dashSafe('v2_fuel_logs','select=id,vehicle_id,fueled_at,odometer_km,liters,total_amount,station_name,metadata&company_id=eq.'+companyId+'&fueled_at=gte.'+encodeURIComponent(bounds.start)+'&fueled_at=lt.'+encodeURIComponent(bounds.end)+'&order=fueled_at.asc'),
-  dashSafe('v2_poultry_truck_loads','select=id,birds,is_cata,created_at&company_id=eq.'+companyId+'&created_at=gte.'+encodeURIComponent(bounds.start)+'&created_at=lt.'+encodeURIComponent(bounds.end))
+  rest('v2_report_monthly_financial','select=*&company_id=eq.'+companyId+'&reference_month=eq.'+start),
+  rest('v2_report_operations_monthly','select=*&company_id=eq.'+companyId+'&reference_month=eq.'+start),
+  rest('v2_report_poultry_monthly','select=*&company_id=eq.'+companyId+'&reference_month=eq.'+start),
+  rest('v2_report_attendance_monthly','select=*&company_id=eq.'+companyId+'&reference_month=eq.'+start),
+  rest('v2_operations','select=id,team_id,customer_name,title,status,scheduled_start,actual_birds,planned_birds,actual_revenue,actual_cost&company_id=eq.'+companyId+'&operation_type=in.(poultry_catching,poultry_loading)&scheduled_start=gte.'+encodeURIComponent(bounds.start)+'&scheduled_start=lt.'+encodeURIComponent(bounds.end)),
+  rest('v2_teams','select=id,name,status&company_id=eq.'+companyId),
+  rest('v2_vehicles','select=id,description,plate,model&company_id=eq.'+companyId),
+  rest('v2_fuel_logs','select=id,vehicle_id,fueled_at,odometer_km,liters,total_amount,station_name,metadata&company_id=eq.'+companyId+'&fueled_at=gte.'+encodeURIComponent(bounds.start)+'&fueled_at=lt.'+encodeURIComponent(bounds.end)+'&order=fueled_at.asc'),
+  rest('v2_poultry_truck_loads','select=id,birds,is_cata,created_at&company_id=eq.'+companyId+'&created_at=gte.'+encodeURIComponent(bounds.start)+'&created_at=lt.'+encodeURIComponent(bounds.end))
  ]);
  const f=finView?.[0]||{},o=opsView?.[0]||{},p=poultryView?.[0]||{},a=attView?.[0]||{};
  const birds=ops.reduce((s,x)=>s+poN(x.actual_birds||x.planned_birds),0)||poN(p.birds);
- const revenue=poN(o.revenue||f.income),cost=poN(o.cost||f.expense),result=poN(o.result||(revenue-cost));
+ const revenue=poN(o.revenue??f.income),cost=poN(o.cost??f.expense),result=poN(o.result??(revenue-cost));
  const truckCount=poN(p.trucks)||trucks.length;
  const loadings=poN(p.loadings)||ops.length;
  const avgTruck=truckCount?Math.round(birds/truckCount):0;
 
  $('#reportsKpis').innerHTML=[
-  ['FATURAMENTO',money(revenue),'💰'],['CUSTOS',money(cost),'↘'],['RESULTADO',money(result),'▣'],
+  ['FATURAMENTO',money(revenue),'💰'],['CUSTOS REGISTRADOS',money(cost),'↘'],['RESULTADO PARCIAL',money(result),'▣'],
   ['AVES',birds.toLocaleString('pt-BR'),'🐔'],['APANHAS',loadings.toLocaleString('pt-BR'),'📋'],['CAMINHÕES',truckCount.toLocaleString('pt-BR'),'🚚'],
   ['MÉDIA / CAMINHÃO',avgTruck.toLocaleString('pt-BR'),'📦'],['HORAS DE PONTO',fmtMinutes(a.worked_minutes||0),'⏱']
  ].map(x=>'<div class="v2kpi"><div class="t">'+esc(x[0])+'</div><div class="v">'+esc(x[1])+'</div><div class="v2ico">'+x[2]+'</div></div>').join('');
+ let scopeNotice=$('#reportsResultScope');
+ if(!scopeNotice){scopeNotice=document.createElement('p');scopeNotice.id='reportsResultScope';scopeNotice.className='muted';$('#reportsKpis').after(scopeNotice)}
+ scopeNotice.textContent=reportResultNotice();
 
  const teamMap={};
  ops.forEach(x=>{const n=teams.find(t=>t.id===x.team_id)?.name||'Sem equipe';if(!teamMap[n])teamMap[n]={name:n,birds:0,ops:0};teamMap[n].birds+=poN(x.actual_birds||x.planned_birds);teamMap[n].ops++});
@@ -9208,7 +9249,7 @@ async function loadReports(){
  renderFuelReportByVehicle(fuels,fuelSel?.value||'all');
 
  $('#reportsFinance').innerHTML=[
-  ['Entradas',money(f.income||revenue)],['Saídas',money(f.expense||cost)],['Saldo',money(f.balance||result)],['Lançamentos',Number(f.entries||0).toLocaleString('pt-BR')]
+  ['Entradas lançadas',money(f.income??0)],['Saídas lançadas',money(f.expense??0)],['Saldo lançado (parcial)',money(f.balance??0)],['Lançamentos',Number(f.entries||0).toLocaleString('pt-BR')]
  ].map(x=>'<div class="v2mini"><span class="muted">'+esc(x[0])+'</span><b>'+esc(x[1])+'</b></div>').join('');
 
  $('#reportsAttendance').innerHTML=[
@@ -9238,7 +9279,7 @@ function csvCell(value){
 }
 function exportAdminReportsCsv(){
  const r=adminReportCache;if(!r)return alert('Gere o relatório primeiro.');
- const lines=[['Relatório Comando 360',r.label],['Empresa',r.company],[],['Indicador','Valor'],['Aves',r.birds],['Apanhas',r.loadings],['Caminhões',r.trucks],['Faturamento',r.revenue],['Custos',r.cost],['Resultado',r.result],[],['Produção por equipe','Aves']];
+ const lines=[['Relatório Comando 360',r.label],['Empresa',r.company],['Escopo',reportResultNotice()],[],['Indicador','Valor'],['Aves',r.birds],['Apanhas',r.loadings],['Caminhões',r.trucks],['Faturamento',r.revenue],['Custos registrados',r.cost],['Resultado parcial',r.result],[],['Produção por equipe','Aves']];
  r.byTeam.forEach(x=>lines.push([x.name,x.birds]));
  lines.push([],['Produção por integrado','Aves']);r.byCustomer.forEach(x=>lines.push([x.name,x.birds]));
  lines.push([],['ABASTECIMENTOS POR CONDUÇÃO']);r.fuels.forEach(g=>{lines.push([],['Condução',g.name],['Placa',g.plate||''],['Abastecimentos',g.logs],['Litros',g.liters],['Custo total',g.cost],['Média R$/L',g.liters?g.cost/g.liters:0],['Data','Posto','KM','Litros','R$/L','Total']);g.entries.forEach(e=>{const l=poN(e.liters),c=poN(e.total_amount);lines.push([e.fueled_at?new Date(e.fueled_at).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo'}):'',e.station_name||'',e.odometer_km||'',l,l?c/l:0,c])})});
@@ -9253,7 +9294,8 @@ function printAdminReports(){
  const w=window.open('','_blank');if(!w)return alert('Permita pop-ups para gerar o PDF.');
  w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>Relatório '+esc(r.label)+'</title><style>@page{size:A4;margin:12mm}body{font-family:Arial,sans-serif;color:#111;font-size:11px}h1{margin:0;font-size:22px}h2{font-size:14px;margin:18px 0 6px;border-bottom:1px solid #222;padding-bottom:4px}.fuel-section{break-inside:avoid;margin:10px 0 18px}.fuel-section h3{margin:8px 0 4px;font-size:13px}.fuel-summary{font-size:10px;margin-bottom:5px}.head{border-bottom:2px solid #111;padding-bottom:10px}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin:12px 0}.k{border:1px solid #bbb;padding:8px}.k span{display:block;font-size:9px;color:#555}.k b{font-size:15px}table{width:100%;border-collapse:collapse;margin-top:5px}th,td{border-bottom:1px solid #ddd;padding:6px;text-align:left}th{background:#f4f4f4}.footer{margin-top:18px;border-top:1px solid #aaa;padding-top:6px;color:#555;font-size:9px}</style></head><body>'+
  '<div class="head"><h1>'+esc(r.company)+' — RELATÓRIO GERENCIAL</h1><div>'+esc(r.label)+' • Emitido '+new Date().toLocaleString('pt-BR')+'</div></div>'+
- '<div class="grid"><div class="k"><span>AVES</span><b>'+r.birds.toLocaleString('pt-BR')+'</b></div><div class="k"><span>APANHAS</span><b>'+r.loadings+'</b></div><div class="k"><span>CAMINHÕES</span><b>'+r.trucks+'</b></div><div class="k"><span>MÉDIA/CAMINHÃO</span><b>'+r.avgTruck.toLocaleString('pt-BR')+'</b></div><div class="k"><span>FATURAMENTO</span><b>'+money(r.revenue)+'</b></div><div class="k"><span>CUSTOS</span><b>'+money(r.cost)+'</b></div><div class="k"><span>RESULTADO</span><b>'+money(r.result)+'</b></div><div class="k"><span>HORAS PONTO</span><b>'+fmtMinutes(r.attendance.worked_minutes||0)+'</b></div></div>'+
+ '<p>'+esc(reportResultNotice())+'</p>'+
+ '<div class="grid"><div class="k"><span>AVES</span><b>'+r.birds.toLocaleString('pt-BR')+'</b></div><div class="k"><span>APANHAS</span><b>'+r.loadings+'</b></div><div class="k"><span>CAMINHÕES</span><b>'+r.trucks+'</b></div><div class="k"><span>MÉDIA/CAMINHÃO</span><b>'+r.avgTruck.toLocaleString('pt-BR')+'</b></div><div class="k"><span>FATURAMENTO</span><b>'+money(r.revenue)+'</b></div><div class="k"><span>CUSTOS REGISTRADOS</span><b>'+money(r.cost)+'</b></div><div class="k"><span>RESULTADO PARCIAL</span><b>'+money(r.result)+'</b></div><div class="k"><span>HORAS PONTO</span><b>'+fmtMinutes(r.attendance.worked_minutes||0)+'</b></div></div>'+
  '<h2>Produção por equipe</h2><table><tr><th>Equipe</th><th>Apanhas</th><th>Aves</th></tr>'+team+'</table>'+
  '<h2>Produção por integrado</h2><table><tr><th>Integrado</th><th>Apanhas</th><th>Aves</th></tr>'+cust+'</table>'+
  '<h2>Abastecimentos por condução</h2>'+fuel+
@@ -9316,12 +9358,16 @@ function c360ToggleMobileMenu(){
  document.body.classList.toggle('mobile-menu-open',open);
  const b=document.getElementById('mobileMenuBtn');if(b)b.setAttribute('aria-expanded',open?'true':'false');
 }
+let screenNavigationVersion=0;
 async function v2Go(tab){
+ const navigationVersion=++screenNavigationVersion;
  if(tab!=='rastreamento')stopMovitTrackingPolling();
  if(tab==='documentosfrota')tab='frota';
  if(deviceMode&&!['equipehome','operacoes','ponto','combustivel','equipereport'].includes(tab))tab='equipehome';
  // Dynamic screens must be registered before the router looks them up.
- if(typeof window.c360LoadScreenFeatures==='function')await window.c360LoadScreenFeatures(tab);
+ try{if(typeof window.c360LoadScreenFeatures==='function')await window.c360LoadScreenFeatures(tab)}
+ catch(e){if(navigationVersion===screenNavigationVersion)c360Toast('Não foi possível abrir a tela',e?.message||'Tente novamente.','error');return false}
+ if(navigationVersion!==screenNavigationVersion)return false;
  c360SetModule(tab);
  c360CloseMobileMenu();
  c360Busy(true);
@@ -9368,7 +9414,7 @@ async function v2Go(tab){
    console.warn('Falha ao carregar tela',tab,e);
    c360Toast('Não foi possível carregar '+(C360_MODULES[tab]?.[0]||'a tela'),e?.message||'Tente novamente.','error',5000);
  }finally{
-   c360Busy(false);
+   if(navigationVersion===screenNavigationVersion)c360Busy(false);
  }
 }
 document.addEventListener('click',function(e){
@@ -9402,6 +9448,8 @@ document.addEventListener('change',function(e){
 document.addEventListener('click',async function(e){
   if(e.target.closest('#newFuelBtn')){
    e.preventDefault();
+   if(document.getElementById('saveFuelBtn')?.disabled)return;
+   delete document.getElementById('fuelEditCard').dataset.saveEventId;
    document.getElementById('fuelEditId').value='';
    document.getElementById('fuelEditTitle').textContent='Novo abastecimento';
    document.getElementById('saveFuelBtn').textContent='SALVAR ABASTECIMENTO';
@@ -9613,7 +9661,10 @@ function addChat(t,r){const d=document.createElement('div');d.className='msg '+r
 $('#sendAI').addEventListener('click',async()=>{const q=$('#question').value.trim();if(!q)return;addChat(q,'user');$('#question').value='';try{const s=session();const body={company_id:companyId,question:q};if(conversationId)body.conversation_id=conversationId;const r=await fetch(API_URL+'/functions/v1/controla-ai',{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+s.access_token,'Content-Type':'application/json'},body:JSON.stringify(body)});const data=await parseResponse(r);if(data?.conversation_id)conversationId=data.conversation_id;addChat(data?.answer||data?.message||'Sem resposta.','ai')}catch(e){addChat(e.message||'Falha ao consultar a IA.','ai')}});
 $('#question').addEventListener('keydown',e=>{if(e.key==='Enter')$('#sendAI').click()});
 window.addEventListener('error',e=>{if(!$('#app').classList.contains('hidden'))return;setMsg('Erro no navegador: '+e.message,'error');debug('Envie um print desta mensagem.')});
-(async()=>{try{
+function invalidSavedSession(error){
+ return error?.status===401||/^(?:refresh_token_not_found|invalid_grant)$/.test(error?.code||'')||/invalid refresh token|refresh token (?:has expired|not found)|invalid jwt/i.test(error?.message||'');
+}
+async function resumeSavedSession(){try{
  const fieldCode=new URLSearchParams(location.search).get('campo');
  if(fieldCode){
    clearSession();
@@ -9668,10 +9719,20 @@ window.addEventListener('error',e=>{if(!$('#app').classList.contains('hidden'))r
    setMsg('Sessão encontrada. Entrando...');await enterApp(u);
  }
 }catch(e){
- clearSession();document.body.classList.remove('app-ready','device-mode');
+ if(invalidSavedSession(e))clearSession();
+ document.body.classList.remove('app-ready','device-mode');
  $('#app').classList.add('hidden');$('#login').classList.remove('hidden');
- const dm=$('#deviceMsg');if(dm){dm.className='muted';dm.textContent='Configure este celular ou use o acesso do administrador.'}
-}})();
+ const hasSession=!!session()?.access_token;
+ const text=hasSession?'Não foi possível abrir agora. Sua sessão foi preservada. Tente novamente quando a conexão voltar.':(e?.message||'Entre novamente para continuar.');
+ const dm=$('#deviceMsg');if(dm){dm.className='error';dm.textContent=text}
+ setMsg(text,'error');
+ if(hasSession&&!$('#sessionRetryBtn')){
+  const button=document.createElement('button');button.id='sessionRetryBtn';button.type='button';button.className='btn primary';button.textContent='TENTAR ENTRAR NOVAMENTE';
+  button.addEventListener('click',async()=>{if(button.disabled)return;button.disabled=true;try{await resumeSavedSession()}finally{button.disabled=false}});
+  $('#login').appendChild(button);
+ }
+}}
+resumeSavedSession();
 
 if(document.getElementById('takeEmployeePhoto'))document.getElementById('takeEmployeePhoto').addEventListener('click',()=>{const i=$('#employeePhotoCamera');i.value='';i.click()});
 if(document.getElementById('chooseEmployeePhoto'))document.getElementById('chooseEmployeePhoto').addEventListener('click',()=>{const i=$('#employeePhotoGallery');i.value='';i.click()});

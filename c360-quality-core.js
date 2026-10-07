@@ -3,7 +3,7 @@
 
 const QUALITY_VERSION='2026.09.12-q2';
 const FIN_PAGE_SIZE=100;
-const runtimeState={financePage:0,financeHasNext:false,financeMonth:'',financeStatus:'',installed:false};
+const runtimeState={financePage:0,financeHasNext:false,financeMonth:'',financeStatus:'',installed:false,installing:false};
 
 function q(sel,root=document){return root.querySelector(sel)}
 function escHtml(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
@@ -100,7 +100,8 @@ function installManualFinanceFix(){
     if(typeof saveFinEntry!=='function'||saveFinEntry.__c360Quality)return;
     const fixed=async function(){
       const m=q('#finMsg'),btn=q('#saveFinEntry'),amount=Number(q('#finAmount')?.value||0),desc=(q('#finDescription')?.value||'').trim();
-      if(!desc||amount<=0){if(m)m.textContent='Informe descrição e valor.';return}
+      if(btn?.disabled)return;
+      if(!desc||!Number.isFinite(amount)||amount<=0){if(m)m.textContent='Informe descrição e valor.';return}
       try{
         if(btn)btn.disabled=true;
         const u=typeof getUser==='function'?await getUser():null,d=q('#finIssueDate')?.value||new Date().toISOString().slice(0,10);
@@ -151,24 +152,42 @@ function ensureFarmImportButton(){
   try{if(typeof deviceMode!=='undefined'&&deviceMode)return}catch(_){ }
   const hero=section.querySelector('.v2hero'),newBtn=q('#newPoultryOp',section);if(!hero)return;
   const a=document.createElement('a');a.id='c360FarmImportBtn';a.className='btn soft';a.href='./importar-granjas.html';a.textContent='💬 Importar granjas';a.title='Importar granjas de uma conversa exportada do WhatsApp';
-  if(newBtn)hero.insertBefore(a,newBtn);else hero.appendChild(a);
+  if(newBtn&&hero.contains(newBtn))newBtn.before(a);else hero.appendChild(a);
 }
 
+function appReady(){
+  try{return typeof loadFinance==='function'&&typeof rest==='function'&&typeof companyId!=='undefined'&&!!companyId}catch(_){return false}
+}
 async function waitForApp(){
   for(let i=0;i<60;i++){
-    const finance=q('#financeList');let ready=false;try{ready=!!finance&&typeof loadFinance==='function'&&typeof rest==='function'&&typeof companyId!=='undefined'&&!!companyId}catch(_){ }
-    if(ready)return true;await new Promise(r=>setTimeout(r,250));
+    if(appReady())return true;await new Promise(r=>setTimeout(r,250));
   }
   return false;
 }
 
 async function install(){
-  if(runtimeState.installed)return;installStyles();
-  const ready=await waitForApp();if(!ready){captureRuntimeError('quality-install','Aplicativo não ficou pronto para a camada de qualidade');return}
-  runtimeState.installed=true;ensureFinanceTools();ensureDdaCard();ensureDdaOverlay();ensureFarmImportButton();installManualFinanceFix();
-  try{loadFinance=smartLoadFinance}catch(e){captureRuntimeError('finance-override',e?.message||e)}
-  await smartLoadFinance();
+  if(runtimeState.installed||runtimeState.installing)return;
+  runtimeState.installing=true;
+  try{
+    installStyles();if(!await waitForApp())return;
+    ensureFinanceTools();ensureDdaCard();ensureDdaOverlay();ensureFarmImportButton();installManualFinanceFix();
+    try{loadFinance=smartLoadFinance}catch(e){captureRuntimeError('finance-override',e?.message||e)}
+    runtimeState.installed=true;
+    if(q('#financeList'))await smartLoadFinance();
+  }finally{runtimeState.installing=false}
 }
 
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(install,0));else setTimeout(install,0);
+function installVisibleTools(){
+  if(!runtimeState.installed){
+    if(appReady())install().catch(e=>captureRuntimeError('quality-install',e?.message||e));
+    return;
+  }
+  try{ensureFinanceTools();ensureDdaCard();ensureFarmImportButton()}
+  catch(e){captureRuntimeError('quality-layout',e?.message||e)}
+}
+document.addEventListener('c360:screen-changed',installVisibleTools);
+const host=q('#screenHost');
+if(host)new MutationObserver(installVisibleTools).observe(host,{childList:true});
+function start(){setTimeout(()=>install().catch(e=>captureRuntimeError('quality-install',e?.message||e)),0)}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
 })();

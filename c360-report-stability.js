@@ -9,6 +9,9 @@ function renderError(error){
  const host=document.getElementById('reportsKpis');
  const generated=document.getElementById('reportsGeneratedAt');
  if(host)host.innerHTML='<div class="v2panel" style="grid-column:1/-1"><strong>Não foi possível gerar o relatório agora.</strong><div class="muted" style="margin-top:5px">'+String(message).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))+'</div><div class="muted" style="margin-top:5px">Você pode tentar novamente sem sair desta tela.</div></div>';
+ for(const id of ['reportsByTeam','reportsByCustomer','reportsFuel','reportsFinance','reportsAttendance','reportsSummary']){
+  const panel=document.getElementById(id);if(panel)panel.textContent='Relatório indisponível. Tente novamente.';
+ }
  if(generated)generated.textContent='Falha ao atualizar • tente novamente';
  try{document.dispatchEvent(new CustomEvent('c360:reports-error',{detail:{message,version:VERSION}}))}catch(_){}
 }

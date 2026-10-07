@@ -39,7 +39,7 @@ function ensureAccount(){
  const meta=q('header .v2topmeta');if(!meta||q('#c360AccountWrap')||isDevice())return;
  const wrap=document.createElement('div');wrap.id='c360AccountWrap';wrap.className='c360-account-wrap';
  wrap.innerHTML='<button id="c360AccountBtn" class="c360-account-btn" type="button" aria-label="Conta e empresa" aria-expanded="false">U</button><div id="c360AccountMenu" class="c360-account-menu hidden" role="dialog" aria-label="Conta e empresa"></div>';
- const theme=q('#themeToggle');if(theme)meta.insertBefore(wrap,theme);else meta.appendChild(wrap);
+ const theme=q('#themeToggle');if(theme&&meta.contains(theme))theme.before(wrap);else meta.appendChild(wrap);
 }
 function renderAccount(){
  ensureAccount();const btn=q('#c360AccountBtn'),menu=q('#c360AccountMenu');if(!btn||!menu||!context)return;
@@ -51,7 +51,7 @@ function renderAccount(){
 }
 function renderPlanBadge(){
  const meta=q('header .v2topmeta');if(!meta||isDevice())return;
- let badge=q('#c360PlanBadge');if(!badge){badge=document.createElement('span');badge.id='c360PlanBadge';badge.className='c360-plan-badge';const build=q('#buildBadge');if(build)meta.insertBefore(badge,build);else meta.appendChild(badge)}
+ let badge=q('#c360PlanBadge');if(!badge){badge=document.createElement('span');badge.id='c360PlanBadge';badge.className='c360-plan-badge';const build=q('#buildBadge');if(build&&meta.contains(build))build.before(badge);else meta.appendChild(badge)}
  const sub=context?.sub;if(!sub){badge.textContent='Plano não configurado';badge.className='c360-plan-badge';return}
  const left=daysLeft(sub.trial_ends_at);badge.className='c360-plan-badge '+(sub.plan_code==='client_zero'?'pilot':sub.status==='active'?'active':sub.status==='trial'?'trial':'');badge.textContent=sub.plan_code==='client_zero'?'Piloto':sub.status==='trial'?'Teste • '+(left??'—')+'d':planLabel(sub);
 }
