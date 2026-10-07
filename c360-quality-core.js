@@ -3,7 +3,7 @@
 
 const QUALITY_VERSION='2026.09.12-q2';
 const FIN_PAGE_SIZE=100;
-const runtimeState={financePage:0,financeHasNext:false,financeMonth:'',financeStatus:'',installed:false};
+const runtimeState={financePage:0,financeHasNext:false,financeMonth:'',financeStatus:'',installed:false,installing:false};
 
 function q(sel,root=document){return root.querySelector(sel)}
 function escHtml(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
@@ -155,24 +155,33 @@ function ensureFarmImportButton(){
   if(newBtn&&hero.contains(newBtn))newBtn.before(a);else hero.appendChild(a);
 }
 
+function appReady(){
+  try{return typeof loadFinance==='function'&&typeof rest==='function'&&typeof companyId!=='undefined'&&!!companyId}catch(_){return false}
+}
 async function waitForApp(){
   for(let i=0;i<60;i++){
-    let ready=false;try{ready=typeof loadFinance==='function'&&typeof rest==='function'&&typeof companyId!=='undefined'&&!!companyId}catch(_){ }
-    if(ready)return true;await new Promise(r=>setTimeout(r,250));
+    if(appReady())return true;await new Promise(r=>setTimeout(r,250));
   }
   return false;
 }
 
 async function install(){
-  if(runtimeState.installed)return;installStyles();
-  const ready=await waitForApp();if(!ready){captureRuntimeError('quality-install','Aplicativo não ficou pronto para a camada de qualidade');return}
-  runtimeState.installed=true;ensureFinanceTools();ensureDdaCard();ensureDdaOverlay();ensureFarmImportButton();installManualFinanceFix();
-  try{loadFinance=smartLoadFinance}catch(e){captureRuntimeError('finance-override',e?.message||e)}
-  if(q('#financeList'))await smartLoadFinance();
+  if(runtimeState.installed||runtimeState.installing)return;
+  runtimeState.installing=true;
+  try{
+    installStyles();if(!await waitForApp())return;
+    ensureFinanceTools();ensureDdaCard();ensureDdaOverlay();ensureFarmImportButton();installManualFinanceFix();
+    try{loadFinance=smartLoadFinance}catch(e){captureRuntimeError('finance-override',e?.message||e)}
+    runtimeState.installed=true;
+    if(q('#financeList'))await smartLoadFinance();
+  }finally{runtimeState.installing=false}
 }
 
 function installVisibleTools(){
-  if(!runtimeState.installed)return;
+  if(!runtimeState.installed){
+    if(appReady())install().catch(e=>captureRuntimeError('quality-install',e?.message||e));
+    return;
+  }
   try{ensureFinanceTools();ensureDdaCard();ensureFarmImportButton()}
   catch(e){captureRuntimeError('quality-layout',e?.message||e)}
 }

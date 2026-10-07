@@ -39,6 +39,14 @@ await test('Quality layer installs with finance screen detached and decorates it
  await delay(50);assert.ok(w.document.querySelector('#c360FinanceTools'));assert.ok(w.document.querySelector('#c360FarmImportBtn'));
  assert.equal(w.c360QualityDiagnostics().length,0);
 }));
+await test('Quality layer activates after a later login without reporting a guest as broken',()=>withFixture('<div id="screenHost"></div>',async w=>{
+ const original=async function originalFinance(){};w.companyId=null;w.rest=async()=>[];w.loadFinance=original;w.renderFinanceView=()=>{};
+ const timer=w.setTimeout.bind(w);w.setTimeout=(fn,ms,...args)=>timer(fn,ms===250?0:ms,...args);
+ w.eval(fs.readFileSync('c360-quality-core.js','utf8'));await delay(150);
+ assert.equal(w.loadFinance,original);assert.equal(w.c360QualityDiagnostics().length,0);
+ w.companyId='fixture-company';w.document.dispatchEvent(new w.CustomEvent('c360:screen-changed',{detail:{screen:'dashboard'}}));
+ await delay(50);assert.equal(w.loadFinance.name,'smartLoadFinance');assert.equal(w.c360QualityDiagnostics().length,0);
+}));
 await test('FAX attaches beside nested new-operation button',()=>withFixture(operation,w=>{
  Object.assign(w,{canManage:()=>true,screen:id=>w.document.getElementById(id),style(){},markup:()=>'<div id="c360FaxPanel"></div>',addDashboardShortcut(){},bind(){}});
  w.eval('let installed=false;'+source('inject','c360-fax.js'));assert.equal(w.inject(),true);
