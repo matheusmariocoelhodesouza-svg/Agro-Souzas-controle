@@ -4,5 +4,14 @@
   "start_url": "./",
   "display": "standalone",
   "background_color": "#fff8fb",
-  "theme_color": "#f8e8f1"
+  "theme_color": "#f8e8f1",
+  "id": "./",
+  "scope": "./",
+  "description": "Acompanhamento privado da gestação, diário, exames, agenda e medicamentos.",
+  "orientation": "portrait-primary",
+  "categories": [
+    "health",
+    "lifestyle"
+  ],
+  "lang": "pt-BR"
 }
