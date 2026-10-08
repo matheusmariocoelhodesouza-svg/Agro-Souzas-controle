@@ -241,7 +241,7 @@ body.app-ready .v2sidebar{display:block}
 .team-report-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
 .team-report-kpi{background:#fff;border:1px solid #e2e8f0;border-radius:15px;padding:14px}
 .team-report-kpi b{display:block;font-size:24px;margin-top:5px}
-body.device-mode .v2sidebar,body.device-mode #nav{display:none!important}
+body.device-mode .v2sidebar,body.device-mode #nav,body.device-mode .mobile-bottom-nav{display:none!important}
 body.device-mode header{margin-left:0!important;width:100%!important}
 body.device-mode #app{padding-left:0!important;width:100%!important}
 body.device-mode .wrap{max-width:980px;margin:0 auto}
@@ -2014,7 +2014,7 @@ body.darkmode #financeiro .finance-privacy-btn{background:#17283d;border-color:#
 <button type="button" class="v2navbtn" data-v2tab="equipes">👥   Equipes</button>
 <div class="v2group">GESTÃO</div>
 <button type="button" class="v2navbtn" data-v2tab="funcionarios">♙   RH</button>
-<button type="button" class="v2navbtn" onclick="location.href='./controle-diarias.html'">💵   Diárias &amp; Pagamento</button>
+<button type="button" class="v2navbtn" onclick="location.href='./controle-diarias.html?company='+encodeURIComponent(companyId||'')">💵   Diárias &amp; Pagamento</button>
 <button type="button" class="v2navbtn" data-v2tab="frota">▰   Frota</button>
 <button type="button" class="v2navbtn" data-v2tab="insumos">🧴   Insumos</button>
 <button type="button" class="v2navbtn" data-v2tab="financeiro">💰   Financeiro</button>

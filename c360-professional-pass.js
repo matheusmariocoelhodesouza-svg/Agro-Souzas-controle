@@ -45,7 +45,7 @@ const menuMap={
 function enhanceSidebar(){
  $$('.v2navbtn').forEach(btn=>{
    const tab=btn.dataset.v2tab||btn.dataset.jump||'';
-   let info=menuMap[tab];
+   let info=btn.id==='payrollSideLink'?['Pagamentos & Folha','file']:menuMap[tab];
    if(!info){
      const t=clean(btn.textContent).toLowerCase();
      if(t.includes('saúde'))info=['Saúde do Sistema','pulse'];
