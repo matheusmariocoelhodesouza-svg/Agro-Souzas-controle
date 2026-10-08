@@ -128,7 +128,7 @@ jobs:
           grep -q 'c360-fiscal.js' /tmp/bootstrap.js
           grep -q 'c360-report-share.js' /tmp/bootstrap.js
           grep -q 'c360-farm-search.js' /tmp/bootstrap.js
-          grep -q '2026.10.07-farm-search1' /tmp/farm-search.js
+          grep -q '2026.10.07-farm-search2' /tmp/farm-search.js
           grep -q 'SCRIPT_BATCH_SIZE=5' /tmp/bootstrap.js
           grep -q 'yieldToMain' /tmp/bootstrap.js
 
