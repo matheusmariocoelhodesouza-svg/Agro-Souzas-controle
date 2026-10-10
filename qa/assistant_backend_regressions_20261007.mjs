@@ -12,7 +12,7 @@ function runtime(options={}){
   calls.push({name,args});if(name==='v2_has_permission')return{data:options.noPermission?false:true};
   if(name==='v2_execute_assistant_action')return{data:options.rpcResult||result,error:options.rpcError||null};throw Error('Unexpected RPC');
  },from(table){let inserted=false;const chain=new Proxy({}, {get(_,name){
-  if(name==='then')return(resolve,reject)=>Promise.resolve({data:[],error:null}).then(resolve,reject);
+  if(name==='then')return(resolve,reject)=>Promise.resolve({data:options.rows?.[table]||[],error:null}).then(resolve,reject);
   if(name==='insert')return body=>{inserted=true;writes.push({table,body});return chain};
   if(name==='single'||name==='maybeSingle')return async()=>({data:table==='v2_ai_conversations'?(options.foreignConversation&&!inserted?null:{id:'fixture-conversation'}):{id:'fixture-message'},error:null});
   return()=>chain;
@@ -67,5 +67,29 @@ await test('Incomplete or invalid provider responses cannot create proposals',as
 });
 await test('Raw Responses output messages are parsed without an SDK shortcut',async()=>{
  const r=runtime(),out=await r.request({question:'Consulta'});assert.equal(out.status,200);assert.equal(out.body.answer,'Consulta sintética');assert.deepEqual(out.body.actions,[]);assert.equal(r.cleared.length,1);
+});
+function proposalRuntime(action_type,payload){
+ return runtime({rows:{v2_vehicles:[{id:'fixture-vehicle',plate:'QA00001',description:'608'}]},providerBody:{status:'completed',output:[{type:'message',content:[{type:'output_text',text:JSON.stringify({answer:'Confira os dados da nota.',actions:[{action_type,summary:'Nota sintética',confidence:0.9,payload}]})}]}]}});
+}
+await test('An unreadable receipt amount stays missing and cannot become a free fuel purchase',async()=>{
+ for(const missing of [null,undefined,'',' ',false,[],{}]){
+  const r=proposalRuntime('fuel_log',{vehicle:'608',liters:45,total_amount:missing,price_per_liter:null,odometer_km:null});
+  const out=await r.request({question:'Leia esta nota sintética'});assert.equal(out.status,200);
+  const draft=r.writes.find(w=>w.table==='v2_ai_action_requests').body.proposed_payload;
+  assert.equal(draft.total_amount,null);assert.equal(draft.price_per_liter,null);assert.equal(draft.odometer_km,null);
+  assert.ok(draft.missing_fields.includes('valor total'));
+ }
+});
+await test('A receipt may calculate a known total or preserve an explicitly recorded zero',async()=>{
+ for(const [payload,expected] of [[{liters:45,price_per_liter:6.45,total_amount:null},290.25],[{liters:45,price_per_liter:null,total_amount:0},0]]){
+  const r=proposalRuntime('fuel_log',{vehicle:'608',...payload});assert.equal((await r.request({question:'Nota sintética'})).status,200);
+  const draft=r.writes.find(w=>w.table==='v2_ai_action_requests').body.proposed_payload;
+  assert.equal(draft.total_amount,expected);assert.ok(!draft.missing_fields.includes('valor total'));
+ }
+});
+await test('An unreadable odometer requires review instead of proposing zero kilometres',async()=>{
+ const r=proposalRuntime('odometer',{vehicle:'608',odometer_km:null});assert.equal((await r.request({question:'Atualize a quilometragem da foto sintética'})).status,200);
+ const draft=r.writes.find(w=>w.table==='v2_ai_action_requests').body.proposed_payload;
+ assert.equal(draft.odometer_km,null);assert.ok(draft.missing_fields.includes('quilometragem'));
 });
 console.log(`${passed} assistant backend regressions passed.`);

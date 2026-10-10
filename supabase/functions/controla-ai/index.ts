@@ -8,7 +8,10 @@ const cors={
 };
 const json=(body:unknown,status=200)=>new Response(JSON.stringify(body),{status,headers:{...cors,"Content-Type":"application/json"}});
 const str=(v:unknown)=>String(v??"").trim();
-const num=(v:unknown)=>{const n=Number(v);return Number.isFinite(n)?n:null};
+const num=(v:unknown)=>{
+  if(v==null||(typeof v!=="number"&&typeof v!=="string")||(typeof v==="string"&&!v.trim()))return null;
+  const n=Number(v);return Number.isFinite(n)?n:null;
+};
 const norm=(v:unknown)=>str(v).normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g," ").trim();
 const todayBR=()=>new Intl.DateTimeFormat("en-CA",{timeZone:"America/Sao_Paulo",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());
 const isoAtNoon=(date?:string|null)=>date?new Date(`${date}T12:00:00-03:00`).toISOString():new Date().toISOString();
