@@ -1,5 +1,6 @@
 -- Run alongside the migration. All fixtures live only in temporary tables;
 -- no production people, days, payments or audit rows are inserted or modified.
+create temporary table v2_companies (like public.v2_companies including all) on commit drop;
 create temporary table v2_daily_team_work (like public.v2_daily_team_work including all) on commit drop;
 create temporary table v2_daily_team_work_members (like public.v2_daily_team_work_members including all) on commit drop;
 create temporary table v2_operational_worker_profiles (like public.v2_operational_worker_profiles including all) on commit drop;
@@ -19,6 +20,7 @@ do $$
 declare
  c uuid=gen_random_uuid(); a uuid=gen_random_uuid(); b uuid=gen_random_uuid(); rows jsonb; out jsonb; work_id uuid; run_id uuid; original_ids uuid[]; caught boolean;
 begin
+ insert into pg_temp.v2_companies(id,legal_name,tax_id) values(c,'Temporary company',c::text);
  insert into pg_temp.v2_operational_worker_profiles(id,company_id,operational_name,team_name,daily_rate,active)
  values(a,c,'Temporary A','Equipe temporária',160,true),(b,c,'Temporary B','Equipe temporária',200,true);
  rows=jsonb_build_array(jsonb_build_object('worker_profile_id',a,'employee_name','Temporary A','role_type','floor','daily_rate',160,'attendance_status','present'),
@@ -59,6 +61,33 @@ begin
  caught=false;begin perform pg_temp.v2_prepare_operational_payment_run(c,'Equipe temporária','2026-10-01','2026-10-07');exception when others then caught=true;end;
  if not caught or (select status from pg_temp.v2_operational_payment_runs where id=run_id)<>'paid' then raise exception 'TEST: paid run reopened'; end if;
  raise notice 'OPERATIONAL_DAILY_TRANSACTION_TEST_OK';
+end $$;
+do $$
+declare c uuid; other_company uuid=gen_random_uuid(); other_worker uuid=gen_random_uuid(); rows jsonb; out jsonb; v_run_id uuid; label text;
+begin
+ select id into c from pg_temp.v2_companies limit 1;
+ update pg_temp.v2_companies set metadata='{"operational_payment_rules":{"no_absence_repass_teams":["Equipe 3"]}}'::jsonb where id=c;
+ select jsonb_agg(jsonb_build_object('worker_profile_id',id,'employee_name',operational_name,'role_type','floor','daily_rate',daily_rate,'attendance_status','present','absence_repass_share',80,'collective_additional_share',320)) into rows from pg_temp.v2_operational_worker_profiles where company_id=c;
+ foreach label in array array['Equipe 3','Equipe 03'] loop
+  out=pg_temp.v2_save_operational_daily_work(c,'2026-10-12',label,null,rows);
+  if exists(select 1 from pg_temp.v2_daily_team_work_members where daily_work_id=(out->>'id')::uuid and (absence_repass_share<>0 or collective_additional_share<>320)) then raise exception 'TEST: disabled repass or collective addition incorrect'; end if;
+  -- Simulate a stale draft saved by an older client: closing still excludes repass.
+  update pg_temp.v2_daily_team_work_members set absence_repass_share=99 where daily_work_id=(out->>'id')::uuid;
+  out=pg_temp.v2_prepare_operational_payment_run(c,label,'2026-10-12','2026-10-12');v_run_id=(out->>'id')::uuid;
+  if (out->>'gross_total')::numeric<>1000 or exists(select 1 from pg_temp.v2_operational_payment_items i where i.run_id=v_run_id and i.repass_total<>0) then raise exception 'TEST: closing included disabled repass'; end if;
+ end loop;
+ foreach label in array array['Equipe 1','Equipe 2'] loop
+  out=pg_temp.v2_save_operational_daily_work(c,'2026-10-12',label,null,rows);
+  out=pg_temp.v2_prepare_operational_payment_run(c,label,'2026-10-12','2026-10-12');
+  if (out->>'gross_total')::numeric<>1160 then raise exception 'TEST: eligible team lost repass'; end if;
+ end loop;
+ insert into pg_temp.v2_companies(id,legal_name,tax_id) values(other_company,'Another temporary company',other_company::text);
+ insert into pg_temp.v2_operational_worker_profiles(id,company_id,operational_name,team_name,daily_rate,active) values(other_worker,other_company,'Other temporary worker','Equipe 3',160,true);
+ rows=jsonb_build_array(jsonb_build_object('worker_profile_id',other_worker,'employee_name','Other temporary worker','role_type','floor','daily_rate',160,'attendance_status','present','absence_repass_share',20));
+ perform pg_temp.v2_save_operational_daily_work(other_company,'2026-10-12','Equipe 3',null,rows);
+ out=pg_temp.v2_prepare_operational_payment_run(other_company,'Equipe 3','2026-10-12','2026-10-12');
+ if (out->>'gross_total')::numeric<>180 then raise exception 'TEST: one company exception affected another company'; end if;
+ raise notice 'OPERATIONAL_REPASS_RULES_TEST_OK';
 end $$;
 drop function pg_temp.v2_save_operational_daily_work(uuid,date,text,text,jsonb);
 drop function pg_temp.v2_prepare_operational_payment_run(uuid,text,date,date);
