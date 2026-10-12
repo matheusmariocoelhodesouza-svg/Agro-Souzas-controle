@@ -6107,17 +6107,16 @@ function refreshTruckDriverSuggestions(){
  if(dlD)dlD.innerHTML=pairs.map(p=>`<option value="${esc(p.driver_name)}">${esc(p.plate)}</option>`).join('');
  if(dlP)dlP.innerHTML=pairs.map(p=>`<option value="${esc(p.plate)}">${esc(p.driver_name)}</option>`).join('');
 }
-function inferTruckOrigin(label){return /(?:^|\/)\s*tiet[eê]\s*$/i.test(String(label||'').trim())?'Tietê':'Boituva'}
 function fillTruckPairFrom(source){
  const pairs=truckDriverPlatePairs();
  if(source==='driver'){
   const v=$('#poTruckDriver').value.trim().toLowerCase();
   const m=pairs.find(p=>String(p.driver_name||'').trim().toLowerCase()===v);
-  if(m){$('#poTruckPlate').value=m.plate||'';$('#poTruckOrigin').value=inferTruckOrigin(m.driver_name||'')}
+  if(m)$('#poTruckPlate').value=m.plate||'';
  }else{
   const v=normalizedPlate($('#poTruckPlate').value);
   const m=pairs.find(p=>normalizedPlate(p.plate)===v);
-  if(m){$('#poTruckDriver').value=m.driver_name||'';$('#poTruckOrigin').value=inferTruckOrigin(m.driver_name||'')}
+  if(m)$('#poTruckDriver').value=m.driver_name||'';
  }
 }
 async function loadTruckDriverPairs(){
@@ -6184,7 +6183,7 @@ function openNextTruckForm({operationId,loadingId,farmId,name,sequence}){
  $('#poTruckOpName').textContent=name||'';
  const loading=poultryLoadings.find(l=>l.id===loadingId),defaultBarn=loading?.metadata?.default_barn_id||'';
  loadTruckBarnOptions(farmId,defaultBarn);
- $('#poTruckDriver').value='';$('#poTruckPlate').value='';$('#poTruckOrigin').value='Boituva';$('#poTruckBirds').value='';
+ $('#poTruckDriver').value='';$('#poTruckPlate').value='';$('#poTruckOrigin').value='';$('#poTruckBirds').value='';
  $('#poTruckBoxes').value='';$('#poTruckBirdsPerBox').value='';$('#poTruckEmptyBoxes').value='';$('#poTruckLoadingDeaths').value='';
  $('#poTruckProducer').value=name||'';$('#poTruckCity').value='';
  const op=poultryOpsCache.find(o=>o.id===operationId),farm=poultryFarms.find(f=>f.id===farmId);
@@ -6406,7 +6405,7 @@ if($('#poTruckBarnChecks'))$('#poTruckBarnChecks').addEventListener('click',e=>{
  calcTruckCataBirdTotal();
 });
 if($('#poTruckDriver')){
- $('#poTruckDriver').addEventListener('input',()=>{fillTruckPairFrom('driver');$('#poTruckOrigin').value=inferTruckOrigin($('#poTruckDriver').value)});
+ $('#poTruckDriver').addEventListener('input',()=>fillTruckPairFrom('driver'));
  $('#poTruckDriver').addEventListener('change',()=>{fillTruckPairFrom('driver');scheduleAutoSaveTruckDriverPair()});
  $('#poTruckDriver').addEventListener('blur',scheduleAutoSaveTruckDriverPair);
 }
