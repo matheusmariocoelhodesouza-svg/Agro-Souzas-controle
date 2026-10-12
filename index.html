@@ -6183,7 +6183,7 @@ function openNextTruckForm({operationId,loadingId,farmId,name,sequence}){
  $('#poTruckOpName').textContent=name||'';
  const loading=poultryLoadings.find(l=>l.id===loadingId),defaultBarn=loading?.metadata?.default_barn_id||'';
  loadTruckBarnOptions(farmId,defaultBarn);
- $('#poTruckDriver').value='';$('#poTruckPlate').value='';$('#poTruckOrigin').value='';$('#poTruckBirds').value='';
+ $('#poTruckDriver').value='';$('#poTruckPlate').value='';$('#poTruckOrigin').value='';try{const fx=JSON.parse(sessionStorage.getItem('c360_fax_truck_origin')||'null');if(fx&&fx.company_id===companyId&&Date.now()-fx.at<86400000&&['Tietê','Boituva'].includes(fx.origin))$('#poTruckOrigin').value=fx.origin}catch(_){}$('#poTruckBirds').value='';
  $('#poTruckBoxes').value='';$('#poTruckBirdsPerBox').value='';$('#poTruckEmptyBoxes').value='';$('#poTruckLoadingDeaths').value='';
  $('#poTruckProducer').value=name||'';$('#poTruckCity').value='';
  const op=poultryOpsCache.find(o=>o.id===operationId),farm=poultryFarms.find(f=>f.id===farmId);
