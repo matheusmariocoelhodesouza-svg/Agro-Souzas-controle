@@ -132,9 +132,10 @@
  async function upload(file,faxId,teamId){
   const cid=safeCompanyId();const folder=teamId||cid;const path=`${cid}/${folder}/fax/${faxId}/${Date.now()}-${fileSafe(file.name)}`;await api('/storage/v1/object/'+BUCKET+'/'+pathEncode(path),{method:'POST',headers:{'Content-Type':file.type||'application/octet-stream','x-upsert':'false'},body:file});return path
  }
+ function rejectSave(message){const button=q('#c360FaxSave');if(button)delete button.dataset.c360RapidUntil;alert(message)}
  async function save(){
   if(!canManage())return;
-  const cid=safeCompanyId(),date=q('#c360FaxDate').value,integrated=q('#c360FaxIntegrated').value.trim(),city=q('#c360FaxCity').value.trim();if(!cid)return alert('Empresa ainda não carregada.');if(!date)return alert('Informe a data da apanha.');if(!integrated)return alert('Informe o integrado / produtor.');if(!['Tietê','Boituva'].includes(q('#c360FaxTruckOrigin').value))return alert('Selecione a origem do caminhão: Tietê ou Boituva.');if(!city)return alert('Informe a cidade.');
+  const cid=safeCompanyId(),date=q('#c360FaxDate').value,integrated=q('#c360FaxIntegrated').value.trim(),city=q('#c360FaxCity').value.trim();if(!cid)return rejectSave('Empresa ainda não carregada.');if(!date)return rejectSave('Informe a data da apanha.');if(!integrated)return rejectSave('Informe o integrado / produtor.');if(!['Tietê','Boituva'].includes(q('#c360FaxTruckOrigin').value))return rejectSave('Selecione a origem do caminhão: Tietê ou Boituva.');if(!city)return rejectSave('Informe a cidade.');
   const btn=q('#c360FaxSave'),msg=q('#c360FaxMsg');btn.disabled=true;msg.textContent='Salvando FAX...';let created=null;
   try{
    const payload={company_id:cid,team_id:q('#c360FaxTeam').value||null,pickup_date:date,scheduled_time:q('#c360FaxTime').value||null,truck_origin:q('#c360FaxTruckOrigin').value,client_name:q('#c360FaxClient').value.trim()||null,integrated_name:integrated,farm_name:q('#c360FaxFarm').value.trim()||null,city,location_text:q('#c360FaxLocation').value.trim()||null,expected_birds:q('#c360FaxBirds').value?Number(q('#c360FaxBirds').value):null,shed_count:q('#c360FaxSheds').value?Number(q('#c360FaxSheds').value):null,notes:q('#c360FaxNotes').value.trim()||null,status:'scheduled',updated_at:new Date().toISOString()};

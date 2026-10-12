@@ -81,7 +81,8 @@ try{
  await page.locator('#c360FaxNew').click();await page.locator('#c360FaxIntegrated').fill('FAX cadastrado pelo administrador');await page.locator('#c360FaxCity').fill('Laranjal Paulista');await page.locator('#c360FaxTeam').selectOption(sample.team);
  await page.locator('#c360FaxSave').click();assert.equal(writes.filter(w=>w.method==='POST'&&/v2_poultry_faxes/.test(w.path)).length,0);checks.push('FAX requires choosing the truck origin before saving');
  await page.locator('#c360FaxTruckOrigin').selectOption('Boituva');await page.locator('#c360FaxSave').click();
- await page.waitForFunction(()=>document.getElementById('c360FaxMsg')?.textContent==='FAX salvo e programação criada.');
+ try{await page.waitForFunction(()=>document.getElementById('c360FaxMsg')?.textContent==='FAX salvo e programação criada.')}
+ catch(e){console.error(JSON.stringify({faxState:await page.evaluate(()=>({message:document.getElementById('c360FaxMsg')?.textContent,origin:document.getElementById('c360FaxTruckOrigin')?.value,date:document.getElementById('c360FaxDate')?.value,integrated:document.getElementById('c360FaxIntegrated')?.value,city:document.getElementById('c360FaxCity')?.value,role:currentRoleCode,device:deviceMode,classes:document.body.className})),writes,errors},null,2));throw e}
  assert.equal(writes.filter(w=>w.method==='POST'&&/v2_poultry_faxes/.test(w.path)).length,1);assert.equal(faxRows.find(x=>x.integrated_name==='FAX cadastrado pelo administrador').truck_origin,'Boituva');checks.push('Administrator can save the FAX assigned to Equipe 2 with its confirmed truck origin');
  await page.evaluate(()=>{window.__qaOldFaxNew=document.getElementById('c360FaxNew').onclick;window.__qaOldFaxSave=document.getElementById('c360FaxSave').onclick;window.__qaOldFaxDone=document.querySelector('.c360FaxDone').onclick;window.__qaOldFaxUse=document.querySelector('.c360FaxUse').onclick});
  const beforeField={writes:writes.length,queries:queries.length};
