@@ -78,6 +78,29 @@ await test('Daily save sends operational identities through one RPC and never de
 await test('Changing a preview period blocks stale operational payment generation',()=>fixture('controle-diarias.html',async w=>{
  w.eval(`companyId='${B}';paymentPreviewContext='old-period'`);let requests=0;w.fetch=async()=>{requests++;return response([])};await w.generatePayments();assert.equal(requests,0);assert.match(w.document.getElementById('payPreview').textContent,/CALCULAR novamente/);
 }));
+function dailyRoster(w,team,disabled=['Equipe 3']){
+ w.document.getElementById('team').innerHTML='<option>'+team+'</option>';
+ w.eval(`noRepassTeams=${JSON.stringify(disabled)};members=${JSON.stringify([...Array.from({length:13},(_,i)=>({employee_name:'Present '+i,attendance_status:'present',daily_rate:160,counts_for_headcount:true})),{employee_name:'Absent loader',attendance_status:'absent',daily_rate:200,role_type:'loader',borrowed:false}])};adds=[{kind:'mud',status:'approved',amount:640}]`);
+}
+await test('Equipe 3 receives no absence repass but keeps collective additions',()=>fixture('controle-diarias.html',async w=>{
+ for(const team of ['Equipe 3','Equipe 03']){
+  dailyRoster(w,team);const c=w.calc();assert.equal(c.pool,0);assert.ok(c.present.every(p=>p.absence_repass_share===0));assert.equal(c.present.reduce((s,p)=>s+Math.round(p.collective_additional_share*100),0),64000);
+ }
+}));
+await test('Equipes 1 and 2 still share absences, and fourteen present people receive no repass',()=>fixture('controle-diarias.html',async w=>{
+ for(const team of ['Equipe 1','Equipe 2']){
+  dailyRoster(w,team);let c=w.calc();assert.equal(c.pool,200);assert.equal(c.present.reduce((s,p)=>s+Math.round(p.absence_repass_share*100),0),20000);
+  w.eval("members.push({employee_name:'Borrowed present',attendance_status:'present',daily_rate:160,counts_for_headcount:true,borrowed:true})");c=w.calc();assert.equal(c.pool,0);
+ }
+}));
+await test('The exception comes from this company configuration instead of a global team-name rule',()=>fixture('controle-diarias.html',async w=>{
+ dailyRoster(w,'Equipe 3',[]);assert.equal(w.calc().pool,200);
+}));
+await test('Payment preview ignores stale positive repass when the company disables it for that team',()=>fixture('controle-diarias.html',async w=>{
+ w.eval(`companyId='${B}';noRepassTeams=['Equipe 3']`);w.document.getElementById('payTeam').innerHTML='<option>Equipe 3</option>';w.document.getElementById('payStart').value='2026-10-12';w.document.getElementById('payEnd').value='2026-10-12';
+ w.fetch=async url=>response(url.includes('v2_daily_team_work?')?[{id:B}]:[{worker_profile_id:A,employee_name:'Fixture',attendance_status:'present',daily_rate:160,absence_repass_share:88,collective_additional_share:10,hour_additional:0,other_additional:0}]);
+ await w.previewPayment();assert.equal(w.__payPreview[0].repass,0);assert.equal(w.__payPreview[0].total,170);
+}));
 const edge=fs.readFileSync('supabase/functions/comando360-daily-ai/index.ts','utf8');
 const context=vm.createContext({Response});vm.runInContext(edge.replace(/^import .*;$/mg,'').split('Deno.serve(')[0],context);
 await test('Daily AI reads raw Responses output after a reasoning item',()=>{
