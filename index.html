@@ -2404,7 +2404,7 @@ body.darkmode #financeiro .finance-privacy-btn{background:#17283d;border-color:#
   <div class="field-section-title"><span>🚛</span><div><strong>Caminhão</strong><div class="muted">Preencha motorista, placa e aviário.</div></div></div>
   <div class="row po-field-grid po-truck-driver-grid">
    <div><label>Motorista</label><input id="poTruckDriver" list="poDriverSuggestions" autocomplete="off" placeholder="Digite ou selecione"><datalist id="poDriverSuggestions"></datalist><div class="field-device-memory">Salva automaticamente junto com a placa.</div></div>
-   <div><label>Placa</label><input id="poTruckPlate" list="poPlateSuggestions" autocomplete="off" autocapitalize="characters" placeholder="Digite ou selecione"><datalist id="poPlateSuggestions"></datalist></div>
+   <div><label>Origem do caminhão</label><select id="poTruckOrigin" required><option value="">Selecione</option><option value="Tietê">Tietê</option><option value="Boituva">Boituva</option></select></div><div><label>Placa</label><input id="poTruckPlate" list="poPlateSuggestions" autocomplete="off" autocapitalize="characters" placeholder="Digite ou selecione"><datalist id="poPlateSuggestions"></datalist></div>
   </div>
 
   <label class="checkline field-cata-switch"><input id="poTruckCata" type="checkbox"><span><strong>Este caminhão foi CATA</strong><small>Ative somente quando houver aves de mais de um aviário.</small></span></label>
@@ -3809,7 +3809,7 @@ async function syncPoultryTruckOfflineItem(item){
  if(!truck){
   const rows=await rest('v2_poultry_truck_loads','','POST',{
    company_id:item.company_id,loading_id:refs.loadingId,truck_sequence:p.truck_sequence,
-   truck_plate:p.truck_plate||null,driver_name:p.driver_name||null,birds:p.birds||0,
+   truck_plate:p.truck_plate||null,driver_name:p.driver_name||null,birds:p.birds||0,truck_origin:p.truck_origin||null,
    started_at:p.started_at||null,completed_at:p.completed_at||null,is_cata:!!p.is_cata,
    external_reference:item.id,
    metadata:{
@@ -6183,7 +6183,7 @@ function openNextTruckForm({operationId,loadingId,farmId,name,sequence}){
  $('#poTruckOpName').textContent=name||'';
  const loading=poultryLoadings.find(l=>l.id===loadingId),defaultBarn=loading?.metadata?.default_barn_id||'';
  loadTruckBarnOptions(farmId,defaultBarn);
- $('#poTruckDriver').value='';$('#poTruckPlate').value='';$('#poTruckBirds').value='';
+ $('#poTruckDriver').value='';$('#poTruckPlate').value='';$('#poTruckOrigin').value='';$('#poTruckBirds').value='';
  $('#poTruckBoxes').value='';$('#poTruckBirdsPerBox').value='';$('#poTruckEmptyBoxes').value='';$('#poTruckLoadingDeaths').value='';
  $('#poTruckProducer').value=name||'';$('#poTruckCity').value='';
  const op=poultryOpsCache.find(o=>o.id===operationId),farm=poultryFarms.find(f=>f.id===farmId);
@@ -6237,8 +6237,10 @@ async function saveTruckLoadImpl(closeAfter=false){
  const existing=poultryTruckLoads.filter(t=>t.loading_id===loadingId);
  const sequence=Number($('#poTruckSequence').value||existing.length+1);
  const sheet=truckSheetMetadata();
+ const truckOrigin=$('#poTruckOrigin').value;
+ if(!['Tietê','Boituva'].includes(truckOrigin))return $('#poTruckMsg').textContent='Selecione Tietê ou Boituva como origem do caminhão.';
  const payload={
-  truck_sequence:sequence,truck_plate:plate,driver_name:driver,birds,
+  truck_sequence:sequence,truck_plate:plate,driver_name:driver,birds,truck_origin:truckOrigin,
   started_at:new Date(start).toISOString(),completed_at:new Date(end).toISOString(),
   is_cata:isCata,barn_breakdown:barnBreakdown,notes:$('#poTruckNotes').value.trim()||null,sheet
  };
@@ -6272,7 +6274,7 @@ async function saveTruckLoadImpl(closeAfter=false){
   const card=$('#poTruckCard');
   const eventId=card.dataset.saveEventId||(card.dataset.saveEventId=makeOfflineId('online-truck'));
   const rows=await restInsertOnce('v2_poultry_truck_loads','external_reference',eventId,{
-   company_id:companyId,loading_id:loadingId,truck_sequence:sequence,truck_plate:plate,driver_name:driver,birds,
+   company_id:companyId,loading_id:loadingId,truck_sequence:sequence,truck_plate:plate,driver_name:driver,birds,truck_origin:truckOrigin,
    started_at:payload.started_at,completed_at:payload.completed_at,is_cata:payload.is_cata,
    metadata:{
     aviary_number:isCata?null:(barnBreakdown[0]?.barn_number||null),
