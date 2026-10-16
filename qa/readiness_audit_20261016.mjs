@@ -67,6 +67,11 @@ await test('An unavailable reconciliation query displays unavailable rather than
  const dom=fixture(),w=dom.window;w.restAll=async()=>{throw Error('offline')};
  try{await w.refreshFinanceReconciliation();assert.match(w.document.body.textContent,/Não foi possível conferir/);assert.doesNotMatch(w.document.body.textContent,/0 conciliada/)}finally{w.close()}
 });
+await test('Changing reconciliation month also changes the ledger month and keeps the selected period',async()=>{
+ const dom=fixture(),w=dom.window;const month=w.document.createElement('input');month.id='c360FinanceMonth';month.type='month';month.value='2026-10';w.document.getElementById('financeiro').appendChild(month);
+ let selected,query;month.addEventListener('change',()=>{selected=month.value;w.refreshFinanceReconciliation(selected)});w.restAll=async(t,q)=>{if(t==='v2_reconcilable_costs')query=q;return[]};
+ try{await w.refreshFinanceReconciliation('2026-10');const picker=w.document.querySelector('[data-fin-month]');picker.value='2026-09';picker.dispatchEvent(new w.Event('change',{bubbles:true}));await new Promise(r=>setTimeout(r,10));assert.equal(selected,'2026-09');assert.equal(month.value,'2026-09');assert.equal(w.document.querySelector('[data-fin-month]').value,'2026-09');assert.match(query,/incurred_on=gte.2026-09-01/)}finally{w.close()}
+});
 await test('Cancellation scopes the write to the current company and detects a denied update',async()=>{
  const dom=fixture(),w=dom.window;let query,message;w.rest=async(t,q)=>{query=q;return[]};w.alert=x=>message=x;
  try{await w.cancelFinEntry('entry');assert.match(query,/company_id=eq.qa-company/);assert.match(message,/não foi alterado/)}finally{w.close()}

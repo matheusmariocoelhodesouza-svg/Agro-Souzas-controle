@@ -165,7 +165,12 @@ document.addEventListener('click',e=>{
  const create=e.target.closest('[data-fin-create]');if(create){reconcileFinanceCost(Number(create.dataset.finCreate));return}
  const link=e.target.closest('[data-fin-link]');if(link){const selected=document.querySelector('[data-fin-existing="'+link.dataset.finLink+'"]')?.value;if(selected)reconcileFinanceCost(Number(link.dataset.finLink),selected);else{const msg=document.querySelector('[data-fin-reconcile-msg]');if(msg)msg.textContent='Selecione o lançamento existente para vincular.'}}
 });
-document.addEventListener('change',e=>{if(e.target.matches('[data-fin-month]'))refreshFinanceReconciliation()});
+document.addEventListener('change',e=>{
+ if(!e.target.matches('[data-fin-month]'))return;
+ const ledgerMonth=document.getElementById('c360FinanceMonth');
+ if(ledgerMonth&&ledgerMonth.value!==e.target.value){ledgerMonth.value=e.target.value;ledgerMonth.dispatchEvent(new Event('change',{bubbles:true}))}
+ else refreshFinanceReconciliation();
+});
 
 
 // The legacy bootstrap must preserve the idempotent form handler.
