@@ -4128,7 +4128,7 @@ async function loadDashboard(){
    dashSafe('v2_vehicles','select=id,description,plate,model,current_odometer_km,status,renavam,metadata&company_id=eq.'+companyId+'&status=eq.active&order=description.asc'),
    dashSafe('v2_vehicle_documents','select=id,vehicle_id,document_type,expires_at,status&company_id=eq.'+companyId+'&status=eq.active'),
    dashSafe('v2_operations','select=id,team_id,title,customer_name,location_name,scheduled_start,actual_start,actual_end,status,planned_birds,actual_birds,actual_revenue,actual_cost&company_id=eq.'+companyId+'&operation_type=in.(poultry_catching,poultry_loading)&scheduled_start=gte.'+encodeURIComponent(b.monthStart)+'&scheduled_start=lt.'+encodeURIComponent(b.nextMonth)+'&order=scheduled_start.desc'),
-   dashSafe('v2_fuel_logs','select=id,vehicle_id,fueled_at,liters,total_amount,odometer_km&company_id=eq.'+companyId+'&fueled_at=gte.'+encodeURIComponent(b.monthStart)+'&fueled_at=lt.'+encodeURIComponent(b.nextMonth)),
+   dashSafe('v2_fuel_logs','select=id,vehicle_id,fueled_at,liters,total_amount,odometer_km,metadata&company_id=eq.'+companyId+'&fueled_at=gte.'+encodeURIComponent(b.monthStart)+'&fueled_at=lt.'+encodeURIComponent(b.nextMonth)),
    dashSafe('v2_financial_entries','select=id,entry_type,amount,status,competence_date,paid_at&company_id=eq.'+companyId+'&competence_date=gte.'+b.monthDate+'&competence_date=lt.'+b.nextMonthDate+'&status=neq.cancelled'),
    dashSafe('v2_maintenance_plans','select=id,vehicle_id,name,next_due_at,next_due_odometer_km,active&company_id=eq.'+companyId+'&active=eq.true'),
    dashSafe('v2_attendance_events','select=id,employee_id,event_type,occurred_at&company_id=eq.'+companyId+'&occurred_at=gte.'+encodeURIComponent(b.todayStart)+'&occurred_at=lt.'+encodeURIComponent(b.tomorrow)),
@@ -4143,7 +4143,7 @@ async function loadDashboard(){
   const birdsToday=todayOps.reduce((a,o)=>a+poN(o.actual_birds||o.planned_birds),0);
   const birdsMonth=opsMonth.reduce((a,o)=>a+poN(o.actual_birds||o.planned_birds),0);
   const fuelLiters=fuelMonth.reduce((a,x)=>a+poN(x.liters),0);
-  const fuelCost=fuelMonth.reduce((a,x)=>a+poN(x.total_amount),0);
+  const fuelCost=fuelCostSummary(fuelMonth).cost;
   const income=financeMonth.filter(x=>x.entry_type==='income').reduce((a,x)=>a+poN(x.amount),0);
   const expense=financeMonth.filter(x=>x.entry_type==='expense').reduce((a,x)=>a+poN(x.amount),0);
   const balance=income-expense;
@@ -4195,7 +4195,7 @@ async function loadDashboard(){
    ['CONDUÇÕES',vehicles.length,(fleetAttention?fleetAttention+' alerta(s) de documento':'documentos em dia'),'🚌'],
    ['APANHAS HOJE',todayOps.length,completedToday+' concluída(s)','🐔'],
    ['AVES HOJE',birdsToday.toLocaleString('pt-BR'),birdsMonth.toLocaleString('pt-BR')+' no mês','▣'],
-   ['SALDO DO MÊS',money(balance),'Entradas '+money(income),'💰']
+   ['SALDO PARCIAL DO MÊS',money(balance),'Entradas lançadas '+money(income),'💰']
   ];
   const cardTabs=['funcionarios','equipes','frota','operacoes','operacoes','financeiro'];
   $('#kpis').innerHTML=cards.map((x,i)=>'<button class="v2kpi dash-kpi dash-kpi-'+i+'" data-jump="'+cardTabs[i]+'" type="button"><div class="t">'+esc(x[0])+'</div><div class="v">'+esc(x[1])+'</div><div class="s">'+esc(x[2])+'</div><div class="v2ico">'+x[3]+'</div></button>').join('');
@@ -4233,7 +4233,7 @@ async function loadDashboard(){
    ['Apanhas',opsMonth.length,'🐔','neutral'],
    ['Aves',birdsMonth.toLocaleString('pt-BR'),'▣','neutral'],
    ['Combustível',fuelLiters.toLocaleString('pt-BR',{maximumFractionDigits:1})+' L','⛽','neutral'],
-   ['Custo combustível',money(fuelCost),'↘','expense'],
+   ['Custo combustível informado',money(fuelCost),'↘','expense'],
    ['Entradas',money(income),'↗','income'],
    ['Saídas',money(expense),'↘','expense']
   ].map(x=>'<div class="dash-month '+x[3]+'"><div><span>'+x[2]+'</span><small>'+esc(x[0])+'</small></div><b>'+esc(x[1])+'</b></div>').join('');
@@ -4475,6 +4475,22 @@ function fleetTrackingLocation(t){
  if(address)return String(address);
  const lat=Number(t.latitude),lon=Number(t.longitude);
  return Number.isFinite(lat)&&Number.isFinite(lon)?lat.toFixed(5)+', '+lon.toFixed(5):'Sem coordenadas';
+}
+function fuelCostKnown(row){
+ const value=row?.total_amount;
+ return row?.metadata?.cost_unknown!==true&&row?.metadata?.cost_unknown!=='true'&&
+  (typeof value==='number'||(typeof value==='string'&&value.trim()!==''))&&Number.isFinite(Number(value))&&Number(value)>=0;
+}
+function fuelCostSummary(rows=[]){
+ return rows.reduce((out,row)=>{
+  const liters=Math.max(0,Number(row.liters)||0);out.liters+=liters;
+  if(fuelCostKnown(row)){out.cost+=Number(row.total_amount);out.knownLiters+=liters}
+  else{out.unknownCount++;out.unknownLiters+=liters}
+  return out;
+ },{liters:0,cost:0,knownLiters:0,unknownCount:0,unknownLiters:0});
+}
+function fuelCostNotice(summary){
+ return summary.unknownCount?summary.unknownCount+' abastecimento(s) com custo não informado ('+summary.unknownLiters.toLocaleString('pt-BR',{maximumFractionDigits:2})+' L). Custo parcial; média apenas dos litros com valor informado.':'';
 }
 function fuelLogIsFull(x){
  const v=x?.metadata?.tank_filled_full;
@@ -7324,7 +7340,7 @@ async function openFuelReceipt(path){
  }catch(e){alert('Não foi possível abrir o comprovante: '+(e.message||String(e)))}
 }
 function localDateTimeInput(d=new Date()){const z=n=>String(n).padStart(2,'0');return `${d.getFullYear()}-${z(d.getMonth()+1)}-${z(d.getDate())}T${z(d.getHours())}:${z(d.getMinutes())}`}
-function fuelCalcPrice(){const l=Number(document.getElementById('fuelLiters')?.value||0),t=Number(document.getElementById('fuelTotal')?.value||0),e=document.getElementById('fuelPriceLiter');if(e)e.value=l?money(t/l):'R$ 0,00'}
+function fuelCalcPrice(){const l=Number(document.getElementById('fuelLiters')?.value||0),raw=document.getElementById('fuelTotal')?.value,t=Number(raw),e=document.getElementById('fuelPriceLiter');if(e)e.value=l>0&&String(raw??'').trim()!==''&&Number.isFinite(t)?money(t/l):'—'}
 function fuelReceiptNumber(v){
  let s=String(v||'').trim().replace(/R\$\s*/gi,'').replace(/\s/g,'').replace(/[^0-9,.-]/g,'');
  if(!s)return 0;
@@ -7462,7 +7478,7 @@ function openFuelEdit(id){
  document.getElementById('fuelDate').value=fuelDateForInput(x.fueled_at);
  document.getElementById('fuelKm').value=x.odometer_km||'';
  document.getElementById('fuelLiters').value=x.liters||'';
- document.getElementById('fuelTotal').value=x.total_amount||'';
+ document.getElementById('fuelTotal').value=fuelCostKnown(x)?x.total_amount:'';
  document.getElementById('fuelStation').value=x.station_name||'';
  document.getElementById('fuelDriver').value=x.metadata?.driver||'';
  document.getElementById('fuelNotes').value=x.metadata?.notes||'';
@@ -7525,7 +7541,7 @@ async function loadFuel(){
  if(fuelHint&&deviceMode)fuelHint.textContent='A condução da equipe vem selecionada primeiro, mas você pode escolher qualquer outra condução ativa da empresa.';
  const month=localDateBR().slice(0,7);
  const ml=fuelCache.filter(x=>saoPauloDateKey(x.fueled_at).slice(0,7)===month);
- const liters=ml.reduce((a,x)=>a+Number(x.liters||0),0),cost=ml.reduce((a,x)=>a+Number(x.total_amount||0),0);
+ const costSummary=fuelCostSummary(ml),liters=costSummary.liters,cost=costSummary.cost;
  let kmDriven=0;
  fuelVehicles.forEach(v=>{const a=fuelCache.filter(x=>x.vehicle_id===v.id).sort((x,y)=>Date.parse(x.fueled_at)-Date.parse(y.fueled_at));for(let i=1;i<a.length;i++)kmDriven+=fuelInterval(a[i],a[i-1]).km});
  const k=document.getElementById('fuelKpis');
@@ -7541,11 +7557,11 @@ async function loadFuel(){
  }else{
   if(title)title.textContent='⛽ Combustível & KM';
   if(sub)sub.textContent='Abastecimentos, quilometragem, consumo e custo da frota.';
-  if(histSub)histSub.textContent='Estimativa entre registros do mesmo veículo (até 200 lançamentos). Abastecimentos parciais afetam a média; anomalias exigem revisão.';
+  if(histSub)histSub.textContent='Estimativa entre registros do mesmo veículo (até 200 lançamentos). Abastecimentos parciais afetam a média; anomalias exigem revisão. '+fuelCostNotice(costSummary);
   if(k){k.style.display='grid';k.innerHTML=
-   '<div class="v2kpi"><span>Gasto no mês</span><strong>'+money(cost)+'</strong></div>'+
+   '<div class="v2kpi"><span>Gasto informado no mês'+(costSummary.unknownCount?' (parcial)':'')+'</span><strong>'+money(cost)+'</strong></div>'+
    '<div class="v2kpi"><span>Litros no mês</span><strong>'+liters.toLocaleString('pt-BR',{maximumFractionDigits:1})+' L</strong></div>'+
-   '<div class="v2kpi"><span>Preço médio</span><strong>'+(liters?money(cost/liters):'R$ 0,00')+'/L</strong></div>'+
+   '<div class="v2kpi"><span>Preço médio informado</span><strong>'+(costSummary.knownLiters?money(cost/costSummary.knownLiters)+'/L':'—')+'</strong></div>'+
    '<div class="v2kpi"><span>KM do histórico sem anomalias</span><strong>'+kmDriven.toLocaleString('pt-BR')+' km</strong></div>';}
   if(kmBtn)kmBtn.style.display='';
  }
@@ -7554,12 +7570,12 @@ async function loadFuel(){
   const v=fuelVehicles.find(z=>z.id===x.vehicle_id);
   const same=fuelCache.filter(z=>z.vehicle_id===x.vehicle_id&&new Date(z.fueled_at)<new Date(x.fueled_at)).sort((a,b)=>new Date(b.fueled_at)-new Date(a.fueled_at))[0];
   const interval=fuelInterval(x,same),dist=interval.km,cons=interval.rate;
-  const cpk=dist>0?Number(x.total_amount||0)/dist:0;
+  const knownCost=fuelCostKnown(x),cpk=dist>0&&knownCost?Number(x.total_amount)/dist:null;
   let badges='';
   if(!deviceMode){
-   badges='<span class="pill">'+(Number(x.liters)>0?money(Number(x.total_amount||0)/Number(x.liters)):'R$ 0,00')+'/L</span>';
+   badges=knownCost&&Number(x.liters)>0?'<span class="pill">'+money(Number(x.total_amount)/Number(x.liters))+'/L</span>':'<span class="pill warn">Custo não informado</span>';
    if(interval.review)badges+=' <span class="pill warn">Revisar hodômetro / abastecimento</span>';
-   if(cons)badges+=' <span class="pill ok">'+cons.toLocaleString('pt-BR',{maximumFractionDigits:2})+' km/L (estimativa)</span> <span class="pill">'+money(cpk)+'/km</span>';
+   if(cons)badges+=' <span class="pill ok">'+cons.toLocaleString('pt-BR',{maximumFractionDigits:2})+' km/L (estimativa)</span>'+(cpk!==null?' <span class="pill">'+money(cpk)+'/km</span>':'');
   }
   if(x.station_name)badges+=(badges?' ':'')+'<span class="pill">⛽ '+esc(x.station_name)+'</span>';
   if(x.metadata&&x.metadata.driver)badges+=(badges?' ':'')+'<span class="pill">👤 '+esc(x.metadata.driver)+'</span>';
@@ -7571,7 +7587,7 @@ async function loadFuel(){
   const canEdit=!x.metadata?.offline_pending&&(!deviceMode||String(x.metadata?.device_access_id||'')===String(deviceAccess?.id||''));
   const edit=canEdit?'<button class="btn soft editFuelBtn" data-id="'+esc(x.id)+'" type="button">Editar</button>':'';
   const del=(deviceMode||x.metadata&&x.metadata.offline_pending)?'':'<button class="btn danger deleteFuelBtn" data-id="'+esc(x.id)+'" type="button">Excluir</button>';
-  return '<div class="item"><div class="toolbar" style="justify-content:space-between;gap:10px"><div><strong>'+esc(v?.description||v?.model||'Veículo')+' • '+esc(v?.plate||'sem placa')+'</strong><div class="muted">'+new Date(x.fueled_at).toLocaleString('pt-BR')+' • '+Number(x.odometer_km||0).toLocaleString('pt-BR')+' km • '+Number(x.liters||0).toLocaleString('pt-BR',{maximumFractionDigits:2})+' L • '+money(x.total_amount||0)+'</div><div style="margin-top:6px">'+badges+'</div>'+notes+'</div><div class="toolbar">'+edit+photo+del+'</div></div></div>';
+  return '<div class="item"><div class="toolbar" style="justify-content:space-between;gap:10px"><div><strong>'+esc(v?.description||v?.model||'Veículo')+' • '+esc(v?.plate||'sem placa')+'</strong><div class="muted">'+new Date(x.fueled_at).toLocaleString('pt-BR')+' • '+(x.odometer_km==null?'KM não informado':Number(x.odometer_km).toLocaleString('pt-BR')+' km')+' • '+Number(x.liters||0).toLocaleString('pt-BR',{maximumFractionDigits:2})+' L • '+(knownCost?money(x.total_amount):'Custo não informado')+'</div><div style="margin-top:6px">'+badges+'</div>'+notes+'</div><div class="toolbar">'+edit+photo+del+'</div></div></div>';
  }).join('')||'<div class="muted">Nenhum abastecimento registrado.</div>';
 }
 async function saveFuel(){
@@ -7599,7 +7615,7 @@ async function saveFuel(){
   const card=document.getElementById('fuelEditCard');
   const offlineId=existing?.offline_event_id||card.dataset.saveEventId||(card.dataset.saveEventId=makeOfflineId('fuel'));
   const metadata={
-    ...(existing?.metadata||{}),
+    ...(existing?.metadata||{}),cost_unknown:false,
     notes:document.getElementById('fuelNotes').value.trim()||null,
     driver:driver||null,
     receipt_path:existing?.metadata?.receipt_path||null,
@@ -9178,17 +9194,17 @@ function renderFuelReportByVehicle(fuels=[],filter='all'){
  const rows=filter==='all'?fuels:fuels.filter(x=>String(x.vehicle_id||'sem-veiculo')===String(filter));
  if(!rows.length){host.innerHTML='<div class="v2-empty">Nenhum abastecimento registrado para esta condução no período.</div>';return}
  host.innerHTML=rows.map(g=>{
-  const avg=g.liters?g.cost/g.liters:0;
+  const summary=fuelCostSummary(g.entries),avg=summary.knownLiters?summary.cost/summary.knownLiters:null;
   const chronological=[...g.entries].sort((a,b)=>Date.parse(a.fueled_at)-Date.parse(b.fueled_at));
   const intervals=chronological.slice(1).map((row,i)=>fuelInterval(row,chronological[i]));
   const kmRange=intervals.reduce((total,interval)=>total+interval.km,0),needsReview=intervals.some(interval=>interval.review);
   const details=g.entries.map(e=>{
    const date=e.fueled_at?new Date(e.fueled_at).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo',day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'}):'—';
-   const liters=poN(e.liters),cost=poN(e.total_amount),price=liters?cost/liters:0,driver=e.metadata?.driver_name||e.metadata?.driver||'';
-   return '<tr><td>'+esc(date)+'</td><td>'+esc(e.station_name||'—')+(driver?'<div class="muted">'+esc(driver)+'</div>':'')+'</td><td class="num">'+(e.odometer_km?Number(e.odometer_km).toLocaleString('pt-BR'):'—')+'</td><td class="num">'+liters.toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:2})+' L</td><td class="num">'+money(price)+'</td><td class="num"><b>'+money(cost)+'</b></td></tr>';
+   const liters=poN(e.liters),known=fuelCostKnown(e),cost=known?Number(e.total_amount):null,price=known&&liters?cost/liters:null,driver=e.metadata?.driver_name||e.metadata?.driver||'';
+   return '<tr><td>'+esc(date)+'</td><td>'+esc(e.station_name||'—')+(driver?'<div class="muted">'+esc(driver)+'</div>':'')+'</td><td class="num">'+(e.odometer_km?Number(e.odometer_km).toLocaleString('pt-BR'):'—')+'</td><td class="num">'+liters.toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:2})+' L</td><td class="num">'+(price===null?'—':money(price))+'</td><td class="num"><b>'+(known?money(cost):'Custo não informado')+'</b></td></tr>';
   }).join('');
-  return '<div class="fuel-report-vehicle"><div class="fuel-report-head"><div><strong>'+esc(g.name)+'</strong>'+(g.plate?'<span class="plate">'+esc(g.plate)+'</span>':'')+'<div class="muted">'+g.logs+' abastecimento(s) no período</div></div><div><b>'+g.liters.toLocaleString('pt-BR',{maximumFractionDigits:2})+' L</b><div class="muted">'+money(g.cost)+'</div></div></div>'+
-   '<div class="fuel-report-totals"><div class="fuel-report-total"><span>TOTAL LITROS</span><b>'+g.liters.toLocaleString('pt-BR',{maximumFractionDigits:2})+' L</b></div><div class="fuel-report-total"><span>CUSTO TOTAL</span><b>'+money(g.cost)+'</b></div><div class="fuel-report-total"><span>MÉDIA R$/L</span><b>'+money(avg)+'</b></div><div class="fuel-report-total"><span>KM SEM ANOMALIAS</span><b>'+(kmRange?kmRange.toLocaleString('pt-BR')+' km':'—')+'</b>'+(needsReview?'<small>Hodômetro pendente de revisão</small>':'')+'</div></div>'+
+  return '<div class="fuel-report-vehicle"><div class="fuel-report-head"><div><strong>'+esc(g.name)+'</strong>'+(g.plate?'<span class="plate">'+esc(g.plate)+'</span>':'')+'<div class="muted">'+g.logs+' abastecimento(s) no período'+(summary.unknownCount?'<br>'+esc(fuelCostNotice(summary)):'')+'</div></div><div><b>'+g.liters.toLocaleString('pt-BR',{maximumFractionDigits:2})+' L</b><div class="muted">'+money(g.cost)+'</div></div></div>'+
+   '<div class="fuel-report-totals"><div class="fuel-report-total"><span>TOTAL LITROS</span><b>'+g.liters.toLocaleString('pt-BR',{maximumFractionDigits:2})+' L</b></div><div class="fuel-report-total"><span>CUSTO INFORMADO'+(summary.unknownCount?' (PARCIAL)':'')+'</span><b>'+money(summary.cost)+'</b></div><div class="fuel-report-total"><span>MÉDIA INFORMADA R$/L</span><b>'+(avg===null?'—':money(avg))+'</b></div><div class="fuel-report-total"><span>KM SEM ANOMALIAS</span><b>'+(kmRange?kmRange.toLocaleString('pt-BR')+' km':'—')+'</b>'+(needsReview?'<small>Hodômetro pendente de revisão</small>':'')+'</div></div>'+
    '<div style="overflow:auto"><table class="fuel-report-table"><thead><tr><th>Data</th><th>Posto / motorista</th><th style="text-align:right">KM</th><th style="text-align:right">Litros</th><th style="text-align:right">R$/L</th><th style="text-align:right">Total</th></tr></thead><tbody>'+details+'</tbody></table></div></div>';
  }).join('');
 }
@@ -9239,7 +9255,7 @@ async function loadReports(){
   const v=vehicles.find(v=>v.id===x.vehicle_id)||{};
   const key=x.vehicle_id||'sem-veiculo';
   if(!fuelMap[key])fuelMap[key]={vehicle_id:x.vehicle_id||null,name:v.description||v.model||'Condução',plate:v.plate||'',liters:0,cost:0,logs:0,entries:[]};
-  const g=fuelMap[key];g.liters+=poN(x.liters);g.cost+=poN(x.total_amount);g.logs++;g.entries.push(x);
+  const g=fuelMap[key];g.liters+=poN(x.liters);g.cost+=fuelCostKnown(x)?poN(x.total_amount):0;g.logs++;g.entries.push(x);
  });
  const fuels=Object.values(fuelMap).sort((x,y)=>String(x.name).localeCompare(String(y.name),'pt-BR'));
  const fuelSel=$('#reportsFuelVehicle');
@@ -9284,7 +9300,14 @@ function exportAdminReportsCsv(){
  const lines=[['Relatório Comando 360',r.label],['Empresa',r.company],['Escopo',reportResultNotice()],[],['Indicador','Valor'],['Aves',r.birds],['Apanhas',r.loadings],['Caminhões',r.trucks],['Faturamento',r.revenue],['Custos registrados',r.cost],['Resultado parcial',r.result],[],['Produção por equipe','Aves']];
  r.byTeam.forEach(x=>lines.push([x.name,x.birds]));
  lines.push([],['Produção por integrado','Aves']);r.byCustomer.forEach(x=>lines.push([x.name,x.birds]));
- lines.push([],['ABASTECIMENTOS POR CONDUÇÃO']);r.fuels.forEach(g=>{lines.push([],['Condução',g.name],['Placa',g.plate||''],['Abastecimentos',g.logs],['Litros',g.liters],['Custo total',g.cost],['Média R$/L',g.liters?g.cost/g.liters:0],['Data','Posto','KM','Litros','R$/L','Total']);g.entries.forEach(e=>{const l=poN(e.liters),c=poN(e.total_amount);lines.push([e.fueled_at?new Date(e.fueled_at).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo'}):'',e.station_name||'',e.odometer_km||'',l,l?c/l:0,c])})});
+ lines.push([],['ABASTECIMENTOS POR CONDUÇÃO']);
+ r.fuels.forEach(g=>{
+  const summary=fuelCostSummary(g.entries);
+  lines.push([],['Condução',g.name],['Placa',g.plate||''],['Abastecimentos',g.logs],['Litros',g.liters],['Custo informado'+(summary.unknownCount?' (parcial)':''),summary.cost],['Média informada R$/L',summary.knownLiters?summary.cost/summary.knownLiters:''],['Pendências',fuelCostNotice(summary)],['Data','Posto','KM','Litros','R$/L','Total','Custo informado']);
+  g.entries.forEach(e=>{const l=poN(e.liters),known=fuelCostKnown(e),c=known?Number(e.total_amount):'';
+   lines.push([e.fueled_at?new Date(e.fueled_at).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo'}):'',e.station_name||'',e.odometer_km??'',l,known&&l?c/l:'',c,known?'Sim':'Não']);
+  });
+ });
  const csv='\ufeff'+lines.map(row=>row.map(csvCell).join(';')).join('\n');
  downloadText('Comando_360_Relatorio_'+r.month+'.csv',csv,'text/csv;charset=utf-8');
 }
@@ -9292,7 +9315,13 @@ function printAdminReports(){
  const r=adminReportCache;if(!r)return alert('Gere o relatório primeiro.');
  const team=r.byTeam.map(x=>'<tr><td>'+esc(x.name)+'</td><td>'+x.ops+'</td><td>'+x.birds.toLocaleString('pt-BR')+'</td></tr>').join('');
  const cust=r.byCustomer.map(x=>'<tr><td>'+esc(x.name)+'</td><td>'+x.ops+'</td><td>'+x.birds.toLocaleString('pt-BR')+'</td></tr>').join('');
- const fuel=r.fuels.map(g=>{const rows=g.entries.map(e=>{const l=poN(e.liters),c=poN(e.total_amount);return '<tr><td>'+(e.fueled_at?new Date(e.fueled_at).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo'}):'—')+'</td><td>'+esc(e.station_name||'—')+'</td><td>'+(e.odometer_km?Number(e.odometer_km).toLocaleString('pt-BR'):'—')+'</td><td>'+l.toLocaleString('pt-BR',{maximumFractionDigits:2})+'</td><td>'+money(l?c/l:0)+'</td><td>'+money(c)+'</td></tr>'}).join('');return '<div class="fuel-section"><h3>'+esc(g.name)+(g.plate?' • '+esc(g.plate):'')+'</h3><div class="fuel-summary">Abastecimentos: <b>'+g.logs+'</b> • Litros: <b>'+g.liters.toLocaleString('pt-BR',{maximumFractionDigits:2})+' L</b> • Total: <b>'+money(g.cost)+'</b> • Média: <b>'+money(g.liters?g.cost/g.liters:0)+'/L</b></div><table><tr><th>Data</th><th>Posto</th><th>KM</th><th>Litros</th><th>R$/L</th><th>Total</th></tr>'+rows+'</table></div>'}).join('');
+ const fuel=r.fuels.map(g=>{
+  const summary=fuelCostSummary(g.entries);
+  const rows=g.entries.map(e=>{const l=poN(e.liters),known=fuelCostKnown(e),c=known?Number(e.total_amount):null;
+   return '<tr><td>'+(e.fueled_at?new Date(e.fueled_at).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo'}):'—')+'</td><td>'+esc(e.station_name||'—')+'</td><td>'+(e.odometer_km==null?'—':Number(e.odometer_km).toLocaleString('pt-BR'))+'</td><td>'+l.toLocaleString('pt-BR',{maximumFractionDigits:2})+'</td><td>'+(known&&l?money(c/l):'—')+'</td><td>'+(known?money(c):'Custo não informado')+'</td></tr>';
+  }).join('');
+  return '<div class="fuel-section"><h3>'+esc(g.name)+(g.plate?' • '+esc(g.plate):'')+'</h3><div class="fuel-summary">Abastecimentos: <b>'+g.logs+'</b> • Litros: <b>'+g.liters.toLocaleString('pt-BR',{maximumFractionDigits:2})+' L</b> • Custo informado'+(summary.unknownCount?' (parcial)':'')+': <b>'+money(summary.cost)+'</b> • Média informada: <b>'+(summary.knownLiters?money(summary.cost/summary.knownLiters)+'/L':'—')+'</b></div>'+(summary.unknownCount?'<p>'+esc(fuelCostNotice(summary))+'</p>':'')+'<table><tr><th>Data</th><th>Posto</th><th>KM</th><th>Litros</th><th>R$/L</th><th>Total</th></tr>'+rows+'</table></div>';
+ }).join('');
  const w=window.open('','_blank');if(!w)return alert('Permita pop-ups para gerar o PDF.');
  w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>Relatório '+esc(r.label)+'</title><style>@page{size:A4;margin:12mm}body{font-family:Arial,sans-serif;color:#111;font-size:11px}h1{margin:0;font-size:22px}h2{font-size:14px;margin:18px 0 6px;border-bottom:1px solid #222;padding-bottom:4px}.fuel-section{break-inside:avoid;margin:10px 0 18px}.fuel-section h3{margin:8px 0 4px;font-size:13px}.fuel-summary{font-size:10px;margin-bottom:5px}.head{border-bottom:2px solid #111;padding-bottom:10px}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin:12px 0}.k{border:1px solid #bbb;padding:8px}.k span{display:block;font-size:9px;color:#555}.k b{font-size:15px}table{width:100%;border-collapse:collapse;margin-top:5px}th,td{border-bottom:1px solid #ddd;padding:6px;text-align:left}th{background:#f4f4f4}.footer{margin-top:18px;border-top:1px solid #aaa;padding-top:6px;color:#555;font-size:9px}</style></head><body>'+
  '<div class="head"><h1>'+esc(r.company)+' — RELATÓRIO GERENCIAL</h1><div>'+esc(r.label)+' • Emitido '+new Date().toLocaleString('pt-BR')+'</div></div>'+

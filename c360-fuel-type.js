@@ -56,11 +56,11 @@ function typeFromEntry(x){return norm(x?.metadata?.fuel_type||x?.metadata?.diese
 function matchesType(x,filter){const t=typeFromEntry(x);return filter==='all'||(filter==='unknown'&&!t)||t===filter}
 function recalcGroup(g,filter){
  const entries=(g.entries||[]).filter(x=>matchesType(x,filter));
- return {...g,entries,logs:entries.length,liters:entries.reduce((s,x)=>s+Number(x.liters||0),0),cost:entries.reduce((s,x)=>s+Number(x.total_amount||0),0)};
+ return {...g,entries,logs:entries.length,liters:entries.reduce((s,x)=>s+Number(x.liters||0),0),cost:window.fuelCostSummary(entries).cost};
 }
 function typeSummary(entries=[]){
- const buckets={s500:{liters:0,cost:0,count:0},s10:{liters:0,cost:0,count:0},unknown:{liters:0,cost:0,count:0}};
- for(const x of entries){const k=typeFromEntry(x)||'unknown';buckets[k].liters+=Number(x.liters||0);buckets[k].cost+=Number(x.total_amount||0);buckets[k].count++}
+ const buckets={s500:{liters:0,cost:0,count:0,missing:0},s10:{liters:0,cost:0,count:0,missing:0},unknown:{liters:0,cost:0,count:0,missing:0}};
+ for(const x of entries){const k=typeFromEntry(x)||'unknown';buckets[k].liters+=Number(x.liters||0);buckets[k].cost+=window.fuelCostKnown(x)?Number(x.total_amount):0;buckets[k].count++;if(!window.fuelCostKnown(x))buckets[k].missing++}
  return buckets;
 }
 function decorateReport(groups=[]){
@@ -69,7 +69,7 @@ function decorateReport(groups=[]){
   const g=groups[i];if(!g)return;
   card.querySelector('.c360-fuel-type-summary')?.remove();
   const b=typeSummary(g.entries||[]);
-  const html=['s500','s10','unknown'].filter(k=>b[k].count>0).map(k=>'<div class="c360-fuel-type-box '+k+'"><span>'+esc(LABELS[k].toUpperCase())+'</span><b>'+esc(liters(b[k].liters))+'</b><small>'+b[k].count+' abastecimento(s) • '+esc(money(b[k].cost))+'</small></div>').join('');
+  const html=['s500','s10','unknown'].filter(k=>b[k].count>0).map(k=>'<div class="c360-fuel-type-box '+k+'"><span>'+esc(LABELS[k].toUpperCase())+'</span><b>'+esc(liters(b[k].liters))+'</b><small>'+b[k].count+' abastecimento(s) • '+(b[k].missing===b[k].count?'Custo não informado':esc(money(b[k].cost))+(b[k].missing?' (parcial)':''))+'</small></div>').join('');
   if(html)card.querySelector('.fuel-report-head')?.insertAdjacentHTML('afterend','<div class="c360-fuel-type-summary">'+html+'</div>');
   const table=card.querySelector('.fuel-report-table');if(!table)return;
   const head=table.querySelector('thead tr');if(head&&!head.querySelector('[data-c360-fuel-type-head]')){
