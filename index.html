@@ -7478,7 +7478,7 @@ function openFuelEdit(id){
  document.getElementById('saveFuelBtn').textContent='SALVAR ALTERAÇÕES';
  document.getElementById('fuelVehicle').value=x.vehicle_id||'';
  document.getElementById('fuelDate').value=fuelDateForInput(x.fueled_at);
- document.getElementById('fuelKm').value=x.odometer_km||'';
+ document.getElementById('fuelKm').value=x.odometer_km??'';
  document.getElementById('fuelLiters').value=x.liters||'';
  document.getElementById('fuelTotal').value=fuelCostKnown(x)?x.total_amount:'';
  document.getElementById('fuelStation').value=x.station_name||'';
@@ -7606,14 +7606,15 @@ async function saveFuel(){
        vehicle_id=document.getElementById('fuelVehicle').value,
        liters=Number(String(document.getElementById('fuelLiters').value||'0').replace(',','.')),
        total=Number(String(document.getElementById('fuelTotal').value||'0').replace(',','.')),
-       km=Number(document.getElementById('fuelKm').value||0),
+       rawKm=document.getElementById('fuelKm').value.trim(),
+       km=rawKm===''?null:Number(rawKm),
        driver=document.getElementById('fuelDriver').value.trim(),
        receipt=document.getElementById('fuelReceiptFile').files?.[0]||null,
        existing=editId?fuelCache.find(x=>x.id===editId):null;
  if(!vehicle_id){m.textContent='Selecione a condução.';return}
  if(isTrailerVehicle(fuelVehicles.find(v=>v.id===vehicle_id))){m.textContent='Carretinhas não recebem abastecimento. Selecione a condução.';return}
  if(!Number.isFinite(liters)||liters<=0){m.textContent='Informe a quantidade de litros.';return}
- if(!Number.isFinite(total)||total<=0||!Number.isFinite(km)||km<0){m.textContent='Informe valor positivo e hodômetro válido.';return}
+ if(!Number.isFinite(total)||total<=0||(km!==null&&(!Number.isFinite(km)||km<0))){m.textContent='Informe valor positivo e hodômetro válido.';return}
  const previous=fuelCache.filter(x=>x.id!==editId&&x.vehicle_id===vehicle_id&&Date.parse(x.fueled_at)<Date.parse(document.getElementById('fuelDate').value)).sort((a,b)=>Date.parse(b.fueled_at)-Date.parse(a.fueled_at))[0];
  if(fuelInterval({odometer_km:km,liters,fueled_at:document.getElementById('fuelDate').value},previous).review&&!confirm('O hodômetro difere muito do histórico ou indica consumo fora da faixa. Confira o painel e a nota. Salvar mesmo assim para revisão?'))return;
  const btn=document.getElementById('saveFuelBtn');
@@ -7638,7 +7639,7 @@ async function saveFuel(){
     fuel_type:document.getElementById('fuelType')?.value||existing?.metadata?.fuel_type||null
   };
   const basePayload={
-   company_id:companyId,vehicle_id,fueled_at:fueledAt,odometer_km:km||null,liters,total_amount:total,
+   company_id:companyId,vehicle_id,fueled_at:fueledAt,odometer_km:km,liters,total_amount:total,
    station_name:document.getElementById('fuelStation').value.trim()||null,
    offline_event_id:offlineId,metadata
   };
@@ -9154,7 +9155,7 @@ function renderFuelReportByVehicle(fuels=[],filter='all'){
   const details=g.entries.map(e=>{
    const date=e.fueled_at?new Date(e.fueled_at).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo',day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'}):'—';
    const liters=poN(e.liters),known=fuelCostKnown(e),cost=known?Number(e.total_amount):null,price=known&&liters?cost/liters:null,driver=e.metadata?.driver_name||e.metadata?.driver||'';
-   return '<tr><td>'+esc(date)+'</td><td>'+esc(e.station_name||'—')+(driver?'<div class="muted">'+esc(driver)+'</div>':'')+'</td><td class="num">'+(e.odometer_km?Number(e.odometer_km).toLocaleString('pt-BR'):'—')+'</td><td class="num">'+liters.toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:2})+' L</td><td class="num">'+(price===null?'—':money(price))+'</td><td class="num"><b>'+(known?money(cost):'Custo não informado')+'</b></td></tr>';
+   return '<tr><td>'+esc(date)+'</td><td>'+esc(e.station_name||'—')+(driver?'<div class="muted">'+esc(driver)+'</div>':'')+'</td><td class="num">'+(e.odometer_km==null?'—':Number(e.odometer_km).toLocaleString('pt-BR'))+'</td><td class="num">'+liters.toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:2})+' L</td><td class="num">'+(price===null?'—':money(price))+'</td><td class="num"><b>'+(known?money(cost):'Custo não informado')+'</b></td></tr>';
   }).join('');
   return '<div class="fuel-report-vehicle"><div class="fuel-report-head"><div><strong>'+esc(g.name)+'</strong>'+(g.plate?'<span class="plate">'+esc(g.plate)+'</span>':'')+'<div class="muted">'+g.logs+' abastecimento(s) no período'+(summary.unknownCount?'<br>'+esc(fuelCostNotice(summary)):'')+'</div></div><div><b>'+g.liters.toLocaleString('pt-BR',{maximumFractionDigits:2})+' L</b><div class="muted">'+money(g.cost)+'</div></div></div>'+
    '<div class="fuel-report-totals"><div class="fuel-report-total"><span>TOTAL LITROS</span><b>'+g.liters.toLocaleString('pt-BR',{maximumFractionDigits:2})+' L</b></div><div class="fuel-report-total"><span>CUSTO INFORMADO'+(summary.unknownCount?' (PARCIAL)':'')+'</span><b>'+money(summary.cost)+'</b></div><div class="fuel-report-total"><span>MÉDIA INFORMADA R$/L</span><b>'+(avg===null?'—':money(avg))+'</b></div><div class="fuel-report-total"><span>KM SEM ANOMALIAS</span><b>'+(kmRange?kmRange.toLocaleString('pt-BR')+' km':'—')+'</b>'+(needsReview?'<small>Hodômetro pendente de revisão</small>':'')+'</div></div>'+

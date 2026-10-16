@@ -55,4 +55,25 @@ await test('Print/PDF HTML retains incomplete-cost warning and known-only averag
  let out='';c.window={open:()=>({document:{write:text=>out+=text,close(){}},focus(){},print(){}})};c.printAdminReports();
  assert.match(out,/Custo informado \(parcial\)/);assert.match(out,/6,65\/L/);assert.match(out,/Custo não informado/);assert.match(out,/1 abastecimento\(s\)/);
 });
+function saveRuntime(offline,rawKm){
+ const fields=new Map(),ids=[...source('saveFuel').matchAll(/getElementById\('([^']+)'\)/g)].map(m=>m[1]);
+ for(const id of ids)fields.set(id,{value:'',textContent:'',className:'',files:[],checked:false,style:{},dataset:{}});
+ for(const [id,value] of Object.entries({fuelVehicle:'v',fuelDate:'2026-10-16T12:00',fuelLiters:'10',fuelTotal:'65',fuelKm:rawKm}))fields.get(id).value=value;
+ let saved;
+ const context=vm.createContext({document:{getElementById:id=>fields.get(id)},deviceMode:offline,companyId:'qa',fuelCache:[],fuelVehicles:[{id:'v'}],deviceAccess:{team_id:'qa-team'},deviceTeam:{name:'QA team'},window:{},Date,Number,
+  isTrailerVehicle:()=>false,fuelInterval:()=>({review:false}),confirm:()=>true,c360NetOnline:()=>!offline,makeOfflineId:()=> 'qa-fuel',loadFuel:async()=>{},
+  restInsertOnce:async(t,f,id,payload)=>{saved=payload;return[{id}]},offlineQueueAdd:async row=>{saved=row.payload}
+ });
+ vm.runInContext(source('saveFuel'),context);return{context,fields,payload:()=>saved};
+}
+await test('Online fuel save preserves absent mileage and an explicitly entered zero',async()=>{
+ for(const [rawKm,expected] of [['',null],['0',0],['12345',12345]]){const r=saveRuntime(false,rawKm);await r.context.saveFuel();assert.ok(r.payload(),r.fields.get('fuelMsg').textContent);assert.equal(r.payload().odometer_km,expected)}
+});
+await test('Offline fuel queue preserves the same absent versus zero mileage distinction',async()=>{
+ for(const [rawKm,expected] of [['',null],['0',0]]){const r=saveRuntime(true,rawKm);await r.context.saveFuel();assert.ok(r.payload(),r.fields.get('fuelMsg').textContent);assert.equal(r.payload().odometer_km,expected);assert.equal(r.payload().metadata.offline_captured,true)}
+});
+await test('Fuel report displays an explicit zero odometer and keeps an absent reading distinct',()=>{
+ c.renderFuelReportByVehicle([{...group,entries:[{...known,odometer_km:0}]}]);assert.match(nodes.get('reportsFuel').innerHTML,/<td class="num">0<\/td>/);
+ c.renderFuelReportByVehicle([{...group,entries:[{...known,odometer_km:null}]}]);assert.match(nodes.get('reportsFuel').innerHTML,/<td class="num">—<\/td>/);
+});
 console.log(`${passed} fuel cost audit regressions passed.`);
