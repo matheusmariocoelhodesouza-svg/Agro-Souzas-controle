@@ -1,3 +1,4 @@
+import {paginateMockRows} from './mock_pagination.mjs';
 import { chromium } from 'playwright';
 import fs from 'node:fs/promises';
 import assert from 'node:assert/strict';
@@ -33,7 +34,7 @@ await page.route('**/*',async route=>{
  }else if(table==='v2_device_access')rows=[{id:'qa-device',...sample,company_id:sample.company,team_id:sample.team,active:true,permissions:{apanha:true,ponto:true,abastecimento:true,relatorio:true}}];
  else if(table==='v2_companies')rows=[{id:sample.company,trade_name:'Empresa QA',status:'active',metadata:{}}];
  if(u.pathname.includes('/auth/v1/user'))rows={id:sample.user,role:'authenticated',user_metadata:{comando360_device:true}};
- return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(rows),headers:{'access-control-allow-origin':'*','content-range':'0-0/1'}});
+ return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(paginateMockRows(rows,u.searchParams)),headers:{'access-control-allow-origin':'*','content-range':'0-0/1'}});
 });
 try{
  await page.goto(base+'/?qa_field_fax=1',{waitUntil:'domcontentloaded'});

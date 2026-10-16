@@ -35,10 +35,10 @@ await test('Operation filters settle instead of rewriting the DOM endlessly',asy
  const observer=new w.MutationObserver(entries=>{mutations+=entries.length});observer.observe(w.document.body,{childList:true,subtree:true});
  try{w.eval(fs.readFileSync('c360-final-stabilization.js','utf8'));await delay(750);assert.ok(mutations<12,`${mutations} mutations on idle operations screen`)}finally{observer.disconnect();w.close()}
 });
-await test('Finance uses actual maintenance records and does not equate equal totals with reconciliation',async()=>{
- const dom=fixture('financeiro'),w=dom.window;const tables=[];
- w.rest=async table=>{tables.push(table);if(table==='v2_fuel_logs')return[{total_amount:100}];if(table==='v2_financial_entries')return[{entry_type:'expense',amount:100}];return[]};
- try{w.eval(fs.readFileSync('c360-final-stabilization.js','utf8'));await delay(200);assert.ok(tables.includes('v2_maintenance_plans'));assert.doesNotMatch(w.document.body.textContent,/✓ Custos operacionais conciliados/)}finally{w.close()}
+await test('Finance delegates reconciliation to the source-linked workflow',async()=>{
+ const dom=fixture('financeiro'),w=dom.window;let calls=0;
+ w.refreshFinanceReconciliation=async()=>{calls++};
+ try{w.eval(fs.readFileSync('c360-final-stabilization.js','utf8'));await delay(200);assert.equal(calls,1)}finally{w.close()}
 });
 await test('New field operation tolerates optional inputs removed during async loading',async()=>{
  const html=fs.readFileSync('index.html','utf8');

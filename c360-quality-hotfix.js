@@ -1,6 +1,6 @@
 (()=>{
 'use strict';
-const BOOT_VERSION='2026.10.16-stable76';
+const BOOT_VERSION='2026.10.16-stable77';
 const recoveryModule='./c360-autorecovery.js';
 
 /* Runtime enxuto: só recursos globais entram no primeiro paint. */
@@ -36,6 +36,7 @@ const routeModules={
  frota:['./c360-trailer-hitches.js','./c360-native-tracker-admin.js'],
  rastreamento:['./c360-native-tracker-admin.js'],
  financeiro:['./c360-payroll-link.js'],
+ saudesistema:['./c360-operational-readiness.js'],
  combustivel:['./c360-fuel-type.js'],abastecimento:['./c360-fuel-type.js'],
  ia:['./c360-assistant360.js']
 };

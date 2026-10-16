@@ -19,6 +19,8 @@ const c=vm.createContext({console,Date,Number,Map,Set,JSON,money,poN:n=>Number(n
  rest:async table=>table==='v2_fuel_logs'?rows:[{id:'v',description:'Ônibus QA',plate:'QA00001',status:'active'}],
  alert:message=>{throw Error(message)},fmtMinutes:()=> '0h00',setTimeout:()=>{}
 });
+c.restAll=(...args)=>c.rest(...args);
+c.fuelRenderLimit=100;vm.runInContext(source('renderFuelHistory'),c);
 for(const n of ['fuelCostKnown','fuelCostSummary','fuelCostNotice','saoPauloDateKey','isTrailerVehicle','loadFuel','renderFuelReportByVehicle','reportResultNotice','csvCell','exportAdminReportsCsv','printAdminReports'])vm.runInContext(source(n),c);
 let passed=0;
 async function test(name,fn){await fn();passed++;console.log('PASS '+name)}

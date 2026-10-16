@@ -246,28 +246,9 @@ function monthWindow(){
 }
 async function refreshFinanceReconciliation(){
  if(isDevice()||activeScreen()!=='financeiro'||financeBusy)return;
- const rf=restFn(),cid=company();if(!rf||!cid)return;
+ if(typeof window.refreshFinanceReconciliation!=='function')return;
  financeBusy=true;state.lastFinanceCheck=Date.now();
- try{
-  const w=monthWindow(),safe=p=>Promise.resolve(p);
-  const [fuel,maintenance,inventory,financial]=await Promise.all([
-   safe(rf('v2_fuel_logs','select=id,total_amount&company_id=eq.'+cid+'&fueled_at=gte.'+encodeURIComponent(w.start)+'&fueled_at=lt.'+encodeURIComponent(w.end))),
-   safe(rf('v2_maintenance_plans','select=id,metadata,last_done_at&company_id=eq.'+cid+'&active=eq.true&last_done_at=gte.'+w.startDate+'&last_done_at=lt.'+w.endDate)),
-   safe(rf('v2_inventory_movements','select=id,movement_type,quantity,unit_cost,occurred_at&company_id=eq.'+cid+'&movement_type=eq.in&occurred_at=gte.'+encodeURIComponent(w.start)+'&occurred_at=lt.'+encodeURIComponent(w.end))),
-   safe(rf('v2_financial_entries','select=id,entry_type,amount,source_type,source_id,issue_date,status&status=neq.cancelled&company_id=eq.'+cid+'&issue_date=gte.'+w.startDate+'&issue_date=lt.'+w.endDate))
-  ]);
-  const fuelTotal=(fuel||[]).reduce((a,x)=>a+Number(x.total_amount||0),0);
-  const maintTotal=(maintenance||[]).reduce((a,x)=>a+Number(x.metadata?.parts_cost||0)+Number(x.metadata?.labor_cost||0),0);
-  const inventoryTotal=(inventory||[]).reduce((a,x)=>a+Number(x.quantity||0)*Number(x.unit_cost||0),0);
-  const financeExpense=(financial||[]).filter(x=>x.entry_type==='expense').reduce((a,x)=>a+Number(x.amount||0),0);
-  const operational=fuelTotal+maintTotal+inventoryTotal;
-  let el=$('#c360FinanceReconciliationNotice');
-  if(!(operational>0)){el?.remove();return}
-  if(!el){el=document.createElement('div');el.id='c360FinanceReconciliationNotice';el.className='c360-reconciliation-notice';const section=$('#financeiro');const anchor=section?.querySelector('.v2-kpis,.finance-kpis,.grid');if(anchor)anchor.insertAdjacentElement('afterend',el);else section?.prepend(el)}
-  const mismatch=Math.abs(operational-financeExpense)>1;
-  el.dataset.state='attention';
-  el.innerHTML='<strong>'+(mismatch?'⚠ Conciliação financeira pendente':'Conferir vínculos dos custos operacionais')+'</strong><div>Combustível: <b>'+money(fuelTotal)+'</b> • Manutenção: <b>'+money(maintTotal)+'</b> • Entradas de estoque: <b>'+money(inventoryTotal)+'</b> • Despesas no Financeiro: <b>'+money(financeExpense)+'</b></div>'+(mismatch?'<small>Não trate o “resultado” como lucro líquido enquanto esses módulos não estiverem conciliados. Os registros originais foram preservados.</small>':'<small>Totais semelhantes não comprovam conciliação. Confira os vínculos dos lançamentos por origem antes de apurar o resultado.</small>');
- }catch(e){console.warn('Comando 360 conciliação financeira',e);let el=$('#c360FinanceReconciliationNotice');if(!el){el=document.createElement('div');el.id='c360FinanceReconciliationNotice';el.className='c360-reconciliation-notice';$('#financeiro')?.prepend(el)}el.dataset.state='attention';el.textContent='Não foi possível conferir todos os custos operacionais. O saldo financeiro permanece parcial.'}finally{financeBusy=false}
+ try{await window.refreshFinanceReconciliation()}finally{financeBusy=false}
 }
 
 async function refreshPricingTraceability(){

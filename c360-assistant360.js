@@ -1,6 +1,6 @@
 (()=>{
 'use strict';
-const VERSION='2026.10.01-comando-ai-2';
+const VERSION='2026.10.16-comando-ai-3';
 if(window.__c360Assistant360Version===VERSION)return;
 window.__c360Assistant360Version=VERSION;
 
@@ -11,6 +11,7 @@ const style=document.createElement('style');style.id='c360-assistant360-style';s
 const SHARE_CACHE='comando360-share-inbox-v1';
 const SHARE_KEY='./__assistant360_shared_image__';
 const state={conversationId:null,file:null,imageDataUrl:null,sourceAttachment:null,busy:false,recognition:null,installed:new WeakSet(),shareHandled:false};
+let healthBusy=false,healthCompany='',healthAt=0;
 const $=(sel,root=document)=>root.querySelector(sel);
 const $$=(sel,root=document)=>[...root.querySelectorAll(sel)];
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[c]));
@@ -20,6 +21,20 @@ function company(){try{return (typeof companyId!=='undefined'&&companyId)?compan
 function authSession(){try{return (typeof session==='function')?session():null}catch{return null}}
 function globalFn(name){const fn=window[name];return typeof fn==='function'?fn:null}
 function headers(extra={}){const s=authSession();return {apikey:apiKey(),Authorization:`Bearer ${s?.access_token||''}`,...extra}}
+async function checkHealth(root,force=false){
+ const companyId=company();if(!companyId||!authSession()?.access_token||healthBusy||(!force&&healthCompany===companyId&&Date.now()-healthAt<60000))return;
+ let status=root.querySelector('[data-ai-health]');
+ if(!status){status=document.createElement('div');status.dataset.aiHealth='1';status.className='ai360-missing';status.setAttribute('role','status');root.querySelector('.ai360-capabilities')?.insertAdjacentElement('afterend',status);if(!status.isConnected)root.prepend(status)}
+ healthBusy=true;healthCompany=companyId;healthAt=Date.now();status.textContent='Verificando disponibilidade da IA…';
+ try{
+  const response=await assistantRequest('/functions/v1/controla-ai',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({company_id:companyId,mode:'health'})},10000);
+  const result=await response.json();if(company()!==companyId)return;
+  if(!response.ok)throw new Error('Não foi possível verificar a disponibilidade.');
+  const configured=result.status==='configured'&&result.configured===true;
+  status.className=configured?'ai360-ready':'ai360-missing';status.textContent=configured?'Configuração da IA presente. Envie uma consulta para validar a resposta.':'IA aguardando ativação. Leitura de fotos e respostas inteligentes precisam da configuração do serviço.';
+ }catch(e){if(company()===companyId){status.className='ai360-missing';status.textContent='Disponibilidade da IA não verificada. Confira a conexão e tente novamente.'}}
+ finally{healthBusy=false;if(company()===companyId){const button=document.createElement('button');button.type='button';button.className='btn soft';button.textContent='Verificar novamente';button.addEventListener('click',()=>checkHealth(root,true));status.append(' ',button)}}
+}
 function activeRoot(){
  const roots=$$('[data-screen="ia"],#ia');
  return roots.find(r=>!r.hidden&&getComputedStyle(r).display!=='none')||roots[0]||null;
@@ -151,10 +166,10 @@ function startVoice(root,btn){
  rec.onerror=()=>notify('Não consegui ouvir. Você pode digitar normalmente.','error');
  rec.onend=()=>{state.recognition=null;btn.classList.remove('recording');btn.textContent='🎤 Falar'};rec.start();
 }
-async function assistantRequest(endpoint,opts){
+async function assistantRequest(endpoint,opts,timeoutMs=45000){
  const authenticated=globalFn('authFetch');
- if(authenticated)return await authenticated(endpoint,opts,true,45000);
- const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),45000);
+ if(authenticated)return await authenticated(endpoint,opts,true,timeoutMs);
+ const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),timeoutMs);
  try{return await fetch(apiBase()+endpoint,{...opts,headers:headers(opts.headers||{}),signal:controller.signal})}
  finally{clearTimeout(timer)}
 }
@@ -221,7 +236,7 @@ function install(root){
    const caps=document.createElement('div');caps.className='ai360-capabilities';caps.innerHTML='<span>📠 Ler FAX</span><span>⛽ Abastecimento</span><span>🔧 Oficina 360</span><span>🧽 Lavador 360</span><span>🐔 Apanhas</span><span>🚚 Frota</span><span>📊 Análises</span>';
    const bar=$('.ai360-tools',root);if(bar)bar.insertAdjacentElement('beforebegin',caps);else card.prepend(caps);
  }
- tools(root);attachmentHost(root);actionsHost(root);
+ tools(root);attachmentHost(root);actionsHost(root);checkHealth(root);
  const btn=sendBtn(root);if(btn){btn.removeAttribute('onclick');btn.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();analyze(root)},true)}
  const input=inputEl(root);if(input){input.placeholder='Pergunte ao Comando IA ou diga o que deseja fazer…';input.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();e.stopImmediatePropagation();analyze(root)}},true)}
  const box=chatBox(root);if(box&&!box.dataset.ai360Intro){box.dataset.ai360Intro='1';addMessage(root,'Olá! Eu sou o Comando IA. Posso analisar sua operação, ler um FAX ou foto, ajudar com a Oficina 360, Lavador 360, frota, abastecimento, manutenção e apanhas. Quando uma solicitação alterar dados, eu mostro uma prévia antes de salvar.','ai')}
@@ -256,7 +271,7 @@ async function hydrateSharedImage(){
  }catch(e){notify(e?.message||'Não consegui carregar a imagem compartilhada.','error')}
  finally{clearShareQuery()}
 }
-function scan(){const root=activeRoot();if(root)install(root)}
+function scan(){const root=activeRoot();if(root){install(root);if(!root.hidden&&root.classList.contains('active'))checkHealth(root)}}
 document.addEventListener('c360:screen-changed',e=>{const s=String(e?.detail?.screen||e?.detail?.id||'').toLowerCase();if(!s||s.includes('ia'))setTimeout(scan,0)});
 document.addEventListener('c360:lazy-feature-ready',()=>{scan();setTimeout(hydrateSharedImage,0)});
 new MutationObserver(scan).observe(document.documentElement,{subtree:true,childList:true,attributes:true,attributeFilter:['class','hidden']});

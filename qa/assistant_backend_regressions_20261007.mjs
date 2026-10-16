@@ -48,6 +48,13 @@ await test('Permission and constraint failures do not expose internal SQL',async
 });
 await test('Missing provider configuration is reported without an external request',async()=>{
  const r=runtime({noKey:true}),out=await r.request({question:'Consulta sintética'});assert.equal(out.status,503);assert.equal(out.body.status,'configuration_required');assert.equal(r.calls.filter(c=>c.provider).length,0);
+ assert.equal(r.writes.length,0);
+});
+await test('AI health reports activation without creating conversations or calling the provider',async()=>{
+ for(const noKey of [true,false]){const r=runtime({noKey}),out=await r.request({mode:'health'});assert.equal(out.status,200);assert.equal(out.body.configured,!noKey);assert.equal(r.writes.length,0);assert.equal(r.calls.filter(c=>c.provider).length,0);assert.doesNotMatch(JSON.stringify(out.body),/synthetic-qa-key/)}
+});
+await test('AI health requires the company AI permission',async()=>{
+ const r=runtime({noPermission:true});assert.equal((await r.request({mode:'health'})).status,403);assert.equal(r.writes.length,0);
 });
 await test('A conversation from another company cannot receive new messages',async()=>{
  const r=runtime({foreignConversation:true}),out=await r.request({conversation_id:'foreign-conversation',question:'Consulta'});assert.equal(out.status,400);assert.equal(r.writes.length,0);

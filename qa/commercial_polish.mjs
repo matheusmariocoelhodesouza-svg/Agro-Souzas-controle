@@ -1,3 +1,4 @@
+import {paginateMockRows} from './mock_pagination.mjs';
 import { chromium } from 'playwright';
 import fs from 'node:fs/promises';
 import path from 'node:path';
@@ -33,7 +34,7 @@ async function installApiMock(page){
    const table=url.pathname.match(/\/rest\/v1\/([^/]+)/)?.[1];
    if(['POST','PATCH','PUT'].includes(method)){body=JSON.stringify([{id:'qa-write'}]);status=method==='POST'?201:200}
    else if(method==='DELETE'){body='[]';status=204}
-   else body=JSON.stringify(mockRows(table));
+   else body=JSON.stringify(paginateMockRows(mockRows(table),url.searchParams));
   }
   await route.fulfill({status,contentType:'application/json; charset=utf-8',headers:{'access-control-allow-origin':'*','content-range':'0-0/1'},body});
  });
@@ -101,7 +102,17 @@ async function inspectFieldOperationContrast(page){
 
 async function captureAdmin(browser,viewport,isMobile,screens,prefix){
  const{context,page}=await openShell(browser,prefix,viewport,isMobile);await prepare(page,'admin');
- for(const id of screens){await route(page,id);await inspect(page,`${prefix}:${id}`,isMobile);await screenshot(page,`${prefix}-${id}`)}
+ for(const id of screens){await route(page,id);await inspect(page,`${prefix}:${id}`,isMobile);
+  if(id==='combustivel'){
+   const contrast=await page.evaluate(()=>{
+    const title=document.getElementById('fuelScreenTitle'),card=title?.closest('.card');if(!title||!card)return 0;
+    const luminance=color=>{const rgb=(color.match(/[\d.]+/g)||[]).slice(0,3).map(Number).map(x=>{x/=255;return x<=.04045?x/12.92:Math.pow((x+.055)/1.055,2.4)});return .2126*rgb[0]+.7152*rgb[1]+.0722*rgb[2]};
+    const a=luminance(getComputedStyle(title).color),b=luminance(getComputedStyle(card).backgroundColor);return(Math.max(a,b)+.05)/(Math.min(a,b)+.05);
+   });
+   if(contrast<4.5)bad(`${prefix}:combustivel:contraste-titulo`,String(contrast));else ok(`${prefix}:combustivel:contraste-titulo`,String(contrast));
+  }
+  await screenshot(page,`${prefix}-${id}`)
+ }
  await context.close();
 }
 async function captureField(browser){

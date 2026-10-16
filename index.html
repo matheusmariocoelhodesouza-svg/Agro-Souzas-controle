@@ -2637,7 +2637,7 @@ body.darkmode #financeiro .finance-privacy-btn{background:#17283d;border-color:#
 <div class="row" style="margin-top:12px"><div><label>Veículo</label><select id="kmVehicle"></select></div><div><label>Data e hora</label><input id="kmDate" type="datetime-local"/></div><div><label>KM do hodômetro</label><input id="kmValue" type="number" min="0" step="1"/></div></div>
 <div><label>Motivo / rota</label><input id="kmNotes" placeholder="Ex.: retorno da equipe / conferência do painel"/></div>
 <div class="toolbar" style="margin-top:12px"><button class="btn primary" id="saveKmBtn" type="button">SALVAR KM</button></div><div class="muted" id="kmMsg" style="margin-top:8px"></div></div>
-<div class="card"><div class="toolbar" style="justify-content:space-between"><div><h3 style="margin:0">Histórico de abastecimentos</h3><div class="muted" id="fuelHistorySubtitle">Estimativa entre registros do mesmo veículo (até 200 lançamentos). Abastecimentos parciais afetam a média; anomalias exigem revisão.</div></div><button class="btn soft" id="refreshFuelBtn" type="button">Atualizar</button></div><div class="list" id="fuelList" style="margin-top:12px"></div></div>
+<div class="card"><div class="toolbar" style="justify-content:space-between"><div><h3 style="margin:0">Histórico de abastecimentos</h3><div class="muted" id="fuelHistorySubtitle">Estimativa calculada com o histórico completo carregado do mesmo veículo. Abastecimentos parciais afetam a média; anomalias exigem revisão.</div></div><button class="btn soft" id="refreshFuelBtn" type="button">Atualizar</button></div><div class="list" id="fuelList" style="margin-top:12px"></div></div>
 </div>
 <div class="section" data-screen="documentosrh" hidden="" id="documentosrh">
 <div class="card"><div class="toolbar" style="justify-content:space-between"><div><h3 style="margin:0">📁 Documentos dos Funcionários</h3><div class="muted">CNH, ASO, treinamentos, certificados e documentos com vencimento.</div></div><button class="btn primary" id="newEmpDocBtn" type="button">+ NOVO DOCUMENTO</button></div><div class="v2-kpis" id="empDocKpis" style="margin-top:14px"></div></div>
@@ -2905,6 +2905,8 @@ body.darkmode #financeiro .finance-privacy-btn{background:#17283d;border-color:#
 </div>
 <div class="section" data-screen="ia" hidden="" id="ia"><div class="card chat"><h3>Comando IA</h3><div class="muted">Seu assistente dentro do Comando 360.</div><div class="chatbox" id="chatbox"></div><div class="toolbar" style="margin-top:10px"><input id="question" placeholder="Pergunte ao Comando IA…" style="flex:1;margin:0"/><button type="button" class="btn primary" id="sendAI">Enviar</button></div></div></div>
 </section></main>
+<script src="./c360-data-access.js"></script>
+<script src="./c360-finance.js"></script>
 <script src="./c360-field-offline-hotfix.js"></script>
 <script>
 'use strict';
@@ -3631,7 +3633,7 @@ async function warmPoultryOfflineCache(){
 async function warmFuelOfflineCache(){
  if(!deviceMode||!c360NetOnline()||!companyId)return;
  const [logs,vehicles]=await Promise.all([
-  rest('v2_fuel_logs','select=*&company_id=eq.'+companyId+'&order=fueled_at.desc&limit=200'),
+  restAll('v2_fuel_logs','select=*&company_id=eq.'+companyId+'&order=fueled_at.desc'),
   rest('v2_vehicles','select=id,description,plate,model,current_odometer_km,fuel_tank_capacity_liters,status&company_id=eq.'+companyId+'&order=description.asc')
  ]);
  await offlineCacheSet(offlineTeamKey('fuel_logs'),logs||[]);
@@ -4103,7 +4105,7 @@ async function loadPoultryDashboard(){
  }catch(e){list.innerHTML='<div class="error">'+esc(e.message)+'</div>'}
 }
 async function dashSafe(table,query,timeoutMs=7000){
- try{return await dashRest(table,query,timeoutMs)||[]}catch(e){console.warn('Dashboard '+table,e);return[]}
+ try{return await restAll(table,query,{read:(t,q)=>dashRest(t,q,timeoutMs)})}catch(e){console.warn('Dashboard '+table,e);throw e}
 }
 function dashLocalBounds(){
  const n=new Date(),todayStart=new Date(n.getFullYear(),n.getMonth(),n.getDate()),tomorrow=new Date(n.getFullYear(),n.getMonth(),n.getDate()+1);
@@ -4720,7 +4722,7 @@ async function loadVehicles(){
    rest('v2_vehicle_documents','select=id,vehicle_id,document_type,expires_at,status,file_id,created_at&company_id=eq.'+companyId+'&status=eq.active&order=created_at.desc'),
    rest('v2_files','select=id,storage_bucket,storage_path,original_name,mime_type,size_bytes&company_id=eq.'+companyId+'&category=eq.vehicle_document&archived_at=is.null&order=created_at.desc'),
    rest('v2_vehicle_tracking_current','select=vehicle_id,provider,latitude,longitude,speed_kmh,ignition,odometer_km,recorded_at,raw_data,updated_at&company_id=eq.'+companyId+'&provider=eq.movit'),
-   rest('v2_fuel_logs','select=id,vehicle_id,fueled_at,odometer_km,liters,total_amount,metadata&company_id=eq.'+companyId+'&order=fueled_at.asc&limit=1500'),
+   restAll('v2_fuel_logs','select=id,vehicle_id,fueled_at,odometer_km,liters,total_amount,metadata&company_id=eq.'+companyId+'&order=fueled_at.asc'),
    rpc('v2_vehicle_tracking_distance_summary',{p_company_id:companyId})
   ]);
   window.__fleetVehicles=r||[];
@@ -7513,7 +7515,7 @@ async function loadFuel(){
   logs=pending.filter(x=>!known.has(x.offline_event_id)).concat(logs);
  }else{
   [logs,vehicles]=await Promise.all([
-   rest('v2_fuel_logs','select=*&company_id=eq.'+companyId+'&order=fueled_at.desc&limit=200'),
+   restAll('v2_fuel_logs','select=*&company_id=eq.'+companyId+'&order=fueled_at.desc'),
    rest('v2_vehicles','select=id,description,plate,model,current_odometer_km,status&company_id=eq.'+companyId+'&order=description.asc')
   ]);
   if(deviceMode){
@@ -7557,7 +7559,7 @@ async function loadFuel(){
  }else{
   if(title)title.textContent='⛽ Combustível & KM';
   if(sub)sub.textContent='Abastecimentos, quilometragem, consumo e custo da frota.';
-  if(histSub)histSub.textContent='Estimativa entre registros do mesmo veículo (até 200 lançamentos). Abastecimentos parciais afetam a média; anomalias exigem revisão. '+fuelCostNotice(costSummary);
+  if(histSub)histSub.textContent='Estimativa calculada com o histórico completo carregado do mesmo veículo. Abastecimentos parciais afetam a média; anomalias exigem revisão. '+fuelCostNotice(costSummary);
   if(k){k.style.display='grid';k.innerHTML=
    '<div class="v2kpi"><span>Gasto informado no mês'+(costSummary.unknownCount?' (parcial)':'')+'</span><strong>'+money(cost)+'</strong></div>'+
    '<div class="v2kpi"><span>Litros no mês</span><strong>'+liters.toLocaleString('pt-BR',{maximumFractionDigits:1})+' L</strong></div>'+
@@ -7565,10 +7567,16 @@ async function loadFuel(){
    '<div class="v2kpi"><span>KM do histórico sem anomalias</span><strong>'+kmDriven.toLocaleString('pt-BR')+' km</strong></div>';}
   if(kmBtn)kmBtn.style.display='';
  }
+ renderFuelHistory();
+}
+let fuelRenderLimit=100;
+function renderFuelHistory(){
  const list=document.getElementById('fuelList');if(!list)return;
- list.innerHTML=fuelCache.map(x=>{
+ const predecessors=new Map(),chronological=[...fuelCache].sort((a,b)=>Date.parse(a.fueled_at)-Date.parse(b.fueled_at)),previousByVehicle=new Map();
+ for(const row of chronological){const previous=previousByVehicle.get(row.vehicle_id);if(previous&&Date.parse(previous.fueled_at)<Date.parse(row.fueled_at))predecessors.set(row.id,previous);previousByVehicle.set(row.vehicle_id,row)}
+ list.innerHTML=fuelCache.slice(0,fuelRenderLimit).map(x=>{
   const v=fuelVehicles.find(z=>z.id===x.vehicle_id);
-  const same=fuelCache.filter(z=>z.vehicle_id===x.vehicle_id&&new Date(z.fueled_at)<new Date(x.fueled_at)).sort((a,b)=>new Date(b.fueled_at)-new Date(a.fueled_at))[0];
+  const same=predecessors.get(x.id);
   const interval=fuelInterval(x,same),dist=interval.km,cons=interval.rate;
   const knownCost=fuelCostKnown(x),cpk=dist>0&&knownCost?Number(x.total_amount)/dist:null;
   let badges='';
@@ -7589,6 +7597,7 @@ async function loadFuel(){
   const del=(deviceMode||x.metadata&&x.metadata.offline_pending)?'':'<button class="btn danger deleteFuelBtn" data-id="'+esc(x.id)+'" type="button">Excluir</button>';
   return '<div class="item"><div class="toolbar" style="justify-content:space-between;gap:10px"><div><strong>'+esc(v?.description||v?.model||'Veículo')+' • '+esc(v?.plate||'sem placa')+'</strong><div class="muted">'+new Date(x.fueled_at).toLocaleString('pt-BR')+' • '+(x.odometer_km==null?'KM não informado':Number(x.odometer_km).toLocaleString('pt-BR')+' km')+' • '+Number(x.liters||0).toLocaleString('pt-BR',{maximumFractionDigits:2})+' L • '+(knownCost?money(x.total_amount):'Custo não informado')+'</div><div style="margin-top:6px">'+badges+'</div>'+notes+'</div><div class="toolbar">'+edit+photo+del+'</div></div></div>';
  }).join('')||'<div class="muted">Nenhum abastecimento registrado.</div>';
+ if(fuelCache.length>fuelRenderLimit)list.insertAdjacentHTML('beforeend','<button class="btn soft" type="button" data-fuel-more>Mostrar mais abastecimentos ('+fuelCache.length+' no histórico)</button>');
 }
 async function saveFuel(){
  if(document.getElementById('saveFuelBtn')?.disabled)return;
@@ -9119,62 +9128,6 @@ function openEmpDoc(id=''){const d=empDocsCache.find(x=>x.id===id);document.getE
 async function saveEmpDoc(){const m=document.getElementById('empDocMsg'),id=document.getElementById('empDocId').value,employee_id=document.getElementById('empDocEmployee').value,file=document.getElementById('empDocFile').files?.[0];if(!employee_id){m.textContent='Selecione o funcionário.';return}try{const old=empDocsCache.find(x=>x.id===id);let file_id=old?.file_id||null;if(file){m.textContent='Enviando arquivo...';const f=await uploadCompanyDocument(file,'employee',employee_id);file_id=f?.id||file_id}const body={company_id:companyId,employee_id,file_id,document_type:document.getElementById('empDocType').value,expires_at:document.getElementById('empDocExpires').value||null,status:'active',metadata:{}};if(id)await rest('v2_employee_documents','id=eq.'+id,'PATCH',body);else await rest('v2_employee_documents','','POST',body);document.getElementById('empDocEditCard').style.display='none';await loadEmpDocs();await loadSmartAlerts()}catch(e){m.textContent=e.message}}
 async function deleteEmpDoc(){const id=document.getElementById('empDocId').value;if(!id||!confirm('Excluir este documento?'))return;try{const d=empDocsCache.find(x=>x.id===id);await rest('v2_employee_documents','id=eq.'+id,'DELETE');if(d?.file_id)try{await rest('v2_files','id=eq.'+d.file_id,'PATCH',{archived_at:new Date().toISOString()})}catch{}document.getElementById('empDocEditCard').style.display='none';await loadEmpDocs()}catch(e){alert(e.message)}}
 
-let financeValuesHidden=localStorage.getItem('c360_finance_values_hidden')==='1';
-let financeViewState={income:0,expense:0};
-
-function financeDisplayMoney(value){
- return financeValuesHidden?'R$ ••••••':money(value);
-}
-function financeDisplayDescription(value){
- const safe=esc(value||'Sem descrição');
- return financeValuesHidden?safe.replace(/R\$\s*[0-9][0-9.,]*/gi,'R$ ••••'):safe;
-}
-function updateFinancePrivacyButton(){
- const b=document.getElementById('toggleFinancePrivacy');if(!b)return;
- b.textContent=financeValuesHidden?'👁 Mostrar valores':'👁 Ocultar valores';
- b.setAttribute('aria-pressed',financeValuesHidden?'true':'false');
- b.setAttribute('aria-label',financeValuesHidden?'Mostrar valores financeiros':'Ocultar valores financeiros');
-}
-function renderFinanceView(){
- const income=Number(financeViewState.income||0),expense=Number(financeViewState.expense||0);
- const k=document.getElementById('financeKpis');
- if(k)k.innerHTML=
-  '<div class="finance-kpi"><span class="finance-kpi-label">RECEITAS POR COMPETÊNCIA</span><strong class="finance-kpi-value">'+financeDisplayMoney(income)+'</strong></div>'+
-  '<div class="finance-kpi"><span class="finance-kpi-label">DESPESAS POR COMPETÊNCIA</span><strong class="finance-kpi-value">'+financeDisplayMoney(expense)+'</strong></div>'+
-  '<div class="finance-kpi"><span class="finance-kpi-label">SALDO LANÇADO (PARCIAL)</span><strong class="finance-kpi-value">'+financeDisplayMoney(income-expense)+'</strong></div>'+
-  '<div class="finance-kpi"><span class="finance-kpi-label">LANÇAMENTOS</span><strong class="finance-kpi-value count">'+financeCache.length+'</strong></div>';
-
- const l=document.getElementById('financeList');
- if(l)l.innerHTML=financeCache.map(x=>{
-  const cancelled=x.status==='cancelled';
-  return '<div class="item finance-entry-card"><div class="finance-entry-layout">'+
-   '<div class="finance-entry-main">'+
-    '<div class="finance-entry-title">'+(x.entry_type==='income'?'⬆ Entrada':'⬇ Saída')+' • '+financeDisplayDescription(x.description||'Sem descrição')+'</div>'+
-    '<div class="muted finance-entry-meta">'+(x.issue_date?new Date(x.issue_date+'T00:00:00').toLocaleDateString('pt-BR'):'')+(x.counterparty_name?' • '+esc(x.counterparty_name):'')+'</div>'+
-    '<span class="pill '+(x.entry_type==='income'?'ok':'warn')+' finance-entry-amount">'+financeDisplayMoney(x.amount)+'</span>'+
-    (cancelled?' <span class="pill danger">CANCELADO</span>':'')+
-   '</div>'+
-   (!cancelled?'<div class="finance-entry-actions"><button type="button" class="btn danger finCancel" data-id="'+esc(x.id)+'">Cancelar</button></div>':'')+
-  '</div></div>';
- }).join('')||'<div class="muted">Nenhum lançamento.</div>';
- updateFinancePrivacyButton();
-}
-
-async function loadFinance(){
- const [entries,rep]=await Promise.all([
-  rest('v2_financial_entries','select=*&company_id=eq.'+companyId+'&order=issue_date.desc,created_at.desc&limit=200'),
-  rest('v2_report_monthly_financial','select=*&company_id=eq.'+companyId+'&order=reference_month.desc&limit=12')
- ]);
- financeCache=entries||[];
- const month=new Date().toISOString().slice(0,7),r=(rep||[]).find(x=>String(x.reference_month||'').slice(0,7)===month);
- const income=Number(r?.income??financeCache.filter(x=>String(x.competence_date||x.issue_date||'').slice(0,7)===month&&x.entry_type==='income'&&x.status!=='cancelled').reduce((a,x)=>a+Number(x.amount||0),0));
- const expense=Number(r?.expense??financeCache.filter(x=>String(x.competence_date||x.issue_date||'').slice(0,7)===month&&x.entry_type==='expense'&&x.status!=='cancelled').reduce((a,x)=>a+Number(x.amount||0),0));
- financeViewState={income,expense};
- renderFinanceView();
-}
-
-async function saveFinEntry(){const m=document.getElementById('finMsg'),amount=Number(document.getElementById('finAmount').value||0),desc=document.getElementById('finDescription').value.trim();if(!desc||amount<=0){m.textContent='Informe descrição e valor.';return}try{const u=await getUser(),d=document.getElementById('finIssueDate').value||new Date().toISOString().slice(0,10);await rest('v2_financial_entries','','POST',{company_id:companyId,entry_type:document.getElementById('finType').value,description:desc,amount,issue_date:d,due_date:document.getElementById('finDueDate').value||null,competence_date:d,status:'open',counterparty_name:document.getElementById('finCounterparty').value.trim()||null,source_type:'manual',metadata:{},created_by:u?.id||null});document.getElementById('finEditCard').style.display='none';await loadFinance()}catch(e){m.textContent=e.message}}
-async function cancelFinEntry(id){if(!id||!confirm('Cancelar este lançamento financeiro?'))return;try{await rest('v2_financial_entries','id=eq.'+id,'PATCH',{status:'cancelled'});await loadFinance()}catch(e){alert(e.message)}}
 
 let adminReportCache=null;
 function reportResultNotice(){return 'Resultado parcial, baseado nos valores registrados. Combustível, manutenção e estoque podem ainda não estar conciliados no Financeiro. Não equivale a lucro líquido.'}
@@ -9218,11 +9171,11 @@ async function loadReports(){
   rest('v2_report_operations_monthly','select=*&company_id=eq.'+companyId+'&reference_month=eq.'+start),
   rest('v2_report_poultry_monthly','select=*&company_id=eq.'+companyId+'&reference_month=eq.'+start),
   rest('v2_report_attendance_monthly','select=*&company_id=eq.'+companyId+'&reference_month=eq.'+start),
-  rest('v2_operations','select=id,team_id,customer_name,title,status,scheduled_start,actual_birds,planned_birds,actual_revenue,actual_cost&company_id=eq.'+companyId+'&operation_type=in.(poultry_catching,poultry_loading)&scheduled_start=gte.'+encodeURIComponent(bounds.start)+'&scheduled_start=lt.'+encodeURIComponent(bounds.end)),
+  restAll('v2_operations','select=id,team_id,customer_name,title,status,scheduled_start,actual_birds,planned_birds,actual_revenue,actual_cost&company_id=eq.'+companyId+'&operation_type=in.(poultry_catching,poultry_loading)&scheduled_start=gte.'+encodeURIComponent(bounds.start)+'&scheduled_start=lt.'+encodeURIComponent(bounds.end)),
   rest('v2_teams','select=id,name,status&company_id=eq.'+companyId),
   rest('v2_vehicles','select=id,description,plate,model&company_id=eq.'+companyId),
-  rest('v2_fuel_logs','select=id,vehicle_id,fueled_at,odometer_km,liters,total_amount,station_name,metadata&company_id=eq.'+companyId+'&fueled_at=gte.'+encodeURIComponent(bounds.start)+'&fueled_at=lt.'+encodeURIComponent(bounds.end)+'&order=fueled_at.asc'),
-  rest('v2_poultry_truck_loads','select=id,birds,is_cata,created_at&company_id=eq.'+companyId+'&created_at=gte.'+encodeURIComponent(bounds.start)+'&created_at=lt.'+encodeURIComponent(bounds.end))
+  restAll('v2_fuel_logs','select=id,vehicle_id,fueled_at,odometer_km,liters,total_amount,station_name,metadata&company_id=eq.'+companyId+'&fueled_at=gte.'+encodeURIComponent(bounds.start)+'&fueled_at=lt.'+encodeURIComponent(bounds.end)+'&order=fueled_at.asc'),
+  restAll('v2_poultry_truck_loads','select=id,birds,is_cata,created_at&company_id=eq.'+companyId+'&created_at=gte.'+encodeURIComponent(bounds.start)+'&created_at=lt.'+encodeURIComponent(bounds.end))
  ]);
  const f=finView?.[0]||{},o=opsView?.[0]||{},p=poultryView?.[0]||{},a=attView?.[0]||{};
  const birds=ops.reduce((s,x)=>s+poN(x.actual_birds||x.planned_birds),0)||poN(p.birds);
@@ -9547,6 +9500,7 @@ document.addEventListener('click',async function(e){
   const ed=e.target.closest('.empDocDown');if(ed){e.preventDefault();await openStoredFile(ed.dataset.file,true);return}
   if(e.target.closest('#newFinEntryBtn')){e.preventDefault();document.getElementById('finEditCard').style.display='block';document.getElementById('finIssueDate').value=new Date().toISOString().slice(0,10);document.getElementById('finMsg').textContent='';return}
   if(e.target.closest('#cancelFinEntry')){e.preventDefault();document.getElementById('finEditCard').style.display='none';return}
+  if(e.target.closest('[data-fuel-more]')){e.preventDefault();fuelRenderLimit+=100;renderFuelHistory();return}
   if(e.target.closest('#saveFinEntry')){e.preventDefault();await saveFinEntry();return}
   if(e.target.closest('#refreshFinance')){e.preventDefault();await loadFinance();return}
   const fc=e.target.closest('.finCancel');if(fc){e.preventDefault();await cancelFinEntry(fc.dataset.id);return}

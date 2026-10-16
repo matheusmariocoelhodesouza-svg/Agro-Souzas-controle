@@ -1,5 +1,5 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { createClient } from "jsr:@supabase/supabase-js@2";
+import { createClient } from "jsr:@supabase/supabase-js@2.118.0";
 
 const cors={
   "Access-Control-Allow-Origin":"*",
@@ -173,6 +173,9 @@ Deno.serve(async(req:Request)=>{
   if(!companyId)return json({error:"company_id_required"},400);
   if(!await hasPermission(supabase,companyId,"ai.use"))return json({error:"forbidden"},403);
 
+  const apiKey=Deno.env.get("OPENAI_API_KEY");
+  if(mode==="health")return json({status:apiKey?"configured":"configuration_required",configured:!!apiKey,message:apiKey?"Configuração presente. Envie uma consulta para validar a resposta.":"IA aguardando ativação no servidor."});
+
   if(mode==="execute"){
     const actionId=str(body.action_request_id); if(!actionId)return json({error:"action_request_id_required"},400);
     const {data,error}=await supabase.rpc("v2_execute_assistant_action",{p_company_id:companyId,p_action_id:actionId});
@@ -185,6 +188,7 @@ Deno.serve(async(req:Request)=>{
   if(question.length>10000)return json({error:"Informe uma mensagem de até 10.000 caracteres."},400);
   if(imageData&&(imageData.length>12*1024*1024||!/^data:image\/(jpeg|png|webp);base64,/.test(imageData)))return json({error:"Use uma foto JPEG, PNG ou WebP válida."},400);
   if(source&&(source.bucket!=="company-documents"||typeof source.path!=="string"||!source.path.startsWith(companyId+"/assistant360/")))return json({error:"Confira o anexo desta empresa."},400);
+  if(!apiKey)return json({status:"configuration_required",message:"A integração de IA está pronta, mas a chave OPENAI_API_KEY ainda não está configurada no servidor."},503);
   let conversationId=str(body.conversation_id);
   if(conversationId){
     const {data:conversation,error}=await supabase.from("v2_ai_conversations").select("id").eq("id",conversationId).eq("company_id",companyId).maybeSingle();
@@ -196,8 +200,6 @@ Deno.serve(async(req:Request)=>{
   }
   await supabase.from("v2_ai_messages").insert({company_id:companyId,conversation_id:conversationId,user_id:user.id,role:"user",content:question+(source?.original_name?`\n[Anexo: ${source.original_name}]`:"")});
 
-  const apiKey=Deno.env.get("OPENAI_API_KEY");
-  if(!apiKey)return json({conversation_id:conversationId,status:"configuration_required",message:"A integração de IA está pronta, mas a chave OPENAI_API_KEY ainda não está configurada no servidor."},503);
   const ctx=await loadContext(supabase,companyId);
   const prompt=`Você é o Assistente 360 do Comando 360. Responda em português do Brasil. Hoje é ${todayBR()} (America/Sao_Paulo).\n\nOBJETIVO: ser o Comando IA, assistente central do Comando 360. Converse normalmente, responda dúvidas sobre o trabalho usando os dados internos fornecidos e, quando o usuário estiver pedindo para registrar algo, extraia uma ou mais ações estruturadas. Você também tem contexto do Oficina 360 (ordens de serviço, falhas e histórico) e do Lavador 360 (lavagens, custos, achados e produtos). Em dúvidas de oficina, priorize o histórico real da condução e diferencie dado registrado de hipótese técnica. Em dúvidas do lavador, use ordens, custos, produtos e achados reais. Nunca afirme que consultou um dado que não aparece no contexto. Nunca diga que algo já foi salvo: toda alteração deve ser apenas proposta e depende de confirmação humana posterior.\n\nAÇÕES SUPORTADAS:\n- fuel_log: abastecimento. Extraia veículo/placa, motorista, data, km, litros, valor total, preço por litro, posto e se completou o tanque.\n- poultry_schedule: fax/programação de apanha. Uma foto pode conter várias apanhas; gere UMA ação por apanha/local. Extraia equipe, integrado, granja/produtor, cidade, data/horário e aves previstas quando existirem.\n- maintenance: manutenção/ordem de serviço. Extraia veículo, km, tipo e descrição. maintenance_type deve ser preventive, corrective, inspection, tire, electrical ou other.\n- odometer: registro isolado de quilometragem.\n- none: pergunta/consulta sem lançamento.\n\nREGRAS: use a imagem e o texto em conjunto; não invente números ilegíveis. Quando um dado necessário não estiver claro, deixe null e liste em missing_fields. Use os nomes reais abaixo para reconhecer veículos/equipes/integrados/granjas, mas não invente entidade que não exista. Datas devem ser YYYY-MM-DD; scheduled_start deve ser ISO 8601 com offset -03:00 quando houver horário. Para 'amanhã', calcule a partir da data de hoje. Se houver apenas consulta, actions deve conter uma ação none.\n\nDADOS INTERNOS DISPONÍVEIS:\n${JSON.stringify(compactContext(ctx))}`;
   const content:any[]=[{type:"input_text",text:question}];
