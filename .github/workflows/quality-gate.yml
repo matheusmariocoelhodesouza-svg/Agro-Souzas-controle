@@ -131,7 +131,9 @@ jobs:
           grep -q 'poSavedAviary' c360-final-stabilization.js
           grep -q 'ensureMonthlyEmployees' c360-final-stabilization.js
           grep -q 'validateFuelBeforeSave' c360-final-stabilization.js
-          grep -q 'c360FinanceReconciliationNotice' c360-final-stabilization.js
+          grep -q 'c360FinanceReconciliationNotice' c360-finance.js
+          grep -q 'c360-finance.js' index.html
+          grep -q 'c360-data-access.js' index.html
           grep -q 'c360PricingTraceabilityNotice' c360-final-stabilization.js
           grep -q 'c360PoultryFilters' c360-final-stabilization.js
           grep -q 'c360EmployeeFilters' c360-final-stabilization.js
@@ -166,6 +168,8 @@ jobs:
           grep -q 'comando360-stable-v1' <<<"$SW_CONTRACT"
           grep -q 'c360-platform.js' <<<"$SW_CONTRACT"
           grep -q 'c360-product-core.js' <<<"$SW_CONTRACT"
+          grep -q './c360-data-access.js' "$SW_CORE"
+          grep -q './c360-finance.js' "$SW_CORE"
           grep -q './c360-release-core.js' "$SW_CORE"
           grep -q './c360-release-core.css' "$SW_CORE"
           grep -q './c360-final-stabilization.js' "$SW_CORE"
