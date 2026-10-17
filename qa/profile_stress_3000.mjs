@@ -1,3 +1,4 @@
+import {paginateMockRows} from './mock_pagination.mjs';
 import { chromium } from 'playwright';
 import fs from 'node:fs/promises';
 import path from 'node:path';
@@ -68,7 +69,7 @@ async function installApiMock(page,mode){
    const m=url.pathname.match(/\/rest\/v1\/([^/]+)/);const table=m?.[1];
    if(['POST','PATCH','PUT'].includes(method)){body=JSON.stringify([{id:'qa-write'}]);status=method==='POST'?201:200}
    else if(method==='DELETE'){body='';status=204}
-   else body=JSON.stringify(mockRows(table,mode));
+   else body=JSON.stringify(paginateMockRows(mockRows(table,mode),url.searchParams));
   }
   await route.fulfill({status,contentType,headers:{'access-control-allow-origin':'*','content-range':'0-0/1'},body});
  });

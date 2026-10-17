@@ -179,6 +179,7 @@ header .header-icon-btn>.c360-header-svg svg{width:21px!important;height:21px!im
 
 #combustivel>.card:first-child{
   border-radius:20px!important;
+  background:#fff!important;
 }
 #combustivel>.card:first-child>.toolbar:first-child{
   align-items:flex-start!important;
@@ -188,11 +189,21 @@ header .header-icon-btn>.c360-header-svg svg{width:21px!important;height:21px!im
   display:flex!important;
   align-items:center!important;
   gap:0!important;
-  color:#fff!important;
+  color:#173b5d!important;
+  -webkit-text-fill-color:currentColor!important;
   font-weight:950!important;
   letter-spacing:-.4px!important;
 }
-#combustivel #fuelScreenSubtitle{color:#a5b8cc!important}
+#combustivel #fuelScreenSubtitle{color:#52677f!important}
+html[data-theme="dark"] #combustivel>.card:first-child,
+body.darkmode #combustivel>.card:first-child,
+body.dark #combustivel>.card:first-child{background:#12263f!important}
+html[data-theme="dark"] #combustivel #fuelScreenTitle,
+body.dark #combustivel #fuelScreenTitle,
+body.darkmode #combustivel #fuelScreenTitle{color:#f1f5f9!important}
+html[data-theme="dark"] #combustivel #fuelScreenSubtitle,
+body.dark #combustivel #fuelScreenSubtitle,
+body.darkmode #combustivel #fuelScreenSubtitle{color:#b7c6d8!important}
 
 /* ---------- Manutenção ---------- */
 #manutencoes .maintenance-kpi,

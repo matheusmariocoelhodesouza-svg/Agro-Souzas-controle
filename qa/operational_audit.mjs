@@ -59,6 +59,8 @@ Object.assign(context,{
  money:n=>'R$ '+Number(n).toFixed(2),esc:s=>String(s??''),fuelLogIsFull:()=>false,
  async rest(table){return table==='v2_vehicles'?[{id:'v',description:'Sprinter',status:'active'},{id:'t',description:'Carretinha 02',status:'active'}]:[{...fuel(365598,43.01,'2026-09-16T12:00:00Z'),id:'new',vehicle_id:'v'},{...old,id:'old',vehicle_id:'v'}]}
 });
+context.restAll=(...args)=>context.rest(...args);
+context.fuelRenderLimit=100;vm.runInContext(source('renderFuelHistory'),context);
 vm.runInContext(source('loadFuel'),context);await context.loadFuel();
 test('Fuel screen uses warning and excludes anomalous KPI and trailer choice',()=>{
  assert.match(nodes.get('fuelList').innerHTML,/Revisar hodômetro/);assert.doesNotMatch(nodes.get('fuelList').innerHTML,/8433/);

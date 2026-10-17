@@ -3,7 +3,7 @@
 
 const QUALITY_VERSION='2026.09.12-q2';
 const FIN_PAGE_SIZE=100;
-const runtimeState={financePage:0,financeHasNext:false,financeMonth:'',financeStatus:'',installed:false,installing:false};
+const runtimeState={financePage:0,financeHasNext:false,financeMonth:'',financeStatus:'',financeRequestId:0,installed:false,installing:false};
 
 function q(sel,root=document){return root.querySelector(sel)}
 function escHtml(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
@@ -68,18 +68,20 @@ function updateFinancePager(){
 }
 
 async function smartLoadFinance(){
+  const requestId=++runtimeState.financeRequestId,company=typeof companyId==='undefined'?null:companyId;
   try{
     if(typeof companyId==='undefined'||!companyId||typeof rest!=='function'||typeof renderFinanceView!=='function')return;
     ensureFinanceTools();
     const b=monthBounds(runtimeState.financeMonth||brMonthNow());runtimeState.financeMonth=b.month;
     const offset=runtimeState.financePage*FIN_PAGE_SIZE;
-    let query='select=*&company_id=eq.'+encodeURIComponent(companyId)+'&issue_date=gte.'+b.start+'&issue_date=lt.'+b.next;
+    let query='select=*&company_id=eq.'+encodeURIComponent(company)+'&or=(and(competence_date.gte.'+b.start+',competence_date.lt.'+b.next+'),and(competence_date.is.null,issue_date.gte.'+b.start+',issue_date.lt.'+b.next+'))';
     if(runtimeState.financeStatus)query+='&status=eq.'+encodeURIComponent(runtimeState.financeStatus);
-    query+='&order=issue_date.desc,created_at.desc&limit='+(FIN_PAGE_SIZE+1)+'&offset='+offset;
+    query+='&order=issue_date.desc,created_at.desc,id.desc&limit='+(FIN_PAGE_SIZE+1)+'&offset='+offset;
     const [rows,rep]=await Promise.all([
       rest('v2_financial_entries',query),
-      rest('v2_report_monthly_financial','select=*&company_id=eq.'+encodeURIComponent(companyId)+'&reference_month=gte.'+b.start+'&reference_month=lt.'+b.next+'&limit=1')
+      rest('v2_report_monthly_financial','select=*&company_id=eq.'+encodeURIComponent(company)+'&reference_month=gte.'+b.start+'&reference_month=lt.'+b.next+'&limit=1')
     ]);
+    if(company!==companyId||requestId!==runtimeState.financeRequestId)return;
     const all=rows||[];runtimeState.financeHasNext=all.length>FIN_PAGE_SIZE;
     financeCache=all.slice(0,FIN_PAGE_SIZE);
     const r=(rep||[])[0];
@@ -89,7 +91,9 @@ async function smartLoadFinance(){
       expense=financeCache.filter(x=>x.entry_type==='expense'&&x.status!=='cancelled').reduce((a,x)=>a+Number(x.amount||0),0);
     }
     financeViewState={income,expense};renderFinanceView();updateFinancePager();refreshDdaSummary();
+    if(typeof window.refreshFinanceReconciliation==='function')await window.refreshFinanceReconciliation(b.month);
   }catch(e){
+    if(company!==companyId||requestId!==runtimeState.financeRequestId)return;
     captureRuntimeError('finance-load',e?.message||e);
     const list=q('#financeList');if(list)list.innerHTML='<div class="error">Não foi possível carregar o Financeiro. '+escHtml(e?.message||e)+'</div>';
   }
@@ -130,7 +134,7 @@ function ensureDdaCard(){
   const section=q('#financeiro'),list=q('#financeList');if(!section||!list||q('#c360DdaCard'))return;
   try{if(typeof deviceMode!=='undefined'&&deviceMode)return}catch(_){ }
   const listCard=list.closest('.card'),card=document.createElement('div');card.className='card c360-dda-card';card.id='c360DdaCard';
-  card.innerHTML=`<div class="c360-dda-grid"><div class="c360-dda-main"><h3>🏦 DDA / Boletos bancários <span class="c360-quality-badge">INTEGRADO</span></h3><p>Boletos recebidos pelo DDA entram automaticamente como contas a pagar, sem digitação duplicada.</p><span class="c360-dda-state" id="c360DdaState">Verificando conexão...</span><div class="c360-dda-actions"><button class="btn primary" id="c360DdaOpen" type="button">ABRIR DDA</button><button class="btn soft" id="c360DdaRefresh" type="button">↻ ATUALIZAR STATUS</button></div></div><div class="c360-dda-kpi"><span>BOLETOS</span><b id="c360DdaTitles">—</b></div><div class="c360-dda-kpi"><span>A PAGAR</span><b id="c360DdaOpenAmount">—</b></div><div class="c360-dda-kpi"><span>VENCIDOS</span><b id="c360DdaOverdue">—</b></div></div>`;
+  card.innerHTML=`<div class="c360-dda-grid"><div class="c360-dda-main"><h3>🏦 DDA / Boletos bancários <span class="c360-quality-badge">INTEGRAÇÃO</span></h3><p>Depois da ativação, boletos recebidos pelo DDA entram como contas a pagar, sem digitação duplicada.</p><span class="c360-dda-state" id="c360DdaState">Verificando conexão...</span><div class="c360-dda-actions"><button class="btn primary" id="c360DdaOpen" type="button">ABRIR DDA</button><button class="btn soft" id="c360DdaRefresh" type="button">↻ ATUALIZAR STATUS</button></div></div><div class="c360-dda-kpi"><span>BOLETOS</span><b id="c360DdaTitles">—</b></div><div class="c360-dda-kpi"><span>A PAGAR</span><b id="c360DdaOpenAmount">—</b></div><div class="c360-dda-kpi"><span>VENCIDOS</span><b id="c360DdaOverdue">—</b></div></div>`;
   listCard.parentNode.insertBefore(card,listCard);q('#c360DdaOpen').addEventListener('click',openDdaOverlay);q('#c360DdaRefresh').addEventListener('click',refreshDdaSummary);
 }
 

@@ -18,7 +18,7 @@ function source(name,file='index.html'){
 function fixture(body=''){
  const dom=new JSDOM('<!doctype html><body>'+body+'</body>',{url:'https://example.test',runScripts:'outside-only',pretendToBeVisual:true});
  const w=dom.window;w.companyId='fixture-company';w.console.warn=()=>{};w.scrollTo=()=>{};
- w.q=(s,r=w.document)=>r.querySelector(s);w.$=w.q;return dom;
+ w.q=(s,r=w.document)=>r.querySelector(s);w.$=w.q;w.restAll=(...args)=>w.rest(...args);return dom;
 }
 function load(w,names,file='index.html'){for(const name of names)w.eval(source(name,file))}
 async function withFixture(body,fn){const dom=fixture(body);try{await fn(dom.window)}finally{dom.window.close()}}
