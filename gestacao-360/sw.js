@@ -1,0 +1,6 @@
+const CACHE='g360-v3';const ASSETS=['./','./index.html','./style.css','./app.js','./config.js','./manifest.json'];
+self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)).then(()=>self.skipWaiting())));
+self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
+self.addEventListener('fetch',e=>{if(e.request.method!=='GET')return;e.respondWith(fetch(e.request).then(r=>{let copy=r.clone();caches.open(CACHE).then(c=>c.put(e.request,copy));return r}).catch(()=>caches.match(e.request)))});
+self.addEventListener('push',e=>{let d={};try{d=e.data?e.data.json():{}}catch(_){d={body:e.data?.text()||''}};let title=d.title||'Gestação 360';let opts={body:d.body||'Você tem um lembrete.',icon:'./icon-192.png',badge:'./icon-192.png',tag:d.tag||'g360-reminder',renotify:true,requireInteraction:!!d.requireInteraction,data:{url:d.url||'./'},vibrate:[300,120,300,120,500]};e.waitUntil(self.registration.showNotification(title,opts))});
+self.addEventListener('notificationclick',e=>{e.notification.close();let u=e.notification.data?.url||'./';e.waitUntil(clients.matchAll({type:'window',includeUncontrolled:true}).then(list=>{for(let c of list){if('focus'in c){c.navigate(u);return c.focus()}}return clients.openWindow(u)}))});
