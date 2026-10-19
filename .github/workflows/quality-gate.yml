@@ -86,6 +86,7 @@ jobs:
           C360_JSDOM_PATH=/tmp/c360-audit/node_modules/jsdom node qa/audit_regressions_20261007.mjs
           C360_JSDOM_PATH=/tmp/c360-audit/node_modules/jsdom node qa/standalone_regressions_20261007.mjs
           node qa/assistant_backend_regressions_20261007.mjs
+          node qa/daily_ai_backend_regressions_20261019.mjs
           node qa/fuel_cost_audit_20261016.mjs
           C360_JSDOM_PATH=/tmp/c360-audit/node_modules/jsdom node qa/readiness_audit_20261016.mjs
 
