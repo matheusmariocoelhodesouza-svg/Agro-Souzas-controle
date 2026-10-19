@@ -1,5 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2.118.0";
+import { getOpenAiApiKey, openAiProviderError } from "../_shared/openai-server.ts";
 
 const cors={
   "Access-Control-Allow-Origin":"*",
@@ -173,15 +174,17 @@ Deno.serve(async(req:Request)=>{
   if(!companyId)return json({error:"company_id_required"},400);
   if(!await hasPermission(supabase,companyId,"ai.use"))return json({error:"forbidden"},403);
 
-  const apiKey=Deno.env.get("OPENAI_API_KEY");
-  if(mode==="health")return json({status:apiKey?"configured":"configuration_required",configured:!!apiKey,message:apiKey?"Configuração presente. Envie uma consulta para validar a resposta.":"IA aguardando ativação no servidor."});
-
   if(mode==="execute"){
     const actionId=str(body.action_request_id); if(!actionId)return json({error:"action_request_id_required"},400);
     const {data,error}=await supabase.rpc("v2_execute_assistant_action",{p_company_id:companyId,p_action_id:actionId});
     if(error)return json({error:"action_execution_failed",message:error.code==="P0001"||error.code==="42501"?error.message:"Não foi possível confirmar o lançamento. Confira os dados e tente novamente."},error.code==="42501"?403:400);
     return json(data);
   }
+
+  let apiKey:string|null;
+  try{apiKey=await getOpenAiApiKey()}
+  catch{return json({error:"ai_configuration_unavailable",message:"Não foi possível verificar a configuração da IA. Tente novamente."},503)}
+  if(mode==="health")return json({status:apiKey?"configured":"configuration_required",configured:!!apiKey,message:apiKey?"Configuração presente. Envie uma consulta para validar a resposta.":"IA aguardando ativação no servidor."});
 
   const question=str(body.question)||"Analise a imagem e identifique o que deve ser lançado no Comando 360.";
   const imageData=str(body.image_data_url); const source=body.source_attachment||null;
@@ -207,9 +210,9 @@ Deno.serve(async(req:Request)=>{
   const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),35000);let out:any;
   try{
     const r=await fetch("https://api.openai.com/v1/responses",{method:"POST",signal:controller.signal,headers:{Authorization:`Bearer ${apiKey}`,"Content-Type":"application/json"},body:JSON.stringify({
-      model:"gpt-5-mini",instructions:prompt,input:[{role:"user",content}],text:{format:{type:"json_schema",name:"comando360_assistant",strict:true,schema:extractionSchema}}
+      model:"gpt-5-mini",store:false,max_output_tokens:4096,reasoning:{effort:"low"},instructions:prompt,input:[{role:"user",content}],text:{format:{type:"json_schema",name:"comando360_assistant",strict:true,schema:extractionSchema}}
     })});
-    if(!r.ok)return json({error:"ai_provider_error",message:"A IA está indisponível. Tente novamente."},502);
+    if(!r.ok){const failure=await openAiProviderError(r);return json({error:failure.error,message:failure.message},failure.status)}
     out=await r.json();
   }catch(e){return json({error:"ai_provider_unavailable",message:e instanceof Error&&e.name==="AbortError"?"A consulta demorou demais. Tente novamente.":"Não foi possível consultar a IA neste momento."},503)}
   finally{clearTimeout(timer)}

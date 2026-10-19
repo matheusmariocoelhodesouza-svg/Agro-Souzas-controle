@@ -2,7 +2,8 @@ import fs from 'node:fs';
 import vm from 'node:vm';
 import assert from 'node:assert/strict';
 import {stripTypeScriptTypes} from 'node:module';
-const source=stripTypeScriptTypes(fs.readFileSync('supabase/functions/controla-ai/index.ts','utf8').replace(/^import .*$/gm,''));
+const shared=fs.readFileSync('supabase/functions/_shared/openai-server.ts','utf8').replace(/^import .*$/gm,'').replace(/^export /gm,'');
+const source=stripTypeScriptTypes(shared+'\n'+fs.readFileSync('supabase/functions/controla-ai/index.ts','utf8').replace(/^import .*$/gm,''));
 let passed=0;
 async function test(name,run){await run();passed++;console.log('PASS '+name)}
 function runtime(options={}){
@@ -17,10 +18,11 @@ function runtime(options={}){
   if(name==='single'||name==='maybeSingle')return async()=>({data:table==='v2_ai_conversations'?(options.foreignConversation&&!inserted?null:{id:'fixture-conversation'}):{id:'fixture-message'},error:null});
   return()=>chain;
  }});return chain;}};
- const sandbox={Request,Response,Headers,AbortController,Error,Date,Intl,JSON,console,createClient:()=>sb,
+ const server={rpc:async name=>{assert.equal(name,'v2_ai_server_key');calls.push({name,service:true});return{data:options.vaultKey||null,error:options.vaultError?{message:'private key lookup SQL detail'}:null}}};
+ const sandbox={Request,Response,Headers,AbortController,AbortSignal,Error,Date,Intl,JSON,console,createClient:(_url,_key,config)=>config?.global?.headers?.Authorization?sb:server,
   Deno:{serve:fn=>{handler=fn},env:{get:name=>name==='OPENAI_API_KEY'?(options.noKey?null:'synthetic-qa-key'):'synthetic-qa-config'}},
   setTimeout(fn,ms){timers.push(ms);if(options.hang)queueMicrotask(fn);return timers.length},clearTimeout:id=>cleared.push(id),
-  fetch:async(url,opt)=>{calls.push({provider:url,signal:opt.signal});if(options.hang)return new Promise((resolve,reject)=>opt.signal.addEventListener('abort',()=>reject(Object.assign(new Error('aborted'),{name:'AbortError'}))));
+  fetch:async(url,opt)=>{calls.push({provider:url,signal:opt.signal,authorization:opt.headers.Authorization,payload:JSON.parse(opt.body)});if(options.hang)return new Promise((resolve,reject)=>opt.signal.addEventListener('abort',()=>reject(Object.assign(new Error('aborted'),{name:'AbortError'}))));
    return new Response(JSON.stringify(options.providerBody||{status:'completed',output:[{type:'message',content:[{type:'output_text',text:JSON.stringify({answer:'Consulta sintética',actions:[]})}]}]}),{status:options.providerStatus||200});
   }};
  vm.runInNewContext(source,sandbox,{filename:'controla-ai.test.js'});
@@ -55,6 +57,50 @@ await test('AI health reports activation without creating conversations or calli
 });
 await test('AI health requires the company AI permission',async()=>{
  const r=runtime({noPermission:true});assert.equal((await r.request({mode:'health'})).status,403);assert.equal(r.writes.length,0);
+});
+await test('Vault credentials are unavailable until user and company permission checks pass',async()=>{
+ for(const options of [{noUser:true},{noPermission:true}]){
+  const r=runtime({noKey:true,vaultKey:'fixture-private-vault-credential',...options});
+  assert.ok([401,403].includes((await r.request({mode:'health'})).status));
+  assert.equal(r.calls.filter(c=>c.name==='v2_ai_server_key').length,0);
+ }
+});
+await test('Vault health exposes only configuration status and sends no model request',async()=>{
+ const key='fixture-private-vault-credential',r=runtime({noKey:true,vaultKey:key}),out=await r.request({mode:'health'});
+ assert.equal(out.status,200);assert.equal(out.body.configured,true);assert.equal(r.writes.length,0);
+ assert.equal(r.calls.filter(c=>c.name==='v2_ai_server_key'&&c.service).length,1);
+ assert.equal(r.calls.filter(c=>c.provider).length,0);assert.ok(!JSON.stringify(out.body).includes(key));
+});
+await test('The Vault key powers provider requests without entering app responses or database writes',async()=>{
+ const key='fixture-private-vault-credential',r=runtime({noKey:true,vaultKey:key}),out=await r.request({question:'Consulta'});
+ assert.equal(out.status,200);assert.equal(r.calls.find(c=>c.provider).authorization,'Bearer '+key);
+ assert.ok(!JSON.stringify([out.body,r.writes]).includes(key));
+});
+await test('Native secret configuration takes precedence without a Vault query',async()=>{
+ const r=runtime({vaultError:true});assert.equal((await r.request({mode:'health'})).body.configured,true);
+ assert.equal(r.calls.filter(c=>c.name==='v2_ai_server_key').length,0);
+});
+await test('A Vault failure stops analysis before any conversation write and hides server details',async()=>{
+ const r=runtime({noKey:true,vaultError:true}),out=await r.request({question:'Consulta'});
+ assert.equal(out.status,503);assert.equal(out.body.error,'ai_configuration_unavailable');
+ assert.equal(r.writes.length,0);assert.equal(r.calls.filter(c=>c.provider).length,0);
+ assert.doesNotMatch(JSON.stringify(out.body),/private key lookup|SQL detail/);
+});
+await test('Confirmed actions do not depend on the provider or secret store being available',async()=>{
+ const r=runtime({noKey:true,vaultError:true}),out=await r.request({mode:'execute',action_request_id:'fixture-action'});
+ assert.equal(out.status,200);assert.equal(r.calls.filter(c=>c.name==='v2_ai_server_key'||c.provider).length,0);
+});
+await test('Provider requests limit generation and disable response storage',async()=>{
+ const r=runtime();assert.equal((await r.request({question:'Consulta'})).status,200);
+ const request=r.calls.find(c=>c.provider);assert.equal(request.provider,'https://api.openai.com/v1/responses');
+ assert.equal(request.payload.store,false);assert.equal(request.payload.max_output_tokens,4096);
+});
+await test('Quota, access and rate errors give actionable messages without echoing provider secrets',async()=>{
+ for(const [status,code,expected] of [[429,'insufficient_quota','ai_billing_required'],[429,'credit_balance_exhausted','ai_billing_required'],[429,'rate_limit_exceeded','ai_busy'],[401,'invalid_api_key','ai_configuration_error'],[403,'forbidden','ai_configuration_error'],[500,'server_error','ai_provider_error']]){
+  const r=runtime({providerStatus:status,providerBody:{error:{code,message:'fixture-secret-private-provider-message'}}}),out=await r.request({question:'Consulta'});
+  assert.equal(out.body.error,expected);assert.doesNotMatch(JSON.stringify(out.body),/fixture-secret-private/);
+  assert.equal(r.writes.filter(w=>w.table==='v2_ai_action_requests').length,0);
+ }
 });
 await test('A conversation from another company cannot receive new messages',async()=>{
  const r=runtime({foreignConversation:true}),out=await r.request({conversation_id:'foreign-conversation',question:'Consulta'});assert.equal(out.status,400);assert.equal(r.writes.length,0);
