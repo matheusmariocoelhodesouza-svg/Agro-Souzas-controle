@@ -2731,6 +2731,12 @@ body.darkmode #financeiro .finance-privacy-btn{background:#17283d;border-color:#
 </div>
 <div class="section" data-screen="alertas" hidden="" id="alertas">
 <div class="card"><div class="toolbar" style="justify-content:space-between"><div><h3 style="margin:0">⚠ Alertas Inteligentes</h3><div class="muted">Pendências importantes da operação, RH e frota.</div></div><button class="btn primary" id="refreshAlerts" type="button">Atualizar alertas</button></div><div class="v2-kpis" id="alertsKpis" style="margin-top:14px"></div></div>
+<div class="card" id="notificationTestCard">
+ <h3>🔔 Notificação no celular e relógio</h3>
+ <p class="muted">Gere um aviso somente neste aparelho e confira se ele também aparece no relógio conectado.</p>
+ <button class="btn primary" id="c360TestNotification" type="button">ENVIAR AVISO DE TESTE</button>
+ <p class="muted" id="c360NotificationStatus" role="status" aria-live="polite">O teste é manual. Os avisos automáticos da operação precisam de ativação separada.</p>
+</div>
 <div class="card"><div class="list" id="alertsList"></div></div></div>
 
 <div class="section" data-screen="integracoes" hidden="" id="integracoes">
@@ -9938,4 +9944,57 @@ if(document.getElementById('settingsAddContract'))document.getElementById('setti
 function isPointScreenMounted(){return !!document.querySelector('#screenHost [data-screen="ponto"]')}
 </script>
 <script src="./c360-quality-hotfix.js"></script>
+<script id="c360NotificationTestScript">
+(function(){
+ 'use strict';
+ document.addEventListener('click',async function(event){
+  const button=event.target?.closest?.('#c360TestNotification');
+  const status=document.getElementById('c360NotificationStatus');
+  if(!button||!status||button.disabled)return;
+  button.disabled=true;
+  let workerTimer;
+  status.textContent='Preparando o aviso de teste…';
+  try{
+   if(!window.isSecureContext||!('Notification' in window)||!('serviceWorker' in navigator)){
+    status.textContent='Este ambiente não permite gerar o aviso. Abra o Comando 360 instalado ou no Chrome atualizado.';
+    return;
+   }
+   let permission=Notification.permission;
+   if(permission==='default')permission=await Notification.requestPermission();
+   if(permission!=='granted'){
+    status.textContent=permission==='denied'
+     ?'As notificações do Comando estão bloqueadas neste aparelho. Libere as notificações nas configurações do Android ou do navegador e tente novamente.'
+     :'Permissão não concedida. Toque novamente e escolha Permitir para testar.';
+    return;
+   }
+   const registration=await Promise.race([
+    navigator.serviceWorker.ready,
+    new Promise(function(_,reject){workerTimer=setTimeout(function(){reject(new Error('worker-timeout'));},8000);})
+   ]);
+   if(!registration||typeof registration.showNotification!=='function'){
+    status.textContent='Este ambiente não permite gerar o aviso. Abra o Comando 360 instalado ou no Chrome atualizado.';
+    return;
+   }
+   await registration.showNotification('Comando 360 — teste',{
+    body:'Este é um aviso de teste. Confira também se apareceu no relógio.',
+    icon:new URL('./comando360-icon-192-v7.png',location.href).href,
+    tag:'comando360-watch-test',
+    renotify:true,
+    vibrate:[250,100,250],
+    lang:'pt-BR',
+    timestamp:Date.now()
+   });
+   const time=new Date().toLocaleTimeString('pt-BR');
+   status.textContent='Teste gerado às '+time+'. Confira a barra de notificações do celular e o relógio. O recebimento no relógio precisa ser conferido por você.';
+  }catch(error){
+   status.textContent=error&&error.message==='worker-timeout'
+    ?'O Comando ainda está preparando este aparelho. Atualize o app e tente novamente.'
+    :'Não foi possível gerar o aviso. Confira a permissão de notificações deste aparelho e tente novamente.';
+  }finally{
+   clearTimeout(workerTimer);
+   button.disabled=false;
+  }
+ });
+})();
+</script>
 </body></html>
