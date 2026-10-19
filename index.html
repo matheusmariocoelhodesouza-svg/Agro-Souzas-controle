@@ -9947,11 +9947,10 @@ function isPointScreenMounted(){return !!document.querySelector('#screenHost [da
 <script id="c360NotificationTestScript">
 (function(){
  'use strict';
- const button=document.getElementById('c360TestNotification');
- const status=document.getElementById('c360NotificationStatus');
- if(!button||!status)return;
- button.addEventListener('click',async function(){
-  if(button.disabled)return;
+ document.addEventListener('click',async function(event){
+  const button=event.target?.closest?.('#c360TestNotification');
+  const status=document.getElementById('c360NotificationStatus');
+  if(!button||!status||button.disabled)return;
   button.disabled=true;
   let workerTimer;
   status.textContent='Preparando o aviso de teste…';
