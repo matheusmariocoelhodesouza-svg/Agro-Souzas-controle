@@ -18,6 +18,7 @@ on:
       - 'qa/report_stability_fixture.html'
       - 'qa/ux_polish.mjs'
       - 'qa/ux_polish_fixture.html'
+      - 'qa/assistant_multiple_images_20261019.mjs'
       - '.github/workflows/reference-ui.yml'
   pull_request:
     branches: [main]
@@ -57,6 +58,8 @@ jobs:
         run: node qa/report_stability.mjs
       - name: Run visual UX polish regression
         run: node qa/ux_polish.mjs
+      - name: Run assistant multiple image regression
+        run: node qa/assistant_multiple_images_20261019.mjs
       - name: Enforce measured performance budget
         run: node qa/performance_budget.mjs
       - name: Upload QA screenshots and report

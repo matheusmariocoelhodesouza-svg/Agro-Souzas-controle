@@ -1,16 +1,18 @@
 (()=>{
 'use strict';
-const VERSION='2026.10.16-comando-ai-3';
+const VERSION='2026.10.19-comando-ai-4';
 if(window.__c360Assistant360Version===VERSION)return;
 window.__c360Assistant360Version=VERSION;
 
 const style=document.createElement('style');style.id='c360-assistant360-style';style.textContent=`
 .assistant360-ready .chatbox,.assistant360-ready .ai-thread{min-height:360px;max-height:58vh;overflow:auto}.ai360-shell-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}.ai360-brand{display:flex;align-items:center;gap:10px}.ai360-brand-mark{width:42px;height:42px;border-radius:13px;background:#102a4c;color:#fff;display:grid;place-items:center;font-weight:950;font-size:18px}.ai360-brand-copy h3{margin:0}.ai360-brand-copy p{margin:3px 0 0;color:#64748b;font-size:12px}.ai360-capabilities{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0}.ai360-capabilities span{font-size:10px;font-weight:850;padding:5px 8px;border-radius:999px;background:#eef4fb;color:#31516f}.ai360-tools{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:10px 0}.ai360-tools-hint{font-size:11px;color:#64748b;flex:1;min-width:220px}.ai360-tool.recording{background:#fee2e2!important;color:#991b1b!important;border-color:#fecaca!important}.ai360-attachment{margin:8px 0 10px}.ai360-thumb-wrap{display:flex;align-items:center;gap:10px;padding:9px;border:1px solid #dbe4ef;background:#f8fafc;border-radius:13px}.ai360-thumb{width:58px;height:58px;border-radius:10px;object-fit:cover;background:#e2e8f0}.ai360-thumb-wrap>div{min-width:0;flex:1}.ai360-thumb-wrap b{font-size:12px;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ai360-thumb-wrap small,.ai360-msgmeta{display:block;color:#64748b;font-size:10px;margin-top:3px}.ai360-remove{border:0;background:#e2e8f0;border-radius:999px;width:30px;height:30px;font-size:20px;cursor:pointer}.ai360-actions{display:grid;gap:10px;margin:12px 0}.ai360-action-card{border:1px solid #dce6f2;border-radius:16px;padding:14px;background:#fff;box-shadow:0 5px 18px rgba(15,23,42,.05)}.ai360-action-card.saved{border-color:#bbf7d0;background:#f8fff9}.ai360-action-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.ai360-action-head>div{display:grid;gap:4px}.ai360-action-kind{font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.6px;color:#1976d2}.ai360-action-head strong{font-size:14px}.ai360-confidence{font-size:11px;font-weight:900;padding:5px 8px;border-radius:999px;background:#eef5ff;color:#1859a8}.ai360-review-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin:12px 0}.ai360-review-grid>div{padding:9px 10px;border:1px solid #edf1f6;border-radius:11px;background:#f8fafc;min-width:0}.ai360-review-grid span{display:block;color:#64748b;font-size:10px}.ai360-review-grid b{display:block;margin-top:2px;font-size:12px;overflow-wrap:anywhere}.ai360-ready,.ai360-missing{font-size:11px;font-weight:800;padding:8px 10px;border-radius:10px;margin-top:6px}.ai360-ready{background:#ecfdf3;color:#166534}.ai360-missing{background:#fff7ed;color:#9a3412}.ai360-action-buttons{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.ai360-action-buttons button:disabled{opacity:.5;cursor:not-allowed}.ai360-saved{font-size:12px;font-weight:900;color:#166534;padding:8px 0}@media(max-width:640px){.ai360-tools{display:grid;grid-template-columns:1fr 1fr}.ai360-tools-hint{grid-column:1/-1;min-width:0}.ai360-review-grid{grid-template-columns:1fr}.ai360-action-buttons{display:grid;grid-template-columns:1fr}.ai360-action-buttons button{width:100%}}
+.ai360-attachment-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px;font-size:12px}.ai360-attachment-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;max-height:280px;overflow:auto}.ai360-clear{border:0;border-radius:8px;padding:7px 10px;cursor:pointer}.ai360-remove:disabled,.ai360-clear:disabled{opacity:.5;cursor:wait}.ai360-message-images{display:flex;gap:6px;overflow:auto;margin-top:8px;max-width:100%}.ai360-message-images img{width:64px;height:64px;object-fit:cover;border-radius:8px;flex:none}@media(max-width:640px){.ai360-attachment-list{grid-template-columns:1fr}}
 `;if(!document.getElementById(style.id))document.head.appendChild(style);
 
 const SHARE_CACHE='comando360-share-inbox-v1';
 const SHARE_KEY='./__assistant360_shared_image__';
-const state={conversationId:null,file:null,imageDataUrl:null,sourceAttachment:null,busy:false,recognition:null,installed:new WeakSet(),shareHandled:false};
+const MAX_IMAGES=10,MAX_VISION_BYTES=12*1024*1024;
+const state={conversationId:null,attachments:[],busy:false,recognition:null,installed:new WeakSet(),shareHandled:false};
 let healthBusy=false,healthCompany='',healthAt=0;
 const $=(sel,root=document)=>root.querySelector(sel);
 const $$=(sel,root=document)=>[...root.querySelectorAll(sel)];
@@ -67,7 +69,7 @@ function addMessage(root,text,role='ai',meta=''){
   appendLinkedText(d,text);
   if(meta){const small=document.createElement('div');small.className='ai360-msgmeta';small.textContent=meta;d.appendChild(small)}
  }
- box.appendChild(d);box.scrollTop=box.scrollHeight;
+ box.appendChild(d);box.scrollTop=box.scrollHeight;return d;
 }
 function notify(text,type='info'){
  const toast=globalFn('showToast');if(typeof toast==='function'){try{toast(text);return}catch{}}
@@ -84,6 +86,7 @@ function payloadRows(a){
  if(a.action_type==='poultry_schedule')rows.push(['Equipe',p.team_name],['Integrado',p.integrator_name],['Granja / produtor',p.farm_name||p.producer],['Cidade',p.city],['Programação',p.scheduled_start],['Aves previstas',p.planned_birds!=null?formatNumber(p.planned_birds):null]);
  if(a.action_type==='maintenance')rows.push(['Veículo',[p.vehicle_name,p.plate].filter(Boolean).join(' • ')],['Tipo',p.maintenance_type],['Título',p.title],['Problema',p.reported_issue],['Serviço',p.service_performed],['Hodômetro',p.odometer_km!=null?formatNumber(p.odometer_km,' km'):null],['Mão de obra',p.labor_amount!=null?formatMoney(p.labor_amount):null]);
  if(a.action_type==='odometer')rows.push(['Veículo',[p.vehicle_name,p.plate].filter(Boolean).join(' • ')],['Data',p.date],['Hodômetro',p.odometer_km!=null?formatNumber(p.odometer_km,' km'):null]);
+ if(p.source_image_indices?.length)rows.push(['Imagens de origem',p.source_image_indices.join(', ')]);
  return rows.filter(([,v])=>v!==null&&v!==undefined&&v!=='');
 }
 function actionsHost(root){
@@ -114,10 +117,19 @@ function attachmentHost(root){
  const composer=$('.ai360-tools',root);composer?.insertAdjacentElement('afterend',el);return el;
 }
 function renderAttachment(root){
- const el=attachmentHost(root);if(!state.file){el.hidden=true;el.innerHTML='';return}
- el.hidden=false;el.innerHTML=`<div class="ai360-thumb-wrap"><img alt="Prévia do anexo" class="ai360-thumb"/><div><b>${esc(state.file.name)}</b><small>${(state.file.size/1024/1024).toFixed(1)} MB • original será arquivado</small></div><button type="button" class="ai360-remove" aria-label="Remover anexo">×</button></div>`;
- if(state.imageDataUrl)$('img',el).src=state.imageDataUrl;
- $('.ai360-remove',el)?.addEventListener('click',()=>{state.file=null;state.imageDataUrl=null;state.sourceAttachment=null;renderAttachment(root)});
+ const el=attachmentHost(root);if(!state.attachments.length){el.hidden=true;el.innerHTML='';return}
+ el.hidden=false;el.innerHTML=`<div class="ai360-attachment-head"><b>${state.attachments.length} de ${MAX_IMAGES} imagens selecionadas</b><button type="button" class="btn soft ai360-clear">Limpar todas</button></div><div class="ai360-attachment-list"></div>`;
+ const list=$('.ai360-attachment-list',el);
+ state.attachments.forEach((attachment,index)=>{
+  const row=document.createElement('div');row.className='ai360-thumb-wrap';
+  row.innerHTML=`<img alt="Prévia da imagem ${index+1}" class="ai360-thumb"/><div><b>${index+1}. ${esc(attachment.file.name)}</b><small>${(attachment.file.size/1024/1024).toFixed(1)} MB • original será arquivado</small></div><button type="button" class="ai360-remove" aria-label="Remover imagem ${index+1}: ${esc(attachment.file.name)}">×</button>`;
+  $('img',row).src=attachment.imageDataUrl;
+  $('.ai360-remove',row).disabled=state.busy;
+  $('.ai360-remove',row).addEventListener('click',()=>{if(state.busy)return;state.attachments=state.attachments.filter(a=>a!==attachment);renderAttachment(root)});
+  list.appendChild(row);
+ });
+ $('.ai360-clear',el).disabled=state.busy;
+ $('.ai360-clear',el).addEventListener('click',()=>{if(state.busy)return;state.attachments=[];renderAttachment(root)});
 }
 function safeFileName(name){return String(name||'foto.jpg').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9._-]+/g,'-').slice(-120)}
 async function compressForVision(file){
@@ -128,8 +140,8 @@ async function compressForVision(file){
  canvas.getContext('2d',{alpha:false}).drawImage(img,0,0,canvas.width,canvas.height);
  return canvas.toDataURL('image/jpeg',.84);
 }
-async function uploadOriginal(file){
- const cid=company(),s=authSession();if(!cid||!s?.access_token)throw new Error('Sessão inválida para arquivar a foto.');
+async function uploadOriginal(file,cid){
+ const s=authSession();if(!cid||company()!==cid||!s?.access_token)throw new Error('Sessão inválida para arquivar a foto.');
  const day=new Date().toISOString().slice(0,10);const uid=(crypto.randomUUID?crypto.randomUUID():`${Date.now()}-${Math.random().toString(16).slice(2)}`);
  const path=`${cid}/assistant360/${day}/${uid}-${safeFileName(file.name)}`;
  const endpoint=`/storage/v1/object/company-documents/${path.split('/').map(encodeURIComponent).join('/')}`;
@@ -137,22 +149,35 @@ async function uploadOriginal(file){
  if(!r.ok){let msg='';try{msg=(await r.json())?.message||''}catch{}throw new Error(msg||'Não foi possível arquivar a foto original.');}
  return {bucket:'company-documents',path,original_name:file.name,mime_type:file.type||null,size_bytes:file.size};
 }
-async function prepareImage(root,file){
- if(!file)return false;
- if(!String(file.type||'').startsWith('image/')){notify('Selecione uma imagem (JPG, PNG, WEBP ou foto do celular).','error');return false}
- if(file.size>15*1024*1024){notify('A foto deve ter até 15 MB.','error');return false}
- state.file=file;state.sourceAttachment=null;
- try{state.imageDataUrl=await compressForVision(file);renderAttachment(root);return true}catch{state.file=null;state.imageDataUrl=null;notify('Não consegui preparar essa imagem.','error');return false}
+async function prepareImages(root,files){
+ if(state.busy)return false;
+ const fingerprint=file=>[file.name,file.size,file.lastModified,file.type].join('|');
+ const seen=new Set(state.attachments.map(a=>fingerprint(a.file))),selected=[];
+ for(const file of Array.from(files||[])){const id=fingerprint(file);if(!seen.has(id)){selected.push(file);seen.add(id)}}
+ if(!selected.length)return false;
+ if(state.attachments.length+selected.length>MAX_IMAGES){notify(`Selecione até ${MAX_IMAGES} imagens por mensagem.`,'error');return false}
+ if(selected.some(file=>!String(file.type||'').startsWith('image/'))){notify('Selecione apenas imagens (JPG, PNG, WEBP ou fotos do celular).','error');return false}
+ if(selected.some(file=>file.size>15*1024*1024)){notify('Cada foto deve ter até 15 MB.','error');return false}
+ setBusy(root,true,'Preparando imagens…');
+ try{
+  const prepared=[];
+  for(const file of selected)prepared.push({file,imageDataUrl:await compressForVision(file),sourceAttachment:null});
+  if([...state.attachments,...prepared].reduce((n,a)=>n+a.imageDataUrl.length,0)>MAX_VISION_BYTES)throw new Error('As imagens ficaram muito grandes juntas. Envie menos fotos por mensagem.');
+  state.attachments.push(...prepared);renderAttachment(root);return true;
+ }catch(e){notify(e?.message||'Não consegui preparar essas imagens. Selecione fotos JPG, PNG ou WEBP.','error');return false}
+ finally{setBusy(root,false)}
 }
 function ensureFileInput(root){
  let input=$('.ai360-file-input',root);
  if(input)return input;
- input=document.createElement('input');input.className='ai360-file-input';input.type='file';input.accept='image/*';input.hidden=true;root.appendChild(input);
- input.addEventListener('change',async()=>{const file=input.files?.[0];if(file)await prepareImage(root,file)});
+ input=document.createElement('input');input.className='ai360-file-input';input.type='file';input.accept='image/*';input.multiple=true;input.hidden=true;root.appendChild(input);
+ input.addEventListener('change',async()=>{await prepareImages(root,input.files);input.value=''});
  return input;
 }
 function selectPhoto(root,source='camera'){
+ if(state.busy)return;
  const input=ensureFileInput(root);input.accept='image/*';
+ input.multiple=source!=='camera';
  if(source==='camera')input.setAttribute('capture','environment');else input.removeAttribute('capture');
  input.value='';input.click();
 }
@@ -175,28 +200,35 @@ async function assistantRequest(endpoint,opts,timeoutMs=45000){
 }
 async function callAssistant(body){
  const s=authSession();if(!s?.access_token)throw new Error('Sua sessão expirou. Entre novamente.');
- const r=await assistantRequest('/functions/v1/controla-ai',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+ const r=await assistantRequest('/functions/v1/controla-ai',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)},body.images?.length>1?65000:45000);
  let data={};try{data=await r.json()}catch{}
  if(!r.ok)throw new Error(data?.message||data?.detail||data?.error||`Falha na IA (${r.status})`);return data;
 }
-function setBusy(root,busy){state.busy=busy;const btn=sendBtn(root),input=inputEl(root);if(btn){btn.disabled=busy;btn.dataset.oldText=btn.dataset.oldText||btn.textContent;btn.textContent=busy?'Analisando…':(btn.dataset.oldText||'Enviar')}if(input)input.disabled=busy;$$('.ai360-tool',root).forEach(b=>b.disabled=busy)}
+function setBusy(root,busy,label='Analisando…'){state.busy=busy;const btn=sendBtn(root),input=inputEl(root);if(btn){btn.disabled=busy;btn.dataset.oldText=btn.dataset.oldText||btn.textContent;btn.textContent=busy?label:(btn.dataset.oldText||'Enviar')}if(input)input.disabled=busy;$$('.ai360-tool,.ai360-remove,.ai360-clear,.ai360-file-input',root).forEach(b=>b.disabled=busy)}
 async function analyze(root){
  if(state.busy)return;
- const input=inputEl(root);const q=(input?.value||'').trim();if(!q&&!state.file)return;
+ const input=inputEl(root);const q=(input?.value||'').trim(),cid=company();if(!q&&!state.attachments.length)return;
+ const attachments=[...state.attachments];
  setBusy(root,true);
  try{
-   if(state.file&&!state.sourceAttachment){addMessage(root,'Arquivando a foto original…','ai');state.sourceAttachment=await uploadOriginal(state.file)}
-   const userText=q||(state.file?'Analise esta foto e faça o lançamento correspondente.':'');
-   addMessage(root,userText,'user',state.file?`📎 ${state.file.name}`:'');if(input)input.value='';
-   const body={mode:'analyze',company_id:company(),question:userText,source_attachment:state.sourceAttachment};
+   if(attachments.some(a=>!a.sourceAttachment))addMessage(root,attachments.length>1?'Arquivando as fotos originais…':'Arquivando a foto original…','ai');
+   for(const attachment of attachments){
+    if(company()!==cid)throw new Error('A empresa mudou durante o envio. Abra a conversa novamente.');
+    if(!attachment.sourceAttachment)attachment.sourceAttachment=await uploadOriginal(attachment.file,cid);
+   }
+   if(company()!==cid||attachments.some(a=>!a.sourceAttachment.path.startsWith(cid+'/assistant360/')))throw new Error('Confira a empresa antes de enviar as imagens.');
+   const userText=q||(attachments.length>1?'Analise estas fotos em conjunto e prepare os lançamentos para conferência.':'Analise esta foto e prepare o lançamento para conferência.');
+   const message=addMessage(root,userText,'user',attachments.map((a,i)=>`📎 ${i+1}. ${a.file.name}`).join(' • '));
+   if(message&&attachments.length){const images=document.createElement('div');images.className='ai360-message-images';attachments.forEach((a,i)=>{const img=document.createElement('img');img.src=a.imageDataUrl;img.alt=`Imagem ${i+1}: ${a.file.name}`;images.appendChild(img)});message.appendChild(images)}
+   if(input)input.value='';
+   const body={mode:'analyze',company_id:cid,question:userText,images:attachments.map(a=>({image_data_url:a.imageDataUrl,source_attachment:a.sourceAttachment}))};
    if(state.conversationId)body.conversation_id=state.conversationId;
-   if(state.imageDataUrl)body.image_data_url=state.imageDataUrl;
-   const farmAnswer=!state.file&&window.C360FarmSearch?await window.C360FarmSearch.answer(userText):null;
+   const farmAnswer=!attachments.length&&window.C360FarmSearch?await window.C360FarmSearch.answer(userText):null;
    if(farmAnswer){addMessage(root,farmAnswer,'ai','Localização do cadastro da empresa');renderActions(root,[]);return}
-   const data=await callAssistant(body);if(data.conversation_id)state.conversationId=data.conversation_id;
+   const data=await callAssistant(body);if(company()!==cid)throw new Error('A empresa mudou durante a análise. Abra a conversa novamente.');if(data.conversation_id)state.conversationId=data.conversation_id;
    addMessage(root,data.answer||data.message||'Solicitação analisada.','ai');renderActions(root,data.actions||[]);
-   state.file=null;state.imageDataUrl=null;state.sourceAttachment=null;renderAttachment(root);
- }catch(e){addMessage(root,e?.message||'Falha ao consultar o Assistente 360.','ai');}
+   state.attachments=[];renderAttachment(root);
+ }catch(e){if(input&&!input.value)input.value=q;addMessage(root,e?.message||'Falha ao consultar o Assistente 360.','ai');}
  finally{setBusy(root,false)}
 }
 async function confirmAction(root,a,card){
@@ -212,7 +244,7 @@ async function confirmAction(root,a,card){
 }
 function tools(root){
  let bar=$('.ai360-tools',root);if(bar)return bar;
- bar=document.createElement('div');bar.className='ai360-tools';bar.innerHTML='<button type="button" class="btn soft ai360-tool ai360-camera">📷 Câmera</button><button type="button" class="btn soft ai360-tool ai360-gallery">🖼️ Galeria/arquivo</button><button type="button" class="btn soft ai360-tool ai360-voice">🎤 Falar</button><span class="ai360-tools-hint">Tire uma foto ou escolha uma imagem do celular/WhatsApp. Depois diga o que devo fazer.</span>';
+ bar=document.createElement('div');bar.className='ai360-tools';bar.innerHTML='<button type="button" class="btn soft ai360-tool ai360-camera">📷 Câmera</button><button type="button" class="btn soft ai360-tool ai360-gallery">🖼️ Galeria/arquivo</button><button type="button" class="btn soft ai360-tool ai360-voice">🎤 Falar</button><span class="ai360-tools-hint">Selecione até 10 imagens de uma vez. Você também pode adicionar mais fotos antes de enviar.</span>';
  const input=inputEl(root),composer=input?.parentElement||null;
  if(composer&&composer!==root)composer.insertAdjacentElement('beforebegin',bar);else (chatBox(root)?.parentElement||root).appendChild(bar);
  $('.ai360-camera',bar)?.addEventListener('click',()=>selectPhoto(root,'camera'));
@@ -266,7 +298,7 @@ async function hydrateSharedImage(){
    if(!response)throw new Error('Imagem compartilhada não encontrada.');
    const blob=await response.blob();let name='imagem-compartilhada.jpg';try{name=decodeURIComponent(response.headers.get('X-C360-File-Name')||name)}catch{}
    const file=new File([blob],name,{type:blob.type||response.headers.get('Content-Type')||'image/jpeg'});
-   if(await prepareImage(root,file))addMessage(root,'Imagem recebida do WhatsApp/compartilhamento. Agora diga o que você quer que eu faça com ela.','ai',`📎 ${file.name}`);
+   if(await prepareImages(root,[file]))addMessage(root,'Imagem recebida do WhatsApp/compartilhamento. Agora diga o que você quer que eu faça com ela.','ai',`📎 ${file.name}`);
    await cache.delete(SHARE_KEY);
  }catch(e){notify(e?.message||'Não consegui carregar a imagem compartilhada.','error')}
  finally{clearShareQuery()}
