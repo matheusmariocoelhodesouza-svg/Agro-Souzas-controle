@@ -1,6 +1,16 @@
 # Configuração da IA do Comando360
 
-As funções `controla-ai` e `comando360-daily-ai` usam `gpt-5-mini` pela Responses API. Cada solicitação tem prazo de execução, saída limitada a 4.096 tokens e `store: false`.
+As funções `controla-ai` e `comando360-daily-ai` usam `gpt-5-mini` pela Responses API. Cada solicitação tem prazo de execução e `store: false`. O assistente limita a saída a 4.096 tokens em mensagens de texto ou uma foto; mensagens com várias fotos têm até 8.192 tokens e prazo de 50 segundos. A leitura de presença mantém o limite de 4.096 tokens.
+
+## Várias imagens na conversa
+
+Em **Galeria/arquivo**, selecione até dez fotos por mensagem. A câmera acrescenta uma foto por vez. A seleção é cumulativa; cada imagem tem prévia e botão de remoção. Os originais continuam limitados a 15 MB por foto e são arquivados individualmente. As cópias reduzidas para a IA têm limite conjunto de 12 MB.
+
+O novo cliente envia `images: [{image_data_url, source_attachment}]`. O servidor valida todas as imagens e seus caminhos na empresa antes de gravar a conversa ou chamar a OpenAI. Clientes antigos com `image_data_url` e `source_attachment` continuam compatíveis. Os dois formatos não devem ser misturados.
+
+As imagens chegam numeradas em uma única chamada. Cada ação informa `source_image_indices` para distinguir notas diferentes de páginas do mesmo documento. A proposta mantém todas as referências em `_sources`; `_source` guarda a principal e `related_attachments` quando há mais de uma página. Isso preserva a compatibilidade com a confirmação transacional existente e suas referências de anexos. Uma origem ambígua em um lote bloqueia a confirmação até a revisão.
+
+Se houver falha no upload ou na análise, a seleção e a mensagem são preservadas. Os originais já arquivados são reutilizados ao tentar novamente.
 
 ## Credencial no servidor
 
@@ -25,6 +35,7 @@ A chave deve pertencer à organização OpenAI que possui os créditos. Configur
 ```sh
 node qa/assistant_backend_regressions_20261007.mjs
 node qa/daily_ai_backend_regressions_20261019.mjs
+node qa/assistant_multiple_images_20261019.mjs
 ```
 
 Depois de configurar a credencial, use uma sessão real do app para verificar a saúde, fazer uma consulta sobre os dados da empresa e revisar uma extração de foto. Os testes unitários usam dados sintéticos e não substituem essa validação.

@@ -145,4 +145,76 @@ await test('An unreadable odometer requires review instead of proposing zero kil
  const draft=r.writes.find(w=>w.table==='v2_ai_action_requests').body.proposed_payload;
  assert.equal(draft.odometer_km,null);assert.ok(draft.missing_fields.includes('quilometragem'));
 });
+const photo=n=>`data:image/jpeg;base64,${Buffer.from('synthetic-image-'+n).toString('base64')}`;
+const attachment=n=>({bucket:'company-documents',path:`fixture-company/assistant360/2026-10-19/photo-${n}.jpg`,original_name:`nota-${n}.jpg`,mime_type:'image/jpeg',size_bytes:100+n});
+const images=n=>Array.from({length:n},(_,i)=>({image_data_url:photo(i+1),source_attachment:attachment(i+1)}));
+await test('All selected images reach one provider request in order with their archive references',async()=>{
+ const selected=images(3),r=runtime(),out=await r.request({question:'Compare estas fotos',images:selected});assert.equal(out.status,200);
+ const requests=r.calls.filter(c=>c.provider);assert.equal(requests.length,1);
+ const content=requests[0].payload.input[0].content;assert.deepEqual(content.filter(x=>x.type==='input_image').map(x=>x.image_url),selected.map(x=>x.image_data_url));
+ assert.match(content[1].text,/Imagem 1 de 3: nota-1.jpg/);assert.match(content[5].text,/Imagem 3 de 3: nota-3.jpg/);
+ assert.equal(requests[0].payload.max_output_tokens,8192);assert.equal(requests[0].payload.store,false);
+ for(const role of ['user','assistant']){
+  const message=r.writes.find(w=>w.table==='v2_ai_messages'&&w.body.role===role).body;
+  assert.deepEqual(JSON.parse(JSON.stringify(message.answer_data.source_attachments)),selected.map(x=>x.source_attachment));
+ }
+ assert.equal(r.writes.filter(w=>w.table==='v2_ai_action_requests').length,0);
+});
+await test('Ten images are accepted together and an eleventh is rejected without writes',async()=>{
+ const accepted=runtime();assert.equal((await accepted.request({images:images(10)})).status,200);
+ assert.equal(accepted.calls.find(c=>c.provider).payload.input[0].content.filter(c=>c.type==='input_image').length,10);
+ const rejected=runtime();assert.equal((await rejected.request({images:images(11)})).status,400);assert.equal(rejected.writes.length,0);assert.equal(rejected.calls.filter(c=>c.provider).length,0);
+});
+await test('Malformed batches and a bad image anywhere stop the whole request before writes',async()=>{
+ const cases=[{images:'invalid'},{images:{}},{images:[null]},{images:[{}]},{images:[{image_data_url:'data:image/jpeg;base64,'}]},{images:[images(1)[0],{image_data_url:'https://qa.invalid/private.jpg'}]},{images:[{image_data_url:'data:image/jpeg;base64,not base64'}]}];
+ for(const body of cases){const r=runtime();assert.equal((await r.request(body)).status,400);assert.equal(r.writes.length,0);assert.equal(r.calls.filter(c=>c.provider).length,0)}
+});
+await test('Every archive reference is checked against the current company including the final image',async()=>{
+ for(const source of [{...attachment(2),path:'foreign-company/assistant360/secret.jpg'},{...attachment(2),bucket:'private'},{...attachment(2),path:'fixture-company/assistant360/../secret.jpg'},{...attachment(2),path:'fixture-company/assistant360/%2e%2e/secret.jpg'}]){
+  const selected=images(2);selected[1].source_attachment=source;const r=runtime();assert.equal((await r.request({images:selected})).status,400);assert.equal(r.writes.length,0);assert.equal(r.calls.filter(c=>c.provider).length,0);
+ }
+});
+await test('The combined encoded image size is bounded rather than only checking the first photo',async()=>{
+ const large='data:image/jpeg;base64,'+'A'.repeat(7*1024*1024),r=runtime();
+ assert.equal((await r.request({images:[{image_data_url:large},{image_data_url:large}]})).status,400);assert.equal(r.writes.length,0);assert.equal(r.calls.filter(c=>c.provider).length,0);
+});
+await test('Existing single-photo clients remain compatible and mixed request formats are rejected',async()=>{
+ const legacy=runtime();assert.equal((await legacy.request({image_data_url:photo(1),source_attachment:attachment(1)})).status,200);
+ assert.equal(legacy.calls.find(c=>c.provider).payload.input[0].content.filter(c=>c.type==='input_image').length,1);
+ for(const old of [{image_data_url:photo(1)},{source_attachment:attachment(1)}]){const r=runtime();assert.equal((await r.request({...old,images:images(2)})).status,400);assert.equal(r.writes.length,0)}
+});
+function multiProposalRuntime(indicesList){
+ return runtime({rows:{v2_vehicles:[{id:'fixture-vehicle',plate:'QA00001',description:'608'}]},providerBody:{status:'completed',output_text:JSON.stringify({answer:'Confira as notas.',actions:indicesList.map((source_image_indices,i)=>({action_type:'fuel_log',summary:`Nota ${i+1}`,confidence:.9,source_image_indices,payload:{vehicle:'608',liters:10+i,total_amount:60+i}}))})}});
+}
+await test('Separate receipts keep the correct primary source instead of attaching the first photo to every action',async()=>{
+ const r=multiProposalRuntime([[2],[1]]),out=await r.request({images:images(2)});assert.equal(out.status,200);
+ const drafts=r.writes.filter(w=>w.table==='v2_ai_action_requests').map(w=>w.body.proposed_payload);
+ assert.equal(drafts.length,2);assert.equal(drafts[0]._source.path,attachment(2).path);assert.equal(drafts[1]._source.path,attachment(1).path);
+ assert.equal(drafts[0]._sources.length,1);assert.equal(drafts[0].source_image_indices[0],2);assert.equal(drafts[0].missing_fields.length,0);
+ assert.equal(r.calls.filter(c=>c.name==='v2_execute_assistant_action').length,0);
+});
+await test('Multiple pages of one receipt preserve every supporting archive in a single proposal',async()=>{
+ const r=multiProposalRuntime([[1,2]]);assert.equal((await r.request({images:images(2)})).status,200);
+ const drafts=r.writes.filter(w=>w.table==='v2_ai_action_requests');assert.equal(drafts.length,1);
+ assert.equal(drafts[0].body.proposed_payload._source.related_attachments[0].path,attachment(2).path);assert.equal(drafts[0].body.proposed_payload._sources.length,2);
+});
+await test('A single-photo proposal retains its original even if the model leaves the source list empty',async()=>{
+ for(const body of [{images:images(1)},{image_data_url:photo(1),source_attachment:attachment(1)}]){
+  const r=multiProposalRuntime([[]]);assert.equal((await r.request(body)).status,200);
+  const draft=r.writes.find(w=>w.table==='v2_ai_action_requests').body.proposed_payload;
+  assert.equal(draft._source.path,attachment(1).path);assert.equal(draft.source_image_indices[0],1);
+ }
+});
+await test('Uncertain or invalid source indices require review before multi-photo actions can be confirmed',async()=>{
+ for(const indices of [undefined,[],[3],['1'],[1,99]]){
+  const r=multiProposalRuntime([indices]);assert.equal((await r.request({images:images(2)})).status,200);
+  assert.ok(r.writes.find(w=>w.table==='v2_ai_action_requests').body.proposed_payload.missing_fields.includes('imagem de origem'));
+ }
+});
+await test('Multiple images still require user authentication and company AI permission',async()=>{
+ for(const options of [{noUser:true},{noPermission:true}]){const r=runtime(options),out=await r.request({images:images(2)});assert.ok([401,403].includes(out.status));assert.equal(r.writes.length,0);assert.equal(r.calls.filter(c=>c.provider).length,0)}
+});
+await test('A multi-photo provider timeout clears its longer deadline and creates no proposals',async()=>{
+ const r=runtime({hang:true}),out=await r.request({images:images(2)});assert.equal(out.status,503);assert.deepEqual(r.timers,[50000]);assert.deepEqual(r.cleared,[1]);assert.equal(r.writes.filter(w=>w.table==='v2_ai_action_requests').length,0);
+});
 console.log(`${passed} assistant backend regressions passed.`);
