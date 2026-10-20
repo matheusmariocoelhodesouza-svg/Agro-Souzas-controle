@@ -217,4 +217,34 @@ await test('Multiple images still require user authentication and company AI per
 await test('A multi-photo provider timeout clears its longer deadline and creates no proposals',async()=>{
  const r=runtime({hang:true}),out=await r.request({images:images(2)});assert.equal(out.status,503);assert.deepEqual(r.timers,[50000]);assert.deepEqual(r.cleared,[1]);assert.equal(r.writes.filter(w=>w.table==='v2_ai_action_requests').length,0);
 });
+const farmRows=[
+ {id:'antonio',producer_name:'ANTONIO RENATO SOARES',farm_name:'ANTONIO RENATO SOARES',city:'PORANGABA',integrator_id:'other-integrator'},
+ {id:'jose-porangaba',producer_name:'JOSE CELIO SOARES (PORANGABA)',farm_name:'JOSE CELIO SOARES (PORANGABA)',city:'PORANGABA',integrator_id:'correct-integrator'},
+ {id:'jose-torre',producer_name:'JOSE CELIO SOARES (TORRE DE PEDRA)',farm_name:'JOSE CELIO SOARES (TORRE DE PEDRA)',city:'TORRE DE PEDRA',integrator_id:'third-integrator'}
+];
+function farmProposalRuntime(payload,farms=farmRows){
+ return runtime({rows:{v2_poultry_farms:farms,v2_poultry_integrators:[{id:'other-integrator',name:'Integradora B'},{id:'correct-integrator',name:'Integradora A'}]},providerBody:{status:'completed',output_text:JSON.stringify({answer:'Confira a programação.',actions:[{action_type:'poultry_schedule',summary:'Programação de José Célio',confidence:.88,payload:{producer:'José Célio Soares',city:'Porangaba',scheduled_start:'2026-10-20T10:30:00-03:00',...payload}}]})}});
+}
+await test('A shared city cannot override the producer name or select the first unrelated farm',async()=>{
+ const r=farmProposalRuntime({});assert.equal((await r.request({question:'Leia o FAX'})).status,200);
+ const draft=r.writes.find(w=>w.table==='v2_ai_action_requests').body.proposed_payload;
+ assert.equal(draft.farm_id,'jose-porangaba');assert.equal(draft.integrator_id,'correct-integrator');assert.match(draft.producer,/JOSE CELIO/);assert.doesNotMatch(draft.farm_name,/ANTONIO/);
+});
+await test('An unknown producer or city-only identification stays pending instead of selecting a nearby farm',async()=>{
+ for(const payload of [{producer:'Carlos Silva',farm:null},{producer:null,farm:null}]){
+  const r=farmProposalRuntime(payload);assert.equal((await r.request({question:'Leia o FAX'})).status,200);
+  const draft=r.writes.find(w=>w.table==='v2_ai_action_requests').body.proposed_payload;
+  assert.equal(draft.farm_id,null);assert.ok(draft.missing_fields.includes('granja/produtor'));
+ }
+});
+await test('Ambiguous producer names require review unless a specific farm resolves the ambiguity',async()=>{
+ const farms=[...farmRows,{id:'jose-second',producer_name:'JOSE CELIO SOARES',farm_name:'GRANJA DOIS',city:'PORANGABA',integrator_id:'correct-integrator'}];
+ const ambiguous=farmProposalRuntime({producer:'José Célio'},farms);assert.equal((await ambiguous.request()).status,200);assert.equal(ambiguous.writes.find(w=>w.table==='v2_ai_action_requests').body.proposed_payload.farm_id,null);
+ const specific=farmProposalRuntime({producer:'José Célio',farm:'Granja Dois'},farms);assert.equal((await specific.request()).status,200);assert.equal(specific.writes.find(w=>w.table==='v2_ai_action_requests').body.proposed_payload.farm_id,'jose-second');
+});
+await test('The selected integrator cannot silently fall back to a farm from another integrator',async()=>{
+ const r=farmProposalRuntime({integrator:'Integradora B'});assert.equal((await r.request()).status,200);
+ const draft=r.writes.find(w=>w.table==='v2_ai_action_requests').body.proposed_payload;
+ assert.equal(draft.farm_id,null);assert.ok(draft.missing_fields.includes('granja/produtor'));
+});
 console.log(`${passed} assistant backend regressions passed.`);

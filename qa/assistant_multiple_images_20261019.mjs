@@ -6,6 +6,14 @@ import {createRequire} from 'node:module';
 const require=createRequire(import.meta.url);
 const {chromium}=require(process.env.C360_PLAYWRIGHT_PATH||'playwright');
 const source=await fs.readFile('c360-assistant360.js','utf8');
+const shell=await fs.readFile('index.html','utf8'),boot=await fs.readFile('c360-quality-hotfix.js','utf8');
+const inlineStyles=[...shell.matchAll(/<style\b[^>]*>([\s\S]*?)<\/style>/gi)].map(m=>m[1]);
+const themeNames=['c360-ui-polish-legacy-20260915.css','c360-ui-polish-base.css','c360-ui-polish.css'];
+for(const list of ['commonStyles','adminStyles','mobileAdminStyles']){
+ const block=boot.match(new RegExp(`const ${list}=\\[([\\s\\S]*?)\\];`));
+ for(const m of block[1].matchAll(/'\.\/([^']+\.css)'/g))themeNames.push(m[1]);
+}
+const productionTheme=inlineStyles.join('\n')+'\n'+(await Promise.all([...new Set(themeNames)].map(name=>fs.readFile(name,'utf8')))).join('\n');
 const dir=await fs.mkdtemp(path.join(os.tmpdir(),'c360-multi-image-'));
 const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aX1sAAAAASUVORK5CYII=','base64');
 const paths=Array.from({length:11},(_,i)=>path.join(dir,`nota-${String(i+1).padStart(2,'0')}.png`));
@@ -19,10 +27,10 @@ async function fixture(run,viewport={width:412,height:915}){
  const context=await browser.newContext({viewport});
  const page=await context.newPage();
  await context.route('**/*',route=>route.abort());
- await page.setContent('<!doctype html><html><head><style>body{margin:0;font-family:Arial;background:#0b1929;color:#e2e8f0}.card{padding:16px;max-width:760px;margin:auto}.chatbox{border:1px solid #334155;padding:8px;box-sizing:border-box}.msg{margin:8px 0;padding:10px;white-space:pre-wrap;background:#152c44;overflow-wrap:anywhere}.toolbar{display:flex;gap:8px}.toolbar input{min-width:0;flex:1}button{padding:8px}input{padding:8px}</style></head><body><section id="ia" data-screen="ia" class="section active"><div class="card"><h3>Comando IA</h3><div class="muted"></div><div id="chatbox" class="chatbox"></div><div class="toolbar"><input id="question"><button id="sendAI" class="btn primary">Enviar</button></div></div></section></body></html>');
+ await page.setContent('<!doctype html><html><head><style>body{margin:0;font-family:Arial;background:#0b1929;color:#e2e8f0}.card{padding:16px;max-width:760px;margin:auto}.chatbox{border:1px solid #334155;padding:8px;box-sizing:border-box}.msg{margin:8px 0;padding:10px;white-space:pre-wrap;background:#152c44;overflow-wrap:anywhere}.toolbar{display:flex;gap:8px}.toolbar input{min-width:0;flex:1}button{padding:8px}input{padding:8px}</style></head><body><div id="screenHost"><section id="ia" data-screen="ia" class="section active"><div class="card"><h3>Comando IA</h3><div class="muted"></div><div id="chatbox" class="chatbox"></div><div class="toolbar"><input id="question"><button id="sendAI" class="btn primary">Enviar</button></div></div></section></div></body></html>');
  await page.evaluate(()=>{
   window.companyId='fixture-company';window.session=()=>({access_token:'synthetic-token'});
-  window.qa={uploads:[],analyses:[],toasts:[],failUploadName:'',failAnalysis:false,holdAnalysis:false,release:null};
+  window.qa={uploads:[],analyses:[],toasts:[],actions:[],failUploadName:'',failAnalysis:false,holdAnalysis:false,release:null};
   window.showToast=message=>window.qa.toasts.push(message);
   window.authFetch=async(endpoint,options)=>{
    if(endpoint.startsWith('/storage/')){
@@ -33,7 +41,7 @@ async function fixture(run,viewport={width:412,height:915}){
    if(body.mode==='health')return Response.json({status:'configured',configured:true});
    window.qa.analyses.push(body);
    if(window.qa.holdAnalysis)await new Promise(resolve=>window.qa.release=resolve);
-   return window.qa.failAnalysis?Response.json({message:'Falha sintética da IA'},{status:503}):Response.json({conversation_id:'fixture-conversation',answer:'Fotos analisadas em conjunto.',actions:[]});
+   return window.qa.failAnalysis?Response.json({message:'Falha sintética da IA'},{status:503}):Response.json({conversation_id:'fixture-conversation',answer:'Fotos analisadas em conjunto.',actions:window.qa.actions});
   };
  });
  await page.addScriptTag({content:source});
@@ -109,5 +117,34 @@ try{
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
   await fs.mkdir('qa-artifacts',{recursive:true});await page.screenshot({path:'qa-artifacts/assistant-multiple-images-desktop.png',fullPage:true});
  },{width:1280,height:900}));
- console.log(`${passed} multi-image browser regressions passed.`);
+ await test('Review cards remain legible with the actual app themes on phone and desktop',async()=>{
+  for(const width of [390,1280])for(const theme of ['light','dark-body','dark-html'])await fixture(async page=>{
+   await page.addStyleTag({content:productionTheme});
+   await page.evaluate(mode=>{
+    document.body.className='app-ready c360-product-ready'+(mode==='dark-body'?' darkmode':'');
+    document.documentElement.classList.toggle('darkmode',mode==='dark-html');
+    window.qa.actions=[{id:'synthetic-action',action_type:'poultry_schedule',summary:'Apanha em 20/10 para José Célio — Porangaba, início 10:30.',confidence:.88,missing_fields:[],payload:{team_name:'Equipe de teste',farm_name:'José Célio',producer:'José Célio',city:'Porangaba',scheduled_start:'2026-10-20T10:30:00-03:00',planned_birds:22066}}];
+   },theme);
+   await page.locator('#question').fill('Confira a programação.');await page.locator('#sendAI').click();await page.locator('.ai360-action-card').waitFor();
+   async function checkContrast(){
+    const samples=await page.evaluate(()=>{
+     const rgb=value=>{const m=value.match(/[\d.]+/g);return m?m.map(Number):[0,0,0,0]};
+     const luminance=color=>rgb(color).slice(0,3).map(v=>{v/=255;return v<=.04045?v/12.92:((v+.055)/1.055)**2.4}).reduce((n,v,i)=>n+v*[.2126,.7152,.0722][i],0);
+     return [...document.querySelectorAll('.ai360-action-head strong,.ai360-review-grid b,.ai360-review-grid span,.ai360-action-kind,.ai360-confidence,.ai360-ready,.ai360-missing,.ai360-saved')].map(el=>{
+      const style=getComputedStyle(el);let parent=el,bg='';
+      while(parent){const color=getComputedStyle(parent).backgroundColor,c=rgb(color);if(c.length===3||c[3]>0){bg=color;break}parent=parent.parentElement}
+      const text=style.webkitTextFillColor||style.color,fore=luminance(text),back=luminance(bg);
+      return {text:el.textContent,ratio:(Math.max(fore,back)+.05)/(Math.min(fore,back)+.05),color:text,background:bg,opacity:style.opacity};
+     });
+    });
+    assert(samples.length>8);for(const s of samples){assert(s.ratio>=4.5,`${theme} ${width}px ${s.text}: contrast ${s.ratio.toFixed(2)} (${s.color} on ${s.background})`);assert.equal(s.opacity,'1')}
+   }
+   await checkContrast();
+   await fs.mkdir('qa-artifacts',{recursive:true});await page.locator('.ai360-action-card').screenshot({path:`qa-artifacts/assistant-review-${theme}-${width}.png`});
+   await page.locator('.ai360-confirm').click();await page.locator('.ai360-action-card.saved').waitFor();await checkContrast();
+   await page.evaluate(()=>window.qa.actions[0].missing_fields=['granja/produtor']);await page.locator('#question').fill('Revise os dados.');await page.locator('#sendAI').click();await page.locator('.ai360-action-card .ai360-missing').waitFor();
+   await checkContrast();assert(await page.locator('.ai360-confirm').isDisabled());
+  },{width,height:915});
+ });
+ console.log(`${passed} multi-image and review browser regressions passed.`);
 }finally{await browser.close();await fs.rm(dir,{recursive:true,force:true})}
