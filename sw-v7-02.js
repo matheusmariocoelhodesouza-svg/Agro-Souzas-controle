@@ -10,6 +10,7 @@
 /* 2026-10-02 — remove versão com JavaScript inline interrompido e renova o shell offline. */
 /* 2026-10-07 — auditoria de gravação, sessão, combustível e busca de fazendas. */
 /* 2026-10-19 — múltiplas imagens na conversa do Comando IA. */
-importScripts('./sw-v7-02-core-stable78.js');
+/* 2026-10-19 — contraste dos cartões de conferência da IA. */
+importScripts('./sw-v7-02-core-stable79.js');
 importScripts('./sw-auth-refresh-guard.js');
 importScripts('./sw-share-target.js');

@@ -43,6 +43,23 @@ function checkedImages(body:any,companyId:string):{images:AssistantImage[];sourc
   return {images,source:hasImages?images[0]?.source_attachment||null:checkedSource(body.source_attachment,companyId)};
 }
 
+function resolveFarm(rows:any[],producerValue:unknown,farmValue:unknown,cityValue:unknown,integratorId:string|null){
+  const producer=norm(producerValue),farm=norm(farmValue),city=norm(cityValue);
+  if(!producer&&!farm)return null;
+  let candidates=rows.filter(row=>(!integratorId||row.integrator_id===integratorId)&&(!city||norm(row.city)===city));
+  const named=(list:any[],want:string)=>{
+    const names=(row:any)=>[norm(row.producer_name),norm(row.farm_name)].filter(Boolean);
+    const exact=list.filter(row=>names(row).includes(want));
+    if(exact.length)return exact;
+    const tokens=want.split(" ").filter(token=>token.length>1);
+    if(tokens.length<2)return [];
+    return list.filter(row=>names(row).some(name=>tokens.every(token=>name.split(" ").includes(token))));
+  };
+  if(producer){candidates=named(candidates,producer);if(!candidates.length)return null}
+  if(farm){const matches=named(candidates,farm);if(matches.length)candidates=matches;else if(!producer)return null}
+  return candidates.length===1?candidates[0]:null;
+}
+
 function bestMatch<T extends Record<string,unknown>>(rows:T[], candidates:unknown[], fields:(keyof T)[]){
   const wants=candidates.map(norm).filter(Boolean);
   if(!wants.length)return null;
@@ -155,11 +172,7 @@ function resolveAction(raw:any,ctx:Ctx,images:AssistantImage[],legacySource:Sour
   const vehicle=bestMatch(ctx.vehicles,[p.plate,p.vehicle],["plate","description","make","model"] as any);
   const team=bestMatch(ctx.teams,[p.team],["name","code"] as any);
   const integrator=bestMatch(ctx.integrators,[p.integrator],["name","code"] as any);
-  let farm=bestMatch(ctx.farms,[p.farm,p.producer,p.city],["farm_name","producer_name","city"] as any);
-  if(farm&&integrator&&farm.integrator_id!==integrator.id){
-    const under=ctx.farms.filter(x=>x.integrator_id===integrator.id);
-    farm=bestMatch(under,[p.farm,p.producer,p.city],["farm_name","producer_name","city"] as any)||farm;
-  }
+  const farm=resolveFarm(ctx.farms,p.producer,p.farm,p.city,integrator?.id||null);
   const type=str(raw?.action_type);
   const out:any={
     vehicle_id:vehicle?.id||null,vehicle_name:vehicle?.description||p.vehicle||null,plate:vehicle?.plate||p.plate||null,

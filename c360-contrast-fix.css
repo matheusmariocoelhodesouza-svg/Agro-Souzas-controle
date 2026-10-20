@@ -2,6 +2,61 @@
    Ajustes direcionados a telas reais em Android/dark mode.
    Carregado por ultimo para neutralizar estilos legados claros. */
 
+/* ===== CONFERÊNCIA DA IA ===== */
+/* Conferência da IA: títulos e valores têm suas próprias cores para não
+   herdarem o branco das regras globais de strong/b no tema escuro. */
+:is(#ia,[data-screen="ia"]){
+  --ai360-review-bg:#fff;
+  --ai360-review-field:#f8fafc;
+  --ai360-review-line:#dce6f2;
+  --ai360-review-text:#102a43;
+  --ai360-review-muted:#475569;
+  --ai360-review-accent:#1d4ed8;
+  --ai360-review-badge:#eff6ff;
+  --ai360-review-success:#166534;
+}
+html.darkmode :is(#ia,[data-screen="ia"]),
+body.darkmode :is(#ia,[data-screen="ia"]){
+  --ai360-review-bg:#10243a;
+  --ai360-review-field:#091a2b;
+  --ai360-review-line:#34516f;
+  --ai360-review-text:#f1f5f9;
+  --ai360-review-muted:#b8c9db;
+  --ai360-review-accent:#8ac5ff;
+  --ai360-review-badge:#183a5d;
+  --ai360-review-success:#86efac;
+}
+html body :is(#ia,[data-screen="ia"]) .ai360-action-card{
+  background:var(--ai360-review-bg)!important;
+  border-color:var(--ai360-review-line)!important;
+  color:var(--ai360-review-text)!important;
+}
+html body :is(#ia,[data-screen="ia"]) .ai360-review-grid>div{
+  background:var(--ai360-review-field)!important;
+  border-color:var(--ai360-review-line)!important;
+}
+html body :is(#ia,[data-screen="ia"]) .ai360-action-head strong,
+html body :is(#ia,[data-screen="ia"]) .ai360-review-grid b{
+  color:var(--ai360-review-text)!important;
+  -webkit-text-fill-color:var(--ai360-review-text)!important;
+  opacity:1!important;
+  line-height:1.5;
+}
+html body :is(#ia,[data-screen="ia"]) .ai360-review-grid span{
+  color:var(--ai360-review-muted)!important;
+  -webkit-text-fill-color:var(--ai360-review-muted)!important;
+}
+html body :is(#ia,[data-screen="ia"]) :is(.ai360-action-kind,.ai360-confidence){
+  color:var(--ai360-review-accent)!important;
+  -webkit-text-fill-color:var(--ai360-review-accent)!important;
+}
+html body :is(#ia,[data-screen="ia"]) .ai360-confidence{background:var(--ai360-review-badge)!important}
+html body :is(#ia,[data-screen="ia"]) .ai360-action-card.saved{border-color:#16a34a!important}
+html body :is(#ia,[data-screen="ia"]) .ai360-saved{
+  color:var(--ai360-review-success)!important;
+  -webkit-text-fill-color:var(--ai360-review-success)!important;
+}
+
 /* ===== DASHBOARD: EQUIPE, PONTO E RESUMO OPERACIONAL ===== */
 body #inicio .dash-stat,
 body #inicio .dash-ring-card{
