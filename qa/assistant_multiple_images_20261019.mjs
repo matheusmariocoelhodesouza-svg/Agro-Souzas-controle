@@ -7,7 +7,8 @@ const require=createRequire(import.meta.url);
 const {chromium}=require(process.env.C360_PLAYWRIGHT_PATH||'playwright');
 const source=await fs.readFile('c360-assistant360.js','utf8');
 const shell=await fs.readFile('index.html','utf8'),boot=await fs.readFile('c360-quality-hotfix.js','utf8');
-const inlineStyles=[...shell.matchAll(/<style\b[^>]*>([\s\S]*?)<\/style>/gi)].map(m=>m[1]);
+const shellHead=shell.slice(0,shell.indexOf('</head>'));
+const inlineStyles=[...shellHead.matchAll(/<style\b[^>]*>([\s\S]*?)<\/style>/gi)].map(m=>m[1]);
 const themeNames=['c360-ui-polish-legacy-20260915.css','c360-ui-polish-base.css','c360-ui-polish.css'];
 for(const list of ['commonStyles','adminStyles','mobileAdminStyles']){
  const block=boot.match(new RegExp(`const ${list}=\\[([\\s\\S]*?)\\];`));
