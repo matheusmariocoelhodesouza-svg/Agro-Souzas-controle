@@ -19,7 +19,7 @@ async function fixture(run,viewport={width:412,height:915}){
  const context=await browser.newContext({viewport});
  const page=await context.newPage();
  await context.route('**/*',route=>route.abort());
- await page.setContent('<!doctype html><html><head><style>body{margin:0;font-family:Arial;background:#0b1929;color:#e2e8f0}.card{padding:16px;max-width:760px;margin:auto}.chatbox{border:1px solid #334155;padding:8px;box-sizing:border-box}.msg{margin:8px 0;padding:10px;white-space:pre-wrap;background:#152c44;overflow-wrap:anywhere}.toolbar{display:flex;gap:8px}.toolbar input{min-width:0;flex:1}button{padding:8px}.ai360-thumb-wrap{color:#0f172a}input{padding:8px}</style></head><body><section id="ia" data-screen="ia" class="section active"><div class="card"><h3>Comando IA</h3><div class="muted"></div><div id="chatbox" class="chatbox"></div><div class="toolbar"><input id="question"><button id="sendAI" class="btn primary">Enviar</button></div></div></section></body></html>');
+ await page.setContent('<!doctype html><html><head><style>body{margin:0;font-family:Arial;background:#0b1929;color:#e2e8f0}.card{padding:16px;max-width:760px;margin:auto}.chatbox{border:1px solid #334155;padding:8px;box-sizing:border-box}.msg{margin:8px 0;padding:10px;white-space:pre-wrap;background:#152c44;overflow-wrap:anywhere}.toolbar{display:flex;gap:8px}.toolbar input{min-width:0;flex:1}button{padding:8px}input{padding:8px}</style></head><body><section id="ia" data-screen="ia" class="section active"><div class="card"><h3>Comando IA</h3><div class="muted"></div><div id="chatbox" class="chatbox"></div><div class="toolbar"><input id="question"><button id="sendAI" class="btn primary">Enviar</button></div></div></section></body></html>');
  await page.evaluate(()=>{
   window.companyId='fixture-company';window.session=()=>({access_token:'synthetic-token'});
   window.qa={uploads:[],analyses:[],toasts:[],failUploadName:'',failAnalysis:false,holdAnalysis:false,release:null};
@@ -73,6 +73,7 @@ try{
   assert.match(await page.evaluate(()=>window.qa.toasts.at(-1)),/até 10/);
   const width=await page.evaluate(()=>({page:document.documentElement.scrollWidth,viewport:innerWidth,list:document.querySelector('.ai360-attachment-list').getBoundingClientRect().height}));
   assert(width.page<=width.viewport);assert(width.list<=281);
+  await fs.mkdir('qa-artifacts',{recursive:true});await page.screenshot({path:'qa-artifacts/assistant-multiple-images-mobile.png',fullPage:true});
   await page.locator('.ai360-clear').click();await choose([paths[0]]);await choose([textFile]);assert.equal(await page.locator('.ai360-thumb-wrap').count(),1);
   await choose([paths[1],bad]);assert.equal(await page.locator('.ai360-thumb-wrap').count(),1);
  },{width:360,height:800}));
@@ -106,6 +107,7 @@ try{
  await test('The same gallery workflow works on a desktop',()=>fixture(async(page,choose)=>{
   await choose(paths.slice(0,2));assert.equal(await page.locator('.ai360-thumb-wrap').count(),2);
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
+  await fs.mkdir('qa-artifacts',{recursive:true});await page.screenshot({path:'qa-artifacts/assistant-multiple-images-desktop.png',fullPage:true});
  },{width:1280,height:900}));
  console.log(`${passed} multi-image browser regressions passed.`);
 }finally{await browser.close();await fs.rm(dir,{recursive:true,force:true})}
