@@ -147,7 +147,7 @@ function resolveAction(raw:any,ctx:Ctx,images:AssistantImage[],legacySource:Sour
   const p=raw?.payload||{};
   const missing=new Set<string>();
   const rawIndices=raw?.source_image_indices;
-  const sourceIndices:number[]=Array.isArray(rawIndices)?[...new Set<number>(rawIndices.filter((i:any)=>Number.isInteger(i)&&i>=1&&i<=images.length))]:(images.length===1?[1]:[]);
+  const sourceIndices:number[]=images.length===1?[1]:(Array.isArray(rawIndices)?[...new Set<number>(rawIndices.filter((i:any)=>Number.isInteger(i)&&i>=1&&i<=images.length))]:[]);
   const sources=sourceIndices.map(i=>images[i-1].source_attachment).filter((s):s is SourceAttachment=>!!s);
   const firstSource=sources[0]||(!images.length?legacySource:null);
   const source=firstSource?{...firstSource,...(sources.length>1?{related_attachments:sources.slice(1)}:{})}:null;

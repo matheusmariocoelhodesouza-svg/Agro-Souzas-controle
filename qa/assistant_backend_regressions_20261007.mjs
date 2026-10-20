@@ -198,6 +198,13 @@ await test('Multiple pages of one receipt preserve every supporting archive in a
  const drafts=r.writes.filter(w=>w.table==='v2_ai_action_requests');assert.equal(drafts.length,1);
  assert.equal(drafts[0].body.proposed_payload._source.related_attachments[0].path,attachment(2).path);assert.equal(drafts[0].body.proposed_payload._sources.length,2);
 });
+await test('A single-photo proposal retains its original even if the model leaves the source list empty',async()=>{
+ for(const body of [{images:images(1)},{image_data_url:photo(1),source_attachment:attachment(1)}]){
+  const r=multiProposalRuntime([[]]);assert.equal((await r.request(body)).status,200);
+  const draft=r.writes.find(w=>w.table==='v2_ai_action_requests').body.proposed_payload;
+  assert.equal(draft._source.path,attachment(1).path);assert.equal(draft.source_image_indices[0],1);
+ }
+});
 await test('Uncertain or invalid source indices require review before multi-photo actions can be confirmed',async()=>{
  for(const indices of [undefined,[],[3],['1'],[1,99]]){
   const r=multiProposalRuntime([indices]);assert.equal((await r.request({images:images(2)})).status,200);
