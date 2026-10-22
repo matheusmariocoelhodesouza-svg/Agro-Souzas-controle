@@ -19,7 +19,7 @@ const dir=await fs.mkdtemp(path.join(os.tmpdir(),'c360-multi-image-'));
 const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aX1sAAAAASUVORK5CYII=','base64');
 const paths=Array.from({length:11},(_,i)=>path.join(dir,`nota-${String(i+1).padStart(2,'0')}.png`));
 await Promise.all(paths.map(file=>fs.writeFile(file,png)));
-const bad=path.join(dir,'invalida.jpg'),textFile=path.join(dir,'texto.txt');
+const bad=path.join(dir,'invalida.jpg'),textFile=path.join(dir,'programa.exe');
 await fs.writeFile(bad,'not an image');await fs.writeFile(textFile,'not an image');
 const browser=await chromium.launch({headless:true});
 let passed=0;
@@ -30,7 +30,7 @@ async function fixture(run,viewport={width:412,height:915}){
  await context.route('**/*',route=>route.abort());
  await page.setContent('<!doctype html><html><head><style>body{margin:0;font-family:Arial;background:#0b1929;color:#e2e8f0}.card{padding:16px;max-width:760px;margin:auto}.chatbox{border:1px solid #334155;padding:8px;box-sizing:border-box}.msg{margin:8px 0;padding:10px;white-space:pre-wrap;background:#152c44;overflow-wrap:anywhere}.toolbar{display:flex;gap:8px}.toolbar input{min-width:0;flex:1}button{padding:8px}input{padding:8px}</style></head><body><div id="screenHost"><section id="ia" data-screen="ia" class="section active"><div class="card"><h3>Comando IA</h3><div class="muted"></div><div id="chatbox" class="chatbox"></div><div class="toolbar"><input id="question"><button id="sendAI" class="btn primary">Enviar</button></div></div></section></div></body></html>');
  await page.evaluate(()=>{
-  window.companyId='fixture-company';window.session=()=>({access_token:'synthetic-token'});
+  window.companyId='fixture-company';window.session=()=>({access_token:'synthetic-token',user:{id:'fixture-user'}});
   window.qa={uploads:[],analyses:[],toasts:[],actions:[],failUploadName:'',failAnalysis:false,holdAnalysis:false,release:null};
   window.showToast=message=>window.qa.toasts.push(message);
   window.authFetch=async(endpoint,options)=>{
@@ -40,6 +40,8 @@ async function fixture(run,viewport={width:412,height:915}){
    }
    const body=JSON.parse(options.body);
    if(body.mode==='health')return Response.json({status:'configured',configured:true});
+   if(body.mode==='conversations')return Response.json({conversations:[]});
+   if(body.mode==='history')return Response.json({messages:[]});
    window.qa.analyses.push(body);
    if(window.qa.holdAnalysis)await new Promise(resolve=>window.qa.release=resolve);
    return window.qa.failAnalysis?Response.json({message:'Falha sintética da IA'},{status:503}):Response.json({conversation_id:'fixture-conversation',answer:'Fotos analisadas em conjunto.',actions:window.qa.actions});
@@ -149,3 +151,4 @@ try{
  });
  console.log(`${passed} multi-image and review browser regressions passed.`);
 }finally{await browser.close();await fs.rm(dir,{recursive:true,force:true})}
+

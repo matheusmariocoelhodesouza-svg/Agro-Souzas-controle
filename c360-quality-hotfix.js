@@ -1,6 +1,6 @@
 (()=>{
 'use strict';
-const BOOT_VERSION='2026.10.19-stable79';
+const BOOT_VERSION='2026.10.22-stable80';
 const recoveryModule='./c360-autorecovery.js';
 
 /* Runtime enxuto: só recursos globais entram no primeiro paint. */
@@ -149,3 +149,4 @@ boot().catch(e=>{
  window.__c360Bootstrap=detail;console.error('Comando 360 bootstrap',e);emit('c360:bootstrap-ready',detail);
 });
 })();
+

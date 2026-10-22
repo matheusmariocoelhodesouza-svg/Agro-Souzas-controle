@@ -11,6 +11,8 @@
 /* 2026-10-07 — auditoria de gravação, sessão, combustível e busca de fazendas. */
 /* 2026-10-19 — múltiplas imagens na conversa do Comando IA. */
 /* 2026-10-19 — contraste dos cartões de conferência da IA. */
-importScripts('./sw-v7-02-core-stable79.js');
+/* 2026-10-22 — conversa contínua, histórico, documentos e acesso flutuante à IA. */
+importScripts('./sw-v7-02-core-stable80.js');
 importScripts('./sw-auth-refresh-guard.js');
 importScripts('./sw-share-target.js');
+
