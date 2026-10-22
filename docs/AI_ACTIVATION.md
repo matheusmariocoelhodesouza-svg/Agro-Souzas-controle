@@ -1,5 +1,19 @@
 # Configuração da IA do Comando360
 
+## Conversa contínua (22/10/2026)
+
+O Comando IA passa a enviar até 40 mensagens anteriores, em ordem, com limite de 48.000 caracteres, além de um resumo de continuidade de até 4.000 caracteres. As propostas estruturadas anteriores entram no contexto para permitir completar dados e corrigir informações sem começar do zero. O resumo é atualizado em `v2_ai_conversations.context.memory`; nenhuma tabela nova é necessária.
+
+As leituras exigem usuário e empresa da conversa, além de `ai.use` e das políticas RLS existentes. Histórico fornecido pelo cliente não é aceito. Uma falha de leitura interrompe a consulta para evitar responder sem o contexto solicitado.
+
+Os modos `conversations` e `history` permitem retomar conversas sem chamar o modelo ou consultar a chave. A interface guarda somente o ID da conversa por usuário/empresa, oferece Nova conversa, recupera mensagens ao reabrir e limpa o estado ao trocar usuário ou empresa. Os links de anexos antigos duram dez minutos. Fotos podem ser ampliadas. O botão flutuante abre o Comando IA nas telas administrativas.
+
+O compositor aceita várias linhas (Shift+Enter), fotos coladas e até dez anexos no total. PDF, DOCX, XLSX, PPTX, CSV, TXT, MD, JSON, RTF e ODT são enviados como `input_file`, com até 10 MB por documento e 16 MB de dados codificados no conjunto. O ajuste de formatos do bucket está em `supabase/ops/20261022_ai_document_mime_types.sql`; ele preserva as permissões e o limite de armazenamento existentes. Cada proposta identifica também `source_document_indices` quando é sustentada por documentos.
+
+O modelo permanece `gpt-5-mini`. O histórico e o resumo melhoram a continuidade; isso não equivale a todos os recursos do ChatGPT. Arquivos de turnos anteriores não são retransmitidos integralmente. A IA deve pedir reenvio quando faltar um detalhe que não esteja nas mensagens ou extrações. Alterações em registros continuam exigindo o botão de confirmação.
+
+Verificação adicional: `node qa/assistant_conversation_regressions_20261022.mjs`. Os testes usam dados sintéticos; a resposta real do modelo requer uma sessão autenticada do aplicativo.
+
 As funções `controla-ai` e `comando360-daily-ai` usam `gpt-5-mini` pela Responses API. Cada solicitação tem prazo de execução e `store: false`. O assistente limita a saída a 4.096 tokens em mensagens de texto ou uma foto; mensagens com várias fotos têm até 8.192 tokens e prazo de 50 segundos. A leitura de presença mantém o limite de 4.096 tokens.
 
 ## Várias imagens na conversa
@@ -41,3 +55,4 @@ node qa/assistant_multiple_images_20261019.mjs
 Depois de configurar a credencial, use uma sessão real do app para verificar a saúde, fazer uma consulta sobre os dados da empresa e revisar uma extração de foto. Os testes unitários usam dados sintéticos e não substituem essa validação.
 
 A migração versionada cria somente a leitura de servidor. Migrações operacionais de transferência de chave são temporárias e não devem ser reaplicadas. Nenhuma função pública de instalação faz parte do aplicativo.
+
