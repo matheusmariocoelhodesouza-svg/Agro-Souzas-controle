@@ -1,4 +1,4 @@
-const CACHE = 'oficina360-shell-20260929-redgraphite-png2';
+const CACHE = 'oficina360-shell-20261025-professional-chat1';
 const SHELL = [
   '/oficina360',
   '/oficina360.html',
@@ -7,7 +7,13 @@ const SHELL = [
   '/oficina360-icon.svg',
   '/oficina360-icon-192.png',
   '/oficina360-icon-512.png',
-  '/oficina360.webmanifest'
+  '/oficina360.webmanifest',
+  '/oficina360.js',
+  '/oficina360-chat.js',
+  '/c360-workshop-chat.js',
+  '/c360-chat-experience.js',
+  '/c360-chat-stream.js',
+  '/c360-assistant360.js'
 ];
 
 self.addEventListener('install', event => {

@@ -3,12 +3,20 @@ import vm from 'node:vm';
 import assert from 'node:assert/strict';
 import {stripTypeScriptTypes} from 'node:module';
 const shared=fs.readFileSync('supabase/functions/_shared/openai-server.ts','utf8').replace(/^import .*$/gm,'').replace(/^export /gm,'');
-const source=stripTypeScriptTypes(shared+'\n'+fs.readFileSync('supabase/functions/controla-ai/index.ts','utf8').replace(/^import .*$/gm,''));
+const helpers=['workshop-conversation.ts','assistant-stream.ts','daily-chat-context.ts'].map(f=>fs.readFileSync('supabase/functions/_shared/'+f,'utf8').replace(/^export /gm,'')).join('\n');
+const source=stripTypeScriptTypes(shared+'\n'+helpers+'\n'+fs.readFileSync('supabase/functions/controla-ai/index.ts','utf8').replace(/^import .*$/gm,''));
 let passed=0;
 async function test(name,run){await run();passed++;console.log('PASS '+name)}
 function runtime(options={}){
  const reads=[],writes=[],calls=[];let handler;
- const db={auth:{getUser:async()=>({data:{user:{id:'owner'}}})},rpc:async()=>({data:true}),from(table){
+ const db={auth:{getUser:async()=>({data:{user:{id:'owner'}}})},rpc:async(name,args)=>{
+  if(name==='v2_ai_commit_turn'){
+   const sources=writes.filter(w=>w.table==='v2_ai_messages'&&w.body.role==='user').at(-1)?.body.answer_data?.source_attachments||[];
+   writes.push({table:'v2_ai_messages',kind:'insert',body:{role:'assistant',content:args.p_answer,answer_data:{actions:args.p_actions,source_attachments:sources}}});
+   writes.push({table:'v2_ai_conversations',kind:'update',body:{context:{source:'assistant360',memory:args.p_memory}}});
+   return {data:{conversation_id:args.p_conversation_id,answer:args.p_answer,actions:args.p_actions,workshop:null},error:null};
+  }return {data:true};
+ },from(table){
   const filters=[];let write=null;
   const result=()=>{
    if(!write)reads.push({table,filters:[...filters]});

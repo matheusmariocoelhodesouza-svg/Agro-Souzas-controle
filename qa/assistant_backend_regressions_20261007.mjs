@@ -3,7 +3,8 @@ import vm from 'node:vm';
 import assert from 'node:assert/strict';
 import {stripTypeScriptTypes} from 'node:module';
 const shared=fs.readFileSync('supabase/functions/_shared/openai-server.ts','utf8').replace(/^import .*$/gm,'').replace(/^export /gm,'');
-const source=stripTypeScriptTypes(shared+'\n'+fs.readFileSync('supabase/functions/controla-ai/index.ts','utf8').replace(/^import .*$/gm,''));
+const helpers=['workshop-conversation.ts','assistant-stream.ts','daily-chat-context.ts'].map(f=>fs.readFileSync('supabase/functions/_shared/'+f,'utf8').replace(/^export /gm,'')).join('\n');
+const source=stripTypeScriptTypes(shared+'\n'+helpers+'\n'+fs.readFileSync('supabase/functions/controla-ai/index.ts','utf8').replace(/^import .*$/gm,''));
 let passed=0;
 async function test(name,run){await run();passed++;console.log('PASS '+name)}
 function runtime(options={}){
@@ -11,6 +12,11 @@ function runtime(options={}){
  const result={ok:true,result:{target_type:'fuel_log',target_id:'fixture-target',message:'Confirmado'}};
  const sb={auth:{getUser:async()=>({data:{user:options.noUser?null:{id:'fixture-user'}}})},rpc:async(name,args)=>{
   calls.push({name,args});if(name==='v2_has_permission')return{data:options.noPermission?false:true};
+  if(name==='v2_ai_commit_turn'){
+   const user=writes.filter(w=>w.table==='v2_ai_messages'&&w.body.role==='user').at(-1),sources=user?.body.answer_data?.source_attachments||[];
+   writes.push({table:'v2_ai_messages',body:{company_id:args.p_company_id,conversation_id:args.p_conversation_id,role:'assistant',content:args.p_answer,answer_data:{actions:args.p_actions,source_attachments:sources,source_attachment:sources[0]||null}}});
+   return {data:{conversation_id:args.p_conversation_id,answer:args.p_answer,actions:args.p_actions,workshop:null},error:null};
+  }
   if(name==='v2_execute_assistant_action')return{data:options.rpcResult||result,error:options.rpcError||null};throw Error('Unexpected RPC');
  },from(table){let inserted=false;const chain=new Proxy({}, {get(_,name){
   if(name==='then')return(resolve,reject)=>Promise.resolve({data:options.rows?.[table]||[],error:null}).then(resolve,reject);

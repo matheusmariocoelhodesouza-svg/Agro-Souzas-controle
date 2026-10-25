@@ -43,6 +43,7 @@ async function boot(){
   state.client=window.supabase.createClient(window.SUPABASE_URL,window.SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
   const {data:{session}}=await state.client.auth.getSession();
   state.session=session;
+  state.client.auth.onAuthStateChange((_event,next)=>{state.session=next;if(!next)showGate();document.dispatchEvent(new CustomEvent('o360:session-changed'))});
   if(!session){showGate();return}
   $('#appShell').classList.remove('hidden');
   bindUi();
@@ -65,8 +66,9 @@ function bindUi(){
 function openTab(tab){
   $$('.side-nav button[data-tab]').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
   $$('.tab').forEach(x=>x.classList.toggle('active',x.id==='tab-'+tab));
-  const names={overview:'Visão geral',catalog:'Catálogo de peças',exploded:'Vistas explodidas',maintenance:'Manutenção',orders:'Ordens de serviço',diagnostics:'Scanner & falhas'};
+  const names={overview:'Visão geral',catalog:'Catálogo de peças',exploded:'Vistas explodidas',maintenance:'Manutenção',orders:'Ordens de serviço',diagnostics:'Scanner & falhas','workshop-chat':'Oficina IA'};
   $('#pageTitle').textContent=names[tab]||'Oficina 360';
+  document.dispatchEvent(new CustomEvent('o360:tab-changed',{detail:{tab}}));
 }
 
 async function loadVehicles(){
@@ -89,6 +91,7 @@ async function selectVehicle(id,force=false){
   const v=state.vehicles.find(x=>x.id===id); if(!v)return;
   if(!force&&state.vehicle?.id===id&&state.profile)return;
   state.vehicle=v;
+  document.dispatchEvent(new CustomEvent('o360:vehicle-changed',{detail:{vehicle_id:v.id}}));
   history.replaceState(null,'',location.pathname+'?vehicle='+encodeURIComponent(id));
   setLoading(true);
   try{
@@ -258,5 +261,6 @@ function renderFaults(){
   $('#faultsList').innerHTML=state.faults.map(f=>'<div class="list-row"><div class="main-copy"><strong>'+esc(f.code||((f.spn!=null?'SPN '+f.spn:'')+(f.fmi!=null?' / FMI '+f.fmi:''))||'Falha sem código')+'</strong><small>'+esc(f.description||'Descrição ainda não interpretada')+'</small><small>Protocolo '+esc((f.protocol||'').toUpperCase())+' • Última ocorrência '+date(f.last_seen_at)+'</small></div><div class="right"><span class="chip '+(String(f.status).toLowerCase()==='active'?'danger':'ok')+'">'+esc(String(f.status||'active').toUpperCase())+'</span><small>'+(f.occurrence_count?f.occurrence_count+' ocorrência(s)':'')+'</small></div></div>').join('')||'<div class="empty">Nenhuma falha de scanner registrada para esta condução. A base já está pronta para receber dados de diagnóstico.</div>';
 }
 
+window.O360Workspace={session:()=>state.session,vehicle:()=>state.vehicle,openTab,notify:toast,async refreshOrders(){const v=state.vehicle;if(!v||!state.client)return;const result=await state.client.from('v2_work_orders').select('*').eq('company_id',v.company_id).eq('vehicle_id',v.id).order('opened_at',{ascending:false});if(!result.error&&state.vehicle?.id===v.id){state.orders=result.data||[];renderOrders()}}};
 document.addEventListener('DOMContentLoaded',()=>boot().catch(e=>{console.error(e);showGate(e.message)}),{once:true});
 })();
