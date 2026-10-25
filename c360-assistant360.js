@@ -452,7 +452,7 @@ function floatingButton(root){
  const hidden=!authSession()?.access_token||!company()||document.body.classList.contains('device-mode')||(adapter()?.isOpen?adapter().isOpen():!!(root&&!root.hidden&&getComputedStyle(root).display!=='none'));
  if(button.hidden!==hidden)button.hidden=hidden;
 }
-function scan(){const root=activeRoot();floatingButton(root);if(root){install(root);mountWorkshop(root);mountExperience(root);syncConversation(root);const visible=adapter()?.isOpen?adapter().isOpen():!root.hidden&&getComputedStyle(root).display!=='none';if(state.handsFree&&!visible)stopHandsFree(root);if(visible&&root.classList.contains('active'))checkHealth(root)}}
+function scan(){const root=activeRoot();floatingButton(root);if(root){install(root);mountWorkshop(root);mountExperience(root);syncConversation(root);const visible=adapter()?.isOpen?adapter().isOpen():!root.hidden&&getComputedStyle(root).display!=='none';if(visible)window.C360ChatExperience?.fit(root);if(state.handsFree&&!visible)stopHandsFree(root);if(visible&&root.classList.contains('active'))checkHealth(root)}}
 document.addEventListener('c360:chat-experience-ready',scan);document.addEventListener('c360:workshop-chat-ready',scan);document.addEventListener('c360:assistant-scope-changed',scan);document.addEventListener('visibilitychange',()=>{if(document.hidden){const root=activeRoot();if(root)stopHandsFree(root)}});
 document.addEventListener('c360:screen-changed',e=>{const s=String(e?.detail?.screen||e?.detail?.id||'').toLowerCase();if(!s||s.includes('ia'))setTimeout(scan,0)});
 document.addEventListener('c360:lazy-feature-ready',()=>{scan();setTimeout(hydrateSharedImage,0)});
