@@ -21,9 +21,22 @@ export async function loadDailyChatContext(client:any,companyId:string,question:
     }
     if(!finance&&!payments)context.payments={available:false,message:"Conta sem permissão para consultar os pagamentos."};
   }
-  if(/peca|pistao|camisa|filtro|catalog|codigo.*motor|junta|bucha|amortecedor/.test(q)&&vehicleId){
+  if(/peca|pistao|camisa|filtro|catalog|codigo.*motor|junta|bucha|amortecedor/.test(q)){
     const canRead=await dailyPermission(client,companyId,"workshop.view")||await dailyPermission(client,companyId,"workshop.manage");
-    if(canRead)jobs.push(read("vehicle_parts",client.from("v2_vehicle_component_links").select("vehicle_id,fitment_status,installed_part_number,installed_brand,notes,component:v2_vehicle_components(name,generic_name,oem_brand,oem_part_number,manufacturer_part_number,data_status,replacement_notes)").eq("company_id",companyId).eq("vehicle_id",vehicleId).limit(100)));
+    if(canRead){
+      if(!vehicleId){
+        const vehicles=await client.from("v2_vehicles").select("id,description,plate").eq("company_id",companyId).eq("status","active").limit(200);
+        const normalize=(value:any)=>String(value||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
+        const matches=(vehicles.data||[]).filter((v:any)=>{
+          const description=normalize(v.description),plate=normalize(v.plate).replace(/[^a-z0-9]/g,"");
+          const names=description.split(/[^a-z0-9]+/).filter((token:string)=>token.length>=3&&!/^(onibus|micro|veiculo|ano|diesel|mercedes|benz|bus)$/.test(token)&&!/^[0-9]{4}$/.test(token));
+          return description&&q.includes(description)||plate&&q.replace(/[^a-z0-9]/g,"").includes(plate)||names.some((name:string)=>new RegExp("\\b"+name+"\\b").test(q));
+        });
+        if(!vehicles.error&&matches.length===1)vehicleId=matches[0].id;
+        else context.vehicle_parts={available:false,message:"Identifique uma condução para consultar a aplicação da peça; não foi possível selecionar uma única condução pelo relato."};
+      }
+      if(vehicleId)jobs.push(read("vehicle_parts",client.from("v2_vehicle_component_links").select("vehicle_id,fitment_status,installed_part_number,installed_brand,notes,component:v2_vehicle_components(name,generic_name,oem_brand,oem_part_number,manufacturer_part_number,data_status,replacement_notes)").eq("company_id",companyId).eq("vehicle_id",vehicleId).limit(100)));
+    }
   }
   await Promise.all(jobs);return context;
 }

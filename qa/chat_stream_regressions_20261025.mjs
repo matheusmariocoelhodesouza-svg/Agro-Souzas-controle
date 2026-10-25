@@ -23,7 +23,7 @@ function runtime(options={}){
    if(table==='v2_ai_conversations')return {data:options.foreign?null:(single?{id:ids.conversation,context}:[]),error:null};
    if(table==='v2_ai_messages')return {data:single?options.cached||null:[],error:null};
    if(table==='v2_work_orders')return {data:single?order:[order],error:null};
-   if(table==='v2_vehicles')return {data:single?{id:options.otherVehicle||ids.vehicle,description:'Ônibus QA'}:[{id:ids.vehicle,description:'Ônibus QA'}],error:null};
+   if(table==='v2_vehicles')return {data:single?{id:options.otherVehicle||ids.vehicle,description:options.vehicleDescription||'Ônibus QA'}:[{id:ids.vehicle,description:options.vehicleDescription||'Ônibus QA'}],error:null};
    if(table==='v2_workshop_journal')return {data:(options.journal||[]).slice(0,limit),error:options.journalError?{message:'private read error'}:null};
    return {data:options.rows?.[table]||[],error:options.readError===table?{message:'private read error'}:null};
   };
@@ -95,5 +95,8 @@ await test('Unavailable payment data is reported as unavailable rather than an e
 });
 await test('Conversation lists use the selected vehicle scope and the authenticated company',async()=>{
  const r=runtime();await r.json({mode:'conversations',vehicle_context_id:ids.vehicle});const read=r.reads.find(c=>c.table==='v2_ai_conversations');assert(read.filters.some(([k,v])=>k==='context->>vehicle_context_id'&&v===ids.vehicle));assert(read.filters.some(([k,v])=>k==='user_id'&&v===ids.user));
+});
+await test('Parts can be consulted by a uniquely identified bus name without opening a service',async()=>{
+ const r=runtime({unbound:true,vehicleDescription:'Comil',rows:{v2_vehicle_component_links:[{vehicle_id:ids.vehicle,component:{name:'Junta cadastrada QA'}}]}});await r.json({question:'Qual é a junta cadastrada do Comil?'});const parts=r.reads.find(c=>c.table==='v2_vehicle_component_links');assert(parts);assert(parts.filters.some(([k,v])=>k==='vehicle_id'&&v===ids.vehicle));assert.match(r.calls.find(c=>c.provider).payload.instructions,/Junta cadastrada QA/);assert(!r.writes.some(w=>w.table==='v2_work_orders'));
 });
 console.log(`${passed} streaming, workshop and daily context regressions passed.`);
