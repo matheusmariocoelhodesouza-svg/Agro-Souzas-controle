@@ -1,6 +1,6 @@
 (()=>{
 'use strict';
-const BOOT_VERSION='2026.10.22-stable80';
+const BOOT_VERSION='2026.10.25-stable81';
 const recoveryModule='./c360-autorecovery.js';
 
 /* Runtime enxuto: só recursos globais entram no primeiro paint. */
@@ -25,7 +25,7 @@ const essentialModules=[
  './c360-field-offline-hotfix.js','./c360-field-stability.js','./c360-runtime-compatibility.js','./c360-final-stabilization.js','./c360-data-integrity.js',
  './c360-field-fax.js',
  './c360-field-route-guard.js','./c360-ux-polish-hotfix.js','./c360-employee-photo.js','./c360-onboarding-entry.js','./c360-team-chat.js','./c360-system-health.js','./c360-enterprise.js',
- './c360-commercial.js','./c360-saas-readiness.js','./c360-rpc-bridge.js','./c360-showcase-exact.js','./c360-farm-search.js','./c360-assistant360.js'
+ './c360-commercial.js','./c360-saas-readiness.js','./c360-rpc-bridge.js','./c360-showcase-exact.js','./c360-farm-search.js','./c360-workshop-chat.js','./c360-chat-stream.js','./c360-chat-experience.js','./c360-assistant360.js'
 ];
 const routeModules={
  operacoes:['./c360-fax.js'],
@@ -38,7 +38,7 @@ const routeModules={
  financeiro:['./c360-payroll-link.js'],
  saudesistema:['./c360-operational-readiness.js'],
  combustivel:['./c360-fuel-type.js'],abastecimento:['./c360-fuel-type.js'],
- ia:['./c360-assistant360.js']
+ ia:['./c360-workshop-chat.js','./c360-chat-stream.js','./c360-chat-experience.js','./c360-assistant360.js']
 };
 
 const loadedStyles=new Set(),loadedModules=new Set();

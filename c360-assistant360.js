@@ -1,6 +1,6 @@
 (()=>{
 'use strict';
-const VERSION='2026.10.22-comando-ai-5';
+const VERSION='2026.10.25-professional-chat-7';
 if(window.__c360Assistant360Version===VERSION)return;
 window.__c360Assistant360Version=VERSION;
 
@@ -14,7 +14,7 @@ const SHARE_KEY='./__assistant360_shared_image__';
 const MAX_IMAGES=10,MAX_VISION_BYTES=12*1024*1024;
 const DOCUMENT_TYPES={pdf:'application/pdf',docx:'application/vnd.openxmlformats-officedocument.wordprocessingml.document',xlsx:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',pptx:'application/vnd.openxmlformats-officedocument.presentationml.presentation',csv:'text/csv',txt:'text/plain',md:'text/markdown',json:'application/json',rtf:'application/rtf',odt:'application/vnd.oasis.opendocument.text'};
 const FILE_ACCEPT='image/*,'+Object.keys(DOCUMENT_TYPES).map(ext=>'.'+ext).join(',');
-const state={conversationId:null,attachments:[],busy:false,recognition:null,installed:new WeakSet(),shareHandled:false,scope:null,epoch:0,conversations:[]};
+const state={conversationId:null,attachments:[],busy:false,recognition:null,installed:new WeakSet(),shareHandled:false,scope:null,epoch:0,conversations:[],workshop:null,pendingTurn:null,controllers:new WeakMap(),handsFree:false,voiceTimer:null};
 const dialogueStyle=document.createElement('style');dialogueStyle.textContent=`
 .assistant360-ready .chatbox,.assistant360-ready .ai-thread{min-height:36vh;max-height:58dvh;overscroll-behavior:contain;padding:14px}.assistant360-ready .msg,.assistant360-ready .ai-msg span{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.6}.assistant360-ready .toolbar{align-items:flex-end}.assistant360-ready textarea.ai360-composer{resize:none;box-sizing:border-box;min-height:48px;max-height:180px;flex:1;min-width:0;width:100%;font:inherit;line-height:1.5;padding:12px;border:1px solid #cbd5e1;border-radius:14px;margin:0;color:#102a4c;background:#fff}.ai360-conversations{display:flex;align-items:center;gap:8px;margin:14px 0}.ai360-conversations select{flex:1;min-width:0;max-width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:10px;color:#102a4c;background:#fff}.ai360-conversations button{flex:none;min-height:44px}.ai360-thinking{color:#46617d;font-size:13px;padding:12px;line-height:1.5}.ai360-thinking:before{content:'●';display:inline-block;margin-right:8px;animation:ai360-pulse 1s infinite alternate}@keyframes ai360-pulse{to{opacity:.25}}.ai360-message-images img{width:100px;height:100px;cursor:zoom-in}.ai360-preview{padding:0;border:0;border-radius:16px;background:#0b1727;color:#fff;max-width:96vw;max-height:94dvh;width:min(980px,96vw)}.ai360-preview::backdrop{background:rgba(0,0,0,.85)}.ai360-preview header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px}.ai360-preview header span{overflow-wrap:anywhere}.ai360-preview button{min-width:44px;min-height:44px;border:0;border-radius:10px;cursor:pointer}.ai360-preview img{display:block;max-width:100%;height:auto;max-height:78dvh;object-fit:contain;margin:auto}.ai360-document{display:inline-flex;align-items:center;gap:6px;padding:10px;margin:6px 6px 0 0;border-radius:10px;background:#eaf1fa;color:#173d66;text-decoration:underline;overflow-wrap:anywhere;font-size:13px}.ai360-file-icon{display:grid;place-items:center;width:58px;height:58px;border-radius:10px;background:#dbeafe;color:#173d66;font-size:14px;font-weight:800;flex:none}#c360AiFab{position:fixed;right:18px;bottom:calc(100px + env(safe-area-inset-bottom,0px));z-index:900;display:flex;align-items:center;gap:8px;min-height:48px;padding:12px 18px;border:1px solid #86a6d3;border-radius:999px;background:#123d6c;color:#fff;font:700 14px system-ui;box-shadow:0 6px 24px #102a4c40;cursor:pointer}#c360AiFab[hidden]{display:none}@media(max-width:640px){#c360AiFab{right:12px;bottom:calc(150px + env(safe-area-inset-bottom,0px))}.ai360-conversations{flex-wrap:wrap}.ai360-conversations select{flex-basis:100%}.assistant360-ready .chatbox,.assistant360-ready .ai-thread{max-height:52dvh;padding:10px}.assistant360-ready .ai360-tools{grid-template-columns:repeat(3,minmax(0,1fr))}.ai360-tools .btn{min-width:0;padding:10px 5px;font-size:12px}.ai360-message-images img{width:88px;height:88px}}`;
 dialogueStyle.textContent+='@media(max-width:640px){.assistant360-ready .ai360-capabilities,.assistant360-ready .ai360-intro,.assistant360-ready .ai360-brand-copy p{display:none}.assistant360-ready .ai360-conversations{flex-wrap:nowrap}.assistant360-ready .ai360-conversations select{flex-basis:auto}.assistant360-ready .ai360-conversations button{font-size:12px;padding:10px 8px}.assistant360-ready .chatbox,.assistant360-ready .ai-thread{min-height:220px;max-height:42dvh}}';
@@ -23,32 +23,36 @@ let healthBusy=false,healthCompany='',healthAt=0;
 const $=(sel,root=document)=>root.querySelector(sel);
 const $$=(sel,root=document)=>[...root.querySelectorAll(sel)];
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-function apiBase(){try{return (typeof API_URL!=='undefined'&&API_URL)?API_URL:'https://aycbrqziusxtxhsdfqjk.supabase.co'}catch{return 'https://aycbrqziusxtxhsdfqjk.supabase.co'}}
-function apiKey(){try{return (typeof KEY!=='undefined'&&KEY)?KEY:''}catch{return ''}}
-function company(){try{return (typeof companyId!=='undefined'&&companyId)?companyId:(window.companyId||'')}catch{return window.companyId||''}}
-function authSession(){try{return (typeof session==='function')?session():null}catch{return null}}
+function requestId(){if(crypto.randomUUID)return crypto.randomUUID();const b=crypto.getRandomValues(new Uint8Array(16));b[6]=(b[6]&15)|64;b[8]=(b[8]&63)|128;const h=[...b].map(n=>n.toString(16).padStart(2,'0')).join('');return [h.slice(0,8),h.slice(8,12),h.slice(12,16),h.slice(16,20),h.slice(20)].join('-')}
+function adapter(){return window.C360AssistantAdapter||null}
+function assistantName(){return adapter()?.label||'Comando IA'}
+function vehicleFocus(){return adapter()?.vehicleId?.()||null}
+function apiBase(){if(adapter()?.apiBase)return adapter().apiBase;try{return (typeof API_URL!=='undefined'&&API_URL)?API_URL:'https://aycbrqziusxtxhsdfqjk.supabase.co'}catch{return 'https://aycbrqziusxtxhsdfqjk.supabase.co'}}
+function apiKey(){if(adapter()?.apiKey)return adapter().apiKey;try{return (typeof KEY!=='undefined'&&KEY)?KEY:''}catch{return ''}}
+function company(){if(adapter()?.company)return adapter().company()||'';try{return (typeof companyId!=='undefined'&&companyId)?companyId:(window.companyId||'')}catch{return window.companyId||''}}
+function authSession(){if(adapter()?.session)return adapter().session();try{return (typeof session==='function')?session():null}catch{return null}}
 function globalFn(name){const fn=window[name];return typeof fn==='function'?fn:null}
 function sessionScope(){
  const s=authSession();if(!s?.access_token||!company())return '';
  let id=s.user?.id||s.user_id||'';
  if(!id){try{id=JSON.parse(atob(s.access_token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/'))).sub||''}catch{}}
  // Invalid synthetic sessions are never persisted across reloads.
- return company()+':'+(id||'temporary');
+ return company()+':'+(id||'temporary')+(vehicleFocus()?':vehicle:'+vehicleFocus():'');
 }
 function storedConversation(value){
  const key='c360-ai-conversation:'+state.scope;
- if(!state.scope||state.scope.endsWith(':temporary'))return null;
+ if(!state.scope||state.scope.includes(':temporary'))return null;
  try{if(arguments.length)localStorage.setItem(key,value||'new');return localStorage.getItem(key)}catch{return null}
 }
-function welcome(root){addMessage(root,'Olá! Pode falar comigo do seu jeito. O que vamos resolver hoje?','ai')}
+function welcome(root){addMessage(root,'Olá! Pode falar comigo do seu jeito. O que vamos resolver hoje?','ai')?.classList.add('ai360-welcome')}
 function updateConversationOptions(root){
  const select=$('.ai360-conversation-select',root);if(!select)return;
  select.replaceChildren(new Option('Nova conversa',''));
  state.conversations.forEach(c=>select.add(new Option(c.title||'Conversa sem título',c.id)));
- select.value=state.conversationId||'';
+ select.value=state.conversationId||'';window.C360ChatExperience?.refresh(root);
 }
 function newConversation(root){
- if(state.busy)return;state.epoch++;state.conversationId=null;state.attachments=[];storedConversation('new');
+ if(state.busy)return;stopHandsFree(root);state.epoch++;state.conversationId=null;state.attachments=[];state.pendingTurn=null;setWorkshop(root,null);storedConversation('new');
  const box=chatBox(root);if(box)box.replaceChildren();const input=inputEl(root);if(input)input.value='';
  renderActions(root,[]);renderAttachment(root);updateConversationOptions(root);welcome(root);input?.focus();
 }
@@ -68,18 +72,19 @@ function messageAttachments(message,attachments){
  });message.appendChild(host);
 }
 async function openConversation(root,id){
+ stopHandsFree(root);
  const epoch=++state.epoch,scope=state.scope,cid=company();setBusy(root,true,'Abrindo…');
  try{
   const data=await callAssistant({mode:'history',company_id:cid,conversation_id:id});if(state.epoch!==epoch||state.scope!==scope||company()!==cid)return;
   const box=chatBox(root);if(box)box.replaceChildren();state.conversationId=id;state.attachments=[];storedConversation(id);
-  (data.messages||[]).forEach(m=>messageAttachments(addMessage(root,m.content,m.role==='user'?'user':'ai'),m.attachments));
+  (data.messages||[]).forEach(m=>{const message=addMessage(root,m.content,m.role==='user'?'user':'ai');messageAttachments(message,m.attachments);state.controllers.get(root)?.receipt(message,m.workshop)});state.pendingTurn=null;setWorkshop(root,data.workshop);
   if(!data.messages?.length)welcome(root);renderActions(root,data.actions||[]);renderAttachment(root);updateConversationOptions(root);
  }catch(e){if(state.epoch===epoch){updateConversationOptions(root);notify(e?.message||'Não consegui recuperar esta conversa.','error')}}
  finally{if(state.epoch===epoch)setBusy(root,false)}
 }
 async function syncConversation(root){
  const scope=sessionScope();if(scope===state.scope)return;
- state.scope=scope;const epoch=++state.epoch;state.conversationId=null;state.conversations=[];state.attachments=[];
+ stopHandsFree(root);state.scope=scope;const epoch=++state.epoch;state.conversationId=null;state.conversations=[];state.attachments=[];state.pendingTurn=null;setWorkshop(root,null);
  try{state.recognition?.stop()}catch{}state.recognition=null;
  const box=chatBox(root);if(box)box.replaceChildren();const input=inputEl(root);if(input)input.value='';
  renderActions(root,[]);renderAttachment(root);updateConversationOptions(root);welcome(root);
@@ -87,7 +92,7 @@ async function syncConversation(root){
  if(!scope){setBusy(root,false);return}
  setBusy(root,true,'Abrindo…');
  try{
-  const data=await callAssistant({mode:'conversations',company_id:company()});if(state.scope!==scope||state.epoch!==epoch)return;
+  const data=await callAssistant({mode:'conversations',company_id:company(),vehicle_context_id:vehicleFocus()});if(state.scope!==scope||state.epoch!==epoch)return;
   state.conversations=data.conversations||[];updateConversationOptions(root);
   const saved=storedConversation(),id=saved==='new'?null:(state.conversations.find(c=>c.id===saved)?.id||state.conversations[0]?.id);
   if(id){setBusy(root,false);await openConversation(root,id)}
@@ -111,6 +116,7 @@ async function checkHealth(root,force=false){
  finally{healthBusy=false;if(company()===companyId&&!status.hidden){const button=document.createElement('button');button.type='button';button.className='btn soft';button.textContent='Verificar novamente';button.addEventListener('click',()=>checkHealth(root,true));status.append(' ',button)}}
 }
 function activeRoot(){
+ if(adapter()?.root)return adapter().root();
  const roots=$$('[data-screen="ia"],#ia');
  return roots.find(r=>!r.hidden&&getComputedStyle(r).display!=='none')||roots[0]||null;
 }
@@ -134,17 +140,18 @@ function addMessage(root,text,role='ai',meta=''){
  if(modern){
   d.className='ai-msg '+(role==='user'?'user':'bot');
   const strong=document.createElement('strong');strong.textContent=role==='user'?'Você':'Assistente 360';
-  const span=document.createElement('span');appendLinkedText(span,text);
+  const span=document.createElement('span');span.className='ai-msg-text';if(window.C360ChatExperience)window.C360ChatExperience.renderText(span,text,role);else appendLinkedText(span,text);
   d.append(strong,span);
   if(meta){const small=document.createElement('small');small.className='ai360-msgmeta';small.textContent=meta;d.appendChild(small)}
  }else{
   d.className='msg '+(role==='user'?'user':'ai');
-  appendLinkedText(d,text);
+  const content=document.createElement('div');content.className='ai-msg-text';if(window.C360ChatExperience)window.C360ChatExperience.renderText(content,text,role);else appendLinkedText(content,text);d.appendChild(content);
   if(meta){const small=document.createElement('div');small.className='ai360-msgmeta';small.textContent=meta;d.appendChild(small)}
  }
- box.appendChild(d);box.scrollTop=box.scrollHeight;return d;
+ box.appendChild(d);const scroll=box.closest('.ai360-chat-scroll')||box;if(role==='user')scroll.dataset.follow='true';if(scroll.dataset.follow!=='false')scroll.scrollTop=scroll.scrollHeight;return d;
 }
 function notify(text,type='info'){
+ if(adapter()?.notify){adapter().notify(text);return}
  const toast=globalFn('showToast');if(typeof toast==='function'){try{toast(text);return}catch{}}
  if(type==='error')console.error(text);else console.log(text);
 }
@@ -267,6 +274,7 @@ function selectPhoto(root,source='camera'){
 }
 function speechCtor(){return window.SpeechRecognition||window.webkitSpeechRecognition||null}
 function startVoice(root,btn){
+ if(state.handsFree){stopHandsFree(root);return}
  const C=speechCtor();if(!C){notify('O navegador deste aparelho não oferece ditado por voz.','error');return}
  if(state.recognition){try{state.recognition.stop()}catch{}state.recognition=null;btn.classList.remove('recording');return}
  const rec=new C();state.recognition=rec;rec.lang='pt-BR';rec.interimResults=true;rec.continuous=false;
@@ -275,6 +283,31 @@ function startVoice(root,btn){
  rec.onerror=()=>notify('Não consegui ouvir. Você pode digitar normalmente.','error');
  rec.onend=()=>{state.recognition=null;btn.classList.remove('recording');btn.textContent='🎤 Falar'};rec.start();
 }
+
+function voiceStatus(root,text){const status=$('.ai360-voice-status',root);if(status){status.textContent=text;status.hidden=!text}}
+function stopHandsFree(root){
+ state.handsFree=false;clearTimeout(state.voiceTimer);state.voiceTimer=null;const rec=state.recognition;state.recognition=null;try{rec?.abort()}catch{}try{window.speechSynthesis?.cancel()}catch{}
+ const b=$('.ai360-handsfree',root);if(b){b.textContent='🗣 Conversar por voz';b.classList.remove('recording');b.setAttribute('aria-pressed','false');b.disabled=state.busy}const d=$('.ai360-voice',root);if(d){d.classList.remove('recording');d.textContent='🎤 Falar'}voiceStatus(root,'');
+}
+function listenHandsFree(root){
+ if(!state.handsFree||document.hidden)return;if(state.busy){state.voiceTimer=setTimeout(()=>listenHandsFree(root),250);return}
+ const C=speechCtor();if(!C){stopHandsFree(root);notify('Este navegador não oferece conversa por voz. Use o microfone do teclado.');return}
+ const input=inputEl(root),epoch=state.epoch,rec=new C();let transcript='';state.recognition=rec;rec.lang='pt-BR';rec.interimResults=true;rec.continuous=false;voiceStatus(root,'Ouvindo… Uma pausa envia sua mensagem. Toque em Parar voz para encerrar.');
+ rec.onresult=e=>{transcript=Array.from(e.results).map(r=>r[0].transcript).join(' ').trim();if(input)input.value=transcript};
+ rec.onerror=e=>{if(!state.handsFree||state.epoch!==epoch)return;stopHandsFree(root);notify(e.error==='not-allowed'?'Autorize o microfone para conversar por voz.':'O modo de voz foi pausado. Sua fala permanece no campo para conferir.')};
+ rec.onend=()=>{if(state.recognition===rec)state.recognition=null;if(!state.handsFree||state.epoch!==epoch)return;if(transcript){voiceStatus(root,'Mensagem enviada. Aguardando a resposta…');analyze(root)}else{stopHandsFree(root);notify('O modo de voz foi pausado porque não ouvi uma fala.')}};
+ try{rec.start()}catch{stopHandsFree(root);notify('Não consegui iniciar o microfone. Tente novamente.')}
+}
+function speakAnswer(root,answer){
+ if(!state.handsFree)return;const epoch=state.epoch;const resume=()=>{if(state.handsFree&&state.epoch===epoch)state.voiceTimer=setTimeout(()=>listenHandsFree(root),350)};
+ if(!window.speechSynthesis||!window.SpeechSynthesisUtterance){resume();return}voiceStatus(root,'Lendo a resposta… Toque em Parar voz quando quiser.');
+ try{const u=new SpeechSynthesisUtterance(String(answer).slice(0,3500));u.lang='pt-BR';u.rate=1.05;u.onend=resume;u.onerror=()=>{if(state.handsFree){stopHandsFree(root);notify('A leitura em voz foi pausada. A resposta está na conversa.')}};window.speechSynthesis.speak(u)}catch{stopHandsFree(root);notify('A leitura em voz foi pausada. A resposta e o registro continuam na conversa.')}
+}
+function toggleHandsFree(root){
+ if(state.handsFree){stopHandsFree(root);return}if(state.busy)return;if(!speechCtor()){notify('Este navegador não oferece conversa por voz. Use o microfone do teclado.');return}if(inputEl(root)?.value.trim()||state.attachments.length){notify('Envie ou limpe a mensagem atual antes de iniciar a conversa por voz.');return}
+ try{state.recognition?.abort()}catch{}state.recognition=null;state.handsFree=true;const b=$('.ai360-handsfree',root);b.textContent='■ Parar voz';b.classList.add('recording');b.setAttribute('aria-pressed','true');listenHandsFree(root);
+}
+
 async function assistantRequest(endpoint,opts,timeoutMs=45000){
  const authenticated=globalFn('authFetch');
  if(authenticated)return await authenticated(endpoint,opts,true,timeoutMs);
@@ -282,20 +315,28 @@ async function assistantRequest(endpoint,opts,timeoutMs=45000){
  try{return await fetch(apiBase()+endpoint,{...opts,headers:headers(opts.headers||{}),signal:controller.signal})}
  finally{clearTimeout(timer)}
 }
-async function callAssistant(body){
+async function callAssistant(body,onEvent){
+ if(onEvent&&window.C360ChatStream)body={...body,stream:true};
  const s=authSession();if(!s?.access_token)throw new Error('Sua sessão expirou. Entre novamente.');
  const r=await assistantRequest('/functions/v1/controla-ai',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)},body.images?.length>1||body.documents?.length?65000:45000);
- let data={};try{data=await r.json()}catch{}
+ let data={};if(r.ok&&body.stream&&window.C360ChatStream)data=await window.C360ChatStream.read(r,onEvent);else{try{data=await r.json()}catch{}}
  if(!r.ok){const error=new Error(data?.message||data?.detail||data?.error||`Falha na IA (${r.status})`);error.conversationId=data.conversation_id;throw error}return data;
 }
-function setBusy(root,busy,label='Respondendo…'){state.busy=busy;const btn=sendBtn(root),input=inputEl(root);if(btn){btn.disabled=busy;btn.dataset.oldText=btn.dataset.oldText||btn.textContent;btn.textContent=busy?label:(btn.dataset.oldText||'Enviar')}if(input)input.disabled=busy;$$('.ai360-tool,.ai360-remove,.ai360-clear,.ai360-file-input,.ai360-conversations button,.ai360-conversations select',root).forEach(b=>b.disabled=busy)}
+function setBusy(root,busy,label='Respondendo…'){state.busy=busy;const btn=sendBtn(root),input=inputEl(root);if(btn){btn.disabled=busy;btn.dataset.oldText=btn.dataset.oldText||btn.textContent;btn.textContent=btn.dataset.iconSend==='true'?(busy?'⋯':'↑'):(busy?label:(btn.dataset.oldText||'Enviar'));if(btn.dataset.iconSend==='true')btn.setAttribute('aria-label',busy?label:'Enviar mensagem')}if(input)input.disabled=busy;$$('.ai360-tool,.ai360-remove,.ai360-clear,.ai360-file-input,.ai360-conversations button,.ai360-conversations select,.ai360-workshop button,.ai360-workshop select,.ai360-workshop input,.ai360-workshop textarea,.ai360-thread,.ai360-sidebar-new',root).forEach(b=>b.disabled=busy);const voice=$('.ai360-handsfree',root);if(voice)voice.disabled=busy&&!state.handsFree;root.setAttribute('aria-busy',String(busy));window.C360ChatExperience?.refresh(root)}
+function setWorkshop(root,workshop){state.workshop=workshop||null;state.controllers.get(root)?.hydrate(state.workshop)}
+function mountWorkshop(root){
+ if(!window.C360WorkshopChat||state.controllers.has(root))return;
+ const c=window.C360WorkshopChat.mount(root,{company,epoch:()=>state.epoch,busy:()=>state.busy,request:callAssistant,setBusy:(busy,label)=>setBusy(root,busy,label),conversation:()=>state.conversationId,vehicleFocus,
+ setConversation(id,title){if(state.conversationId!==id)chatBox(root)?.replaceChildren();renderActions(root,[]);state.conversationId=id;state.pendingTurn=null;storedConversation(id);if(!state.conversations.some(c=>c.id===id))state.conversations.unshift({id,title});updateConversationOptions(root)},setWorkshop:w=>setWorkshop(root,w),addMessage:t=>addMessage(root,t,'ai'),notify,draft(t){const i=inputEl(root);if(i&&!state.busy){i.value=t;i.focus()}},attachments:messageAttachments});state.controllers.set(root,c);c.hydrate(state.workshop);
+}
 async function analyze(root){
  if(state.busy)return;
  if(state.scope!==sessionScope()){syncConversation(root);return}
  const input=inputEl(root);const q=(input?.value||'').trim(),cid=company();if(!q&&!state.attachments.length)return;
  const attachments=[...state.attachments],epoch=state.epoch;
+ const signature=JSON.stringify([q,attachments.map(a=>[a.file.name,a.file.size,a.file.lastModified])]);if(state.pendingTurn?.signature!==signature)state.pendingTurn={signature,id:requestId()};
  setBusy(root,true);
- let thinking;
+ let thinking,streamMessage;
  try{
    for(const attachment of attachments){
     if(company()!==cid||state.epoch!==epoch)throw new Error('A conversa mudou durante o envio.');
@@ -306,14 +347,18 @@ async function analyze(root){
    const message=addMessage(root,userText,'user',attachments.map((a,i)=>`📎 ${i+1}. ${a.file.name}`).join(' • '));
    messageAttachments(message,attachments);
    if(input)input.value='';
-   const body={mode:'analyze',company_id:cid,question:userText,images:attachments.filter(a=>a.imageDataUrl).map(a=>({image_data_url:a.imageDataUrl,source_attachment:a.sourceAttachment})),documents:attachments.filter(a=>a.fileData).map(a=>({filename:a.file.name,file_data:a.fileData,source_attachment:a.sourceAttachment}))};
+   const body={mode:'analyze',company_id:cid,question:userText,client_request_id:state.pendingTurn.id,vehicle_context_id:vehicleFocus(),images:attachments.filter(a=>a.imageDataUrl).map(a=>({image_data_url:a.imageDataUrl,source_attachment:a.sourceAttachment})),documents:attachments.filter(a=>a.fileData).map(a=>({filename:a.file.name,file_data:a.fileData,source_attachment:a.sourceAttachment}))};
    if(state.conversationId)body.conversation_id=state.conversationId;
-   thinking=document.createElement('div');thinking.className='ai360-thinking';thinking.setAttribute('role','status');thinking.textContent='Comando IA está respondendo…';chatBox(root)?.appendChild(thinking);thinking.scrollIntoView({block:'nearest'});
-   const data=await callAssistant(body);if(company()!==cid||state.epoch!==epoch)return;if(data.conversation_id){state.conversationId=data.conversation_id;storedConversation(data.conversation_id);if(!state.conversations.some(c=>c.id===data.conversation_id))state.conversations.unshift({id:data.conversation_id,title:userText.slice(0,80)});updateConversationOptions(root)}
+   thinking=document.createElement('div');thinking.className='ai360-thinking';thinking.setAttribute('role','status');thinking.textContent=assistantName()+' está respondendo…';chatBox(root)?.appendChild(thinking);thinking.scrollIntoView({block:'nearest'});
+   const data=await callAssistant(body,(event,value)=>{
+    if(company()!==cid||state.epoch!==epoch)return;
+    if(event==='session'&&value.conversation_id){state.conversationId=value.conversation_id;storedConversation(value.conversation_id)}
+    if(event==='answer'&&value.text){thinking?.remove();if(!streamMessage)streamMessage=addMessage(root,'','ai');const target=streamMessage.querySelector('.ai-msg-text')||streamMessage.querySelector('span')||streamMessage;target.textContent=value.text;streamMessage.classList.add('ai360-streaming');const box=chatBox(root);if(box){const scroll=box.closest('.ai360-chat-scroll')||box;if(scroll.dataset.follow!=='false')scroll.scrollTop=scroll.scrollHeight}}
+   });if(company()!==cid||state.epoch!==epoch)return;if(data.conversation_id){state.conversationId=data.conversation_id;storedConversation(data.conversation_id);if(!state.conversations.some(c=>c.id===data.conversation_id))state.conversations.unshift({id:data.conversation_id,title:userText.slice(0,80)});updateConversationOptions(root)}
    thinking.remove();
-   addMessage(root,data.answer||data.message||'Solicitação analisada.','ai');renderActions(root,data.actions||[]);
-   state.attachments=[];renderAttachment(root);
- }catch(e){if(company()===cid&&state.epoch===epoch){if(e.conversationId){state.conversationId=e.conversationId;storedConversation(e.conversationId)}if(input&&!input.value)input.value=q;addMessage(root,e?.message||'Falha ao consultar o Assistente 360.','ai');}}
+   const answer=data.answer||data.message||'Solicitação analisada.';const reply=streamMessage||addMessage(root,answer,'ai');if(streamMessage){streamMessage.classList.remove('ai360-streaming');const target=streamMessage.querySelector('.ai-msg-text')||streamMessage.querySelector('span')||streamMessage;target.replaceChildren();if(window.C360ChatExperience)window.C360ChatExperience.renderText(target,answer,'ai');else appendLinkedText(target,answer)}setWorkshop(root,data.workshop);state.controllers.get(root)?.receipt(reply,data.workshop);renderActions(root,data.actions||[]);
+   state.pendingTurn=null;state.attachments=[];renderAttachment(root);if(data.workshop?.entries_written>0)document.dispatchEvent(new CustomEvent('c360:workshop-journal-updated',{detail:{workshop:data.workshop}}));if(state.handsFree)speakAnswer(root,answer);
+ }catch(e){if(company()===cid&&state.epoch===epoch){stopHandsFree(root);streamMessage?.remove();if(e.conversationId){state.conversationId=e.conversationId;storedConversation(e.conversationId)}if(input&&!input.value)input.value=q;addMessage(root,e?.message||'Falha ao consultar o Assistente 360.','ai');}}
  finally{thinking?.remove();if(company()===cid&&state.epoch===epoch){setBusy(root,false);input?.focus()}else if(state.epoch===epoch)scan()}
 }
 async function confirmAction(root,a,card){
@@ -331,13 +376,14 @@ async function confirmAction(root,a,card){
 }
 function tools(root){
  let bar=$('.ai360-tools',root);if(bar)return bar;
- bar=document.createElement('div');bar.className='ai360-tools';bar.innerHTML='<button type="button" class="btn soft ai360-tool ai360-camera">📷 Câmera</button><button type="button" class="btn soft ai360-tool ai360-gallery">📎 Anexar</button><button type="button" class="btn soft ai360-tool ai360-voice">🎤 Falar</button><span class="ai360-tools-hint">Fotos, PDF, Word, Excel e texto. Até 10 anexos por mensagem.</span>';
+ bar=document.createElement('div');bar.className='ai360-tools';bar.innerHTML='<button type="button" class="btn soft ai360-tool ai360-camera">📷 Câmera</button><button type="button" class="btn soft ai360-tool ai360-gallery">📎 Anexar</button><button type="button" class="btn soft ai360-tool ai360-voice">🎤 Falar</button><button type="button" class="btn soft ai360-handsfree" aria-pressed="false">🗣 Conversar por voz</button><span class="ai360-tools-hint">Fotos, PDF, Word, Excel e texto. Até 10 anexos por mensagem.</span><span class="ai360-voice-status ai360-tools-hint" role="status" aria-live="polite" hidden></span>';
  const input=inputEl(root),composer=input?.parentElement||null;
  if(composer&&composer!==root)composer.insertAdjacentElement('beforebegin',bar);else (chatBox(root)?.parentElement||root).appendChild(bar);
  $('.ai360-camera',bar)?.addEventListener('click',()=>selectPhoto(root,'camera'));
  $('.ai360-gallery',bar)?.addEventListener('click',()=>selectPhoto(root,'gallery'));
- const voice=$('.ai360-voice',bar);voice?.addEventListener('click',()=>startVoice(root,voice));return bar;
+ const voice=$('.ai360-voice',bar);voice?.addEventListener('click',()=>startVoice(root,voice));$('.ai360-handsfree',bar).addEventListener('click',()=>toggleHandsFree(root));return bar;
 }
+function mountExperience(root){window.C360ChatExperience?.mount(root,{busy:()=>state.busy,conversations:()=>state.conversations,conversation:()=>state.conversationId,newConversation:()=>newConversation(root),openConversation:id=>openConversation(root,id),draft(text){const input=inputEl(root);if(input&&!state.busy){input.value=text;input.focus()}}})}
 function install(root){
  if(!root||state.installed.has(root))return;state.installed.add(root);root.classList.add('assistant360-ready');
  const card=$('.card',root)||root;
@@ -350,10 +396,10 @@ function install(root){
  }
  inputEl(root)?.classList.add('ai360-composer');
  if(h){
-   h.textContent='Comando IA';
+   h.textContent=assistantName();
    const head=document.createElement('div');head.className='ai360-shell-head';
    const brand=document.createElement('div');brand.className='ai360-brand';
-   brand.innerHTML='<div class="ai360-brand-mark">IA</div><div class="ai360-brand-copy"><h3>Comando IA</h3><p>Seu assistente dentro do Comando 360</p></div>';
+   brand.innerHTML='<div class="ai360-brand-mark">IA</div><div class="ai360-brand-copy"><h3>'+esc(assistantName())+'</h3><p>Seu trabalho, em uma conversa.</p></div>';
    head.appendChild(brand);h.replaceWith(head);
  }
  if(intro)intro.textContent='Comece do seu jeito e continue de onde parou. Envie fotos e documentos quando precisar.';
@@ -365,11 +411,12 @@ function install(root){
    const caps=document.createElement('div');caps.className='ai360-capabilities';caps.innerHTML='<span>Conversa contínua</span><span>Fotos e documentos</span><span>Dados da sua operação</span>';
    if(intro)intro.insertAdjacentElement('afterend',caps);else card.appendChild(caps);
  }
- tools(root);ensureFileInput(root);attachmentHost(root);actionsHost(root);checkHealth(root);
+ tools(root);ensureFileInput(root);attachmentHost(root);actionsHost(root);mountWorkshop(root);checkHealth(root);
  const btn=sendBtn(root);if(btn){btn.removeAttribute('onclick');btn.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();analyze(root)},true)}
  const input=inputEl(root);if(input){input.placeholder='Pode falar comigo. O que vamos resolver?';input.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey&&!e.isComposing){e.preventDefault();e.stopImmediatePropagation();analyze(root)}},true);input.addEventListener('input',()=>{input.style.height='auto';input.style.height=Math.min(input.scrollHeight,180)+'px'});input.addEventListener('paste',e=>{if(e.clipboardData?.files.length){e.preventDefault();prepareImages(root,e.clipboardData.files)}})}
 }
 function openIaScreen(){
+ if(adapter()?.open){adapter().open();setTimeout(scan,0);return}
  const candidates=['v2Go','showScreen','openScreen','navigateTo','goToScreen'];for(const name of candidates){const fn=globalFn(name);if(fn){try{Promise.resolve(fn('ia')).catch(()=>notify('Não consegui abrir o Comando IA.','error'));return}catch{}}}
  const target=document.querySelector('[data-jump="ia"],[data-v2tab="ia"],[data-screen="ia"]');if(target){try{target.click();return}catch{}}
  try{location.hash='ia'}catch{}
@@ -401,11 +448,12 @@ async function hydrateSharedImage(){
 }
 function floatingButton(root){
  let button=document.getElementById('c360AiFab');
- if(!button){button=document.createElement('button');button.id='c360AiFab';button.type='button';button.textContent='✦ Comando IA';button.setAttribute('aria-label','Abrir conversa com o Comando IA');button.addEventListener('click',openIaScreen);document.body.appendChild(button)}
- const hidden=!authSession()?.access_token||document.body.classList.contains('device-mode')||!!(root&&!root.hidden&&getComputedStyle(root).display!=='none');
+ if(!button){button=document.createElement('button');button.id='c360AiFab';button.type='button';button.textContent='✦ '+assistantName();button.setAttribute('aria-label','Abrir conversa com '+assistantName());button.addEventListener('click',openIaScreen);document.body.appendChild(button)}
+ const hidden=!authSession()?.access_token||!company()||document.body.classList.contains('device-mode')||(adapter()?.isOpen?adapter().isOpen():!!(root&&!root.hidden&&getComputedStyle(root).display!=='none'));
  if(button.hidden!==hidden)button.hidden=hidden;
 }
-function scan(){const root=activeRoot();floatingButton(root);if(root){install(root);syncConversation(root);if(!root.hidden&&root.classList.contains('active'))checkHealth(root)}}
+function scan(){const root=activeRoot();floatingButton(root);if(root){install(root);mountWorkshop(root);mountExperience(root);syncConversation(root);const visible=adapter()?.isOpen?adapter().isOpen():!root.hidden&&getComputedStyle(root).display!=='none';if(state.handsFree&&!visible)stopHandsFree(root);if(visible&&root.classList.contains('active'))checkHealth(root)}}
+document.addEventListener('c360:chat-experience-ready',scan);document.addEventListener('c360:workshop-chat-ready',scan);document.addEventListener('c360:assistant-scope-changed',scan);document.addEventListener('visibilitychange',()=>{if(document.hidden){const root=activeRoot();if(root)stopHandsFree(root)}});
 document.addEventListener('c360:screen-changed',e=>{const s=String(e?.detail?.screen||e?.detail?.id||'').toLowerCase();if(!s||s.includes('ia'))setTimeout(scan,0)});
 document.addEventListener('c360:lazy-feature-ready',()=>{scan();setTimeout(hydrateSharedImage,0)});
 new MutationObserver(scan).observe(document.documentElement,{subtree:true,childList:true,attributes:true,attributeFilter:['class','hidden']});
