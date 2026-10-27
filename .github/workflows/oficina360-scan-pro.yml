@@ -1,0 +1,23 @@
+name: Oficina 360 Scan Pro laboratory
+on:
+  pull_request:
+    paths: ['scan-pro/**', 'oficina360-scan-pro-entry.js', 'oficina360.html', 'supabase/functions/oficina360-scan-pro-ai/**', 'qa/scan-pro-*.test.mjs', '.github/workflows/oficina360-scan-pro.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  diagnostic-contract:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Scan Pro behavior and isolated AI service
+        run: node --test qa/scan-pro-*.test.mjs
+      - name: Existing workshop contracts
+        run: |
+          node qa/oficina360_live_scanner_v1_contract.mjs
+          node qa/oficina360_production_state_contract.mjs
+          node qa/chat_stream_regressions_20261025.mjs
