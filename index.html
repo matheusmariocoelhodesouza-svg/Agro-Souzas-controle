@@ -2103,6 +2103,7 @@ body.darkmode #financeiro .finance-privacy-btn{background:#17283d;border-color:#
  <div class="team-home">
   <div class="team-home-head"><div style="font-size:12px;opacity:.8;font-weight:800">COMANDO 360</div><h1 id="teamHomeName">Equipe</h1><div id="teamHomeVehicle">Celular de campo</div></div>
   <div class="team-home-grid">
+   <button class="team-tile" type="button" data-teamtab="ia"><span class="ico">✦</span><strong>IA de campo</strong><small>Envie fotos para cadastrar apanha, abastecimento e ponto. Confira e confirme pelo chat.</small></button>
    <button class="team-tile" type="button" data-teamtab="operacoes"><span class="ico">🐔</span><strong>Apanha</strong><small>Apanhas da sua equipe e carregamento caminhão por caminhão.</small></button>
    <button class="team-tile" type="button" data-teamtab="ponto"><span class="ico">⏱️</span><strong>Ponto</strong><small>Bater ponto e conferir presença dos funcionários da equipe.</small></button>
    <button class="team-tile" type="button" data-teamtab="combustivel"><span class="ico">⛽</span><strong>Abastecimento</strong><small>Registrar combustível da condução usada pela equipe hoje.</small></button>
@@ -9354,7 +9355,7 @@ async function v2Go(tab){
  const navigationVersion=++screenNavigationVersion;
  if(tab!=='rastreamento')stopMovitTrackingPolling();
  if(tab==='documentosfrota')tab='frota';
- if(deviceMode&&!['equipehome','operacoes','ponto','combustivel','equipereport'].includes(tab))tab='equipehome';
+ if(deviceMode&&!['equipehome','operacoes','ponto','combustivel','equipereport','ia'].includes(tab))tab='equipehome';
  // Dynamic screens must be registered before the router looks them up.
  try{if(typeof window.c360LoadScreenFeatures==='function')await window.c360LoadScreenFeatures(tab)}
  catch(e){if(navigationVersion===screenNavigationVersion)c360Toast('Não foi possível abrir a tela',e?.message||'Tente novamente.','error');return false}

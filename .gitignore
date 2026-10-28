@@ -5,3 +5,5 @@ qa-stress-artifacts/
 qa-profile-stress-artifacts/
 playwright-report/
 test-results/
+
+/supabase/.temp/

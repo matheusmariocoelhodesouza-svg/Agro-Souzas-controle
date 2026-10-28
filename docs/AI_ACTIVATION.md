@@ -1,5 +1,17 @@
 # Configuração da IA do Comando360
 
+## IA de campo por foto (28/10/2026)
+
+O início do celular vinculado à equipe oferece **IA de campo**. O colaborador usa câmera, galeria e conversa para preparar apanha (com caminhões e aves reais), abastecimento e batidas de ponto. O chat mostra a conferência; campos ausentes ou ambíguos bloqueiam **Confirmar e salvar**. Correções são feitas pela conversa e substituem propostas pendentes. A leitura requer internet; os formulários manuais continuam com seu funcionamento offline existente.
+
+`comando360-field-ai` reutiliza a credencial de servidor existente e o modelo `gpt-5-mini`. O endpoint verifica a sessão, o aparelho ativo, bloqueios, empresa e permissões a cada chamada. Seu contexto inclui apenas cadastros operacionais autorizados, sem planejamento de aves, salários ou financeiro. Conversas são separadas por usuário, equipe e vínculo do aparelho; o assistente administrativo permanece separado.
+
+As fotos são arquivadas em `company-documents/<empresa>/assistant360/field/<equipe>/<usuário>/`. A política de upload permite apenas a pasta do próprio aparelho/equipe. O servidor verifica a origem dos anexos e assina links de histórico por dez minutos. As RPCs `v2_field_ai_commit_turn` e `v2_execute_field_assistant_action` usam `SECURITY INVOKER`, são exclusivas de `service_role` e revalidam acesso e propriedade na transação. Uma confirmação repetida retorna o mesmo resultado; caminhões com a mesma sequência e batidas já existentes são rejeitados.
+
+Ponto por foto é transcrição manual com evidência e identificação escrita, nunca reconhecimento facial. Uma lista só de presença, sem data, horário e tipo de batida, exige completar os dados. Datas e horas ilegíveis não são inferidas. A matrícula ou o nome completo precisa corresponder de forma única ao cadastro ativo.
+
+As permissões individuais de Apanha, Abastecimento e Ponto também são verificadas no servidor. O administrador pode desligar `ia` no controle do aparelho. Se os três cadastros estiverem desabilitados, o acesso à IA de campo é ocultado e recusado pelo endpoint.
+
 ## Conversa contínua (22/10/2026)
 
 O Comando IA passa a enviar até 40 mensagens anteriores, em ordem, com limite de 48.000 caracteres, além de um resumo de continuidade de até 4.000 caracteres. As propostas estruturadas anteriores entram no contexto para permitir completar dados e corrigir informações sem começar do zero. O resumo é atualizado em `v2_ai_conversations.context.memory`; nenhuma tabela nova é necessária.

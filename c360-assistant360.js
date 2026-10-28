@@ -1,6 +1,6 @@
 (()=>{
 'use strict';
-const VERSION='2026.10.25-professional-chat-7';
+const VERSION='2026.10.28-field-ai-1';
 if(window.__c360Assistant360Version===VERSION)return;
 window.__c360Assistant360Version=VERSION;
 
@@ -25,7 +25,12 @@ const $$=(sel,root=document)=>[...root.querySelectorAll(sel)];
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function requestId(){if(crypto.randomUUID)return crypto.randomUUID();const b=crypto.getRandomValues(new Uint8Array(16));b[6]=(b[6]&15)|64;b[8]=(b[8]&63)|128;const h=[...b].map(n=>n.toString(16).padStart(2,'0')).join('');return [h.slice(0,8),h.slice(8,12),h.slice(12,16),h.slice(16,20),h.slice(20)].join('-')}
 function adapter(){return window.C360AssistantAdapter||null}
-function assistantName(){return adapter()?.label||'Comando IA'}
+function isField(){try{return !!(typeof deviceMode!=='undefined'&&deviceMode)||document.body.classList.contains('device-mode')}catch{return document.body.classList.contains('device-mode')}}
+function fieldAccess(){try{return typeof deviceAccess!=='undefined'?deviceAccess:null}catch{return null}}
+function assistantName(){return adapter()?.label||(isField()?'IA de campo':'Comando IA')}
+function assistantEndpoint(){return isField()?'/functions/v1/comando360-field-ai':'/functions/v1/controla-ai'}
+function userId(){const s=authSession();let id=s?.user?.id||s?.user_id||'';if(!id){try{id=JSON.parse(atob(s.access_token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/'))).sub||''}catch{}}return id}
+function attachmentPrefix(cid){if(!isField())return cid+'/assistant360/';const a=fieldAccess(),id=userId();if(!a?.team_id||!id)throw new Error('Confira o vínculo deste aparelho.');return `${cid}/assistant360/field/${a.team_id}/${id}/`}
 function vehicleFocus(){return adapter()?.vehicleId?.()||null}
 function apiBase(){if(adapter()?.apiBase)return adapter().apiBase;try{return (typeof API_URL!=='undefined'&&API_URL)?API_URL:'https://aycbrqziusxtxhsdfqjk.supabase.co'}catch{return 'https://aycbrqziusxtxhsdfqjk.supabase.co'}}
 function apiKey(){if(adapter()?.apiKey)return adapter().apiKey;try{return (typeof KEY!=='undefined'&&KEY)?KEY:''}catch{return ''}}
@@ -37,14 +42,14 @@ function sessionScope(){
  let id=s.user?.id||s.user_id||'';
  if(!id){try{id=JSON.parse(atob(s.access_token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/'))).sub||''}catch{}}
  // Invalid synthetic sessions are never persisted across reloads.
- return company()+':'+(id||'temporary')+(vehicleFocus()?':vehicle:'+vehicleFocus():'');
+ return company()+':'+(id||'temporary')+(isField()?':field:'+fieldAccess()?.team_id+':'+fieldAccess()?.id:'')+(vehicleFocus()?':vehicle:'+vehicleFocus():'');
 }
 function storedConversation(value){
  const key='c360-ai-conversation:'+state.scope;
  if(!state.scope||state.scope.includes(':temporary'))return null;
  try{if(arguments.length)localStorage.setItem(key,value||'new');return localStorage.getItem(key)}catch{return null}
 }
-function welcome(root){addMessage(root,'Olá! Pode falar comigo do seu jeito. O que vamos resolver hoje?','ai')?.classList.add('ai360-welcome')}
+function welcome(root){addMessage(root,isField()?'Envie uma foto da ficha de apanha, do abastecimento ou da folha de ponto. Vou ler os dados e mostrar para você conferir antes de salvar. Pode completar ou corrigir pelo chat.':'Olá! Pode falar comigo do seu jeito. O que vamos resolver hoje?','ai')?.classList.add('ai360-welcome')}
 function updateConversationOptions(root){
  const select=$('.ai360-conversation-select',root);if(!select)return;
  select.replaceChildren(new Option('Nova conversa',''));
@@ -106,7 +111,7 @@ async function checkHealth(root,force=false){
  if(!status){status=document.createElement('div');status.dataset.aiHealth='1';status.className='ai360-missing';status.setAttribute('role','status');root.querySelector('.ai360-capabilities')?.insertAdjacentElement('afterend',status);if(!status.isConnected)root.prepend(status)}
  healthBusy=true;healthCompany=companyId;healthAt=Date.now();status.textContent='Verificando disponibilidade da IA…';
  try{
-  const response=await assistantRequest('/functions/v1/controla-ai',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({company_id:companyId,mode:'health'})},10000);
+  const response=await assistantRequest(assistantEndpoint(),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({company_id:companyId,mode:'health'})},10000);
   const result=await response.json();if(company()!==companyId)return;
   if(!response.ok)throw new Error('Não foi possível verificar a disponibilidade.');
   const configured=result.status==='configured'&&result.configured===true;
@@ -158,15 +163,18 @@ function notify(text,type='info'){
 function formatMoney(v){const n=Number(v);return Number.isFinite(n)?n.toLocaleString('pt-BR',{style:'currency',currency:'BRL'}):'—'}
 function formatNumber(v,suffix=''){const n=Number(v);return Number.isFinite(n)?n.toLocaleString('pt-BR')+suffix:'—'}
 const labels={
- fuel_log:'Abastecimento',poultry_schedule:'Fax / programação de apanha',maintenance:'Manutenção',odometer:'Quilometragem'
+ fuel_log:'Abastecimento',poultry_schedule:'Fax / programação de apanha',maintenance:'Manutenção',odometer:'Quilometragem',poultry_operation:'Apanha',attendance_event:'Ponto'
 };
 function payloadRows(a){
  const p=a.payload||{}; const rows=[];
+ if(a.action_type==='poultry_operation'){rows.push(['Equipe',p.team_name],['Integrado / granja',p.farm_name||p.producer],['Cidade',p.city],['Data',p.date],['Aviário',p.aviary],['Energia / tomada',[p.energy_type,p.outlet_type].filter(Boolean).join(' • ')],['Caminhões',p.trucks?.length||'Sem caminhões nesta ficha']);for(const t of p.trucks||[])rows.push(['Caminhão '+t.truck_sequence,[t.truck_plate,t.driver_name,t.birds!=null?formatNumber(t.birds)+' aves':null,t.started_at?'Início: '+t.started_at:null,t.completed_at?'Fim: '+t.completed_at:null,t.boxes_count!=null?'Caixas: '+t.boxes_count:null,t.empty_boxes!=null?'Vazias: '+t.empty_boxes:null,t.birds_per_box!=null?'Aves/caixa: '+t.birds_per_box:null,t.aviary?'Aviário: '+t.aviary:null,t.truck_origin,t.is_cata?'Cata':null].filter(Boolean).join(' • ')]);if(p.trucks?.length)rows.push(['Total de aves',formatNumber(p.reported_birds)])}
+ if(a.action_type==='attendance_event')rows.push(['Pessoa',p.employee_name],['Matrícula',p.employee_number],['Equipe de trabalho',p.team_name],['Batida',({in:'Entrada',out:'Saída',break_start:'Início do intervalo',break_end:'Fim do intervalo'})[p.event_type]||p.event_type],['Data e horário',p.occurred_at],['Origem','Transcrição conferida pelo colaborador']);
  if(a.action_type==='fuel_log')rows.push(['Veículo',[p.vehicle_name,p.plate].filter(Boolean).join(' • ')],['Motorista',p.driver],['Data',p.date],['Hodômetro',p.odometer_km!=null?formatNumber(p.odometer_km,' km'):null],['Litros',p.liters!=null?formatNumber(p.liters,' L'):null],['Valor',p.total_amount!=null?formatMoney(p.total_amount):null],['Posto',p.station_name],['Tanque completo',p.full_tank==null?'Não informado':p.full_tank?'Sim':'Não']);
  if(a.action_type==='poultry_schedule')rows.push(['Equipe',p.team_name],['Integrado',p.integrator_name],['Granja / produtor',p.farm_name||p.producer],['Cidade',p.city],['Programação',p.scheduled_start],['Aves previstas',p.planned_birds!=null?formatNumber(p.planned_birds):null]);
  if(a.action_type==='maintenance')rows.push(['Veículo',[p.vehicle_name,p.plate].filter(Boolean).join(' • ')],['Tipo',p.maintenance_type],['Título',p.title],['Problema',p.reported_issue],['Serviço',p.service_performed],['Hodômetro',p.odometer_km!=null?formatNumber(p.odometer_km,' km'):null],['Mão de obra',p.labor_amount!=null?formatMoney(p.labor_amount):null]);
  if(a.action_type==='odometer')rows.push(['Veículo',[p.vehicle_name,p.plate].filter(Boolean).join(' • ')],['Data',p.date],['Hodômetro',p.odometer_km!=null?formatNumber(p.odometer_km,' km'):null]);
  if(p.source_image_indices?.length)rows.push(['Imagens de origem',p.source_image_indices.join(', ')]);
+ if(p.notes)rows.push(['Observações',p.notes]);
  return rows.filter(([,v])=>v!==null&&v!==undefined&&v!=='');
 }
 function actionsHost(root){
@@ -227,7 +235,7 @@ async function compressForVision(file){
 async function uploadOriginal(file,cid){
  const s=authSession();if(!cid||company()!==cid||!s?.access_token)throw new Error('Sessão inválida para arquivar a foto.');
  const day=new Date().toISOString().slice(0,10);const uid=(crypto.randomUUID?crypto.randomUUID():`${Date.now()}-${Math.random().toString(16).slice(2)}`);
- const path=`${cid}/assistant360/${day}/${uid}-${safeFileName(file.name)}`;
+ const path=`${attachmentPrefix(cid)}${day}/${uid}-${safeFileName(file.name)}`;
  const endpoint=`/storage/v1/object/company-documents/${path.split('/').map(encodeURIComponent).join('/')}`;
  const r=await assistantRequest(endpoint,{method:'POST',headers:{'Content-Type':file.type||'application/octet-stream','x-upsert':'false'},body:file});
  if(!r.ok){let msg='';try{msg=(await r.json())?.message||''}catch{}throw new Error(msg||'Não foi possível arquivar o anexo original.');}
@@ -239,6 +247,7 @@ async function prepareImages(root,files){
  const seen=new Set(state.attachments.map(a=>fingerprint(a.file))),selected=[];
  for(const file of Array.from(files||[])){const id=fingerprint(file);if(!seen.has(id)){selected.push(file);seen.add(id)}}
  if(!selected.length)return false;
+ if(isField()&&selected.some(file=>!String(file.type||'').startsWith('image/'))){notify('Na IA de campo, envie fotos da ficha, comprovante ou folha de ponto.','error');return false}
  if(state.attachments.length+selected.length>MAX_IMAGES){notify(`Selecione até ${MAX_IMAGES} anexos por mensagem.`,'error');return false}
  if(selected.some(file=>!String(file.type||'').startsWith('image/')&&!DOCUMENT_TYPES[file.name.split('.').pop().toLowerCase()])){notify('Use fotos, PDF, Word, Excel, PowerPoint ou arquivos de texto.','error');return false}
  if(selected.some(file=>file.size>(String(file.type).startsWith('image/')?15:10)*1024*1024)){notify('Cada foto deve ter até 15 MB e cada documento até 10 MB.','error');return false}
@@ -267,7 +276,7 @@ function ensureFileInput(root){
 }
 function selectPhoto(root,source='camera'){
  if(state.busy)return;
- const input=ensureFileInput(root);input.accept=source==='camera'?'image/*':FILE_ACCEPT;
+ const input=ensureFileInput(root);input.accept=source==='camera'||isField()?'image/*':FILE_ACCEPT;
  input.multiple=source!=='camera';
  if(source==='camera')input.setAttribute('capture','environment');else input.removeAttribute('capture');
  input.value='';input.click();
@@ -318,19 +327,20 @@ async function assistantRequest(endpoint,opts,timeoutMs=45000){
 async function callAssistant(body,onEvent){
  if(onEvent&&window.C360ChatStream)body={...body,stream:true};
  const s=authSession();if(!s?.access_token)throw new Error('Sua sessão expirou. Entre novamente.');
- const r=await assistantRequest('/functions/v1/controla-ai',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)},body.images?.length>1||body.documents?.length?65000:45000);
+ const r=await assistantRequest(assistantEndpoint(),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)},isField()||body.images?.length>1||body.documents?.length?65000:45000);
  let data={};if(r.ok&&body.stream&&window.C360ChatStream)data=await window.C360ChatStream.read(r,onEvent);else{try{data=await r.json()}catch{}}
  if(!r.ok){const error=new Error(data?.message||data?.detail||data?.error||`Falha na IA (${r.status})`);error.conversationId=data.conversation_id;throw error}return data;
 }
 function setBusy(root,busy,label='Respondendo…'){state.busy=busy;const btn=sendBtn(root),input=inputEl(root);if(btn){btn.disabled=busy;btn.dataset.oldText=btn.dataset.oldText||btn.textContent;btn.textContent=btn.dataset.iconSend==='true'?(busy?'⋯':'↑'):(busy?label:(btn.dataset.oldText||'Enviar'));if(btn.dataset.iconSend==='true')btn.setAttribute('aria-label',busy?label:'Enviar mensagem')}if(input)input.disabled=busy;$$('.ai360-tool,.ai360-remove,.ai360-clear,.ai360-file-input,.ai360-conversations button,.ai360-conversations select,.ai360-workshop button,.ai360-workshop select,.ai360-workshop input,.ai360-workshop textarea,.ai360-thread,.ai360-sidebar-new',root).forEach(b=>b.disabled=busy);const voice=$('.ai360-handsfree',root);if(voice)voice.disabled=busy&&!state.handsFree;root.setAttribute('aria-busy',String(busy));window.C360ChatExperience?.refresh(root)}
 function setWorkshop(root,workshop){state.workshop=workshop||null;state.controllers.get(root)?.hydrate(state.workshop)}
 function mountWorkshop(root){
- if(!window.C360WorkshopChat||state.controllers.has(root))return;
+ if(isField()||!window.C360WorkshopChat||state.controllers.has(root))return;
  const c=window.C360WorkshopChat.mount(root,{company,epoch:()=>state.epoch,busy:()=>state.busy,request:callAssistant,setBusy:(busy,label)=>setBusy(root,busy,label),conversation:()=>state.conversationId,vehicleFocus,
  setConversation(id,title){if(state.conversationId!==id)chatBox(root)?.replaceChildren();renderActions(root,[]);state.conversationId=id;state.pendingTurn=null;storedConversation(id);if(!state.conversations.some(c=>c.id===id))state.conversations.unshift({id,title});updateConversationOptions(root)},setWorkshop:w=>setWorkshop(root,w),addMessage:t=>addMessage(root,t,'ai'),notify,draft(t){const i=inputEl(root);if(i&&!state.busy){i.value=t;i.focus()}},attachments:messageAttachments});state.controllers.set(root,c);c.hydrate(state.workshop);
 }
 async function analyze(root){
  if(state.busy)return;
+ if(isField()&&navigator.onLine===false){notify('Conecte à internet para a IA ler as fotos. Você pode continuar usando os cadastros manuais offline.','error');return}
  if(state.scope!==sessionScope()){syncConversation(root);return}
  const input=inputEl(root);const q=(input?.value||'').trim(),cid=company();if(!q&&!state.attachments.length)return;
  const attachments=[...state.attachments],epoch=state.epoch;
@@ -342,7 +352,7 @@ async function analyze(root){
     if(company()!==cid||state.epoch!==epoch)throw new Error('A conversa mudou durante o envio.');
     if(!attachment.sourceAttachment)attachment.sourceAttachment=await uploadOriginal(attachment.file,cid);
    }
-   if(company()!==cid||state.epoch!==epoch||attachments.some(a=>!a.sourceAttachment.path.startsWith(cid+'/assistant360/')))throw new Error('Confira a empresa antes de enviar os anexos.');
+   if(company()!==cid||state.epoch!==epoch||attachments.some(a=>!a.sourceAttachment.path.startsWith(attachmentPrefix(cid))))throw new Error('Confira a empresa antes de enviar os anexos.');
    const userText=q||'Analise estes anexos e me ajude a entender o conteúdo. Se houver um lançamento a preparar, mostre para conferência.';
    const message=addMessage(root,userText,'user',attachments.map((a,i)=>`📎 ${i+1}. ${a.file.name}`).join(' • '));
    messageAttachments(message,attachments);
@@ -371,19 +381,20 @@ async function confirmAction(root,a,card){
    card.classList.add('saved');const box=$('.ai360-action-buttons',card);if(box)box.innerHTML='<span class="ai360-saved">✓ Salvo no Comando 360</span>';
    addMessage(root,data?.result?.message||'Lançamento salvo com sucesso.','ai');
    document.dispatchEvent(new CustomEvent('c360:assistant-action-executed',{detail:{action:a,result:data?.result}}));
-   ['loadDashboard','loadPoultryDashboard','loadFuel','loadVehicles','loadMaintenances'].forEach(name=>{const fn=globalFn(name);if(typeof fn==='function'){try{Promise.resolve(fn()).catch(e=>console.warn('Atualização após lançamento da IA',e?.message||e))}catch(e){console.warn('Atualização após lançamento da IA',e?.message||e)}}});
+   (isField()?['loadTeamHome','loadPoultryOps','loadTeamPoint','loadFuel']:['loadDashboard','loadPoultryDashboard','loadFuel','loadVehicles','loadMaintenances']).forEach(name=>{const fn=globalFn(name);if(typeof fn==='function'){try{Promise.resolve(fn()).catch(e=>console.warn('Atualização após lançamento da IA',e?.message||e))}catch(e){console.warn('Atualização após lançamento da IA',e?.message||e)}}});
  }catch(e){if(company()===cid&&state.epoch===epoch){btn.disabled=false;btn.textContent=old;addMessage(root,e?.message||'Não consegui salvar o lançamento.','ai')}}
 }
 function tools(root){
  let bar=$('.ai360-tools',root);if(bar)return bar;
  bar=document.createElement('div');bar.className='ai360-tools';bar.innerHTML='<button type="button" class="btn soft ai360-tool ai360-camera">📷 Câmera</button><button type="button" class="btn soft ai360-tool ai360-gallery">📎 Anexar</button><button type="button" class="btn soft ai360-tool ai360-voice">🎤 Falar</button><button type="button" class="btn soft ai360-handsfree" aria-pressed="false">🗣 Conversar por voz</button><span class="ai360-tools-hint">Fotos, PDF, Word, Excel e texto. Até 10 anexos por mensagem.</span><span class="ai360-voice-status ai360-tools-hint" role="status" aria-live="polite" hidden></span>';
+ if(isField())$('.ai360-tools-hint',bar).textContent='Câmera ou galeria: até 10 fotos. Leia, confira e confirme pelo chat.';
  const input=inputEl(root),composer=input?.parentElement||null;
  if(composer&&composer!==root)composer.insertAdjacentElement('beforebegin',bar);else (chatBox(root)?.parentElement||root).appendChild(bar);
  $('.ai360-camera',bar)?.addEventListener('click',()=>selectPhoto(root,'camera'));
  $('.ai360-gallery',bar)?.addEventListener('click',()=>selectPhoto(root,'gallery'));
  const voice=$('.ai360-voice',bar);voice?.addEventListener('click',()=>startVoice(root,voice));$('.ai360-handsfree',bar).addEventListener('click',()=>toggleHandsFree(root));return bar;
 }
-function mountExperience(root){window.C360ChatExperience?.mount(root,{busy:()=>state.busy,conversations:()=>state.conversations,conversation:()=>state.conversationId,newConversation:()=>newConversation(root),openConversation:id=>openConversation(root,id),draft(text){const input=inputEl(root);if(input&&!state.busy){input.value=text;input.focus()}}})}
+function mountExperience(root){window.C360ChatExperience?.mount(root,{isField,busy:()=>state.busy,conversations:()=>state.conversations,conversation:()=>state.conversationId,newConversation:()=>newConversation(root),openConversation:id=>openConversation(root,id),draft(text){const input=inputEl(root);if(input&&!state.busy){input.value=text;input.focus()}}})}
 function install(root){
  if(!root||state.installed.has(root))return;state.installed.add(root);root.classList.add('assistant360-ready');
  const card=$('.card',root)||root;

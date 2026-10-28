@@ -1,11 +1,12 @@
 (()=>{
 'use strict';
 const VERSION='2026.09.25-device-control4';
-const DEFAULT_PERMISSIONS={ponto:true,apanha:true,abastecimento:true,relatorio:true,impressao:true,manutencao:false,insumos:false,frota:false};
+const DEFAULT_PERMISSIONS={ponto:true,apanha:true,abastecimento:true,relatorio:true,ia:true,impressao:true,manutencao:false,insumos:false,frota:false};
 const PERMISSION_LABELS={
   ponto:'Ponto e reconhecimento facial',
   apanha:'Apanha / operações',
   abastecimento:'Abastecimento e KM',
+  ia:'IA de campo — fotos e conversa',
   manutencao:'Manutenções',
   insumos:'Insumos',
   frota:'Visualização de frota',
