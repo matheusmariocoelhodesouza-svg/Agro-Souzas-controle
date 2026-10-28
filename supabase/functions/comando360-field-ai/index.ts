@@ -1,6 +1,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2.118.0";
 import { getOpenAiApiKey, openAiProviderError } from "../_shared/openai-server.ts";
+import { readTruckPhoto } from "./truck-photo.ts";
 
 // Field chat is separate from the administrative assistant. Never load its company-wide context.
 const cors={"Access-Control-Allow-Origin":"*","Access-Control-Allow-Headers":"authorization, x-client-info, apikey, content-type","Access-Control-Allow-Methods":"POST, OPTIONS"};
@@ -100,6 +101,10 @@ Deno.serve(async req=>{
     const access=await sb.from("v2_device_access").select("id,company_id,team_id,user_id,permissions,control_state,lost_mode").eq("company_id",companyId).eq("user_id",user.id).eq("active",true).maybeSingle();
     const scope=access.data;
     if(access.error||!scope||scope.control_state!=="active"||scope.lost_mode||scope.permissions?.ia===false||!["ponto","apanha","abastecimento"].some(k=>scope.permissions?.[k]!==false))return json({error:"forbidden",message:"A IA de campo não está liberada neste aparelho."},403);
+    if(mode==="truck_photo"){
+      const result=await readTruckPhoto(body,sb,scope);
+      return json(result.data,result.status);
+    }
     // Privileged client is created only after verifying the signed-in, active device in this company.
     const server=createClient(Deno.env.get("SUPABASE_URL")!,Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,{auth:{persistSession:false,autoRefreshToken:false}});
     const conversationQuery=()=>server.from("v2_ai_conversations").select("id,title,context,updated_at,created_at").eq("company_id",companyId).eq("user_id",user.id).eq("context->>scope","field").eq("context->>team_id",scope.team_id).eq("context->>device_access_id",scope.id);

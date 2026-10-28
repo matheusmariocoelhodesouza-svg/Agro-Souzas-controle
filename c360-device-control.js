@@ -6,7 +6,7 @@ const PERMISSION_LABELS={
   ponto:'Ponto e reconhecimento facial',
   apanha:'Apanha / operações',
   abastecimento:'Abastecimento e KM',
-  ia:'IA de campo — fotos e conversa',
+  ia:'Leitura da ficha por foto em Apanha',
   manutencao:'Manutenções',
   insumos:'Insumos',
   frota:'Visualização de frota',

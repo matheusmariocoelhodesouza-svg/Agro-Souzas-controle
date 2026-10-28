@@ -21,7 +21,7 @@
 <script>
 (()=>{
 'use strict';
-const MIN_RELEASE=85;
+const MIN_RELEASE=86;
 const $=id=>document.getElementById(id);
 let running=false;
 function message(text){$('status').textContent=text}
@@ -32,7 +32,7 @@ function workerRequest(worker,type,timeout=15000){
   const finish=(error,value)=>{clearTimeout(timer);channel.port1.close();channel.port2.close();error?reject(error):resolve(value)};
   timer=setTimeout(()=>finish(new Error('A atualização demorou mais que o esperado. Tente novamente.')),timeout);
   channel.port1.onmessage=event=>finish(null,event.data);
-  try{worker.postMessage({type,reason:'field-ai-update'},[channel.port2])}catch{finish(new Error('Não consegui atualizar agora. Tente novamente.'))}
+  try{worker.postMessage({type,reason:'truck-photo-update'},[channel.port2])}catch{finish(new Error('Não consegui atualizar agora. Tente novamente.'))}
  });
 }
 function activeWorker(registration,timeout=90000){
@@ -55,7 +55,7 @@ async function run(){
   if(!('serviceWorker' in navigator))throw new Error('Abra esta página no mesmo navegador em que usa o Comando 360.');
   message('Baixando a atualização do aplicativo…');
   // Reuse the same scope; the release URL also refreshes intermediary HTTP caches.
-  const registration=await navigator.serviceWorker.register('./sw-v7-02.js?release=20261028-field-ai85',{scope:'./',updateViaCache:'none'});
+  const registration=await navigator.serviceWorker.register('./sw-v7-02.js?release=20261028-truck-photo86',{scope:'./',updateViaCache:'none'});
   let worker=await activeWorker(registration);
   let state=await workerRequest(worker,'C360_STATUS');
   const release=Number(String(state?.current||'').match(/stable(\d+)$/)?.[1]||0);
@@ -65,11 +65,11 @@ async function run(){
   if(!healed?.ok||!healed.hasShell||!healed.shellRefreshed)throw new Error('Não consegui baixar todas as telas. Verifique a conexão e tente novamente.');
   state=await workerRequest(worker,'C360_STATUS');
   if(state.rollback){const cleared=await workerRequest(worker,'C360_CLEAR_ROLLBACK');if(!cleared?.ok||cleared.rollback)throw new Error('Não consegui liberar a nova tela. Tente novamente.')}
-  const response=await fetch('./index.html?field_ai_update='+Date.now(),{cache:'no-store'});
+  const response=await fetch('./index.html?truck_photo_update='+Date.now(),{cache:'no-store'});
   const html=response.ok?await response.text():'';
-  if(!html.includes('data-teamtab="ia"')||!html.includes('IA de campo'))throw new Error('A tela de IA ainda não terminou de atualizar. Tente novamente.');
+  if(!html.includes('id="poTruckPhotoRead"')||html.includes('data-teamtab="ia"'))throw new Error('A leitura de ficha ainda não terminou de atualizar. Tente novamente.');
   message('Atualização concluída. Abrindo o aplicativo…');$('progress').hidden=true;$('openApp').textContent='Abrir aplicativo atualizado';
-  window.location.replace('./?campo_atualizado=85');
+  window.location.replace('./?campo_atualizado=86');
  }catch(error){message(error.message||'Não foi possível atualizar. Tente novamente.');$('progress').hidden=true;$('retry').hidden=false}
  finally{running=false}
 }

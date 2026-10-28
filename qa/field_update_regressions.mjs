@@ -10,22 +10,22 @@ function fixture(options={}){
  const requests=[],saved={session:'synthetic-session',deviceCode:'keep-linked',offlineQueue:'[{"pending":"poultry-truck"}]'};
  for(const [k,v] of Object.entries(saved))w.localStorage.setItem(k,v);
  w.MessageChannel=class{constructor(){this.port1={close(){},onmessage:null};this.port2={close(){},postMessage:value=>queueMicrotask(()=>this.port1.onmessage?.({data:value}))}}};
- const worker={state:'activated',postMessage(message,ports){requests.push(message.type);let value;if(message.type==='C360_STATUS')value={ok:true,current:'comando360-v7-02-stable'+(options.release||85),rollback:!!options.rollback};if(message.type==='C360_HEAL_CORE')value={ok:!options.healFailure,hasShell:true,shellRefreshed:!options.healFailure};if(message.type==='C360_CLEAR_ROLLBACK')value={ok:true,rollback:false};ports[0].postMessage(value)}};
+ const worker={state:'activated',postMessage(message,ports){requests.push(message.type);let value;if(message.type==='C360_STATUS')value={ok:true,current:'comando360-v7-02-stable'+(options.release||86),rollback:!!options.rollback};if(message.type==='C360_HEAL_CORE')value={ok:!options.healFailure,hasShell:true,shellRefreshed:!options.healFailure};if(message.type==='C360_CLEAR_ROLLBACK')value={ok:true,rollback:false};ports[0].postMessage(value)}};
  const registration=Object.assign(new w.EventTarget(),{active:worker,installing:null,waiting:null,async update(){requests.push('registration.update')}});
  Object.defineProperty(w.navigator,'serviceWorker',{value:{async getRegistration(){requests.push('getRegistration');return registration},async register(url,options){requests.push('register:'+url);assert.equal(options.scope,'./');assert.equal(options.updateViaCache,'none');return registration}}});
  Object.defineProperty(w.navigator,'onLine',{value:!options.offline});
  w.indexedDB={deleteDatabase(){throw Error('Must preserve offline records')}};w.caches={delete(){throw Error('Must not purge app data')}};
- w.fetch=async()=>new Response(options.oldHtml?'<html>Old home</html>':'<button data-teamtab="ia">IA de campo</button>',{status:200});
+ w.fetch=async()=>new Response(options.oldHtml?'<html>Old home</html>':'<button id="poTruckPhotoRead">Ler ficha</button>',{status:200});
  // Observe navigation without replacing this test's DOM. The production code still uses location.replace.
- w.eval(inline.replace("window.location.replace('./?campo_atualizado=85');","window.__destination='./?campo_atualizado=85';"));
+ w.eval(inline.replace("window.location.replace('./?campo_atualizado=86');","window.__destination='./?campo_atualizado=86';"));
  return {w,dom,requests,saved,registration,close:()=>w.close()};
 }
 async function test(name,options,check){const r=fixture(options);try{await tick();await check(r);for(const [k,v] of Object.entries(r.saved))assert.equal(r.w.localStorage.getItem(k),v);console.log('PASS '+name)}finally{r.close()}}
-await test('The updater refreshes the existing worker and opens IA without clearing pairing, session or queued records',{},r=>{assert.equal(r.w.__destination,'./?campo_atualizado=85');assert(r.requests.includes('register:./sw-v7-02.js?release=20261028-field-ai85'));assert(r.requests.includes('C360_HEAL_CORE'));assert.equal(r.w.document.querySelector('#retry').hidden,true)});
-await test('A verified new release clears a forced old-screen fallback while retaining local records',{rollback:true},r=>{assert(r.requests.includes('C360_CLEAR_ROLLBACK'));assert.equal(r.w.__destination,'./?campo_atualizado=85')});
+await test('The updater refreshes the existing worker and opens the truck form without clearing pairing, session or queued records',{},r=>{assert.equal(r.w.__destination,'./?campo_atualizado=86');assert(r.requests.includes('register:./sw-v7-02.js?release=20261028-truck-photo86'));assert(r.requests.includes('C360_HEAL_CORE'));assert.equal(r.w.document.querySelector('#retry').hidden,true)});
+await test('A verified new release clears a forced old-screen fallback while retaining local records',{rollback:true},r=>{assert(r.requests.includes('C360_CLEAR_ROLLBACK'));assert.equal(r.w.__destination,'./?campo_atualizado=86')});
 await test('An old worker never reports a successful update',{release:81},r=>{assert.equal(r.w.__destination,undefined);assert.equal(r.w.document.querySelector('#retry').hidden,false);assert(!r.requests.includes('C360_HEAL_CORE'))});
 await test('A failed download stays retryable and cannot send the user to an incomplete app',{healFailure:true},r=>{assert.equal(r.w.__destination,undefined);assert.equal(r.w.document.querySelector('#retry').hidden,false)});
-await test('A home page without the IA tile cannot pass verification',{oldHtml:true},r=>{assert.equal(r.w.__destination,undefined);assert.match(r.w.document.querySelector('#status').textContent,/IA/)});
+await test('A home page without truck photo reading cannot pass verification',{oldHtml:true},r=>{assert.equal(r.w.__destination,undefined);assert.match(r.w.document.querySelector('#status').textContent,/ficha/)});
 await test('Offline phones retain their session and queue and get a clear reconnect action',{offline:true},r=>{assert.equal(r.w.__destination,undefined);assert.equal(r.requests.length,0);assert.match(r.w.document.querySelector('#status').textContent,/internet/)});
 const r=fixture();try{
  await tick();const old=r.registration.active,newWorker=new r.w.EventTarget();newWorker.state='installing';r.registration.installing=newWorker;

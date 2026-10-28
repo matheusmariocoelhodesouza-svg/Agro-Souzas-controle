@@ -1,16 +1,16 @@
 # Configuração da IA do Comando360
 
-## IA de campo por foto (28/10/2026)
+## Foto da ficha dentro de cada caminhão (28/10/2026)
 
-O início do celular vinculado à equipe oferece **IA de campo**. O colaborador usa câmera, galeria e conversa para preparar apanha (com caminhões e aves reais), abastecimento e batidas de ponto. O chat mostra a conferência; campos ausentes ou ambíguos bloqueiam **Confirmar e salvar**. Correções são feitas pela conversa e substituem propostas pendentes. A leitura requer internet; os formulários manuais continuam com seu funcionamento offline existente.
+O celular da equipe entra em **Apanha**, cadastra a apanha e abre cada caminhão. **Tirar foto** ou **Enviar da galeria** inicia a leitura e preenche motorista, placa, origem, aviário, CATA, aves, caixas, vazias, aves/caixa, mortes e horários legíveis. O colaborador confere, completa os campos pendentes e usa o salvamento normal. Não há mais botão nem rota de chat de IA no campo; o assistente administrativo continua disponível.
 
-`comando360-field-ai` reutiliza a credencial de servidor existente e o modelo `gpt-5-mini`. O endpoint verifica a sessão, o aparelho ativo, bloqueios, empresa e permissões a cada chamada. Seu contexto inclui apenas cadastros operacionais autorizados, sem planejamento de aves, salários ou financeiro. Conversas são separadas por usuário, equipe e vínculo do aparelho; o assistente administrativo permanece separado.
+O modo `truck_photo` de `comando360-field-ai` reutiliza a credencial de servidor e o modelo `gpt-5-mini`. Verifica a sessão, o vínculo ativo do aparelho, empresa, equipe, bloqueios e permissões `apanha` e `ia`. Para apanhas já sincronizadas, valida o carregamento da mesma empresa/equipe via RLS; rascunhos locais podem ser lidos sem criar registros no servidor. Não lê histórico de conversa, salários, financeiro nem outras equipes. Retorna somente um rascunho, sem INSERT/PATCH/RPC de negócio.
 
-As fotos são arquivadas em `company-documents/<empresa>/assistant360/field/<equipe>/<usuário>/`. A política de upload permite apenas a pasta do próprio aparelho/equipe. O servidor verifica a origem dos anexos e assina links de histórico por dez minutos. As RPCs `v2_field_ai_commit_turn` e `v2_execute_field_assistant_action` usam `SECURITY INVOKER`, são exclusivas de `service_role` e revalidam acesso e propriedade na transação. Uma confirmação repetida retorna o mesmo resultado; caminhões com a mesma sequência e batidas já existentes são rejeitados.
+A foto original permanece anexada à ficha em `v2-poultry-sheets`, usando o fluxo de armazenamento existente. O caminhão salva os metadados da leitura e o total normal da apanha continua sendo a soma dos caminhões salvos. O cálculo por caixas desconta as vazias; grupos com aves/caixa diferentes são calculados separadamente, sem médias. A IA não presume zero para campos ausentes. Vários caminhões sem identificação inequívoca exigem um recorte da foto.
 
-Ponto por foto é transcrição manual com evidência e identificação escrita, nunca reconhecimento facial. Uma lista só de presença, sem data, horário e tipo de batida, exige completar os dados. Datas e horas ilegíveis não são inferidas. A matrícula ou o nome completo precisa corresponder de forma única ao cadastro ativo.
+A leitura precisa de internet. Sem conexão, a foto e o formulário podem ser salvos na fila offline existente; a leitura pode ser tentada novamente antes de salvar. Não há preenchimento automático tardio de um caminhão já salvo. Trocar de foto, caminhão, empresa, equipe ou tela invalida a leitura anterior. Campos alterados pelo colaborador enquanto a IA responde são preservados. Falhas, campos ilegíveis e divergências de total ficam visíveis; nada é salvo pela leitura.
 
-As permissões individuais de Apanha, Abastecimento e Ponto também são verificadas no servidor. O administrador pode desligar `ia` no controle do aparelho. Se os três cadastros estiverem desabilitados, o acesso à IA de campo é ocultado e recusado pelo endpoint.
+Os modos antigos de conversa e suas tabelas são preservados para histórico e compatibilidade, sem acesso pelo menu do campo. A permissão `ia` agora aparece no controle do aparelho como **Leitura da ficha por foto em Apanha**.
 
 ## Conversa contínua (22/10/2026)
 

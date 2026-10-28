@@ -2101,9 +2101,8 @@ body.darkmode #financeiro .finance-privacy-btn{background:#17283d;border-color:#
 <div id="screenHost"></div>
 <div class="section" data-screen="equipehome" hidden="" id="equipehome">
  <div class="team-home">
-  <div class="team-home-head"><div style="font-size:12px;opacity:.8;font-weight:800">COMANDO 360</div><h1 id="teamHomeName">Equipe</h1><div id="teamHomeVehicle">Celular de campo</div><a class="btn soft" id="fieldAppUpdate" href="./atualizar-campo.html?versao=85" style="display:inline-block;margin-top:12px;font-size:12px;text-decoration:none">↻ Atualizar app</a></div>
+  <div class="team-home-head"><div style="font-size:12px;opacity:.8;font-weight:800">COMANDO 360</div><h1 id="teamHomeName">Equipe</h1><div id="teamHomeVehicle">Celular de campo</div><a class="btn soft" id="fieldAppUpdate" href="./atualizar-campo.html?versao=86" style="display:inline-block;margin-top:12px;font-size:12px;text-decoration:none">↻ Atualizar app</a></div>
   <div class="team-home-grid">
-   <button class="team-tile" type="button" data-teamtab="ia"><span class="ico">✦</span><strong>IA de campo</strong><small>Envie fotos para cadastrar apanha, abastecimento e ponto. Confira e confirme pelo chat.</small></button>
    <button class="team-tile" type="button" data-teamtab="operacoes"><span class="ico">🐔</span><strong>Apanha</strong><small>Apanhas da sua equipe e carregamento caminhão por caminhão.</small></button>
    <button class="team-tile" type="button" data-teamtab="ponto"><span class="ico">⏱️</span><strong>Ponto</strong><small>Bater ponto e conferir presença dos funcionários da equipe.</small></button>
    <button class="team-tile" type="button" data-teamtab="combustivel"><span class="ico">⛽</span><strong>Abastecimento</strong><small>Registrar combustível da condução usada pela equipe hoje.</small></button>
@@ -2401,6 +2400,17 @@ body.darkmode #financeiro .finance-privacy-btn{background:#17283d;border-color:#
  </div>
  <input id="poTruckOperationId" type="hidden"><input id="poTruckLoadingId" type="hidden"><input id="poTruckSequence" type="hidden">
 
+ <div class="field-section truck-sheet-section" id="poTruckPhotoSection">
+  <div class="field-section-title"><span>📷</span><div><strong id="poTruckPhotoTitle">Preencher pela foto da ficha</strong><div class="muted" id="poTruckPhotoIntro">Envie a foto deste caminhão. A IA preenche os campos para você conferir e salvar.</div></div></div>
+  <div class="truck-photo-actions">
+   <label class="btn primary field-photo-btn">TIRAR FOTO<input id="poTruckSheetFile" type="file" accept="image/jpeg,image/png,image/webp" capture="environment" hidden></label>
+   <label class="btn soft field-photo-btn">ENVIAR DA GALERIA<input id="poTruckSheetGallery" type="file" accept="image/jpeg,image/png,image/webp" hidden></label>
+  </div>
+  <div id="poTruckSheetPreviewWrap" class="hidden field-sheet-preview"><img id="poTruckSheetPreview" alt="Foto da ficha deste caminhão"><div class="muted" id="poTruckSheetFileName"></div></div>
+  <div id="poTruckPhotoStatus" class="truck-photo-status" role="status" aria-live="polite"></div>
+  <button id="poTruckPhotoRead" class="btn soft" type="button" hidden>LER FOTO NOVAMENTE</button>
+ </div>
+
  <div class="field-section">
   <div class="field-section-title"><span>🚛</span><div><strong>Caminhão</strong><div class="muted">Preencha motorista, placa e aviário.</div></div></div>
   <div class="row po-field-grid po-truck-driver-grid">
@@ -2447,14 +2457,6 @@ body.darkmode #financeiro .finance-privacy-btn{background:#17283d;border-color:#
    <div><label>Data</label><input id="poTruckDate" type="date"></div>
   </div>
  </div>
-
- <details class="field-more-options truck-sheet-section">
-  <summary>📷 Foto da ficha (opcional)</summary>
-  <div class="field-more-inner">
-   <label class="btn soft field-photo-btn">TIRAR FOTO DA FICHA<input id="poTruckSheetFile" type="file" accept="image/jpeg,image/png,image/webp" capture="environment" hidden></label>
-   <div id="poTruckSheetPreviewWrap" class="hidden field-sheet-preview"><img id="poTruckSheetPreview" alt="Foto da ficha"><div class="muted" id="poTruckSheetFileName"></div></div>
-  </div>
- </details>
 
  <details class="field-more-options field-notes-section">
   <summary>Observação do caminhão (opcional)</summary>
@@ -6007,18 +6009,28 @@ async function uploadPoultrySheet(file,token){
 }
 let poTruckAutoSheetPath=null;
 let poTruckAutoSheetUpload=null;
+let poTruckSelectedSheetFile=null;
+let poTruckSheetPreviewUrl=null;
+let poTruckSheetEpoch=0;
+function selectedPoultrySheetFile(){return poTruckSelectedSheetFile||$('#poTruckSheetFile')?.files?.[0]||null}
 function resetPoTruckAutoSheet(){
+ poTruckSheetEpoch++;
  poTruckAutoSheetPath=null;
  poTruckAutoSheetUpload=null;
+ poTruckSelectedSheetFile=null;
+ if(poTruckSheetPreviewUrl)URL.revokeObjectURL(poTruckSheetPreviewUrl);
+ poTruckSheetPreviewUrl=null;
+ window.C360TruckPhoto?.reset();
 }
 async function autoSavePoultrySheetFile(file){
  if(!file)return null;
  if(deviceMode&&!c360NetOnline())return null;
  const token=makeOfflineId('sheet-auto');
+ const epoch=poTruckSheetEpoch;
  poTruckAutoSheetUpload=uploadPoultrySheet(file,token).then(path=>{
-  poTruckAutoSheetPath=path;
+  if(epoch===poTruckSheetEpoch)poTruckAutoSheetPath=path;
   return path;
- }).finally(()=>{poTruckAutoSheetUpload=null});
+ }).finally(()=>{if(epoch===poTruckSheetEpoch)poTruckAutoSheetUpload=null});
  return poTruckAutoSheetUpload;
 }
 function normalizeAviaryNumber(v){return String(v||'').trim()}
@@ -6079,7 +6091,8 @@ function truckSheetMetadata(){
   loading_deaths:poN($('#poTruckLoadingDeaths').value)||0,
   sheet_aviaries:selectedTruckBarnLabels().join(' - ')||null,
   barn_breakdown:selectedTruckBarnBreakdown(),
-  entry_mode:$('#poTruckSheetFile')?.files?.[0]?'photo_plus_manual':'manual'
+  entry_mode:window.C360TruckPhoto?.metadata()?'photo_ai_reviewed':selectedPoultrySheetFile()?'photo_plus_manual':'manual',
+  ai_photo:window.C360TruckPhoto?.metadata()||null
  };
 }
 function calcTruckSheetTotalHint(){
@@ -6088,9 +6101,11 @@ function calcTruckSheetTotalHint(){
  const boxes=poN($('#poTruckBoxes')?.value),per=poN($('#poTruckBirdsPerBox')?.value);
  if(!hint)return;
  if(boxes>0&&per>0){
-  const suggested=Math.round(boxes*per);
-  hint.textContent='Caixas × aves/caixa = '+suggested.toLocaleString('pt-BR')+' aves. Confira com o total escrito na ficha.';
-  if(!poN($('#poTruckBirds')?.value))$('#poTruckBirds').value=suggested;
+  const emptyInput=$('#poTruckEmptyBoxes')?.value,empty=poN(emptyInput);
+  if(emptyInput===''||empty>boxes){hint.textContent='Informe as caixas vazias (0 quando não houver) para conferir o total.';return}
+  const suggested=(boxes-empty)*per;
+  hint.textContent='(Caixas − vazias) × aves/caixa = '+suggested.toLocaleString('pt-BR')+' aves. Confira com o total escrito na ficha.';
+  if(Number.isSafeInteger(suggested)&&!poN($('#poTruckBirds')?.value))$('#poTruckBirds').value=suggested;
  }else hint.textContent='Informe caixas e aves/caixa para conferir o total.';
 }
 function loadTruckBarnOptions(){
@@ -6217,7 +6232,9 @@ function openNextTruckForm({operationId,loadingId,farmId,name,sequence}){
  $('#poTruckDate').value=(op?.scheduled_start||new Date().toISOString()).slice(0,10);
  $('#poTruckCata').checked=false;toggleTruckCataAviaries();$('#poTruckNotes').value='';
  $('#poTruckStart').value=$('#poTruckDate').value+'T'+poLocalInputDate().slice(11);$('#poTruckEnd').value='';
+ $('#poTruckCard').dataset.defaultStart=$('#poTruckStart').value;
  const sf=$('#poTruckSheetFile');if(sf)sf.value='';
+ if($('#poTruckSheetGallery'))$('#poTruckSheetGallery').value='';
  $('#poTruckSheetPreviewWrap').classList.add('hidden');$('#poTruckSheetPreview').removeAttribute('src');$('#poTruckSheetFileName').textContent='';
  calcTruckSheetTotalHint();
  $('#poTruckMsg').textContent='';
@@ -6233,6 +6250,7 @@ function openNextTruckForm({operationId,loadingId,farmId,name,sequence}){
 let truckSavePending=false;
 async function saveTruckLoad(closeAfter=false){
  if(truckSavePending)return;
+ if(window.C360TruckPhoto?.busy){$('#poTruckMsg').textContent='Aguarde a leitura da ficha para conferir os campos e salvar.';return}
  truckSavePending=true;
  const buttons=[$('#poTruckSave'),$('#poTruckSaveClose')].filter(Boolean);
  buttons.forEach(b=>b.disabled=true);
@@ -6248,7 +6266,7 @@ async function saveTruckLoadImpl(closeAfter=false){
        birds=isCata?barnBreakdown.reduce((a,x)=>a+poN(x.birds),0):poN($('#poTruckBirds').value),
        start=$('#poTruckStart').value,
        end=$('#poTruckEnd').value,
-       sheetFile=$('#poTruckSheetFile')?.files?.[0]||null;
+       sheetFile=selectedPoultrySheetFile();
 
  if(!operationId||!loadingId||!driver||!plate||!birds||!start||!end)return $('#poTruckMsg').textContent='Preencha motorista, placa, total de aves, aviário, início e término.';
  if(!Number.isFinite(Date.parse(start))||!Number.isFinite(Date.parse(end))||Date.parse(end)<=Date.parse(start))return $('#poTruckMsg').textContent='O término deve ser posterior ao início do carregamento.';
@@ -6398,12 +6416,16 @@ if($('#poSavedAviary'))$('#poSavedAviary').addEventListener('change',e=>{fillAvi
  el.addEventListener('blur',scheduleAutoSavePoultryFarm);
 });
 document.querySelectorAll('.po-energy-btn').forEach(btn=>btn.addEventListener('click',()=>{setPoultryEnergy(btn.dataset.energy);scheduleAutoSavePoultryFarm()}));
-if($('#poTruckClose'))$('#poTruckClose').addEventListener('click',()=>$('#poTruckCard').classList.add('hidden'));
-if($('#poTruckSheetFile'))$('#poTruckSheetFile').addEventListener('change',async e=>{
- const file=e.target.files?.[0],wrap=$('#poTruckSheetPreviewWrap'),img=$('#poTruckSheetPreview'),name=$('#poTruckSheetFileName');
+if($('#poTruckClose'))$('#poTruckClose').addEventListener('click',()=>{window.C360TruckPhoto?.reset();$('#poTruckCard').classList.add('hidden')});
+async function selectPoultrySheetFile(file){
+ if(!file)return;
+ if(!/^image\/(jpeg|png|webp)$/.test(file.type)||file.size>12*1024*1024){$('#poTruckPhotoStatus').textContent='Use uma foto JPEG, PNG ou WebP de até 12 MB.';return}
+ const wrap=$('#poTruckSheetPreviewWrap'),img=$('#poTruckSheetPreview'),name=$('#poTruckSheetFileName');
  resetPoTruckAutoSheet();
- if(!file){wrap.classList.add('hidden');img.removeAttribute('src');name.textContent='';return}
- img.src=URL.createObjectURL(file);wrap.classList.remove('hidden');
+ poTruckSelectedSheetFile=file;
+ const epoch=poTruckSheetEpoch;
+ poTruckSheetPreviewUrl=URL.createObjectURL(file);img.src=poTruckSheetPreviewUrl;wrap.classList.remove('hidden');
+ window.C360TruckPhoto?.read(file);
  if(deviceMode&&!c360NetOnline()){
   name.textContent=file.name+' • salva neste celular e será enviada automaticamente quando voltar a internet';
   return;
@@ -6411,13 +6433,14 @@ if($('#poTruckSheetFile'))$('#poTruckSheetFile').addEventListener('change',async
  name.textContent='Salvando foto automaticamente...';
  try{
   await autoSavePoultrySheetFile(file);
-  name.textContent='Foto salva automaticamente ✓';
+  if(epoch===poTruckSheetEpoch)name.textContent='Foto anexada ✓';
  }catch(err){
-  name.textContent='Foto selecionada • será enviada ao salvar o caminhão';
+  if(epoch===poTruckSheetEpoch)name.textContent='Foto selecionada • será enviada ao salvar o caminhão';
   console.warn('auto-save foto da ficha',err);
  }
-});
-['poTruckBoxes','poTruckBirdsPerBox'].forEach(id=>{if($('#'+id))$('#'+id).addEventListener('input',calcTruckSheetTotalHint)});
+}
+['poTruckSheetFile','poTruckSheetGallery'].forEach(id=>$('#'+id)?.addEventListener('change',e=>selectPoultrySheetFile(e.target.files?.[0])));
+['poTruckBoxes','poTruckBirdsPerBox','poTruckEmptyBoxes'].forEach(id=>{if($('#'+id))$('#'+id).addEventListener('input',calcTruckSheetTotalHint)});
 if($('#poTruckCata'))$('#poTruckCata').addEventListener('change',toggleTruckCataAviaries);
 if($('#poTruckAddCataAviary'))$('#poTruckAddCataAviary').addEventListener('click',addTruckCataRow);
 if($('#poTruckBarnChecks'))$('#poTruckBarnChecks').addEventListener('input',()=>calcTruckCataBirdTotal());
@@ -9355,7 +9378,7 @@ async function v2Go(tab){
  const navigationVersion=++screenNavigationVersion;
  if(tab!=='rastreamento')stopMovitTrackingPolling();
  if(tab==='documentosfrota')tab='frota';
- if(deviceMode&&!['equipehome','operacoes','ponto','combustivel','equipereport','ia'].includes(tab))tab='equipehome';
+ if(deviceMode&&!['equipehome','operacoes','ponto','combustivel','equipereport'].includes(tab))tab='equipehome';
  // Dynamic screens must be registered before the router looks them up.
  try{if(typeof window.c360LoadScreenFeatures==='function')await window.c360LoadScreenFeatures(tab)}
  catch(e){if(navigationVersion===screenNavigationVersion)c360Toast('Não foi possível abrir a tela',e?.message||'Tente novamente.','error');return false}
@@ -9637,7 +9660,7 @@ if('serviceWorker' in navigator){
  window.addEventListener('online',c360CheckAppUpdate);
  navigator.serviceWorker.addEventListener('controllerchange',()=>{const link=document.getElementById('fieldAppUpdate');if(link){link.textContent='↻ Concluir atualização';link.setAttribute('aria-label','Concluir atualização do aplicativo')}});
  window.addEventListener('load',()=>{
-  navigator.serviceWorker.register('./sw-v7-02.js?release=20261028-field-ai85',{scope:'./',updateViaCache:'none'}).catch(e=>console.warn('Service Worker',e));
+  navigator.serviceWorker.register('./sw-v7-02.js?release=20261028-truck-photo86',{scope:'./',updateViaCache:'none'}).catch(e=>console.warn('Service Worker',e));
  });
 }
 

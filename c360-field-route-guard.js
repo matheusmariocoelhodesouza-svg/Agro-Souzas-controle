@@ -1,7 +1,7 @@
 (()=>{
 'use strict';
-const VERSION='2026.10.28-field-ai';
-const FORBIDDEN=new Set(['financeiro','frota','rastreamento','manutencoes','insumos','funcionarios','equipes','documentosrh','configuracoes','integracoes','alertas','fiscal']);
+const VERSION='2026.10.28-truck-photo';
+const FORBIDDEN=new Set(['ia','financeiro','frota','rastreamento','manutencoes','insumos','funcionarios','equipes','documentosrh','configuracoes','integracoes','alertas','fiscal']);
 function isDevice(){
  try{return !!(typeof deviceMode!=='undefined'&&deviceMode)||document.body.classList.contains('device-mode')}
  catch(_){return document.body.classList.contains('device-mode')}

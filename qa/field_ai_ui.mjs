@@ -2,19 +2,13 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {createRequire} from 'node:module';
 const require=createRequire(import.meta.url),{JSDOM}=require(process.env.C360_JSDOM_PATH||'jsdom');
-const tick=async()=>{for(let i=0;i<5;i++)await new Promise(r=>setTimeout(r,0))};
-const id=n=>`00000000-0000-4000-8000-${String(n).padStart(12,'0')}`;
-const dom=new JSDOM('<!doctype html><body class="device-mode"><button data-teamtab="ia">IA de campo</button><div id="ia" data-screen="ia" class="section active"><div class="card chat"><h3>Comando IA</h3><p class="muted">Conversa</p><div id="chatbox" class="chatbox"></div><div class="toolbar"><input id="question"><button id="sendAI" class="primary">Enviar</button></div></div></div>',{url:'https://qa.invalid',runScripts:'outside-only',pretendToBeVisual:true});
-const w=dom.window,d=w.document,calls=[],routes=[],observers=[];
-Object.assign(w,{Response,Headers,AbortController,ReadableStream,TextEncoder,TextDecoder});
-const Observer=w.MutationObserver;w.MutationObserver=class extends Observer{constructor(fn){super(fn);observers.push(this)}};
-w.Element.prototype.scrollIntoView=()=>{};w.companyId=id(1);w.deviceAccess={id:id(4),team_id:id(3),permissions:{}};w.deviceMode=true;w.session=()=>({access_token:'synthetic',user:{id:id(2)}});w.v2Go=async route=>routes.push(route);
-w.authFetch=async(endpoint,options)=>{const b=JSON.parse(options.body);calls.push({endpoint,b});if(b.mode==='health')return Response.json({configured:true,status:'configured'});if(b.mode==='conversations')return Response.json({conversations:[]});if(b.mode==='execute')return Response.json({result:{message:'Ponto registrado.'}});if(b.mode==='analyze')return Response.json({conversation_id:id(5),answer:'Confira antes de salvar.',actions:[{id:id(8),action_type:'attendance_event',summary:'Entrada João',confidence:.99,missing_fields:[],status:'proposed',payload:{employee_name:'João da Silva',employee_number:'001',team_name:'Equipe 1',event_type:'in',occurred_at:'2026-10-28T05:00:00-03:00'}}]});throw Error('Unexpected mode '+b.mode)};
-for(const file of ['c360-field-route-guard.js','c360-device-permission-guard.js','c360-chat-stream.js','c360-chat-experience.js','c360-assistant360.js'])w.eval(fs.readFileSync(file,'utf8'));
+const index=fs.readFileSync('index.html','utf8');
+assert(!index.includes('data-teamtab="ia"'));assert(index.includes('id="poTruckPhotoRead"'));
+const dom=new JSDOM('<body class="device-mode"><div id="equipehome"></div><div id="ia"></div></body>',{url:'https://qa.invalid',runScripts:'outside-only'}),w=dom.window,routes=[];
+w.deviceMode=true;w.deviceAccess={permissions:{}};w.v2Go=async route=>routes.push(route);
+w.eval(fs.readFileSync('c360-field-route-guard.js','utf8'));
 try{
- await tick();await w.v2Go('ia');assert.equal(routes.at(-1),'ia');await w.v2Go('financeiro');assert.equal(routes.at(-1),'equipehome');console.log('PASS Field navigation opens IA and keeps administrative routes blocked');
- assert.equal(d.querySelector('.ai360-workshop'),null);assert.match(d.querySelector('h3').textContent,/IA de campo/);assert.equal(d.querySelectorAll('.ai360-suggestion').length,3);assert(!d.querySelector('.ai360-suggestions').textContent.includes('pagamentos'));assert(d.querySelector('.ai360-camera'));assert(d.querySelector('.ai360-gallery'));console.log('PASS Field chat offers only apanha, fuel and point entry, with camera and gallery');
- d.querySelector('#question').value='João entrou às cinco.';d.querySelector('#sendAI').click();await tick();assert(d.querySelector('.ai360-review-grid').textContent.includes('João da Silva'));assert(d.querySelector('.ai360-review-grid').textContent.includes('Entrada'));assert.equal(calls.filter(c=>c.b.mode==='execute').length,0);assert(calls.every(c=>c.endpoint==='/functions/v1/comando360-field-ai'));console.log('PASS A draft shows employee, punch type and exact time before any data is saved');
- d.querySelector('.ai360-confirm').click();await tick();assert.equal(calls.filter(c=>c.b.mode==='execute').length,1);assert.match(d.querySelector('.ai360-saved').textContent,/Salvo/);console.log('PASS Explicit confirmation saves through the field endpoint');
- w.deviceAccess.permissions={ia:false};d.dispatchEvent(new w.CustomEvent('c360:device-permissions'));await w.v2Go('ia');assert.equal(routes.at(-1),'equipehome');assert(d.querySelector('[data-teamtab="ia"]').classList.contains('hidden'));console.log('PASS Disabling IA blocks its route and hides its field tile');
-}finally{observers.forEach(o=>o.disconnect());w.close()}
+ await w.v2Go('ia');assert.equal(routes.at(-1),'equipehome');await w.v2Go('financeiro');assert.equal(routes.at(-1),'equipehome');await w.v2Go('operacoes');assert.equal(routes.at(-1),'operacoes');
+ console.log('PASS Field home has no IA tile; Apanha is available and standalone AI/admin routes are blocked');
+ w.deviceMode=false;w.document.body.classList.remove('device-mode');await w.v2Go('ia');assert.equal(routes.at(-1),'ia');console.log('PASS The administrative assistant remains available');
+}finally{w.close()}
