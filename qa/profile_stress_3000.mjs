@@ -12,8 +12,8 @@ const out=path.resolve('qa-profile-stress-artifacts');
 await fs.mkdir(out,{recursive:true});
 
 const companyScreens=['inicio','equipes','funcionarios','documentosrh','ponto','operacoes','frota','rastreamento','manutencoes','combustivel','insumos','financeiro','relatorios','alertas','integracoes','configuracoes','fiscal','ia'];
-const fieldScreens=['equipehome','operacoes','ponto','combustivel','equipereport'];
-const forbiddenField=['financeiro','frota','rastreamento','manutencoes','insumos','funcionarios','equipes','documentosrh','configuracoes','integracoes','fiscal','ia','alertas'];
+const fieldScreens=['equipehome','operacoes','ponto','combustivel','equipereport','ia'];
+const forbiddenField=['financeiro','frota','rastreamento','manutencoes','insumos','funcionarios','equipes','documentosrh','configuracoes','integracoes','fiscal','alertas'];
 const sample={
  company:'00000000-0000-0000-0000-00000000c361',team:'00000000-0000-0000-0000-00000000c362',user:'00000000-0000-0000-0000-00000000c360',employee:'00000000-0000-0000-0000-00000000e001',vehicle:'00000000-0000-0000-0000-00000000f001',item:'00000000-0000-0000-0000-00000000a001',role:'00000000-0000-0000-0000-00000000b001'
 };

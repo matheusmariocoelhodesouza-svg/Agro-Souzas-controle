@@ -9,8 +9,8 @@ const out=path.resolve('qa-artifacts');
 await fs.mkdir(out,{recursive:true});
 
 const adminScreens=['inicio','equipes','funcionarios','documentosrh','ponto','operacoes','frota','manutencoes','combustivel','insumos','financeiro','relatorios','alertas','integracoes','configuracoes','ia'];
-const fieldScreens=['equipehome','operacoes','ponto','combustivel','equipereport'];
-const forbiddenField=['financeiro','frota','manutencoes','insumos','funcionarios','equipes','documentosrh','configuracoes','integracoes','ia','alertas'];
+const fieldScreens=['equipehome','operacoes','ponto','combustivel','equipereport','ia'];
+const forbiddenField=['financeiro','frota','manutencoes','insumos','funcionarios','equipes','documentosrh','configuracoes','integracoes','alertas'];
 const results={auditVersion,base,pageErrors:[],consoleErrors:[],overflow:[],missing:[],sourceLeaks:[],flowErrors:[],dialogs:[],mockedWrites:[],checks:[],screenshots:[]};
 
 const sample={
@@ -153,8 +153,9 @@ async function fieldFlow(browser){
  try{await page.waitForSelector('#c360TeamChatTile',{timeout:5000})}catch{}
  try{await page.waitForFunction(()=>document.querySelectorAll('#equipehome .team-tile .c360-field-vector-icon svg').length>=5,{timeout:5000});const vectors=await page.locator('#equipehome .team-tile .c360-field-vector-icon svg').count(),vehicle=await page.locator('#equipehome .team-home-head .c360-field-vehicle-icon svg').count();if(vectors<5||vehicle!==1)fail('campo:ícones-vetoriais',`${vectors} atalhos / ${vehicle} veículo`);else pass('campo:ícones-vetoriais')}catch(e){fail('campo:ícones-vetoriais',e)}
  const tiles=await page.evaluate(()=>[...document.querySelectorAll('#equipehome .team-tile')].map(x=>x.textContent.replace(/\s+/g,' ').trim()));
- for(const name of ['Apanha','Ponto','Abastecimento','Relatório','Mensagens']){if(!tiles.some(x=>x.includes(name)))fail(`campo:atalho:${name}`,tiles.join(' | '));else pass(`campo:atalho:${name}`)}
+ for(const name of ['Apanha','Ponto','Abastecimento','Relatório','Mensagens','IA de campo']){if(!tiles.some(x=>x.includes(name)))fail(`campo:atalho:${name}`,tiles.join(' | '));else pass(`campo:atalho:${name}`)}
  for(const id of fieldScreens.slice(1))await route(page,id,`campo:tela:${id}`);
+ await route(page,'ia','campo:ia:abrir');await expectVisible(page,'.ai360-camera','campo:ia:câmera',true);await expectVisible(page,'.ai360-gallery','campo:ia:galeria',true);await shot(page,'campo-ia-fotos');
  for(const id of forbiddenField){
   try{const s=await page.evaluate(async id=>{await v2Go(id);const vis=e=>!!e&&!e.hidden&&getComputedStyle(e).display!=='none';return{home:vis(document.getElementById('equipehome')),bad:vis(document.getElementById(id))}},id);if(!s.home||s.bad)fail(`campo:bloqueio:${id}`,JSON.stringify(s));else pass(`campo:bloqueio:${id}`)}catch(e){fail(`campo:bloqueio:${id}`,e)}
  }
