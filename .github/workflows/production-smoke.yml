@@ -31,8 +31,8 @@ jobs:
           release_ready() {
             fetch_once "/sw-v7-02.js" /tmp/sw.js || return 1
             fetch_once "/c360-quality-hotfix.js" /tmp/bootstrap.js || return 1
-            grep -q 'sw-v7-02-core-stable84.js' /tmp/sw.js || return 1
-            grep -q "BOOT_VERSION='2026.10.28-stable84'" /tmp/bootstrap.js || return 1
+            grep -q 'sw-v7-02-core-stable85.js' /tmp/sw.js || return 1
+            grep -q "BOOT_VERSION='2026.10.28-stable85'" /tmp/bootstrap.js || return 1
             grep -q 'SCRIPT_BATCH_SIZE=5' /tmp/bootstrap.js || return 1
             grep -q 'yieldToMain' /tmp/bootstrap.js || return 1
           }
@@ -111,7 +111,7 @@ jobs:
           fetch_once "/c360-saas-readiness.css" /tmp/saas.css
 
           SW_CORE="$(grep -oE 'sw-v7-02-core-(hotfix[0-9]+|stable[0-9]+)\.js' /tmp/sw.js | head -n1 || true)"
-          test "$SW_CORE" = 'sw-v7-02-core-stable84.js'
+          test "$SW_CORE" = 'sw-v7-02-core-stable85.js'
           fetch_once "/$SW_CORE" /tmp/sw-core.js
 
           for f in \
@@ -158,7 +158,7 @@ jobs:
           grep -q "const VERSION='2026.09.22-locui2'" /tmp/location-ui.js
           grep -q "const VERSION='2026.09.22-reports1'" /tmp/report-stability.js
 
-          grep -q "const CACHE='comando360-v7-02-stable84'" /tmp/sw-core.js
+          grep -q "const CACHE='comando360-v7-02-stable85'" /tmp/sw-core.js
           grep -q 'comando360-stable-v1' /tmp/sw-core.js
           grep -q './c360-release-core.js' /tmp/sw-core.js
           grep -q './c360-release-core.css' /tmp/sw-core.js
@@ -216,5 +216,5 @@ jobs:
           for name in ('/tmp/ui.css','/tmp/premium.css','/tmp/product.css','/tmp/release-core.css','/tmp/final.css','/tmp/professional.css','/tmp/health.css','/tmp/saas.css'):
               css=Path(name).read_text(encoding='utf-8')
               assert css.count('{') == css.count('}'), f'{name}: unbalanced braces'
-          print('Production stable84 + professional streaming chat + workshop entry + offline FAX/PDF smoke: OK')
+          print('Production stable85 + professional streaming chat + workshop entry + offline FAX/PDF smoke: OK')
           PY

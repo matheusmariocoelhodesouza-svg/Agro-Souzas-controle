@@ -21,7 +21,7 @@
 <script>
 (()=>{
 'use strict';
-const MIN_RELEASE=84;
+const MIN_RELEASE=85;
 const $=id=>document.getElementById(id);
 let running=false;
 function message(text){$('status').textContent=text}
@@ -55,7 +55,7 @@ async function run(){
   if(!('serviceWorker' in navigator))throw new Error('Abra esta página no mesmo navegador em que usa o Comando 360.');
   message('Baixando a atualização do aplicativo…');
   // Reuse the same scope; the release URL also refreshes intermediary HTTP caches.
-  const registration=await navigator.serviceWorker.register('./sw-v7-02.js?release=20261028-field-ai84',{scope:'./',updateViaCache:'none'});
+  const registration=await navigator.serviceWorker.register('./sw-v7-02.js?release=20261028-field-ai85',{scope:'./',updateViaCache:'none'});
   let worker=await activeWorker(registration);
   let state=await workerRequest(worker,'C360_STATUS');
   const release=Number(String(state?.current||'').match(/stable(\d+)$/)?.[1]||0);
@@ -69,7 +69,7 @@ async function run(){
   const html=response.ok?await response.text():'';
   if(!html.includes('data-teamtab="ia"')||!html.includes('IA de campo'))throw new Error('A tela de IA ainda não terminou de atualizar. Tente novamente.');
   message('Atualização concluída. Abrindo o aplicativo…');$('progress').hidden=true;$('openApp').textContent='Abrir aplicativo atualizado';
-  window.location.replace('./?campo_atualizado=84');
+  window.location.replace('./?campo_atualizado=85');
  }catch(error){message(error.message||'Não foi possível atualizar. Tente novamente.');$('progress').hidden=true;$('retry').hidden=false}
  finally{running=false}
 }
