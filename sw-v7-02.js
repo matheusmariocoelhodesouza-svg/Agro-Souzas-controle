@@ -15,7 +15,7 @@
 /* 2026-10-25 — chat profissional com conversas separadas, respostas em fluxo e diário de oficina. */
 /* 2026-10-28 — IA de campo com fotos de apanha, abastecimento e ponto. */
 /* 2026-10-28 — atualização direta preserva vínculo e registros do aparelho. */
-importScripts('./sw-v7-02-core-stable83.js');
+importScripts('./sw-v7-02-core-stable84.js');
 importScripts('./sw-auth-refresh-guard.js');
 importScripts('./sw-share-target.js');
 
