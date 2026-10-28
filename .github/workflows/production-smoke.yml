@@ -58,7 +58,9 @@ jobs:
           fetch_once "/c360-workshop-chat.js" /tmp/workshop-chat.js
           fetch_once "/oficina360-chat.js" /tmp/oficina-chat.js
           fetch_once "/oficina360.html" /tmp/oficina.html
-          grep -q "2026.10.25-professional-chat-7" /tmp/assistant.js
+          grep -q "2026.10.28-field-ai-1" /tmp/assistant.js
+          grep -q 'comando360-field-ai' /tmp/assistant.js
+          grep -q 'data-teamtab="ia"' /tmp/index.html
           grep -q 'C360ChatExperience' /tmp/chat-experience.js
           grep -q 'text/event-stream' /tmp/chat-stream.js
           grep -q 'C360WorkshopChat' /tmp/workshop-chat.js
