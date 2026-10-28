@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#102c50">
+<title>Atualizar Comando 360</title>
+<style>
+*{box-sizing:border-box}body{margin:0;min-height:100dvh;display:grid;place-items:center;padding:24px;background:#0b1830;color:#eef5ff;font-family:system-ui,-apple-system,sans-serif}.card{width:min(100%,440px);padding:28px;border:1px solid #355578;border-radius:24px;background:#102744;box-shadow:0 18px 60px #0004}.brand{font-weight:800;letter-spacing:2px;color:#89caff;font-size:12px}h1{font-size:26px;line-height:1.2;margin:14px 0}p{line-height:1.6;color:#c0d1e6}progress{width:100%;height:10px;margin:12px 0;accent-color:#72b6ff}.buttons{display:grid;gap:12px;margin-top:24px}button,a{font:700 15px system-ui;min-height:48px;border-radius:12px;padding:14px;text-align:center}button{border:0;background:#a4d2ff;color:#102744;cursor:pointer}button:disabled{opacity:.7;cursor:wait}a{border:1px solid #45688e;color:#e1f0ff;text-decoration:none}[hidden]{display:none!important}.note{font-size:13px;margin-bottom:0}
+</style>
+</head>
+<body>
+<main class="card">
+ <div class="brand">COMANDO 360</div>
+ <h1>Atualizar aplicativo</h1>
+ <p id="status" role="status" aria-live="polite">Preparando a atualização…</p>
+ <progress id="progress" aria-label="Atualização em andamento"></progress>
+ <p class="note">O vínculo da equipe e os registros salvos no celular serão preservados. Mantenha esta página aberta e a internet conectada.</p>
+ <div class="buttons"><button type="button" id="retry" hidden>Tentar novamente</button><a id="openApp" href="./">Voltar ao aplicativo</a></div>
+</main>
+<script>
+(()=>{
+'use strict';
+const MIN_RELEASE=83;
+const $=id=>document.getElementById(id);
+let running=false;
+function message(text){$('status').textContent=text}
+function workerRequest(worker,type,timeout=15000){
+ return new Promise((resolve,reject)=>{
+  if(!worker){reject(new Error('Não foi possível conectar à atualização.'));return}
+  const channel=new MessageChannel();let timer;
+  const finish=(error,value)=>{clearTimeout(timer);channel.port1.close();channel.port2.close();error?reject(error):resolve(value)};
+  timer=setTimeout(()=>finish(new Error('A atualização demorou mais que o esperado. Tente novamente.')),timeout);
+  channel.port1.onmessage=event=>finish(null,event.data);
+  try{worker.postMessage({type,reason:'field-ai-update'},[channel.port2])}catch{finish(new Error('Não consegui atualizar agora. Tente novamente.'))}
+ });
+}
+function activeWorker(registration,timeout=90000){
+ return new Promise((resolve,reject)=>{
+  let timer,settled=false;const observed=new Set();
+  const finish=(error,worker)=>{if(settled)return;settled=true;clearTimeout(timer);registration.removeEventListener('updatefound',check);for(const candidate of observed)candidate.removeEventListener('statechange',check);error?reject(error):resolve(worker)};
+  function check(){
+   const candidate=registration.installing||registration.waiting;
+   if(candidate){if(!observed.has(candidate)){observed.add(candidate);candidate.addEventListener('statechange',check)}return}
+   if(registration.active?.state==='activated')finish(null,registration.active);
+  }
+  timer=setTimeout(()=>finish(new Error('A atualização ainda não terminou. Verifique a conexão e tente novamente.')),timeout);
+  registration.addEventListener('updatefound',check);check();
+ });
+}
+async function run(){
+ if(running)return;running=true;$('retry').hidden=true;$('progress').hidden=false;
+ try{
+  if(navigator.onLine===false)throw new Error('Conecte o celular à internet e toque em Tentar novamente.');
+  if(!('serviceWorker' in navigator))throw new Error('Abra esta página no mesmo navegador em que usa o Comando 360.');
+  message('Baixando a atualização do aplicativo…');
+  let registration=await navigator.serviceWorker.getRegistration('./');
+  if(!registration)registration=await navigator.serviceWorker.register('./sw-v7-02.js',{scope:'./',updateViaCache:'none'});
+  else await registration.update();
+  let worker=await activeWorker(registration);
+  let state=await workerRequest(worker,'C360_STATUS');
+  const release=Number(String(state?.current||'').match(/stable(\d+)$/)?.[1]||0);
+  if(!state?.ok||release<MIN_RELEASE)throw new Error('A nova versão ainda não chegou a este navegador. Toque em Tentar novamente.');
+  message('Atualizando as telas e conferindo os arquivos…');
+  const healed=await workerRequest(worker,'C360_HEAL_CORE',90000);
+  if(!healed?.ok||!healed.hasShell||!healed.shellRefreshed)throw new Error('Não consegui baixar todas as telas. Verifique a conexão e tente novamente.');
+  state=await workerRequest(worker,'C360_STATUS');
+  if(state.rollback){const cleared=await workerRequest(worker,'C360_CLEAR_ROLLBACK');if(!cleared?.ok||cleared.rollback)throw new Error('Não consegui liberar a nova tela. Tente novamente.')}
+  const response=await fetch('./index.html?field_ai_update='+Date.now(),{cache:'no-store'});
+  const html=response.ok?await response.text():'';
+  if(!html.includes('data-teamtab="ia"')||!html.includes('IA de campo'))throw new Error('A tela de IA ainda não terminou de atualizar. Tente novamente.');
+  message('Atualização concluída. Abrindo o aplicativo…');$('progress').hidden=true;$('openApp').textContent='Abrir aplicativo atualizado';
+  window.location.replace('./?campo_atualizado=1');
+ }catch(error){message(error.message||'Não foi possível atualizar. Tente novamente.');$('progress').hidden=true;$('retry').hidden=false}
+ finally{running=false}
+}
+$('retry').addEventListener('click',run);
+window.C360AppUpdate={run,activeWorker,workerRequest};
+run();
+})();
+</script>
+</body>
+</html>

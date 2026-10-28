@@ -2101,7 +2101,7 @@ body.darkmode #financeiro .finance-privacy-btn{background:#17283d;border-color:#
 <div id="screenHost"></div>
 <div class="section" data-screen="equipehome" hidden="" id="equipehome">
  <div class="team-home">
-  <div class="team-home-head"><div style="font-size:12px;opacity:.8;font-weight:800">COMANDO 360</div><h1 id="teamHomeName">Equipe</h1><div id="teamHomeVehicle">Celular de campo</div></div>
+  <div class="team-home-head"><div style="font-size:12px;opacity:.8;font-weight:800">COMANDO 360</div><h1 id="teamHomeName">Equipe</h1><div id="teamHomeVehicle">Celular de campo</div><a class="btn soft" id="fieldAppUpdate" href="./atualizar-campo.html" style="display:inline-block;margin-top:12px;font-size:12px;text-decoration:none">↻ Atualizar app</a></div>
   <div class="team-home-grid">
    <button class="team-tile" type="button" data-teamtab="ia"><span class="ico">✦</span><strong>IA de campo</strong><small>Envie fotos para cadastrar apanha, abastecimento e ponto. Confira e confirme pelo chat.</small></button>
    <button class="team-tile" type="button" data-teamtab="operacoes"><span class="ico">🐔</span><strong>Apanha</strong><small>Apanhas da sua equipe e carregamento caminhão por caminhão.</small></button>
@@ -9628,6 +9628,14 @@ setInterval(async()=>{
  }
 },10*60*1000);
 if('serviceWorker' in navigator){
+ let c360LastUpdateCheck=0;
+ function c360CheckAppUpdate(){
+  if(document.visibilityState==='hidden'||navigator.onLine===false||Date.now()-c360LastUpdateCheck<60000)return;
+  c360LastUpdateCheck=Date.now();navigator.serviceWorker.getRegistration('./').then(reg=>reg?.update()).catch(()=>{});
+ }
+ document.addEventListener('visibilitychange',c360CheckAppUpdate);
+ window.addEventListener('online',c360CheckAppUpdate);
+ navigator.serviceWorker.addEventListener('controllerchange',()=>{const link=document.getElementById('fieldAppUpdate');if(link){link.textContent='↻ Concluir atualização';link.setAttribute('aria-label','Concluir atualização do aplicativo')}});
  window.addEventListener('load',()=>{
   navigator.serviceWorker.register('./sw-v7-02.js',{scope:'./',updateViaCache:'none'}).catch(e=>console.warn('Service Worker',e));
  });

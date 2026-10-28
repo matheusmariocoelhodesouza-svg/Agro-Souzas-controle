@@ -164,7 +164,7 @@ function enhanceOperationalHeadings(){
 }
 
 function enhanceFieldHome(){
- const map={operacoes:'poultry',ponto:'clock',combustivel:'fuel',equipereport:'chart'};
+ const map={operacoes:'poultry',ponto:'clock',combustivel:'fuel',equipereport:'chart',ia:'spark'};
  $$('#equipehome .team-tile').forEach(tile=>{
    const key=tile.id==='c360TeamChatTile'?'chat':map[tile.dataset.teamtab];
    const holder=$('.ico',tile);if(!key||!holder||holder.dataset.c360FieldIcon===key)return;

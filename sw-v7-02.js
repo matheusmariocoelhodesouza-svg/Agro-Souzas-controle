@@ -14,7 +14,8 @@
 /* 2026-10-22 — conversa contínua, histórico, documentos e acesso flutuante à IA. */
 /* 2026-10-25 — chat profissional com conversas separadas, respostas em fluxo e diário de oficina. */
 /* 2026-10-28 — IA de campo com fotos de apanha, abastecimento e ponto. */
-importScripts('./sw-v7-02-core-stable82.js');
+/* 2026-10-28 — atualização direta preserva vínculo e registros do aparelho. */
+importScripts('./sw-v7-02-core-stable83.js');
 importScripts('./sw-auth-refresh-guard.js');
 importScripts('./sw-share-target.js');
 
