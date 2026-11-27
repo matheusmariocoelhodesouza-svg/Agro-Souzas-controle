@@ -47,7 +47,7 @@ function mockRows(table,mode){
  if(table==='v2_team_chat_settings'||table==='v2_team_chat_messages'||table==='v2_financial_entries'||table==='v2_report_monthly_financial'||table==='v2_alerts'||table==='v2_vehicle_documents'||table==='v2_files'||table==='v2_vehicle_tracking_current'||table==='v2_fuel_logs')return[];
  if(table==='v2_poultry_integrators')return[{id:'int-qa',company_id:sample.company,name:'Cliente QA',status:'active'}];
  if(table==='v2_poultry_farms')return[{id:'farm-qa',company_id:sample.company,integrator_id:'int-qa',producer_name:'Produtor QA',farm_name:'Granja QA',city:'Laranjal Paulista',status:'active',address:{city:'Laranjal Paulista'}}];
- if(table==='v2_device_access')return[{id:'qa-device',company_id:sample.company,team_id:sample.team,status:'active',active:true,device_name:'Celular QA'}];
+ if(table==='v2_device_access')return[{id:'qa-device',permissions:{ponto:true,apanha:true,abastecimento:true,relatorio:true,ia:false},company_id:sample.company,team_id:sample.team,status:'active',active:true,device_name:'Celular QA'}];
  return[];
 }
 
