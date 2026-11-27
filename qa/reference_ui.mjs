@@ -78,7 +78,7 @@ async function prepareMode(page,mode){
   try{
    localStorage.setItem('controla_beta_session',JSON.stringify({access_token:'qa-access-token',refresh_token:'qa-refresh-token',expires_at:Date.now()+3600000,user:{id:sample.user,email:'qa@comando360.local'}}));
    companyId=sample.company;companyProfile={id:sample.company,trade_name:'Empresa QA',legal_name:'Empresa QA',tax_id:'00.000.000/0001-00'};
-   deviceMode=mode==='field';deviceAccess=deviceMode?{id:'qa-device',company_id:sample.company,team_id:sample.team,status:'active'}:null;deviceTeam=deviceMode?{id:sample.team,name:'Equipe QA',metadata:{}}:null;currentRoleCode=deviceMode?'device':'admin';isAdminGeneral=!deviceMode;
+   deviceMode=mode==='field';deviceAccess=deviceMode?{id:'qa-device',permissions:{ponto:true,apanha:true,abastecimento:true,relatorio:true,ia:false},company_id:sample.company,team_id:sample.team,status:'active'}:null;deviceTeam=deviceMode?{id:sample.team,name:'Equipe QA',metadata:{}}:null;currentRoleCode=deviceMode?'device':'admin';isAdminGeneral=!deviceMode;
    document.getElementById('login')?.classList.add('hidden');document.getElementById('app')?.classList.remove('hidden');document.body.classList.add('app-ready');document.body.classList.toggle('device-mode',deviceMode);
    // Mesma ordem do app real: modo de campo ajusta a UI enquanto todas as telas ainda existem; só depois o roteador as move.
    if(deviceMode&&typeof applyDeviceUi==='function')applyDeviceUi();
